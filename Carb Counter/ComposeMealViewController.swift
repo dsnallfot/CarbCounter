@@ -18,7 +18,7 @@ class ComposeMealViewController: UIViewController {
     var addButtonRowView: AddButtonRowView!
     var totalNetCarbsLabel: UILabel!
     var searchableDropdownView: SearchableDropdownView!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -80,7 +80,7 @@ class ComposeMealViewController: UIViewController {
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
-
+    
     private func setupSummaryView() {
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
@@ -120,16 +120,16 @@ class ComposeMealViewController: UIViewController {
         dividerView.backgroundColor = .lightGray
         stackView.addArrangedSubview(dividerView)
     }
-
+    
     private func setupHeadline() {
         let headlineStackView = UIStackView()
         headlineStackView.axis = .horizontal
         headlineStackView.spacing = 2
         headlineStackView.distribution = .fillProportionally
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let font = UIFont.systemFont(ofSize: 14)
-
+        
         let foodItemLabel = UILabel()
         foodItemLabel.text = "FOOD ITEM        "
         foodItemLabel.textAlignment = .left
@@ -149,21 +149,21 @@ class ComposeMealViewController: UIViewController {
         netCarbsLabel.text = "NET CARBS "
         netCarbsLabel.textAlignment = .left
         netCarbsLabel.font = font
-
+        
         headlineStackView.addArrangedSubview(foodItemLabel)
         headlineStackView.addArrangedSubview(portionServedLabel)
         headlineStackView.addArrangedSubview(notEatenLabel)
         headlineStackView.addArrangedSubview(netCarbsLabel)
-
+        
         stackView.addArrangedSubview(headlineStackView)
     }
-
+    
     private func setupSearchableDropdownView() {
         searchableDropdownView = SearchableDropdownView()
         searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
         searchableDropdownView.isHidden = true
         view.addSubview(searchableDropdownView)
-
+        
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -176,7 +176,7 @@ class ComposeMealViewController: UIViewController {
             self?.addFoodItemRow(with: foodItem)
         }
     }
-
+    
     private func fetchFoodItems() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
@@ -195,7 +195,7 @@ class ComposeMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
-
+        
         if let foodItem = foodItem {
             rowView.setSelectedFoodItem(foodItem)
         }
@@ -207,7 +207,7 @@ class ComposeMealViewController: UIViewController {
         rowView.onValueChange = { [weak self] in
             self?.updateTotalNetCarbs()
         }
-
+        
         updateTotalNetCarbs()
     }
     
@@ -252,19 +252,12 @@ class ComposeMealViewController: UIViewController {
         scrollView.contentInset = contentInsets
         scrollView.scrollIndicatorInsets = contentInsets
     }
-
+    
     @objc private func keyboardWillHide(notification: NSNotification) {
         scrollView.contentInset = .zero
         scrollView.scrollIndicatorInsets = .zero
     }
     
-    /*private func handleSelectItem(_ selectedItem: FoodItem) {
-        if let rowView = foodItemRows.last {
-            rowView.setSelectedFoodItem(selectedItem)
-            searchableDropdownView.isHidden = true
-        }
-    }*/
-
     // Separate class for Add Button Row
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
@@ -291,9 +284,6 @@ class ComposeMealViewController: UIViewController {
             ])
         }
     }
-    
-   /* func didTapFoodItemTextField(_ rowView: FoodItemRowView) {
-        searchableDropdownView.isHidden = false
-        searchableDropdownView.searchBar.becomeFirstResponder()
-    }*/
 }
+
+

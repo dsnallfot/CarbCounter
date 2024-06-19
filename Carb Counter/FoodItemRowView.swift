@@ -87,6 +87,7 @@ class FoodItemRowView: UIView {
         super.init(frame: frame)
         setupView()
         setupTextFieldTargets()
+        setupInputAccessoryViews()
     }
     
     required init?(coder: NSCoder) {
@@ -115,6 +116,21 @@ class FoodItemRowView: UIView {
 
     private func setupTextFieldTargets() {
         foodItemTextField.addTarget(self, action: #selector(foodItemTextFieldTapped), for: .editingDidBegin)
+    }
+    
+    private func setupInputAccessoryViews() {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.setItems([doneButton], animated: true)
+        
+        foodItemTextField.inputAccessoryView = toolbar
+        portionServedTextField.inputAccessoryView = toolbar
+        notEatenTextField.inputAccessoryView = toolbar
+    }
+    
+    @objc private func doneButtonTapped() {
+        endEditing(true)
     }
     
     @objc private func foodItemTextFieldTapped() {
