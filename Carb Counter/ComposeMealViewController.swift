@@ -20,7 +20,7 @@ class ComposeMealViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         title = "Compose Meal"
         setupScrollView()
         setupStackView()
@@ -37,6 +37,7 @@ class ComposeMealViewController: UIViewController {
         
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.backgroundColor = .systemBackground
         scrollView.addSubview(contentView)
         
         NSLayoutConstraint.activate([

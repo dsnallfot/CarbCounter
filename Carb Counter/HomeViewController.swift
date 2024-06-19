@@ -10,10 +10,10 @@ import UIKit
 class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
-        setupHelloWorldLabel()
-    }
+            super.viewDidLoad()
+            view.backgroundColor = .systemBackground
+            setupHelloWorldLabel()
+        }
     
     private func setupHelloWorldLabel() {
         let helloWorldLabel = UILabel()

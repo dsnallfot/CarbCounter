@@ -25,6 +25,8 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        textField.backgroundColor = .systemBackground
+        textField.textColor = .label
         return textField
     }()
     
@@ -36,6 +38,8 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        textField.backgroundColor = .systemBackground
+        textField.textColor = .label
         return textField
     }()
     
@@ -47,6 +51,8 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        textField.backgroundColor = .systemBackground
+        textField.textColor = .label
         return textField
     }()
     
@@ -55,15 +61,17 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: 70).isActive = true
         label.textAlignment = .right
+        label.textColor = .label
         return label
     }()
     
     let deleteButton: UIButton = {
         let button = UIButton(type: .system)
         let trashImage = UIImage(systemName: "trash")
-        button.setImage(trashImage, for: .normal)
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular, scale: .medium)
+        let resizedImage = trashImage?.applyingSymbolConfiguration(config)
+        button.setImage(resizedImage, for: .normal)
         button.tintColor = .red
-        button.imageView?.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
