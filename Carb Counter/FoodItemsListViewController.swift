@@ -193,13 +193,15 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
     // Delete Food Item
     private func deleteFoodItem(at indexPath: IndexPath) {
-        let foodItem = foodItems[indexPath.row]
+        let foodItem = filteredFoodItems[indexPath.row] // Use filteredFoodItems instead of foodItems
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
         context.delete(foodItem)
         do {
             try context.save()
-            foodItems.remove(at: indexPath.row)
+            if let index = foodItems.firstIndex(of: foodItem) {
+                foodItems.remove(at: index) // Also remove from the original foodItems
+            }
             filteredFoodItems.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
         } catch {
@@ -212,7 +214,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
-            addFoodItemVC.foodItem = foodItems[indexPath.row]
+            addFoodItemVC.foodItem = filteredFoodItems[indexPath.row] // Use filteredFoodItems instead of foodItems
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }

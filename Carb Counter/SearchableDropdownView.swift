@@ -17,6 +17,15 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         let searchBar = UISearchBar()
         searchBar.placeholder = "Search Food Items"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.barTintColor = .systemGray
+        searchBar.backgroundImage = UIImage() // Removes the default background image
+        
+        // Customize the text field inside the search bar
+        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+            textField.backgroundColor = .systemGray4
+            textField.tintColor = .label // Set the cursor color
+        }
+        
         return searchBar
     }()
 

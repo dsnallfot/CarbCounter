@@ -106,37 +106,44 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate {
     }
     
     private func setupSummaryView() {
+        // Add a spacer view for spacing above the summary view
+        let topSpacerView = UIView()
+        topSpacerView.translatesAutoresizingMaskIntoConstraints = false
+        topSpacerView.heightAnchor.constraint(equalToConstant: 12).isActive = true
+        stackView.addArrangedSubview(topSpacerView)
+        
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        
+        summaryView.backgroundColor = .systemGray // Set background color to system gray
+
         let summaryLabel = UILabel()
         summaryLabel.text = "Total Net Carbs:"
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         totalNetCarbsLabel = UILabel()
         totalNetCarbsLabel.text = "0.0 g"
         totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         summaryView.addSubview(summaryLabel)
         summaryView.addSubview(totalNetCarbsLabel)
-        
+
         NSLayoutConstraint.activate([
             summaryLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
             summaryLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
-            
+
             totalNetCarbsLabel.leadingAnchor.constraint(equalTo: summaryLabel.trailingAnchor, constant: 8),
             totalNetCarbsLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
             totalNetCarbsLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
         ])
-        
+
         stackView.addArrangedSubview(summaryView)
-        
+
         // Add a spacer view for spacing between summary view and headline
         let spacerView = UIView()
         spacerView.translatesAutoresizingMaskIntoConstraints = false
-        spacerView.heightAnchor.constraint(equalToConstant: 16).isActive = true
+        spacerView.heightAnchor.constraint(equalToConstant: 12).isActive = true
         stackView.addArrangedSubview(spacerView)
-        
+
         // Add a divider view
         let dividerView = UIView()
         dividerView.translatesAutoresizingMaskIntoConstraints = false
@@ -152,10 +159,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate {
         headlineStackView.distribution = .fillProportionally
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        let font = UIFont.systemFont(ofSize: 14)
+        let font = UIFont.systemFont(ofSize: 12)
         
         let foodItemLabel = UILabel()
-        foodItemLabel.text = "FOOD ITEM        "
+        foodItemLabel.text = "FOOD ITEM                "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
         
@@ -170,7 +177,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate {
         notEatenLabel.font = font
         
         let netCarbsLabel = UILabel()
-        netCarbsLabel.text = "NET CARBS "
+        netCarbsLabel.text = "NET CARBS  "
         netCarbsLabel.textAlignment = .left
         netCarbsLabel.font = font
         

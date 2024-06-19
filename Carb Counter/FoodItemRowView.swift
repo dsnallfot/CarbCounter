@@ -30,8 +30,8 @@ class FoodItemRowView: UIView {
         textField.placeholder = "Food Item"
         textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 120).isActive = true
-        textField.backgroundColor = .systemBackground
+        textField.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
@@ -43,8 +43,8 @@ class FoodItemRowView: UIView {
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        textField.backgroundColor = .systemBackground
+        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
@@ -56,8 +56,8 @@ class FoodItemRowView: UIView {
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        textField.backgroundColor = .systemBackground
+        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
@@ -65,7 +65,7 @@ class FoodItemRowView: UIView {
     let netCarbsLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: 70).isActive = true
+        label.widthAnchor.constraint(equalToConstant: 60).isActive = true
         label.textAlignment = .right
         label.textColor = .label
         return label
