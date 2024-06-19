@@ -19,11 +19,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.delegate = self
         fetchFoodItems()
         setupAddButton()
+        setupNavigationBarTitle()
     }
 
     private func setupAddButton() {
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(navigateToAddFoodItem))
         navigationItem.rightBarButtonItem = addButton
+    }
+
+    private func setupNavigationBarTitle() {
+        // Set the title of the navigation bar
+        title = "Food Items"
     }
 
     @objc private func navigateToAddFoodItem() {
@@ -60,7 +66,15 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "FoodItemCell", for: indexPath)
         let foodItem = foodItems[indexPath.row]
-        cell.textLabel?.text = foodItem.name
+        
+        let name = foodItem.name ?? ""
+        let carbs = String(format: "%.0f", foodItem.carbohydrates)
+        let fat = String(format: "%.0f", foodItem.fat)
+        let protein = String(format: "%.0f", foodItem.protein)
+        
+        let formattedText = "\(name) • Kh: \(carbs)g F: \(fat)g P: \(protein)g"
+        cell.textLabel?.text = formattedText
+        
         return cell
     }
 
