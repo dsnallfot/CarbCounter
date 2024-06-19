@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */; };
 		6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */; };
-		6553EDFD2C20DA9200B0FDF5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDFC2C20DA9200B0FDF5 /* ViewController.swift */; };
 		6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */; };
 		6553EE032C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE012C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld */; };
 		6553EE052C20DA9400B0FDF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
@@ -17,6 +16,10 @@
 		6553EE132C20DA9400B0FDF5 /* Carb_CounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE122C20DA9400B0FDF5 /* Carb_CounterTests.swift */; };
 		6553EE1D2C20DA9400B0FDF5 /* Carb_CounterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE1C2C20DA9400B0FDF5 /* Carb_CounterUITests.swift */; };
 		6553EE1F2C20DA9400B0FDF5 /* Carb_CounterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE1E2C20DA9400B0FDF5 /* Carb_CounterUITestsLaunchTests.swift */; };
+		6553EE302C20DEA600B0FDF5 /* FoodItemsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */; };
+		6553EE322C20DF4B00B0FDF5 /* ComposeMealViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */; };
+		6553EE342C20E58B00B0FDF5 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */; };
+		6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,7 +43,6 @@
 		6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Carb Counter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		6553EDFC2C20DA9200B0FDF5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		6553EDFF2C20DA9200B0FDF5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		6553EE022C20DA9200B0FDF5 /* Carb_Counter.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Carb_Counter.xcdatamodel; sourceTree = "<group>"; };
 		6553EE042C20DA9400B0FDF5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -51,6 +53,12 @@
 		6553EE182C20DA9400B0FDF5 /* Carb CounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Carb CounterUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6553EE1C2C20DA9400B0FDF5 /* Carb_CounterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Carb_CounterUITests.swift; sourceTree = "<group>"; };
 		6553EE1E2C20DA9400B0FDF5 /* Carb_CounterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Carb_CounterUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemsListViewController.swift; sourceTree = "<group>"; };
+		6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeMealViewController.swift; sourceTree = "<group>"; };
+		6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFoodItemViewController.swift; sourceTree = "<group>"; };
+		6553EE472C22C03600B0FDF5 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
+		6553EE482C22C03600B0FDF5 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +89,8 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
+				6553EE472C22C03600B0FDF5 /* FoodItem+CoreDataClass.swift */,
+				6553EE482C22C03600B0FDF5 /* FoodItem+CoreDataProperties.swift */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EE112C20DA9400B0FDF5 /* Carb CounterTests */,
 				6553EE1B2C20DA9400B0FDF5 /* Carb CounterUITests */,
@@ -103,7 +113,10 @@
 			children = (
 				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
 				6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */,
-				6553EDFC2C20DA9200B0FDF5 /* ViewController.swift */,
+				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
+				6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */,
+				6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */,
+				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
 				6553EE042C20DA9400B0FDF5 /* Assets.xcassets */,
 				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
@@ -262,8 +275,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				6553EE032C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld in Sources */,
-				6553EDFD2C20DA9200B0FDF5 /* ViewController.swift in Sources */,
+				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
 				6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */,
+				6553EE302C20DEA600B0FDF5 /* FoodItemsListViewController.swift in Sources */,
+				6553EE322C20DF4B00B0FDF5 /* ComposeMealViewController.swift in Sources */,
+				6553EE342C20E58B00B0FDF5 /* HomeViewController.swift in Sources */,
 				6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
