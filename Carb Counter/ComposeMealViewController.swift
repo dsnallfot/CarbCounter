@@ -47,6 +47,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func clearAllButtonTapped() {
+        view.endEditing(true) // This will hide the keyboard
         let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
@@ -56,8 +57,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
-    
+
     private func clearAllFoodItems() {
+        //view.endEditing(true) // This will hide the keyboard
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
             row.removeFromSuperview()
