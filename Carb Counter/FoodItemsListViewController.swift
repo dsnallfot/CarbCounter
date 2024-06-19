@@ -9,47 +9,79 @@ import UIKit
 import CoreData
 
 class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, AddFoodItemDelegate {
-
+    
     @IBOutlet weak var tableView: UITableView!
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
     var sortOption: SortOption = .nameAsc
     var segmentedControl: UISegmentedControl!
     var searchBar: UISearchBar!
-
+    
     enum SortOption {
         case nameAsc, nameDesc, carbsAsc, carbsDesc, fatAsc, fatDesc, proteinAsc, proteinDesc
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         fetchFoodItems()
         setupAddButton()
         setupNavigationBarTitle()
         setupSearchBar()
         setupSortSegmentedControl()
     }
-
+    
     private func setupAddButton() {
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
         navigationItem.rightBarButtonItem = addButton
     }
-
+    
     private func setupNavigationBarTitle() {
         // Set the title of the navigation bar
         title = "Food Items"
     }
-
+    
+    private func createToolbar() -> UIToolbar {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        toolbar.setItems([flexSpace, doneButton], animated: false)
+        toolbar.isUserInteractionEnabled = true
+        
+        return toolbar
+    }
+    
+    
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
         searchBar.placeholder = "Search Food Items"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
+        // Disable predictive text and autocomplete
+        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+            textField.autocorrectionType = .no
+            textField.autocapitalizationType = .none
+            textField.spellCheckingType = .no
+            textField.inputAssistantItem.leadingBarButtonGroups = []
+            textField.inputAssistantItem.trailingBarButtonGroups = []
+            
+            // Add "Done" button to the keyboard
+            let toolbar = UIToolbar()
+            toolbar.sizeToFit()
+            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+            toolbar.setItems([flexSpace, doneButton], animated: false)
+            textField.inputAccessoryView = toolbar
+        }
+
         view.addSubview(searchBar)
-        
+
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -57,6 +89,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         ])
     }
 
+    @objc private func doneButtonTapped() {
+        searchBar.resignFirstResponder()
+    }
+    
     private func setupSortSegmentedControl() {
         let items = ["Name", "Carbs", "Fat", "Protein"]
         segmentedControl = UISegmentedControl(items: items)
@@ -80,7 +116,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-
+    
     @objc private func sortSegmentChanged(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
         case 0:
@@ -96,7 +132,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         sortFoodItems()
     }
-
+    
     @objc private func navigateToAddFoodItem() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -107,11 +143,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             print("Failed to instantiate AddFoodItemViewController")
         }
     }
-
+    
     func didAddFoodItem() {
         fetchFoodItems()
     }
-
+    
     func fetchFoodItems() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
@@ -124,7 +160,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             print("Failed to fetch food items: \(error)")
         }
     }
-
+    
     func sortFoodItems() {
         switch sortOption {
         case .nameAsc:
@@ -146,28 +182,20 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         tableView.reloadData()
     }
-
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredFoodItems.count
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FoodItemCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "FoodItemCell", for: indexPath) as! FoodItemTableViewCell
         let foodItem = filteredFoodItems[indexPath.row]
-        
-        let name = foodItem.name ?? ""
-        let carbs = String(format: "%.0f", foodItem.carbohydrates)
-        let fat = String(format: "%.0f", foodItem.fat)
-        let protein = String(format: "%.0f", foodItem.protein)
-        
-        let formattedText = "\(name) • Kh: \(carbs)g F: \(fat)g P: \(protein)g"
-        cell.textLabel?.text = formattedText
-        
+        cell.configure(with: foodItem)
         return cell
     }
-
+    
     // MARK: - Swipe Actions
-
+    
     // For iOS 11 and later
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completionHandler) in
@@ -179,55 +207,54 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             completionHandler(true)
         }
         editAction.backgroundColor = .blue
-
+        
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }
-
+    
     // For iOS 10 and earlier
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             deleteFoodItem(at: indexPath)
         }
     }
-
+    
     // Delete Food Item
     private func deleteFoodItem(at indexPath: IndexPath) {
-        let foodItem = filteredFoodItems[indexPath.row] // Use filteredFoodItems instead of foodItems
+        let foodItem = filteredFoodItems[indexPath.row]
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
         context.delete(foodItem)
         do {
             try context.save()
-            if let index = foodItems.firstIndex(of: foodItem) {
-                foodItems.remove(at: index) // Also remove from the original foodItems
-            }
+            foodItems.remove(at: indexPath.row)
             filteredFoodItems.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
         } catch {
             print("Failed to delete food item: \(error)")
         }
     }
-
+    
     // Edit Food Item
     private func editFoodItem(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
-            addFoodItemVC.delegate = self
-            addFoodItemVC.foodItem = filteredFoodItems[indexPath.row] // Use filteredFoodItems instead of foodItems
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        addFoodItemVC.delegate = self
+        addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
+        navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
-    }
+        }
+    
     // MARK: - UISearchBar Delegate
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            filteredFoodItems = foodItems
+        } else {
+            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+        }
+        sortFoodItems()
+    }
 
-        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-            if searchText.isEmpty {
-                filteredFoodItems = foodItems
-            } else {
-                filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
-            }
-            sortFoodItems()
-            }
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         filteredFoodItems = foodItems
