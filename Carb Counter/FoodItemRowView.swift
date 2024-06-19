@@ -9,6 +9,7 @@ import UIKit
 
 protocol FoodItemRowViewDelegate: AnyObject {
     func didTapFoodItemTextField(_ rowView: FoodItemRowView)
+    func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField)
 }
 
 class FoodItemRowView: UIView {
@@ -87,7 +88,7 @@ class FoodItemRowView: UIView {
         super.init(frame: frame)
         setupView()
         setupTextFieldTargets()
-        setupInputAccessoryViews()
+        addInputAccessoryView()
     }
     
     required init?(coder: NSCoder) {
@@ -118,19 +119,18 @@ class FoodItemRowView: UIView {
         foodItemTextField.addTarget(self, action: #selector(foodItemTextFieldTapped), for: .editingDidBegin)
     }
     
-    private func setupInputAccessoryViews() {
+    private func addInputAccessoryView() {
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
-        toolbar.setItems([doneButton], animated: true)
         
-        foodItemTextField.inputAccessoryView = toolbar
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
+        
         portionServedTextField.inputAccessoryView = toolbar
         notEatenTextField.inputAccessoryView = toolbar
-    }
-    
-    @objc private func doneButtonTapped() {
-        endEditing(true)
     }
     
     @objc private func foodItemTextFieldTapped() {
@@ -148,6 +148,19 @@ class FoodItemRowView: UIView {
         let notEaten = Double(notEatenTextField.text ?? "") ?? 0
         netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
         netCarbsLabel.text = String(format: "%.1f g", netCarbs)
+    }
+    
+    @objc private func doneButtonTapped() {
+        portionServedTextField.resignFirstResponder()
+        notEatenTextField.resignFirstResponder()
+    }
+    
+    @objc private func nextButtonTapped() {
+        if portionServedTextField.isFirstResponder {
+            delegate?.didTapNextButton(self, currentTextField: portionServedTextField)
+        } else if notEatenTextField.isFirstResponder {
+            delegate?.didTapNextButton(self, currentTextField: notEatenTextField)
+        }
     }
     
     func setSelectedFoodItem(_ item: FoodItem) {
