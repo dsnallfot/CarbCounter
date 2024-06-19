@@ -10,6 +10,12 @@ import UIKit
 class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
     
     var onDelete: (() -> Void)?
+    var onValueChange: (() -> Void)?
+    var netCarbs: Double = 0.0 {
+        didSet {
+            onValueChange?()
+        }
+    }
     
     var foodItems: [FoodItem] = []
     
@@ -27,6 +33,7 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         textField.placeholder = "  .. g"
         textField.borderStyle = .roundedRect
         textField.keyboardType = .decimalPad
+        textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 50).isActive = true
         return textField
@@ -37,6 +44,7 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         textField.placeholder = "  .. g"
         textField.borderStyle = .roundedRect
         textField.keyboardType = .decimalPad
+        textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 50).isActive = true
         return textField
@@ -46,7 +54,7 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: 70).isActive = true
-        label.textAlignment = .center
+        label.textAlignment = .right
         return label
     }()
     
@@ -92,7 +100,7 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         portionServedTextField.addTarget(self, action: #selector(calculateNetCarbs), for: .editingChanged)
         notEatenTextField.addTarget(self, action: #selector(calculateNetCarbs), for: .editingChanged)
     }
-    
+
     private func setupPickerView() {
         pickerView.dataSource = self
         pickerView.delegate = self
@@ -115,7 +123,7 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         let carbsPer100g = selectedFoodItem.carbohydrates
         let portionServed = Double(portionServedTextField.text ?? "") ?? 0
         let notEaten = Double(notEatenTextField.text ?? "") ?? 0
-        let netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
+        netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
         netCarbsLabel.text = String(format: "%.1f g", netCarbs)
     }
     

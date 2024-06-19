@@ -23,9 +23,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     private func setupAddButton() {
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(navigateToAddFoodItem))
-        navigationItem.rightBarButtonItem = addButton
-    }
+            let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
+            navigationItem.rightBarButtonItem = addButton
+        }
 
     private func setupNavigationBarTitle() {
         // Set the title of the navigation bar

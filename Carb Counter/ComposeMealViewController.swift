@@ -16,6 +16,7 @@ class ComposeMealViewController: UIViewController {
     var contentView: UIView!
     var foodItems: [FoodItem] = []
     var addButtonRowView: AddButtonRowView!
+    var totalNetCarbsLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +24,7 @@ class ComposeMealViewController: UIViewController {
         title = "Compose Meal"
         setupScrollView()
         setupStackView()
+        setupSummaryView()
         setupHeadline()
         fetchFoodItems()
         addAddButtonRow()
@@ -65,7 +67,47 @@ class ComposeMealViewController: UIViewController {
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
-    
+
+    private func setupSummaryView() {
+        let summaryView = UIView()
+        summaryView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let summaryLabel = UILabel()
+        summaryLabel.text = "Total Net Carbs:"
+        summaryLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        totalNetCarbsLabel = UILabel()
+        totalNetCarbsLabel.text = "0.0 g"
+        totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        summaryView.addSubview(summaryLabel)
+        summaryView.addSubview(totalNetCarbsLabel)
+        
+        NSLayoutConstraint.activate([
+            summaryLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
+            summaryLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
+            
+            totalNetCarbsLabel.leadingAnchor.constraint(equalTo: summaryLabel.trailingAnchor, constant: 8),
+            totalNetCarbsLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
+            totalNetCarbsLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
+        ])
+        
+        stackView.addArrangedSubview(summaryView)
+        
+        // Add a spacer view for spacing between summary view and headline
+        let spacerView = UIView()
+        spacerView.translatesAutoresizingMaskIntoConstraints = false
+        spacerView.heightAnchor.constraint(equalToConstant: 16).isActive = true
+        stackView.addArrangedSubview(spacerView)
+        
+        // Add a divider view
+        let dividerView = UIView()
+        dividerView.translatesAutoresizingMaskIntoConstraints = false
+        dividerView.heightAnchor.constraint(equalToConstant: 1.5).isActive = true
+        dividerView.backgroundColor = .lightGray
+        stackView.addArrangedSubview(dividerView)
+    }
+
     private func setupHeadline() {
         let headlineStackView = UIStackView()
         headlineStackView.axis = .horizontal
@@ -73,21 +115,27 @@ class ComposeMealViewController: UIViewController {
         headlineStackView.distribution = .fillProportionally
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
 
+        let font = UIFont.systemFont(ofSize: 14)
+
         let foodItemLabel = UILabel()
-        foodItemLabel.text = "Food Item    "
+        foodItemLabel.text = "FOOD ITEM        "
         foodItemLabel.textAlignment = .left
+        foodItemLabel.font = font
         
         let portionServedLabel = UILabel()
-        portionServedLabel.text = "Served"
+        portionServedLabel.text = "SERVED"
         portionServedLabel.textAlignment = .left
+        portionServedLabel.font = font
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "Left  "
+        notEatenLabel.text = "LEFT  "
         notEatenLabel.textAlignment = .left
+        notEatenLabel.font = font
         
         let netCarbsLabel = UILabel()
-        netCarbsLabel.text = "Net carbs   "
+        netCarbsLabel.text = "NET CARBS "
         netCarbsLabel.textAlignment = .left
+        netCarbsLabel.font = font
 
         headlineStackView.addArrangedSubview(foodItemLabel)
         headlineStackView.addArrangedSubview(portionServedLabel)
@@ -118,6 +166,12 @@ class ComposeMealViewController: UIViewController {
         rowView.onDelete = { [weak self] in
             self?.removeFoodItemRow(rowView)
         }
+        
+        rowView.onValueChange = { [weak self] in
+            self?.updateTotalNetCarbs()
+        }
+
+        updateTotalNetCarbs()
     }
     
     private func addAddButtonRow() {
@@ -140,11 +194,17 @@ class ComposeMealViewController: UIViewController {
             foodItemRows.remove(at: index)
         }
         moveAddButtonRowToEnd()
+        updateTotalNetCarbs()
     }
     
     private func moveAddButtonRowToEnd() {
         stackView.removeArrangedSubview(addButtonRowView)
         stackView.addArrangedSubview(addButtonRowView)
+    }
+    
+    private func updateTotalNetCarbs() {
+        let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+        totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
     }
 }
 
