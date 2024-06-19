@@ -7,7 +7,11 @@
 
 import UIKit
 
-class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
+protocol FoodItemRowViewDelegate: AnyObject {
+    func didTapFoodItemTextField(_ rowView: FoodItemRowView)
+}
+
+class FoodItemRowView: UIView {
     
     var onDelete: (() -> Void)?
     var onValueChange: (() -> Void)?
@@ -17,6 +21,7 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         }
     }
     
+    weak var delegate: FoodItemRowViewDelegate?
     var foodItems: [FoodItem] = []
     
     let foodItemTextField: UITextField = {
@@ -76,13 +81,12 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         return button
     }()
     
-    private let pickerView = UIPickerView()
     private var selectedFoodItem: FoodItem?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
-        setupPickerView()
+        setupTextFieldTargets()
     }
     
     required init?(coder: NSCoder) {
@@ -109,17 +113,12 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         notEatenTextField.addTarget(self, action: #selector(calculateNetCarbs), for: .editingChanged)
     }
 
-    private func setupPickerView() {
-        pickerView.dataSource = self
-        pickerView.delegate = self
-        
-        foodItemTextField.inputView = pickerView
-        
-        let toolbar = UIToolbar()
-        toolbar.sizeToFit()
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(donePicker))
-        toolbar.setItems([doneButton], animated: true)
-        foodItemTextField.inputAccessoryView = toolbar
+    private func setupTextFieldTargets() {
+        foodItemTextField.addTarget(self, action: #selector(foodItemTextFieldTapped), for: .editingDidBegin)
+    }
+    
+    @objc private func foodItemTextFieldTapped() {
+        delegate?.didTapFoodItemTextField(self)
     }
     
     @objc private func deleteButtonTapped() {
@@ -135,31 +134,9 @@ class FoodItemRowView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         netCarbsLabel.text = String(format: "%.1f g", netCarbs)
     }
     
-    @objc private func donePicker() {
-        foodItemTextField.resignFirstResponder()
-        if let selectedFoodItem = selectedFoodItem {
-            foodItemTextField.text = selectedFoodItem.name
-            calculateNetCarbs()
-        }
-    }
-    
-    // MARK: - UIPickerView DataSource and Delegate
-    
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return foodItems.count
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return foodItems[row].name
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        selectedFoodItem = foodItems[row]
-        foodItemTextField.text = selectedFoodItem?.name
+    func setSelectedFoodItem(_ item: FoodItem) {
+        self.selectedFoodItem = item
+        foodItemTextField.text = item.name
         calculateNetCarbs()
     }
 }

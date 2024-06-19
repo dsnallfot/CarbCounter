@@ -17,6 +17,7 @@ class ComposeMealViewController: UIViewController {
     var foodItems: [FoodItem] = []
     var addButtonRowView: AddButtonRowView!
     var totalNetCarbsLabel: UILabel!
+    var searchableDropdownView: SearchableDropdownView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,8 +27,19 @@ class ComposeMealViewController: UIViewController {
         setupStackView()
         setupSummaryView()
         setupHeadline()
+        setupSearchableDropdownView()
         fetchFoodItems()
         addAddButtonRow()
+        
+        // Add observers for keyboard notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    deinit {
+        // Remove observers for keyboard notifications
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     private func setupScrollView() {
@@ -145,24 +157,48 @@ class ComposeMealViewController: UIViewController {
 
         stackView.addArrangedSubview(headlineStackView)
     }
-    
+
+    private func setupSearchableDropdownView() {
+        searchableDropdownView = SearchableDropdownView()
+        searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
+        searchableDropdownView.isHidden = true
+        view.addSubview(searchableDropdownView)
+
+        NSLayoutConstraint.activate([
+            searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+        ])
+        
+        searchableDropdownView.onSelectItem = { [weak self] foodItem in
+            self?.searchableDropdownView.isHidden = true
+            self?.addFoodItemRow(with: foodItem)
+        }
+    }
+
     private func fetchFoodItems() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
-            foodItems = try context.fetch(fetchRequest)
+            foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
+            searchableDropdownView.updateFoodItems(foodItems)
         } catch {
             print("Failed to fetch food items: \(error)")
         }
     }
     
-    private func addFoodItemRow() {
+    private func addFoodItemRow(with foodItem: FoodItem? = nil) {
         let rowView = FoodItemRowView()
         rowView.foodItems = foodItems
         rowView.translatesAutoresizingMaskIntoConstraints = false
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
+
+        if let foodItem = foodItem {
+            rowView.setSelectedFoodItem(foodItem)
+        }
         
         rowView.onDelete = { [weak self] in
             self?.removeFoodItemRow(rowView)
@@ -184,8 +220,8 @@ class ComposeMealViewController: UIViewController {
     }
     
     @objc private func addButtonTapped() {
-        addFoodItemRow()
-        moveAddButtonRowToEnd()
+        searchableDropdownView.isHidden = false
+        searchableDropdownView.searchBar.becomeFirstResponder()
     }
     
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
@@ -207,31 +243,57 @@ class ComposeMealViewController: UIViewController {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
     }
-}
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        
+        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardFrame.height, right: 0)
+        scrollView.contentInset = contentInsets
+        scrollView.scrollIndicatorInsets = contentInsets
+    }
 
-// Separate class for Add Button Row
-class AddButtonRowView: UIView {
-    let addButton: UIButton = {
-        let button = UIButton(type: .contactAdd)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        scrollView.contentInset = .zero
+        scrollView.scrollIndicatorInsets = .zero
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    /*private func handleSelectItem(_ selectedItem: FoodItem) {
+        if let rowView = foodItemRows.last {
+            rowView.setSelectedFoodItem(selectedItem)
+            searchableDropdownView.isHidden = true
+        }
+    }*/
+
+    // Separate class for Add Button Row
+    class AddButtonRowView: UIView {
+        let addButton: UIButton = {
+            let button = UIButton(type: .contactAdd)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            return button
+        }()
+        
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            setupView()
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        private func setupView() {
+            addSubview(addButton)
+            NSLayoutConstraint.activate([
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+                addButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8)
+            ])
+        }
     }
     
-    private func setupView() {
-        addSubview(addButton)
-        NSLayoutConstraint.activate([
-            addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            addButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8)
-        ])
-    }
+   /* func didTapFoodItemTextField(_ rowView: FoodItemRowView) {
+        searchableDropdownView.isHidden = false
+        searchableDropdownView.searchBar.becomeFirstResponder()
+    }*/
 }

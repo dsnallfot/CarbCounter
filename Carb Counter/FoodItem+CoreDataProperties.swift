@@ -21,5 +21,6 @@ extension FoodItem {
     @NSManaged public var name: String?
     @NSManaged public var protein: Double
     @NSManaged public var id: UUID?
+    @NSManaged public var netCarbs: Double
 
 }

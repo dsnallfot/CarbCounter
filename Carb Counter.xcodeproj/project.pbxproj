@@ -21,6 +21,7 @@
 		6553EE342C20E58B00B0FDF5 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */; };
 		6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */; };
 		6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */; };
+		6553EE4C2C2312BE00B0FDF5 /* SearchableDropdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,9 +59,10 @@
 		6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeMealViewController.swift; sourceTree = "<group>"; };
 		6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFoodItemViewController.swift; sourceTree = "<group>"; };
-		6553EE472C22C03600B0FDF5 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
-		6553EE482C22C03600B0FDF5 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemRowView.swift; sourceTree = "<group>"; };
+		6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownView.swift; sourceTree = "<group>"; };
+		6553EE4D2C23322100B0FDF5 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
+		6553EE4E2C23322100B0FDF5 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,8 +93,8 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
-				6553EE472C22C03600B0FDF5 /* FoodItem+CoreDataClass.swift */,
-				6553EE482C22C03600B0FDF5 /* FoodItem+CoreDataProperties.swift */,
+				6553EE4D2C23322100B0FDF5 /* FoodItem+CoreDataClass.swift */,
+				6553EE4E2C23322100B0FDF5 /* FoodItem+CoreDataProperties.swift */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EE112C20DA9400B0FDF5 /* Carb CounterTests */,
 				6553EE1B2C20DA9400B0FDF5 /* Carb CounterUITests */,
@@ -120,6 +122,7 @@
 				6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */,
 				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
 				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
+				6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */,
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
 				6553EE042C20DA9400B0FDF5 /* Assets.xcassets */,
 				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
@@ -279,6 +282,7 @@
 			files = (
 				6553EE032C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
+				6553EE4C2C2312BE00B0FDF5 /* SearchableDropdownView.swift in Sources */,
 				6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */,
 				6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */,
 				6553EE302C20DEA600B0FDF5 /* FoodItemsListViewController.swift in Sources */,

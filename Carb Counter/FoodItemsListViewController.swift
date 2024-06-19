@@ -86,11 +86,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         case 0:
             sortOption = sortOption == .nameAsc ? .nameDesc : .nameAsc
         case 1:
-            sortOption = sortOption == .carbsAsc ? .carbsDesc : .carbsAsc
+            sortOption = sortOption == .carbsDesc ? .carbsAsc : .carbsDesc
         case 2:
-            sortOption = sortOption == .fatAsc ? .fatDesc : .fatAsc
+            sortOption = sortOption == .fatDesc ? .fatAsc : .fatDesc
         case 3:
-            sortOption = sortOption == .proteinAsc ? .proteinDesc : .proteinAsc
+            sortOption = sortOption == .proteinDesc ? .proteinAsc : .proteinDesc
         default:
             break
         }
