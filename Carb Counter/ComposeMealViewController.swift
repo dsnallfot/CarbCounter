@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddFoodItemDelegate {
     
     var foodItemRows: [FoodItemRowView] = []
     var stackView: UIStackView!
@@ -214,7 +214,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate {
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-            searchableDropdownView.updateFoodItems(foodItems)
+            searchableDropdownView.updateFoodItems(foodItems) // Update the dropdown view with the new items
         } catch {
             print("Failed to fetch food items: \(error)")
         }
@@ -310,6 +310,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate {
             }
         }
     }
+    
+    func didAddFoodItem() {
+            fetchFoodItems() // Update the food items after adding a new one
+        }
     
     // Separate class for Add Button Row
     class AddButtonRowView: UIView {
