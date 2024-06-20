@@ -25,6 +25,12 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     var isPerPiece: Bool = false // To keep track of the selected segment
     var segmentedControl: UISegmentedControl!
     
+    // Variables to store initial values
+    var initialName: String?
+    var initialCarbs: String?
+    var initialFat: String?
+    var initialProtein: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -72,6 +78,18 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         // Add Cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
+        
+        // Store initial values
+        initialName = nameTextField.text
+        initialCarbs = carbsTextField.text
+        initialFat = fatTextField.text
+        initialProtein = proteinTextField.text
+        
+        // Observe text field changes
+        nameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        carbsTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        fatTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        proteinTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
     
     @objc func nextButtonTapped() {
@@ -124,6 +142,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         isPerPiece = sender.selectedSegmentIndex == 1
         updateUnitsLabels()
         clearOppositeFields()
+        checkForChanges()
     }
     
     private func updateUnitsLabels() {
@@ -151,8 +170,23 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func setupSaveButton() {
-        saveButton.setTitle("Save", for: .normal)
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)
+        saveButton.isEnabled = false // Initially disabled
+        updateSaveButtonTitle()
+    }
+    
+    private func updateSaveButtonTitle() {
+        if let foodItem = foodItem {
+            // Edit mode
+            if saveButton.isEnabled {
+                saveButton.setTitle("Save Changes", for: .normal)
+            } else {
+                saveButton.setTitle("No Changes", for: .normal)
+            }
+        } else {
+            // New mode
+            saveButton.setTitle("Save", for: .normal)
+        }
     }
     
     private func setupUI() {
@@ -235,7 +269,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 newFoodItem.proteinPP = 0.0
             }
         }
-        
         do {
             try context.save()
             delegate?.didAddFoodItem()
@@ -250,7 +283,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             print("Failed to save food item: \(error)")
         }
     }
-
+    
     private func fetchAllFoodItems() -> [FoodItem] {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
         let context = appDelegate.persistentContainer.viewContext
@@ -261,5 +294,24 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             print("Failed to fetch food items: \(error)")
             return []
         }
+    }
+    
+    @objc private func textFieldDidChange(_ textField: UITextField) {
+        checkForChanges()
+    }
+    
+    private func checkForChanges() {
+        let currentName = nameTextField.text
+        let currentCarbs = carbsTextField.text
+        let currentFat = fatTextField.text
+        let currentProtein = proteinTextField.text
+        
+        let nameChanged = currentName != initialName
+        let carbsChanged = currentCarbs != initialCarbs
+        let fatChanged = currentFat != initialFat
+        let proteinChanged = currentProtein != initialProtein
+        
+        saveButton.isEnabled = nameChanged || carbsChanged || fatChanged || proteinChanged
+        updateSaveButtonTitle()
     }
 }

@@ -60,12 +60,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] in
             self?.searchableDropdownView.isHidden = true
-            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
+            self?.clearAllButton?.isEnabled = true // Show the "Clear All" button
         }
         
         // Fetch food items and add the add button row
         fetchFoodItems()
-        //addAddButtonRow()
+        updateClearAllButtonState() // Add this line
         
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -98,7 +98,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         foodItemRows.removeAll()
         updateTotalNutrients()
         view.endEditing(true) // Hide the keyboard
-        navigationItem.rightBarButtonItem?.isEnabled = true // Enable the "Clear All" button
+        updateClearAllButtonState() // Add this line
     }
     
     private func setupScrollView(below header: UIView) {
@@ -143,6 +143,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Fetch food items and add the add button row
         fetchFoodItems()
+        updateClearAllButtonState() // Add this line
         addAddButtonRow()
     }
     
@@ -363,6 +364,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         
         updateTotalNutrients()
+        updateClearAllButtonState() // Add this line
     }
     
     private func addAddButtonRow() {
@@ -401,6 +403,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         moveAddButtonRowToEnd()
         updateTotalNutrients()
+        updateClearAllButtonState() // Add this line
     }
     
     private func moveAddButtonRowToEnd() {
@@ -420,6 +423,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     @objc private func keyboardWillHide(notification: NSNotification) {
         scrollView.contentInset = .zero
         scrollView.scrollIndicatorInsets = .zero
+    }
+    
+    private func updateClearAllButtonState() {
+        if let clearAllButton = clearAllButton {
+            clearAllButton.isEnabled = !foodItemRows.isEmpty
+        }
     }
     
     // MARK: - FoodItemRowViewDelegate
