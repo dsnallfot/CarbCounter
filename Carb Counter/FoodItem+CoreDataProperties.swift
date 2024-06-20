@@ -25,5 +25,7 @@ extension FoodItem {
     @NSManaged public var carbsPP: Double
     @NSManaged public var fatPP: Double
     @NSManaged public var proteinPP: NSObject?
+    @NSManaged public var netFat: Double
+    @NSManaged public var netProtein: Double
 
 }
