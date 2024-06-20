@@ -38,7 +38,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 80) // Adjust height as needed
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 107) // Adjust height as needed
         ])
         
         // Setup summary view
@@ -130,7 +130,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func setupStackView() {
         stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.spacing = 8
+        stackView.spacing = 10
         stackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stackView)
         
@@ -153,50 +153,46 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         container.addSubview(summaryView)
         
         let summaryLabel = UILabel()
-        summaryLabel.text = "TOTAL CARBS"
+        summaryLabel.text = "CARBS"
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
-        summaryLabel.font = UIFont.systemFont(ofSize: 10, weight: .semibold) // Set font size and weight
+        summaryLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular) // Set font size and weight
         summaryLabel.textColor = .systemYellow // Set text color
         summaryLabel.textAlignment = .center
 
         totalNetCarbsLabel = UILabel()
         totalNetCarbsLabel.text = "0 g"
         totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold) // Set font size and weight
+        totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold) // Set font size and weight
         totalNetCarbsLabel.textColor = .systemYellow // Set text color
         totalNetCarbsLabel.textAlignment = .center
         
         let netFatLabel = UILabel()
-        netFatLabel.text = "TOTAL FAT"
+        netFatLabel.text = "FAT"
         netFatLabel.translatesAutoresizingMaskIntoConstraints = false
-        netFatLabel.font = UIFont.systemFont(ofSize: 10, weight: .semibold) // Set font size and weight
+        netFatLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular) // Set font size and weight
         netFatLabel.textColor = .systemBrown // Set text color
         netFatLabel.textAlignment = .center
 
         totalNetFatLabel = UILabel()
         totalNetFatLabel.text = "0 g"
         totalNetFatLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetFatLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold) // Set font size and weight
+        totalNetFatLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold) // Set font size and weight
         totalNetFatLabel.textColor = .systemBrown // Set text color
         totalNetFatLabel.textAlignment = .center
 
         let netProteinLabel = UILabel()
-        netProteinLabel.text = "TOTAL PROTEIN"
+        netProteinLabel.text = "PROTEIN"
         netProteinLabel.translatesAutoresizingMaskIntoConstraints = false
-        netProteinLabel.font = UIFont.systemFont(ofSize: 10, weight: .semibold) // Set font size and weight
+        netProteinLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular) // Set font size and weight
         netProteinLabel.textColor = .systemBrown // Set text color
         netProteinLabel.textAlignment = .center
 
         totalNetProteinLabel = UILabel()
         totalNetProteinLabel.text = "0 g"
         totalNetProteinLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetProteinLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold) // Set font size and weight
+        totalNetProteinLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold) // Set font size and weight
         totalNetProteinLabel.textColor = .systemBrown // Set text color
         totalNetProteinLabel.textAlignment = .center
-
-        let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
-        carbsStack.axis = .vertical
-        carbsStack.alignment = .center
 
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         fatStack.axis = .vertical
@@ -205,8 +201,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         proteinStack.axis = .vertical
         proteinStack.alignment = .center
+        
+        let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
+        carbsStack.axis = .vertical
+        carbsStack.alignment = .center
 
-        let hStack = UIStackView(arrangedSubviews: [carbsStack, UIView(), fatStack, UIView(), proteinStack])
+        let hStack = UIStackView(arrangedSubviews: [proteinStack, UIView(), fatStack, UIView(), carbsStack])
         hStack.axis = .horizontal
         hStack.spacing = 4
         hStack.translatesAutoresizingMaskIntoConstraints = false
@@ -214,15 +214,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(hStack)
         
         NSLayoutConstraint.activate([
-            summaryView.heightAnchor.constraint(equalToConstant: 55),
+            summaryView.heightAnchor.constraint(equalToConstant: 65),
             summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             summaryView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             summaryView.topAnchor.constraint(equalTo: container.topAnchor),
             
             hStack.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor, constant: 16),
             hStack.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor, constant: -16),
-            hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 8),
-            hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -8)
+            hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 12),
+            hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -12)
         ])
     }
     
@@ -232,11 +232,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         view.addSubview(headlineContainer)
         
         NSLayoutConstraint.activate([
-            headlineContainer.topAnchor.constraint(equalTo: container.bottomAnchor, constant: -30),
+            headlineContainer.topAnchor.constraint(equalTo: container.bottomAnchor, constant: -37),
             headlineContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headlineContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            headlineContainer.heightAnchor.constraint(equalToConstant: 40) // Adjust height as needed
+            headlineContainer.heightAnchor.constraint(equalToConstant: 42) // Adjust height as needed
         ])
+        
         let headlineStackView = UIStackView()
         headlineStackView.axis = .horizontal
         headlineStackView.spacing = 2
@@ -244,22 +245,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
         headlineContainer.addSubview(headlineStackView)
         
-        let font = UIFont.systemFont(ofSize: 12)
+        let font = UIFont.systemFont(ofSize: 11)
         
         let foodItemLabel = UILabel()
-        foodItemLabel.text = "FOOD ITEM              "
+        foodItemLabel.text = "FOOD ITEM                 "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
         
         let portionServedLabel = UILabel()
-        portionServedLabel.text = "SERVED "
+        portionServedLabel.text = "SERVED   "
         portionServedLabel.textAlignment = .left
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "  LEFT   "
+        notEatenLabel.text = "   LEFT  "
         notEatenLabel.textAlignment = .left
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
@@ -292,7 +293,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50), //Justerar var sökfältet renderas
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 62), //Justerar var sökfältet renderas
             searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
         ])
         

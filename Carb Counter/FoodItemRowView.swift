@@ -40,7 +40,7 @@ class FoodItemRowView: UIView {
         textField.placeholder = "Food Item"
         //textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 130).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 135).isActive = true
         //textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
@@ -86,7 +86,7 @@ class FoodItemRowView: UIView {
     let netCarbsLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        label.widthAnchor.constraint(equalToConstant: 55).isActive = true
         label.textAlignment = .right
         label.textColor = .label
         return label
