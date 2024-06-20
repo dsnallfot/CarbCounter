@@ -23,6 +23,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     weak var delegate: AddFoodItemDelegate?
     var foodItem: FoodItem?
     var isPerPiece: Bool = false // To keep track of the selected segment
+    var segmentedControl: UISegmentedControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,7 +68,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         carbsTextField.inputAccessoryView = toolbar
         fatTextField.inputAccessoryView = toolbar
         proteinTextField.inputAccessoryView = toolbar
-
+        
         // Add Cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
@@ -105,7 +106,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func setupSegmentedControl() {
-        let segmentedControl = UISegmentedControl(items: ["Per 100g", "Per Piece"])
+        segmentedControl = UISegmentedControl(items: ["Per 100g", "Per Piece"])
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -122,6 +123,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         isPerPiece = sender.selectedSegmentIndex == 1
         updateUnitsLabels()
+        clearOppositeFields()
     }
     
     private func updateUnitsLabels() {
@@ -136,6 +138,18 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    private func clearOppositeFields() {
+        if isPerPiece {
+            carbsTextField.text = ""
+            fatTextField.text = ""
+            proteinTextField.text = ""
+        } else {
+            carbsTextField.text = ""
+            fatTextField.text = ""
+            proteinTextField.text = ""
+        }
+    }
+    
     private func setupSaveButton() {
         saveButton.setTitle("Save", for: .normal)
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)
@@ -145,9 +159,19 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         if let foodItem = foodItem {
             title = "Edit Food Item"
             nameTextField.text = foodItem.name
-            carbsTextField.text = String(foodItem.carbohydrates)
-            fatTextField.text = String(foodItem.fat)
-            proteinTextField.text = String(foodItem.protein)
+            if foodItem.perPiece {
+                isPerPiece = true
+                segmentedControl.selectedSegmentIndex = 1
+                carbsTextField.text = String(foodItem.carbsPP)
+                fatTextField.text = String(foodItem.fatPP)
+                proteinTextField.text = String(foodItem.proteinPP)
+            } else {
+                isPerPiece = false
+                segmentedControl.selectedSegmentIndex = 0
+                carbsTextField.text = String(foodItem.carbohydrates)
+                fatTextField.text = String(foodItem.fat)
+                proteinTextField.text = String(foodItem.protein)
+            }
         } else {
             title = "Add Food Item"
         }
@@ -170,10 +194,18 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 foodItem.carbsPP = Double(carbsTextField.text ?? "") ?? 0.0
                 foodItem.fatPP = Double(fatTextField.text ?? "") ?? 0.0
                 foodItem.proteinPP = Double(proteinTextField.text ?? "") ?? 0.0
+                foodItem.perPiece = true
+                foodItem.carbohydrates = 0.0
+                foodItem.fat = 0.0
+                foodItem.protein = 0.0
             } else {
                 foodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
                 foodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
                 foodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+                foodItem.perPiece = false
+                foodItem.carbsPP = 0.0
+                foodItem.fatPP = 0.0
+                foodItem.proteinPP = 0.0
             }
         } else {
             // Create new food item
@@ -184,13 +216,20 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 newFoodItem.carbsPP = Double(carbsTextField.text ?? "") ?? 0.0
                 newFoodItem.fatPP = Double(fatTextField.text ?? "") ?? 0.0
                 newFoodItem.proteinPP = Double(proteinTextField.text ?? "") ?? 0.0
+                newFoodItem.perPiece = true
+                newFoodItem.carbohydrates = 0.0
+                newFoodItem.fat = 0.0
+                newFoodItem.protein = 0.0
             } else {
                 newFoodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
                 newFoodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
                 newFoodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+                newFoodItem.perPiece = false
+                newFoodItem.carbsPP = 0.0
+                newFoodItem.fatPP = 0.0
+                newFoodItem.proteinPP = 0.0
             }
         }
-        
         do {
             try context.save()
             delegate?.didAddFoodItem()

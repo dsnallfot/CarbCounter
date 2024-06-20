@@ -1,10 +1,3 @@
-//
-//  FoodItemTableViewCell.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-20.
-//
-
 import UIKit
 
 class FoodItemTableViewCell: UITableViewCell {
@@ -51,9 +44,31 @@ class FoodItemTableViewCell: UITableViewCell {
     
     func configure(with foodItem: FoodItem) {
         nameLabel.text = foodItem.name ?? ""
-        let carbs = String(format: "%.0f", foodItem.carbohydrates)
-        let fat = String(format: "%.0f", foodItem.fat)
-        let protein = String(format: "%.0f", foodItem.protein)
-        detailsLabel.text = "Carbs \(carbs)g • Fat \(fat)g • Protein \(protein)g"
+        
+        var details = [String]()
+        
+        if foodItem.perPiece {
+            if foodItem.carbsPP > 0 {
+                details.append("Carbs \(String(format: "%.0f", foodItem.carbsPP))g/piece")
+            }
+            if foodItem.fatPP > 0 {
+                details.append("Fat \(String(format: "%.0f", foodItem.fatPP))g/piece")
+            }
+            if foodItem.proteinPP > 0 {
+                details.append("Protein \(String(format: "%.0f", foodItem.proteinPP))g/piece")
+            }
+        } else {
+            if foodItem.carbohydrates > 0 {
+                details.append("Carbs \(String(format: "%.0f", foodItem.carbohydrates))/100g")
+            }
+            if foodItem.fat > 0 {
+                details.append("Fat \(String(format: "%.0f", foodItem.fat))/100g")
+            }
+            if foodItem.protein > 0 {
+                details.append("Protein \(String(format: "%.0f", foodItem.protein))/100g")
+            }
+        }
+        
+        detailsLabel.text = details.joined(separator: " • ")
     }
 }
