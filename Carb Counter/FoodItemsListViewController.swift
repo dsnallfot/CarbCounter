@@ -216,7 +216,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             self.editFoodItem(at: indexPath)
             completionHandler(true)
         }
-        editAction.backgroundColor = .blue
+        editAction.backgroundColor = .systemBlue
         
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
