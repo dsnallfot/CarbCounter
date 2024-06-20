@@ -162,7 +162,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let dividerView = UIView()
         dividerView.translatesAutoresizingMaskIntoConstraints = false
         dividerView.heightAnchor.constraint(equalToConstant: 1.5).isActive = true
-        dividerView.backgroundColor = .lightGray
+        dividerView.backgroundColor = .gray
         stackView.addArrangedSubview(dividerView)
     }
     
@@ -179,21 +179,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         foodItemLabel.text = "FOOD ITEM                "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
+        foodItemLabel.textColor = .gray
         
         let portionServedLabel = UILabel()
-        portionServedLabel.text = "SERVED"
+        portionServedLabel.text = "SERVED "
         portionServedLabel.textAlignment = .left
         portionServedLabel.font = font
+        portionServedLabel.textColor = .gray
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "LEFT  "
+        notEatenLabel.text = "  LEFT "
         notEatenLabel.textAlignment = .left
         notEatenLabel.font = font
+        notEatenLabel.textColor = .gray
         
         let netCarbsLabel = UILabel()
         netCarbsLabel.text = "NET CARBS"
-        netCarbsLabel.textAlignment = .left
+        netCarbsLabel.textAlignment = .right
         netCarbsLabel.font = font
+        netCarbsLabel.textColor = .gray
         
         headlineStackView.addArrangedSubview(foodItemLabel)
         headlineStackView.addArrangedSubview(portionServedLabel)

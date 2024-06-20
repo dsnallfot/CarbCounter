@@ -28,35 +28,47 @@ class FoodItemRowView: UIView {
     let foodItemTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Food Item"
-        textField.borderStyle = .roundedRect
+        //textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        //textField.backgroundColor = .secondarySystemBackground
+        textField.textColor = .label
+        return textField
+    }()
+
+    
+    let portionServedTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "  ..."
+        textField.borderStyle = .roundedRect
+        textField.keyboardType = .decimalPad
+        textField.textAlignment = .right
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.widthAnchor.constraint(equalToConstant: 40).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
     
-    let portionServedTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "  .. g"
-        textField.borderStyle = .roundedRect
-        textField.keyboardType = .decimalPad
-        textField.textAlignment = .right
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
-        textField.backgroundColor = .secondarySystemBackground
-        textField.textColor = .label
-        return textField
+    let ppOr100g: UILabel = {
+        let label = UILabel()
+        //label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .gray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.widthAnchor.constraint(equalToConstant: 10).isActive = true
+        label.textAlignment = .left
+        label.textColor = .label
+        return label
     }()
     
     let notEatenTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "  .. g"
+        textField.placeholder = "  ..."
         textField.borderStyle = .roundedRect
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 40).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
@@ -96,7 +108,7 @@ class FoodItemRowView: UIView {
     }
     
     private func setupView() {
-        let stackView = UIStackView(arrangedSubviews: [foodItemTextField, portionServedTextField, notEatenTextField, netCarbsLabel, deleteButton])
+        let stackView = UIStackView(arrangedSubviews: [foodItemTextField, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -143,11 +155,18 @@ class FoodItemRowView: UIView {
     
     @objc private func calculateNetCarbs() {
         guard let selectedFoodItem = selectedFoodItem else { return }
-        let carbsPer100g = selectedFoodItem.carbohydrates
         let portionServed = Double(portionServedTextField.text ?? "") ?? 0
         let notEaten = Double(notEatenTextField.text ?? "") ?? 0
-        netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
-        netCarbsLabel.text = String(format: "%.1f g", netCarbs)
+        
+        if selectedFoodItem.perPiece {
+            let carbsPerPiece = selectedFoodItem.carbsPP
+            netCarbs = (carbsPerPiece * portionServed) - (carbsPerPiece * notEaten)
+        } else {
+            let carbsPer100g = selectedFoodItem.carbohydrates
+            netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
+        }
+        
+        netCarbsLabel.text = String(format: "%.0f g", netCarbs)
     }
     
     @objc private func doneButtonTapped() {
@@ -166,6 +185,7 @@ class FoodItemRowView: UIView {
     func setSelectedFoodItem(_ item: FoodItem) {
         self.selectedFoodItem = item
         foodItemTextField.text = item.name
+        ppOr100g.text = item.perPiece ? "p" : "g"
         calculateNetCarbs()
     }
 }
