@@ -20,7 +20,7 @@ class HomeViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Carb Counter"
         titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.systemFont(ofSize: 40, weight: .semibold)
+        titleLabel.font = UIFont.systemFont(ofSize: 48, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Create and setup the container view for the image
@@ -30,11 +30,11 @@ class HomeViewController: UIViewController {
         imageContainerView.layer.cornerRadius = 40 // Increase corner radius
         imageContainerView.layer.masksToBounds = true
         
-        // Add shadow/glow to the container view - Needs to check why this doeasnt work
-        imageContainerView.layer.shadowColor = UIColor.black.cgColor
+        // Add shadow/glow to the container view - Needs to check why this doesnt work
+        imageContainerView.layer.shadowColor = UIColor.white.cgColor
         imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 10)
-        imageContainerView.layer.shadowRadius = 50
-        imageContainerView.layer.shadowOpacity = 0.8 // Increase shadow opacity
+        imageContainerView.layer.shadowRadius = 30
+        imageContainerView.layer.shadowOpacity = 0.5 // Increase shadow opacity
         
         // Create and setup the app icon image view
         let appIconImageView = UIImageView()
@@ -66,7 +66,7 @@ class HomeViewController: UIViewController {
         // Set up constraints
         NSLayoutConstraint.activate([
             // Title label constraints
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
+            titleLabel.bottomAnchor.constraint(equalTo: imageContainerView.topAnchor, constant: -33),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // Image container view constraints
@@ -83,9 +83,9 @@ class HomeViewController: UIViewController {
             appIconImageView.trailingAnchor.constraint(equalTo: imageContainerView.trailingAnchor),
             
             // Copyright label constraints
-            copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 70),
+            copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30)
+            copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80)
         ])
     }
     

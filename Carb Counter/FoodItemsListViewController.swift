@@ -19,9 +19,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var segmentedControl: UISegmentedControl!
     var searchBar: UISearchBar!
     
+    var isNameAsc = true
+    var isCarbsAsc = true
+    var isFatAsc = true
+    var isProteinAsc = true
+
     enum SortOption {
-        case nameAsc, nameDesc, carbsAsc, carbsDesc, fatAsc, fatDesc, proteinAsc, proteinDesc
-    }
+            case nameAsc, nameDesc, carbsAsc, carbsDesc, fatAsc, fatDesc, proteinAsc, proteinDesc
+        }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,44 +103,48 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupSortSegmentedControl() {
-        let items = ["Name", "Carbs", "Fat", "Protein"]
-        segmentedControl = UISegmentedControl(items: items)
-        segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.addTarget(self, action: #selector(sortSegmentChanged(_:)), for: .valueChanged)
-        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(segmentedControl)
-        
-        NSLayoutConstraint.activate([
-            segmentedControl.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
-            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-        ])
-        
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-    }
-    
-    @objc private func sortSegmentChanged(_ sender: UISegmentedControl) {
-        switch sender.selectedSegmentIndex {
-        case 0:
-            sortOption = sortOption == .nameAsc ? .nameDesc : .nameAsc
-        case 1:
-            sortOption = sortOption == .carbsDesc ? .carbsAsc : .carbsDesc
-        case 2:
-            sortOption = sortOption == .fatDesc ? .fatAsc : .fatDesc
-        case 3:
-            sortOption = sortOption == .proteinDesc ? .proteinAsc : .proteinDesc
-        default:
-            break
+            let items = ["Name", "Carbs", "Fat", "Protein"]
+            segmentedControl = UISegmentedControl(items: items)
+            segmentedControl.selectedSegmentIndex = 0
+            segmentedControl.addTarget(self, action: #selector(sortSegmentChanged(_:)), for: .valueChanged)
+            segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+
+            view.addSubview(segmentedControl)
+
+            NSLayoutConstraint.activate([
+                segmentedControl.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
+                segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+                segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            ])
+
+            tableView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
+                tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
         }
-        sortFoodItems()
-    }
+
+        @objc private func sortSegmentChanged(_ sender: UISegmentedControl) {
+            switch sender.selectedSegmentIndex {
+            case 0:
+                sortOption = isNameAsc ? .nameDesc : .nameAsc
+                isNameAsc.toggle()
+            case 1:
+                sortOption = isCarbsAsc ? .carbsDesc : .carbsAsc
+                isCarbsAsc.toggle()
+            case 2:
+                sortOption = isFatAsc ? .fatDesc : .fatAsc
+                isFatAsc.toggle()
+            case 3:
+                sortOption = isProteinAsc ? .proteinDesc : .proteinAsc
+                isProteinAsc.toggle()
+            default:
+                break
+            }
+            sortFoodItems()
+        }
     
     @objc private func navigateToAddFoodItem() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -166,26 +175,26 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     func sortFoodItems() {
-        switch sortOption {
-        case .nameAsc:
-            filteredFoodItems.sort { $0.name ?? "" < $1.name ?? "" }
-        case .nameDesc:
-            filteredFoodItems.sort { $0.name ?? "" > $1.name ?? "" }
-        case .carbsAsc:
-            filteredFoodItems.sort { $0.carbohydrates < $1.carbohydrates }
-        case .carbsDesc:
-            filteredFoodItems.sort { $0.carbohydrates > $1.carbohydrates }
-        case .fatAsc:
-            filteredFoodItems.sort { $0.fat < $1.fat }
-        case .fatDesc:
-            filteredFoodItems.sort { $0.fat > $1.fat }
-        case .proteinAsc:
-            filteredFoodItems.sort { $0.protein < $1.protein }
-        case .proteinDesc:
-            filteredFoodItems.sort { $0.protein > $1.protein }
+            switch sortOption {
+            case .nameAsc:
+                filteredFoodItems.sort { $0.name ?? "" < $1.name ?? "" }
+            case .nameDesc:
+                filteredFoodItems.sort { $0.name ?? "" > $1.name ?? "" }
+            case .carbsAsc:
+                filteredFoodItems.sort { $0.carbohydrates < $1.carbohydrates }
+            case .carbsDesc:
+                filteredFoodItems.sort { $0.carbohydrates > $1.carbohydrates }
+            case .fatAsc:
+                filteredFoodItems.sort { $0.fat < $1.fat }
+            case .fatDesc:
+                filteredFoodItems.sort { $0.fat > $1.fat }
+            case .proteinAsc:
+                filteredFoodItems.sort { $0.protein < $1.protein }
+            case .proteinDesc:
+                filteredFoodItems.sort { $0.protein > $1.protein }
+            }
+            tableView.reloadData()
         }
-        tableView.reloadData()
-    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredFoodItems.count
