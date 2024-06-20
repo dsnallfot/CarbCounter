@@ -51,7 +51,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         setupScrollView(below: fixedHeaderContainer)
         
         // Initialize "Clear All" button
-        clearAllButton = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton = UIBarButtonItem(title: "Clear all", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
@@ -151,81 +151,98 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         summaryView.backgroundColor = .secondarySystemBackground // Set background color to secondary system background
         container.addSubview(summaryView)
+
+        // Create the CARBS container
+        let carbsContainer = createContainerView(backgroundColor: .systemOrange)
+        summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = UILabel()
-        summaryLabel.text = "CARBS"
-        summaryLabel.translatesAutoresizingMaskIntoConstraints = false
-        summaryLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular) // Set font size and weight
-        summaryLabel.textColor = .systemYellow // Set text color
-        summaryLabel.textAlignment = .center
-
-        totalNetCarbsLabel = UILabel()
-        totalNetCarbsLabel.text = "0 g"
-        totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold) // Set font size and weight
-        totalNetCarbsLabel.textColor = .systemYellow // Set text color
-        totalNetCarbsLabel.textAlignment = .center
-        
-        let netFatLabel = UILabel()
-        netFatLabel.text = "FAT"
-        netFatLabel.translatesAutoresizingMaskIntoConstraints = false
-        netFatLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular) // Set font size and weight
-        netFatLabel.textColor = .systemBrown // Set text color
-        netFatLabel.textAlignment = .center
-
-        totalNetFatLabel = UILabel()
-        totalNetFatLabel.text = "0 g"
-        totalNetFatLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetFatLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold) // Set font size and weight
-        totalNetFatLabel.textColor = .systemBrown // Set text color
-        totalNetFatLabel.textAlignment = .center
-
-        let netProteinLabel = UILabel()
-        netProteinLabel.text = "PROTEIN"
-        netProteinLabel.translatesAutoresizingMaskIntoConstraints = false
-        netProteinLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular) // Set font size and weight
-        netProteinLabel.textColor = .systemBrown // Set text color
-        netProteinLabel.textAlignment = .center
-
-        totalNetProteinLabel = UILabel()
-        totalNetProteinLabel.text = "0 g"
-        totalNetProteinLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetProteinLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold) // Set font size and weight
-        totalNetProteinLabel.textColor = .systemBrown // Set text color
-        totalNetProteinLabel.textAlignment = .center
-
-        let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
-        fatStack.axis = .vertical
-        fatStack.alignment = .center
-
-        let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
-        proteinStack.axis = .vertical
-        proteinStack.alignment = .center
-        
+        let summaryLabel = createLabel(text: "CARBS", fontSize: 10, weight: .bold, color: .white)
+        totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
-        carbsStack.axis = .vertical
-        carbsStack.alignment = .center
+        setupStackView(carbsStack, in: carbsContainer)
 
-        let hStack = UIStackView(arrangedSubviews: [proteinStack, UIView(), fatStack, UIView(), carbsStack])
+        // Create the FAT container
+        let fatContainer = createContainerView(backgroundColor: .systemBrown)
+        summaryView.addSubview(fatContainer)
+
+        let netFatLabel = createLabel(text: "FAT", fontSize: 10, weight: .bold, color: .white)
+        totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
+        setupStackView(fatStack, in: fatContainer)
+
+        // Create the PROTEIN container
+        let proteinContainer = createContainerView(backgroundColor: .systemBrown)
+        summaryView.addSubview(proteinContainer)
+
+        let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 10, weight: .bold, color: .white)
+        totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
+        setupStackView(proteinStack, in: proteinContainer)
+
+        // Arrange the containers in a horizontal stack view
+        let hStack = UIStackView(arrangedSubviews: [fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
-        hStack.spacing = 4
+        hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
-        hStack.distribution = .equalSpacing
+        hStack.distribution = .fillEqually
         summaryView.addSubview(hStack)
-        
+
         NSLayoutConstraint.activate([
             summaryView.heightAnchor.constraint(equalToConstant: 65),
             summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             summaryView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             summaryView.topAnchor.constraint(equalTo: container.topAnchor),
-            
+
             hStack.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor, constant: 16),
             hStack.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor, constant: -16),
             hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 12),
             hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -12)
         ])
     }
-    
+
+    private func createContainerView(backgroundColor: UIColor) -> UIView {
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.backgroundColor = backgroundColor
+        containerView.layer.cornerRadius = 8
+        containerView.clipsToBounds = true
+        return containerView
+    }
+
+    private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        label.textColor = color
+        label.textAlignment = .center
+        return label
+    }
+
+    private func setupStackView(_ stackView: UIStackView, in containerView: UIView) {
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 4),
+            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -4),
+            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 4),
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -4)
+        ])
+    }
+
+    private func updateTotalNutrients() {
+        let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+        totalNetCarbsLabel?.text = String(format: "%.1f g", totalNetCarbs)
+
+        let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
+        totalNetFatLabel?.text = String(format: "%.1f g", totalNetFat)
+
+        let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
+        totalNetProteinLabel?.text = String(format: "%.1f g", totalNetProtein)
+    }
     private func setupHeadline(in container: UIView) {
         let headlineContainer = UIView()
         headlineContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -389,17 +406,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func moveAddButtonRowToEnd() {
         stackView.removeArrangedSubview(addButtonRowView)
         stackView.addArrangedSubview(addButtonRowView)
-    }
-    
-    private func updateTotalNutrients() {
-        let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
-        totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
-        
-        let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
-        totalNetFatLabel.text = String(format: "%.1f g", totalNetFat)
-        
-        let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
-        totalNetProteinLabel.text = String(format: "%.1f g", totalNetProtein)
     }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
