@@ -28,18 +28,15 @@ class FoodItemRowView: UIView {
     let foodItemTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Food Item"
-        //textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 130).isActive = true
-        //textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
-
     
     let portionServedTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "  ..."
+        textField.placeholder = "..."
         textField.borderStyle = .roundedRect
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
@@ -52,7 +49,6 @@ class FoodItemRowView: UIView {
     
     let ppOr100g: UILabel = {
         let label = UILabel()
-        //label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: 10).isActive = true
@@ -63,7 +59,7 @@ class FoodItemRowView: UIView {
     
     let notEatenTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "  ..."
+        textField.placeholder = "..."
         textField.borderStyle = .roundedRect
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
@@ -153,10 +149,14 @@ class FoodItemRowView: UIView {
         onDelete?()
     }
     
+    private func sanitize(_ text: String?) -> String {
+        return text?.replacingOccurrences(of: ",", with: ".") ?? ""
+    }
+    
     @objc private func calculateNetCarbs() {
         guard let selectedFoodItem = selectedFoodItem else { return }
-        let portionServed = Double(portionServedTextField.text ?? "") ?? 0
-        let notEaten = Double(notEatenTextField.text ?? "") ?? 0
+        let portionServed = Double(sanitize(portionServedTextField.text)) ?? 0
+        let notEaten = Double(sanitize(notEatenTextField.text)) ?? 0
         
         if selectedFoodItem.perPiece {
             let carbsPerPiece = selectedFoodItem.carbsPP

@@ -187,21 +187,26 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
         
+        // Helper method to replace commas with periods
+        func sanitize(_ text: String?) -> String {
+            return text?.replacingOccurrences(of: ",", with: ".") ?? ""
+        }
+        
         if let foodItem = foodItem {
             // Update existing food item
             foodItem.name = nameTextField.text ?? ""
             if isPerPiece {
-                foodItem.carbsPP = Double(carbsTextField.text ?? "") ?? 0.0
-                foodItem.fatPP = Double(fatTextField.text ?? "") ?? 0.0
-                foodItem.proteinPP = Double(proteinTextField.text ?? "") ?? 0.0
+                foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
+                foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
+                foodItem.proteinPP = Double(sanitize(proteinTextField.text)) ?? 0.0
                 foodItem.perPiece = true
                 foodItem.carbohydrates = 0.0
                 foodItem.fat = 0.0
                 foodItem.protein = 0.0
             } else {
-                foodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
-                foodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
-                foodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+                foodItem.carbohydrates = Double(sanitize(carbsTextField.text)) ?? 0.0
+                foodItem.fat = Double(sanitize(fatTextField.text)) ?? 0.0
+                foodItem.protein = Double(sanitize(proteinTextField.text)) ?? 0.0
                 foodItem.perPiece = false
                 foodItem.carbsPP = 0.0
                 foodItem.fatPP = 0.0
@@ -213,23 +218,24 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             newFoodItem.id = UUID()
             newFoodItem.name = nameTextField.text ?? ""
             if isPerPiece {
-                newFoodItem.carbsPP = Double(carbsTextField.text ?? "") ?? 0.0
-                newFoodItem.fatPP = Double(fatTextField.text ?? "") ?? 0.0
-                newFoodItem.proteinPP = Double(proteinTextField.text ?? "") ?? 0.0
+                newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
+                newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
+                newFoodItem.proteinPP = Double(sanitize(proteinTextField.text)) ?? 0.0
                 newFoodItem.perPiece = true
                 newFoodItem.carbohydrates = 0.0
                 newFoodItem.fat = 0.0
                 newFoodItem.protein = 0.0
             } else {
-                newFoodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
-                newFoodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
-                newFoodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+                newFoodItem.carbohydrates = Double(sanitize(carbsTextField.text)) ?? 0.0
+                newFoodItem.fat = Double(sanitize(fatTextField.text)) ?? 0.0
+                newFoodItem.protein = Double(sanitize(proteinTextField.text)) ?? 0.0
                 newFoodItem.perPiece = false
                 newFoodItem.carbsPP = 0.0
                 newFoodItem.fatPP = 0.0
                 newFoodItem.proteinPP = 0.0
             }
         }
+        
         do {
             try context.save()
             delegate?.didAddFoodItem()
@@ -244,7 +250,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             print("Failed to save food item: \(error)")
         }
     }
-    
+
     private func fetchAllFoodItems() -> [FoodItem] {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
         let context = appDelegate.persistentContainer.viewContext

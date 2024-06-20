@@ -38,10 +38,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fetchFoodItems()
             addAddButtonRow()
             
-            // Initialize "Clear All" button
-            clearAllButton = UIBarButtonItem(title: "Clear All", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        // Initialize "Clear All" button
+            clearAllButton = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+            clearAllButton.tintColor = .red // Set the button color to red
             navigationItem.rightBarButtonItem = clearAllButton
-            
+        
             // Add observers for keyboard notifications
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
