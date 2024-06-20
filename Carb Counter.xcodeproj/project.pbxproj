@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */; };
 		6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */; };
 		6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */; };
 		6553EE032C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE012C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld */; };
-		6553EE052C20DA9400B0FDF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6553EE082C20DA9400B0FDF5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */; };
 		6553EE132C20DA9400B0FDF5 /* Carb_CounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE122C20DA9400B0FDF5 /* Carb_CounterTests.swift */; };
 		6553EE1D2C20DA9400B0FDF5 /* Carb_CounterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE1C2C20DA9400B0FDF5 /* Carb_CounterUITests.swift */; };
@@ -257,7 +257,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6553EE082C20DA9400B0FDF5 /* LaunchScreen.storyboard in Resources */,
-				6553EE052C20DA9400B0FDF5 /* Assets.xcassets in Resources */,
+				6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */,
 				6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
