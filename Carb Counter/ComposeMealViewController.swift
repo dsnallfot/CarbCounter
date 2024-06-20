@@ -28,22 +28,44 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Meal"
-        setupScrollView()
-        setupStackView()
-        setupSummaryView()
-        setupHeadline()
-        setupSearchableDropdownView()
-        searchableDropdownView.onDoneButtonTapped = { [weak self] in
-            self?.searchableDropdownView.isHidden = true
-            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
-        }
-        fetchFoodItems()
-        addAddButtonRow()
+        
+        // Setup the fixed header containing summary and headline
+        let fixedHeaderContainer = UIView()
+        fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(fixedHeaderContainer)
+        
+        NSLayoutConstraint.activate([
+            fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 80) // Adjust height as needed
+        ])
+        
+        // Setup summary view
+        setupSummaryView(in: fixedHeaderContainer)
+        
+        // Setup headline
+        setupHeadline(in: fixedHeaderContainer)
+        
+        // Setup scroll view
+        setupScrollView(below: fixedHeaderContainer)
         
         // Initialize "Clear All" button
         clearAllButton = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
+        
+        // Ensure searchableDropdownView is properly initialized
+        setupSearchableDropdownView()
+        
+        searchableDropdownView.onDoneButtonTapped = { [weak self] in
+            self?.searchableDropdownView.isHidden = true
+            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
+        }
+        
+        // Fetch food items and add the add button row
+        fetchFoodItems()
+        //addAddButtonRow()
         
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -79,7 +101,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         navigationItem.rightBarButtonItem?.isEnabled = true // Enable the "Clear All" button
     }
     
-    private func setupScrollView() {
+    private func setupScrollView(below header: UIView) {
         scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
@@ -90,9 +112,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         scrollView.addSubview(contentView)
         
         NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: header.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
@@ -101,12 +123,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
+        
+        setupStackView()
     }
     
     private func setupStackView() {
         stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.spacing = 10
+        stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stackView)
         
@@ -116,113 +140,109 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
+        
+        // Fetch food items and add the add button row
+        fetchFoodItems()
+        addAddButtonRow()
     }
     
-    private func setupSummaryView() {
-        // Add a spacer view for spacing above the summary view
-        let topSpacerView = UIView()
-        topSpacerView.translatesAutoresizingMaskIntoConstraints = false
-        topSpacerView.heightAnchor.constraint(equalToConstant: 8).isActive = true
-        stackView.addArrangedSubview(topSpacerView)
-        
+    private func setupSummaryView(in container: UIView) {
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        summaryView.backgroundColor = .systemGray // Set background color to system gray
+        summaryView.backgroundColor = .secondarySystemBackground // Set background color to secondary system background
+        container.addSubview(summaryView)
         
         let summaryLabel = UILabel()
-        summaryLabel.text = "TOTAL NET CARBS:"
+        summaryLabel.text = "TOTAL CARBS"
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
-        summaryLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        summaryLabel.font = UIFont.systemFont(ofSize: 10, weight: .semibold) // Set font size and weight
         summaryLabel.textColor = .systemYellow // Set text color
-        
+        summaryLabel.textAlignment = .center
+
         totalNetCarbsLabel = UILabel()
         totalNetCarbsLabel.text = "0 g"
         totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold) // Set font size and weight
         totalNetCarbsLabel.textColor = .systemYellow // Set text color
-        
-        summaryView.addSubview(summaryLabel)
-        summaryView.addSubview(totalNetCarbsLabel)
-        
-        NSLayoutConstraint.activate([
-            summaryLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
-            summaryLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
-            
-            totalNetCarbsLabel.leadingAnchor.constraint(equalTo: summaryLabel.trailingAnchor, constant: 8),
-            totalNetCarbsLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
-            totalNetCarbsLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
-        ])
+        totalNetCarbsLabel.textAlignment = .center
         
         let netFatLabel = UILabel()
-        netFatLabel.text = "TOTAL NET FAT:"
+        netFatLabel.text = "TOTAL FAT"
         netFatLabel.translatesAutoresizingMaskIntoConstraints = false
-        netFatLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
-        netFatLabel.textColor = .systemYellow // Set text color
-        
+        netFatLabel.font = UIFont.systemFont(ofSize: 10, weight: .semibold) // Set font size and weight
+        netFatLabel.textColor = .systemBrown // Set text color
+        netFatLabel.textAlignment = .center
+
         totalNetFatLabel = UILabel()
         totalNetFatLabel.text = "0 g"
         totalNetFatLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetFatLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
-        totalNetFatLabel.textColor = .systemYellow // Set text color
-        
-        summaryView.addSubview(netFatLabel)
-        summaryView.addSubview(totalNetFatLabel)
-        
-        NSLayoutConstraint.activate([
-            netFatLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
-            netFatLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor, constant: 20),
-            
-            totalNetFatLabel.leadingAnchor.constraint(equalTo: netFatLabel.trailingAnchor, constant: 8),
-            totalNetFatLabel.centerYAnchor.constraint(equalTo: netFatLabel.centerYAnchor),
-            totalNetFatLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
-        ])
-        
+        totalNetFatLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold) // Set font size and weight
+        totalNetFatLabel.textColor = .systemBrown // Set text color
+        totalNetFatLabel.textAlignment = .center
+
         let netProteinLabel = UILabel()
-        netProteinLabel.text = "TOTAL NET PROTEIN:"
+        netProteinLabel.text = "TOTAL PROTEIN"
         netProteinLabel.translatesAutoresizingMaskIntoConstraints = false
-        netProteinLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
-        netProteinLabel.textColor = .systemYellow // Set text color
-        
+        netProteinLabel.font = UIFont.systemFont(ofSize: 10, weight: .semibold) // Set font size and weight
+        netProteinLabel.textColor = .systemBrown // Set text color
+        netProteinLabel.textAlignment = .center
+
         totalNetProteinLabel = UILabel()
         totalNetProteinLabel.text = "0 g"
         totalNetProteinLabel.translatesAutoresizingMaskIntoConstraints = false
-        totalNetProteinLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
-        totalNetProteinLabel.textColor = .systemYellow // Set text color
-        
-        summaryView.addSubview(netProteinLabel)
-        summaryView.addSubview(totalNetProteinLabel)
+        totalNetProteinLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold) // Set font size and weight
+        totalNetProteinLabel.textColor = .systemBrown // Set text color
+        totalNetProteinLabel.textAlignment = .center
+
+        let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
+        carbsStack.axis = .vertical
+        carbsStack.alignment = .center
+
+        let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
+        fatStack.axis = .vertical
+        fatStack.alignment = .center
+
+        let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
+        proteinStack.axis = .vertical
+        proteinStack.alignment = .center
+
+        let hStack = UIStackView(arrangedSubviews: [carbsStack, UIView(), fatStack, UIView(), proteinStack])
+        hStack.axis = .horizontal
+        hStack.spacing = 4
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        hStack.distribution = .equalSpacing
+        summaryView.addSubview(hStack)
         
         NSLayoutConstraint.activate([
-            netProteinLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
-            netProteinLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor, constant: 40),
+            summaryView.heightAnchor.constraint(equalToConstant: 55),
+            summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            summaryView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            summaryView.topAnchor.constraint(equalTo: container.topAnchor),
             
-            totalNetProteinLabel.leadingAnchor.constraint(equalTo: netProteinLabel.trailingAnchor, constant: 8),
-            totalNetProteinLabel.centerYAnchor.constraint(equalTo: netProteinLabel.centerYAnchor),
-            totalNetProteinLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
+            hStack.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor, constant: 16),
+            hStack.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor, constant: -16),
+            hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 8),
+            hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -8)
         ])
-        
-        stackView.addArrangedSubview(summaryView)
-        
-        // Add a spacer view for spacing between summary view and headline
-        let spacerView = UIView()
-        spacerView.translatesAutoresizingMaskIntoConstraints = false
-        spacerView.heightAnchor.constraint(equalToConstant: 8).isActive = true
-        stackView.addArrangedSubview(spacerView)
-        
-        // Add a divider view
-        let dividerView = UIView()
-        dividerView.translatesAutoresizingMaskIntoConstraints = false
-        dividerView.heightAnchor.constraint(equalToConstant: 1.5).isActive = true
-        dividerView.backgroundColor = .gray
-        stackView.addArrangedSubview(dividerView)
     }
     
-    private func setupHeadline() {
+    private func setupHeadline(in container: UIView) {
+        let headlineContainer = UIView()
+        headlineContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(headlineContainer)
+        
+        NSLayoutConstraint.activate([
+            headlineContainer.topAnchor.constraint(equalTo: container.bottomAnchor, constant: -30),
+            headlineContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headlineContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headlineContainer.heightAnchor.constraint(equalToConstant: 40) // Adjust height as needed
+        ])
         let headlineStackView = UIStackView()
         headlineStackView.axis = .horizontal
         headlineStackView.spacing = 2
         headlineStackView.distribution = .fillProportionally
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
+        headlineContainer.addSubview(headlineStackView)
         
         let font = UIFont.systemFont(ofSize: 12)
         
@@ -255,7 +275,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         headlineStackView.addArrangedSubview(notEatenLabel)
         headlineStackView.addArrangedSubview(netCarbsLabel)
         
-        stackView.addArrangedSubview(headlineStackView)
+        NSLayoutConstraint.activate([
+            headlineStackView.leadingAnchor.constraint(equalTo: headlineContainer.leadingAnchor, constant: 16),
+            headlineStackView.trailingAnchor.constraint(equalTo: headlineContainer.trailingAnchor, constant: -16),
+            headlineStackView.topAnchor.constraint(equalTo: headlineContainer.topAnchor, constant: 8),
+            headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor, constant: -8)
+        ])
     }
     
     private func setupSearchableDropdownView() {
@@ -267,7 +292,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50), //Justerar var sökfältet renderas
             searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
         ])
         
@@ -289,7 +314,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-            searchableDropdownView.updateFoodItems(foodItems) // Update the dropdown view with the new items
+            
+            // Ensure searchableDropdownView is not nil before calling updateFoodItems
+            if let searchableDropdownView = searchableDropdownView {
+                searchableDropdownView.updateFoodItems(foodItems) // Update the dropdown view with the new items
+            }
         } catch {
             print("Failed to fetch food items: \(error)")
         }
@@ -433,7 +462,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             button.translatesAutoresizingMaskIntoConstraints = false
             return button
         }()
-        
         override init(frame: CGRect) {
             super.init(frame: frame)
             setupView()
