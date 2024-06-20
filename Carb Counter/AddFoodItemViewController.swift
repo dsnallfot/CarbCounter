@@ -88,6 +88,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        nameTextField.becomeFirstResponder() // Make nameTextField the first responder
+    }
     // Hide the autocorrect bar
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         textField.autocorrectionType = .no
