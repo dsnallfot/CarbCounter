@@ -56,6 +56,8 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
+        // Add observer for notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(foodItemsDidChange(_:)), name: .foodItemsDidChange, object: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -94,6 +96,12 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         tableView.reloadData()
     }
 
+    @objc private func foodItemsDidChange(_ notification: Notification) {
+        if let updatedItems = notification.userInfo?["foodItems"] as? [FoodItem] {
+            updateFoodItems(updatedItems)
+        }
+    }
+
     func updateFoodItems(_ items: [FoodItem]) {
         self.foodItems = items.sorted { ($0.name ?? "") < ($1.name ?? "") }
         self.filteredFoodItems = self.foodItems
@@ -123,4 +131,12 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         }
         tableView.reloadData()
     }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+}
+
+extension Notification.Name {
+    static let foodItemsDidChange = Notification.Name("foodItemsDidChange")
 }

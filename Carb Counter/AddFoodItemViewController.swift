@@ -105,13 +105,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         textField.autocorrectionType = .no
         return true
-    }
+        }
     
     private func setupSaveButton() {
         saveButton.setTitle("Save", for: .normal)
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)
     }
-    
+
     private func setupUI() {
         if let foodItem = foodItem {
             title = "Edit Food Item"
@@ -123,12 +123,12 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             title = "Add Food Item"
         }
     }
-    
+
     @IBAction func saveButtonTap(_ sender: UIButton) {
         saveFoodItem()
         print("Save button tapped")
     }
-    
+
     private func saveFoodItem() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
@@ -152,6 +152,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         do {
             try context.save()
             delegate?.didAddFoodItem()
+            NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
             if let navController = navigationController {
                 print("Navigation Controller exists")
                 navController.popViewController(animated: true) // Dismiss the view
@@ -160,6 +161,18 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             }
         } catch {
             print("Failed to save food item: \(error)")
+        }
+    }
+
+    private func fetchAllFoodItems() -> [FoodItem] {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Failed to fetch food items: \(error)")
+            return []
         }
     }
 }
