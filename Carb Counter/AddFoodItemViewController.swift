@@ -70,6 +70,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         carbsTextField.inputAccessoryView = toolbar
         fatTextField.inputAccessoryView = toolbar
         proteinTextField.inputAccessoryView = toolbar
+
+        // Add Cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
     }
     
     @objc func nextButtonTapped() {
@@ -88,10 +92,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
+    @objc func cancelButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         nameTextField.becomeFirstResponder() // Make nameTextField the first responder
     }
+    
     // Hide the autocorrect bar
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         textField.autocorrectionType = .no
