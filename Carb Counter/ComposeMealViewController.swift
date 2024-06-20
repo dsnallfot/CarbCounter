@@ -176,7 +176,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let font = UIFont.systemFont(ofSize: 12)
         
         let foodItemLabel = UILabel()
-        foodItemLabel.text = "FOOD ITEM                "
+        foodItemLabel.text = "FOOD ITEM              "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
@@ -188,7 +188,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         portionServedLabel.textColor = .gray
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "  LEFT "
+        notEatenLabel.text = "  LEFT   "
         notEatenLabel.textAlignment = .left
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
@@ -276,10 +276,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func addButtonTapped() {
-            searchableDropdownView.isHidden = false
-            searchableDropdownView.searchBar.becomeFirstResponder()
-            clearAllButton.isEnabled = false // Hide the "Clear All" button
+        // Ensure that the searchableDropdownView is added to the view hierarchy if not already added
+        if searchableDropdownView.superview == nil {
+            view.addSubview(searchableDropdownView)
+            NSLayoutConstraint.activate([
+                searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+            ])
         }
+        
+        // Show the searchableDropdownView and make the searchBar the first responder
+        searchableDropdownView.isHidden = false
+        DispatchQueue.main.async {
+            self.searchableDropdownView.searchBar.becomeFirstResponder()
+        }
+        clearAllButton.isEnabled = false // Hide the "Clear All" button
+    }
     
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
@@ -318,8 +332,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     // MARK: - FoodItemRowViewDelegate
     
     func didTapFoodItemTextField(_ rowView: FoodItemRowView) {
+        // Ensure that the searchableDropdownView is added to the view hierarchy if not already added
+        if searchableDropdownView.superview == nil {
+            view.addSubview(searchableDropdownView)
+            NSLayoutConstraint.activate([
+                searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+            ])
+        }
+
+        // Show the searchableDropdownView and make the searchBar the first responder
         searchableDropdownView.isHidden = false
-        searchableDropdownView.searchBar.becomeFirstResponder()
+        DispatchQueue.main.async {
+            self.searchableDropdownView.searchBar.becomeFirstResponder()
+        }
+        clearAllButton.isEnabled = false // Hide the "Clear All" button
     }
     
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField) {

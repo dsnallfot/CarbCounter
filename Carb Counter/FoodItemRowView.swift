@@ -30,7 +30,7 @@ class FoodItemRowView: UIView {
         textField.placeholder = "Food Item"
         //textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 130).isActive = true
         //textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
@@ -44,7 +44,7 @@ class FoodItemRowView: UIView {
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
@@ -68,7 +68,7 @@ class FoodItemRowView: UIView {
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
