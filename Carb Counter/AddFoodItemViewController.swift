@@ -14,28 +14,44 @@ protocol AddFoodItemDelegate: AnyObject {
 }
 
 class AddFoodItemViewController: UIViewController {
-
+    
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var carbsTextField: UITextField!
     @IBOutlet weak var fatTextField: UITextField!
     @IBOutlet weak var proteinTextField: UITextField!
     @IBOutlet weak var saveButton: UIButton!
-
+    @IBOutlet weak var foodItemView: UIView!
+    @IBOutlet weak var carbohydratesView: UIView!
+    @IBOutlet weak var proteinView: UIView!
+    @IBOutlet weak var fatView: UIView!
+    
     weak var delegate: AddFoodItemDelegate?
     var foodItem: FoodItem?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupSaveButton()
         setupUI()
+        
+        foodItemView.layer.cornerRadius = 8
+        foodItemView.layer.masksToBounds = true
+        
+        carbohydratesView.layer.cornerRadius = 8
+        carbohydratesView.layer.masksToBounds = true
+        
+        proteinView.layer.cornerRadius = 8
+        proteinView.layer.masksToBounds = true
+        
+        fatView.layer.cornerRadius = 8
+        fatView.layer.masksToBounds = true
     }
-
+    
     private func setupSaveButton() {
         saveButton.setTitle("Save", for: .normal)
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)
     }
-
+    
     private func setupUI() {
         if let foodItem = foodItem {
             title = "Edit Food Item"
@@ -47,17 +63,17 @@ class AddFoodItemViewController: UIViewController {
             title = "Add Food Item"
         }
     }
-
-
+    
+    
     @IBAction func saveButtonTap(_ sender: UIButton) {
         saveFoodItem()
         print("Save button tapped")
     }
-
+    
     private func saveFoodItem() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
-
+        
         if let foodItem = foodItem {
             // Update existing food item
             foodItem.name = nameTextField.text ?? ""
@@ -73,7 +89,7 @@ class AddFoodItemViewController: UIViewController {
             newFoodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
             newFoodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
         }
-
+        
         do {
             try context.save()
             delegate?.didAddFoodItem()

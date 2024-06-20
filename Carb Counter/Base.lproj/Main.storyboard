@@ -246,10 +246,14 @@
                     </view>
                     <navigationItem key="navigationItem" id="ldh-YL-xke"/>
                     <connections>
+                        <outlet property="carbohydratesView" destination="JfI-RG-5Ie" id="4cB-aD-w8N"/>
                         <outlet property="carbsTextField" destination="DiT-de-lGZ" id="3Gs-I1-oXZ"/>
                         <outlet property="fatTextField" destination="bFQ-rT-8tx" id="K20-Pa-Tje"/>
+                        <outlet property="fatView" destination="Sjd-e4-EdT" id="fA5-LK-eNj"/>
+                        <outlet property="foodItemView" destination="MdB-A4-5xP" id="QnA-nb-k12"/>
                         <outlet property="nameTextField" destination="7kw-Ua-cCd" id="0Tt-lH-PBp"/>
                         <outlet property="proteinTextField" destination="d9P-nc-SgB" id="RxH-Ja-sqP"/>
+                        <outlet property="proteinView" destination="I6Y-jC-eBl" id="dad-1l-2aP"/>
                         <outlet property="saveButton" destination="9lt-Yp-VTI" id="pRs-NK-DeA"/>
                     </connections>
                 </viewController>
