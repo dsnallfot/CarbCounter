@@ -17,36 +17,38 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var foodItems: [FoodItem] = []
     var addButtonRowView: AddButtonRowView!
     var totalNetCarbsLabel: UILabel!
+    var totalNetFatLabel: UILabel!
+    var totalNetProteinLabel: UILabel!
     var searchableDropdownView: SearchableDropdownView!
     
     // Add an outlet for the "Clear All" button
     var clearAllButton: UIBarButtonItem!
     
     override func viewDidLoad() {
-            super.viewDidLoad()
-            view.backgroundColor = .systemBackground
-            title = "Meal"
-            setupScrollView()
-            setupStackView()
-            setupSummaryView()
-            setupHeadline()
-            setupSearchableDropdownView()
-            searchableDropdownView.onDoneButtonTapped = { [weak self] in
-                self?.searchableDropdownView.isHidden = true
-                self?.clearAllButton.isEnabled = true // Show the "Clear All" button
-            }
-            fetchFoodItems()
-            addAddButtonRow()
-            
-        // Initialize "Clear All" button
-            clearAllButton = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearAllButtonTapped))
-            clearAllButton.tintColor = .red // Set the button color to red
-            navigationItem.rightBarButtonItem = clearAllButton
-        
-            // Add observers for keyboard notifications
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        title = "Meal"
+        setupScrollView()
+        setupStackView()
+        setupSummaryView()
+        setupHeadline()
+        setupSearchableDropdownView()
+        searchableDropdownView.onDoneButtonTapped = { [weak self] in
+            self?.searchableDropdownView.isHidden = true
+            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
         }
+        fetchFoodItems()
+        addAddButtonRow()
+        
+        // Initialize "Clear All" button
+        clearAllButton = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton.tintColor = .red // Set the button color to red
+        navigationItem.rightBarButtonItem = clearAllButton
+        
+        // Add observers for keyboard notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
     
     deinit {
         // Remove observers for keyboard notifications
@@ -55,24 +57,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func clearAllButtonTapped() {
-            view.endEditing(true) // This will hide the keyboard
-            let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-            let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
-                self.clearAllFoodItems()
-            }
-            alertController.addAction(cancelAction)
-            alertController.addAction(yesAction)
-            present(alertController, animated: true, completion: nil)
+        view.endEditing(true) // This will hide the keyboard
+        let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
+            self.clearAllFoodItems()
         }
-
+        alertController.addAction(cancelAction)
+        alertController.addAction(yesAction)
+        present(alertController, animated: true, completion: nil)
+    }
+    
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
             row.removeFromSuperview()
         }
         foodItemRows.removeAll()
-        updateTotalNetCarbs()
+        updateTotalNutrients()
         view.endEditing(true) // Hide the keyboard
         navigationItem.rightBarButtonItem?.isEnabled = true // Enable the "Clear All" button
     }
@@ -126,39 +128,87 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         summaryView.backgroundColor = .systemGray // Set background color to system gray
-
+        
         let summaryLabel = UILabel()
         summaryLabel.text = "TOTAL NET CARBS:"
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
         summaryLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
         summaryLabel.textColor = .systemYellow // Set text color
-
+        
         totalNetCarbsLabel = UILabel()
         totalNetCarbsLabel.text = "0 g"
         totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
         totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
         totalNetCarbsLabel.textColor = .systemYellow // Set text color
-
+        
         summaryView.addSubview(summaryLabel)
         summaryView.addSubview(totalNetCarbsLabel)
-
+        
         NSLayoutConstraint.activate([
             summaryLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
             summaryLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
-
+            
             totalNetCarbsLabel.leadingAnchor.constraint(equalTo: summaryLabel.trailingAnchor, constant: 8),
             totalNetCarbsLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor),
             totalNetCarbsLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
         ])
-
+        
+        let netFatLabel = UILabel()
+        netFatLabel.text = "TOTAL NET FAT:"
+        netFatLabel.translatesAutoresizingMaskIntoConstraints = false
+        netFatLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        netFatLabel.textColor = .systemYellow // Set text color
+        
+        totalNetFatLabel = UILabel()
+        totalNetFatLabel.text = "0 g"
+        totalNetFatLabel.translatesAutoresizingMaskIntoConstraints = false
+        totalNetFatLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        totalNetFatLabel.textColor = .systemYellow // Set text color
+        
+        summaryView.addSubview(netFatLabel)
+        summaryView.addSubview(totalNetFatLabel)
+        
+        NSLayoutConstraint.activate([
+            netFatLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
+            netFatLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor, constant: 20),
+            
+            totalNetFatLabel.leadingAnchor.constraint(equalTo: netFatLabel.trailingAnchor, constant: 8),
+            totalNetFatLabel.centerYAnchor.constraint(equalTo: netFatLabel.centerYAnchor),
+            totalNetFatLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
+        ])
+        
+        let netProteinLabel = UILabel()
+        netProteinLabel.text = "TOTAL NET PROTEIN:"
+        netProteinLabel.translatesAutoresizingMaskIntoConstraints = false
+        netProteinLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        netProteinLabel.textColor = .systemYellow // Set text color
+        
+        totalNetProteinLabel = UILabel()
+        totalNetProteinLabel.text = "0 g"
+        totalNetProteinLabel.translatesAutoresizingMaskIntoConstraints = false
+        totalNetProteinLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        totalNetProteinLabel.textColor = .systemYellow // Set text color
+        
+        summaryView.addSubview(netProteinLabel)
+        summaryView.addSubview(totalNetProteinLabel)
+        
+        NSLayoutConstraint.activate([
+            netProteinLabel.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor),
+            netProteinLabel.centerYAnchor.constraint(equalTo: summaryView.centerYAnchor, constant: 40),
+            
+            totalNetProteinLabel.leadingAnchor.constraint(equalTo: netProteinLabel.trailingAnchor, constant: 8),
+            totalNetProteinLabel.centerYAnchor.constraint(equalTo: netProteinLabel.centerYAnchor),
+            totalNetProteinLabel.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor)
+        ])
+        
         stackView.addArrangedSubview(summaryView)
-
+        
         // Add a spacer view for spacing between summary view and headline
         let spacerView = UIView()
         spacerView.translatesAutoresizingMaskIntoConstraints = false
         spacerView.heightAnchor.constraint(equalToConstant: 8).isActive = true
         stackView.addArrangedSubview(spacerView)
-
+        
         // Add a divider view
         let dividerView = UIView()
         dividerView.translatesAutoresizingMaskIntoConstraints = false
@@ -209,29 +259,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func setupSearchableDropdownView() {
-            searchableDropdownView = SearchableDropdownView()
-            searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
-            searchableDropdownView.isHidden = true
-            view.addSubview(searchableDropdownView)
-            
-            NSLayoutConstraint.activate([
-                searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
-            ])
-            
-            searchableDropdownView.onSelectItem = { [weak self] foodItem in
-                self?.searchableDropdownView.isHidden = true
-                self?.addFoodItemRow(with: foodItem)
-                self?.clearAllButton.isEnabled = true // Show the "Clear All" button
-            }
-
-            searchableDropdownView.onDoneButtonTapped = { [weak self] in
-                self?.searchableDropdownView.isHidden = true
-                self?.clearAllButton.isEnabled = true // Show the "Clear All" button
-            }
+        searchableDropdownView = SearchableDropdownView()
+        searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
+        searchableDropdownView.isHidden = true
+        view.addSubview(searchableDropdownView)
+        
+        NSLayoutConstraint.activate([
+            searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+        ])
+        
+        searchableDropdownView.onSelectItem = { [weak self] foodItem in
+            self?.searchableDropdownView.isHidden = true
+            self?.addFoodItemRow(with: foodItem)
+            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
         }
+        
+        searchableDropdownView.onDoneButtonTapped = { [weak self] in
+            self?.searchableDropdownView.isHidden = true
+            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
+        }
+    }
     
     private func fetchFoodItems() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
@@ -262,10 +312,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         
         rowView.onValueChange = { [weak self] in
-            self?.updateTotalNetCarbs()
+            self?.updateTotalNutrients()
         }
         
-        updateTotalNetCarbs()
+        updateTotalNutrients()
     }
     
     private func addAddButtonRow() {
@@ -303,7 +353,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             foodItemRows.remove(at: index)
         }
         moveAddButtonRowToEnd()
-        updateTotalNetCarbs()
+        updateTotalNutrients()
     }
     
     private func moveAddButtonRowToEnd() {
@@ -311,9 +361,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         stackView.addArrangedSubview(addButtonRowView)
     }
     
-    private func updateTotalNetCarbs() {
+    private func updateTotalNutrients() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
+        
+        let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
+        totalNetFatLabel.text = String(format: "%.1f g", totalNetFat)
+        
+        let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
+        totalNetProteinLabel.text = String(format: "%.1f g", totalNetProtein)
     }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
@@ -343,7 +399,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
             ])
         }
-
+        
         // Show the searchableDropdownView and make the searchBar the first responder
         searchableDropdownView.isHidden = false
         DispatchQueue.main.async {
@@ -367,8 +423,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     func didAddFoodItem() {
-            fetchFoodItems() // Update the food items after adding a new one
-        }
+        fetchFoodItems() // Update the food items after adding a new one
+    }
     
     // Separate class for Add Button Row
     class AddButtonRowView: UIView {

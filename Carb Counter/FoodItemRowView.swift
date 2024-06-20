@@ -21,6 +21,16 @@ class FoodItemRowView: UIView {
             onValueChange?()
         }
     }
+    var netFat: Double = 0.0 {
+        didSet {
+            onValueChange?()
+        }
+    }
+    var netProtein: Double = 0.0 {
+        didSet {
+            onValueChange?()
+        }
+    }
     
     weak var delegate: FoodItemRowViewDelegate?
     var foodItems: [FoodItem] = []
@@ -28,8 +38,10 @@ class FoodItemRowView: UIView {
     let foodItemTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Food Item"
+        //textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 130).isActive = true
+        //textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
@@ -49,6 +61,7 @@ class FoodItemRowView: UIView {
     
     let ppOr100g: UILabel = {
         let label = UILabel()
+        //label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: 10).isActive = true
@@ -119,8 +132,8 @@ class FoodItemRowView: UIView {
         
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
         
-        portionServedTextField.addTarget(self, action: #selector(calculateNetCarbs), for: .editingChanged)
-        notEatenTextField.addTarget(self, action: #selector(calculateNetCarbs), for: .editingChanged)
+        portionServedTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
+        notEatenTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
     }
 
     private func setupTextFieldTargets() {
@@ -149,21 +162,25 @@ class FoodItemRowView: UIView {
         onDelete?()
     }
     
-    private func sanitize(_ text: String?) -> String {
-        return text?.replacingOccurrences(of: ",", with: ".") ?? ""
-    }
-    
-    @objc private func calculateNetCarbs() {
+    @objc private func calculateNutrients() {
         guard let selectedFoodItem = selectedFoodItem else { return }
-        let portionServed = Double(sanitize(portionServedTextField.text)) ?? 0
-        let notEaten = Double(sanitize(notEatenTextField.text)) ?? 0
+        let portionServed = Double(portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
+        let notEaten = Double(notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
         
         if selectedFoodItem.perPiece {
             let carbsPerPiece = selectedFoodItem.carbsPP
+            let fatPerPiece = selectedFoodItem.fatPP
+            let proteinPerPiece = selectedFoodItem.proteinPP
             netCarbs = (carbsPerPiece * portionServed) - (carbsPerPiece * notEaten)
+            netFat = (fatPerPiece * portionServed) - (fatPerPiece * notEaten)
+            netProtein = (proteinPerPiece * portionServed) - (proteinPerPiece * notEaten)
         } else {
             let carbsPer100g = selectedFoodItem.carbohydrates
+            let fatPer100g = selectedFoodItem.fat
+            let proteinPer100g = selectedFoodItem.protein
             netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
+            netFat = (fatPer100g * portionServed / 100) - (fatPer100g * notEaten / 100)
+            netProtein = (proteinPer100g * portionServed / 100) - (proteinPer100g * notEaten / 100)
         }
         
         netCarbsLabel.text = String(format: "%.0f g", netCarbs)
@@ -186,6 +203,6 @@ class FoodItemRowView: UIView {
         self.selectedFoodItem = item
         foodItemTextField.text = item.name
         ppOr100g.text = item.perPiece ? "p" : "g"
-        calculateNetCarbs()
+        calculateNutrients()
     }
 }
