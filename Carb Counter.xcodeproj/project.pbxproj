@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
+		6518ACB92C2434E100C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
+		6518ACBA2C2434E200C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */; };
 		6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */; };
 		6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */; };
@@ -23,6 +25,9 @@
 		6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */; };
 		6553EE4C2C2312BE00B0FDF5 /* SearchableDropdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */; };
 		6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */; };
+		659632852C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
+		659632862C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
+		659632872C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +70,7 @@
 		6553EE4D2C23322100B0FDF5 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
 		6553EE4E2C23322100B0FDF5 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
+		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +123,7 @@
 		6553EDF72C20DA9200B0FDF5 /* Carb Counter */ = {
 			isa = PBXGroup;
 			children = (
+				659632842C2436470098DF69 /* launch.png */,
 				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
 				6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */,
 				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
@@ -256,6 +263,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				659632852C2436470098DF69 /* launch.png in Resources */,
 				6553EE082C20DA9400B0FDF5 /* LaunchScreen.storyboard in Resources */,
 				6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */,
 				6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */,
@@ -266,6 +274,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				659632862C2436470098DF69 /* launch.png in Resources */,
+				6518ACB92C2434E100C3BF63 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,6 +283,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				659632872C2436470098DF69 /* launch.png in Resources */,
+				6518ACBA2C2434E200C3BF63 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
