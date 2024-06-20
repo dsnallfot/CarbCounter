@@ -25,7 +25,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     override func viewDidLoad() {
             super.viewDidLoad()
             view.backgroundColor = .systemBackground
-            title = "Compose Meal"
+            title = "Meal"
             setupScrollView()
             setupStackView()
             setupSummaryView()
