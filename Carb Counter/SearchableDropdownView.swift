@@ -5,7 +5,6 @@
 //  Created by Daniel Snällfot on 2024-06-19.
 //
 
-
 import UIKit
 
 class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
@@ -85,7 +84,14 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
 
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
+        clearSearch()
         onDoneButtonTapped?()
+    }
+
+    private func clearSearch() {
+        searchBar.text = ""
+        filteredFoodItems = foodItems
+        tableView.reloadData()
     }
 
     func updateFoodItems(_ items: [FoodItem]) {
@@ -106,6 +112,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         onSelectItem?(filteredFoodItems[indexPath.row])
+        clearSearch()
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
