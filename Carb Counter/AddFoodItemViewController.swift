@@ -1,11 +1,3 @@
-//
-//  AddFoodItemViewController.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-18.
-//
-// AddFoodItemViewController.swift
-
 import UIKit
 import CoreData
 
@@ -24,13 +16,18 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var carbohydratesView: UIView!
     @IBOutlet weak var proteinView: UIView!
     @IBOutlet weak var fatView: UIView!
+    @IBOutlet weak var carbsUnits: UILabel!
+    @IBOutlet weak var fatUnits: UILabel!
+    @IBOutlet weak var proteinUnits: UILabel!
     
     weak var delegate: AddFoodItemDelegate?
     var foodItem: FoodItem?
+    var isPerPiece: Bool = false // To keep track of the selected segment
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        setupSegmentedControl()
         setupSaveButton()
         setupUI()
         
@@ -105,13 +102,45 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         textField.autocorrectionType = .no
         return true
+    }
+    
+    private func setupSegmentedControl() {
+        let segmentedControl = UISegmentedControl(items: ["Per 100g", "Per Piece"])
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(segmentedControl)
+        
+        NSLayoutConstraint.activate([
+            segmentedControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+    }
+    
+    @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
+        isPerPiece = sender.selectedSegmentIndex == 1
+        updateUnitsLabels()
+    }
+    
+    private func updateUnitsLabels() {
+        if isPerPiece {
+            carbsUnits.text = "g/piece"
+            fatUnits.text = "g/piece"
+            proteinUnits.text = "g/piece"
+        } else {
+            carbsUnits.text = "g/100g"
+            fatUnits.text = "g/100g"
+            proteinUnits.text = "g/100g"
         }
+    }
     
     private func setupSaveButton() {
         saveButton.setTitle("Save", for: .normal)
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)
     }
-
+    
     private func setupUI() {
         if let foodItem = foodItem {
             title = "Edit Food Item"
@@ -122,13 +151,14 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         } else {
             title = "Add Food Item"
         }
+        updateUnitsLabels() // Ensure labels are set correctly when the view is loaded
     }
-
+    
     @IBAction func saveButtonTap(_ sender: UIButton) {
         saveFoodItem()
         print("Save button tapped")
     }
-
+    
     private func saveFoodItem() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
@@ -136,17 +166,29 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         if let foodItem = foodItem {
             // Update existing food item
             foodItem.name = nameTextField.text ?? ""
-            foodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
-            foodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
-            foodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+            if isPerPiece {
+                foodItem.carbsPP = Double(carbsTextField.text ?? "") ?? 0.0
+                foodItem.fatPP = Double(fatTextField.text ?? "") ?? 0.0
+                foodItem.proteinPP = Double(proteinTextField.text ?? "") ?? 0.0
+            } else {
+                foodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
+                foodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
+                foodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+            }
         } else {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
             newFoodItem.name = nameTextField.text ?? ""
-            newFoodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
-            newFoodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
-            newFoodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+            if isPerPiece {
+                newFoodItem.carbsPP = Double(carbsTextField.text ?? "") ?? 0.0
+                newFoodItem.fatPP = Double(fatTextField.text ?? "") ?? 0.0
+                newFoodItem.proteinPP = Double(proteinTextField.text ?? "") ?? 0.0
+            } else {
+                newFoodItem.carbohydrates = Double(carbsTextField.text ?? "") ?? 0.0
+                newFoodItem.fat = Double(fatTextField.text ?? "") ?? 0.0
+                newFoodItem.protein = Double(proteinTextField.text ?? "") ?? 0.0
+            }
         }
         
         do {
@@ -163,7 +205,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             print("Failed to save food item: \(error)")
         }
     }
-
+    
     private func fetchAllFoodItems() -> [FoodItem] {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
         let context = appDelegate.persistentContainer.viewContext

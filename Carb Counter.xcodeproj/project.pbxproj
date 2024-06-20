@@ -69,8 +69,8 @@
 		6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownView.swift; sourceTree = "<group>"; };
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
-		65B7F58B2C24482B005A4386 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
-		65B7F58C2C24482B005A4386 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		65B7F58D2C244AB9005A4386 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
+		65B7F58E2C244AB9005A4386 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,8 +101,8 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
-				65B7F58B2C24482B005A4386 /* FoodItem+CoreDataClass.swift */,
-				65B7F58C2C24482B005A4386 /* FoodItem+CoreDataProperties.swift */,
+				65B7F58D2C244AB9005A4386 /* FoodItem+CoreDataClass.swift */,
+				65B7F58E2C244AB9005A4386 /* FoodItem+CoreDataProperties.swift */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EE112C20DA9400B0FDF5 /* Carb CounterTests */,
 				6553EE1B2C20DA9400B0FDF5 /* Carb CounterUITests */,
