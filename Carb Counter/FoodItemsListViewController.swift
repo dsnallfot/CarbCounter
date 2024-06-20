@@ -199,15 +199,25 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // For iOS 11 and later
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completionHandler) in
-            self.deleteFoodItem(at: indexPath)
-            completionHandler(true)
+            let alertController = UIAlertController(title: "Delete", message: "Do you want to delete?", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                completionHandler(false) // Don't delete the item
+            }
+            let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
+                self.deleteFoodItem(at: indexPath)
+                completionHandler(true) // Delete the item
+            }
+            alertController.addAction(cancelAction)
+            alertController.addAction(yesAction)
+            self.present(alertController, animated: true, completion: nil)
         }
+
         let editAction = UIContextualAction(style: .normal, title: "Edit") { (action, view, completionHandler) in
             self.editFoodItem(at: indexPath)
             completionHandler(true)
         }
         editAction.backgroundColor = .blue
-        
+
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }

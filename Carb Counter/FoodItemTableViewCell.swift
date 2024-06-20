@@ -54,6 +54,6 @@ class FoodItemTableViewCell: UITableViewCell {
         let carbs = String(format: "%.0f", foodItem.carbohydrates)
         let fat = String(format: "%.0f", foodItem.fat)
         let protein = String(format: "%.0f", foodItem.protein)
-        detailsLabel.text = "Carbs: \(carbs)g Fat: \(fat)g Protein: \(protein)g"
+        detailsLabel.text = "Carbs \(carbs)g • Fat \(fat)g • Protein \(protein)g"
     }
 }

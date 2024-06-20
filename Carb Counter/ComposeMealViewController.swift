@@ -111,7 +111,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Add a spacer view for spacing above the summary view
         let topSpacerView = UIView()
         topSpacerView.translatesAutoresizingMaskIntoConstraints = false
-        topSpacerView.heightAnchor.constraint(equalToConstant: 12).isActive = true
+        topSpacerView.heightAnchor.constraint(equalToConstant: 8).isActive = true
         stackView.addArrangedSubview(topSpacerView)
         
         let summaryView = UIView()
@@ -119,12 +119,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.backgroundColor = .systemGray // Set background color to system gray
 
         let summaryLabel = UILabel()
-        summaryLabel.text = "Total Net Carbs:"
+        summaryLabel.text = "TOTAL NET CARBS:"
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
+        summaryLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        summaryLabel.textColor = .systemYellow // Set text color
 
         totalNetCarbsLabel = UILabel()
-        totalNetCarbsLabel.text = "0.0 g"
+        totalNetCarbsLabel.text = "0 g"
         totalNetCarbsLabel.translatesAutoresizingMaskIntoConstraints = false
+        totalNetCarbsLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // Set font size and weight
+        totalNetCarbsLabel.textColor = .systemYellow // Set text color
 
         summaryView.addSubview(summaryLabel)
         summaryView.addSubview(totalNetCarbsLabel)
@@ -143,7 +147,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Add a spacer view for spacing between summary view and headline
         let spacerView = UIView()
         spacerView.translatesAutoresizingMaskIntoConstraints = false
-        spacerView.heightAnchor.constraint(equalToConstant: 12).isActive = true
+        spacerView.heightAnchor.constraint(equalToConstant: 8).isActive = true
         stackView.addArrangedSubview(spacerView)
 
         // Add a divider view
@@ -179,7 +183,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         notEatenLabel.font = font
         
         let netCarbsLabel = UILabel()
-        netCarbsLabel.text = "NET CARBS  "
+        netCarbsLabel.text = "NET CARBS"
         netCarbsLabel.textAlignment = .left
         netCarbsLabel.font = font
         
