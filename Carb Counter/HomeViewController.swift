@@ -21,7 +21,7 @@ class HomeViewController: UIViewController {
         if let image = UIImage(named: "Image512") {
             appIconImageView.image = image
         } else {
-            print("Error: Image 'Image512' not found")
+            print("Error: Image 'Image512' not found") //Need to investigate why this doesnt work
             appIconImageView.image = UIImage(systemName: "photo") // Placeholder image
         }
         appIconImageView.contentMode = .scaleAspectFit
@@ -31,6 +31,7 @@ class HomeViewController: UIViewController {
         let copyrightLabel = UILabel()
         copyrightLabel.text = "© 2024 Daniel Snällfot"
         copyrightLabel.textAlignment = .center
+        copyrightLabel.textColor = .gray
         copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
         copyrightLabel.translatesAutoresizingMaskIntoConstraints = false
         
