@@ -19,26 +19,33 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalNetCarbsLabel: UILabel!
     var searchableDropdownView: SearchableDropdownView!
     
+    // Add an outlet for the "Clear All" button
+    var clearAllButton: UIBarButtonItem!
+    
     override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        title = "Compose Meal"
-        setupScrollView()
-        setupStackView()
-        setupSummaryView()
-        setupHeadline()
-        setupSearchableDropdownView()
-        fetchFoodItems()
-        addAddButtonRow()
-        
-        // Add "Clear All" button
-        let clearAllButton = UIBarButtonItem(title: "Clear All", style: .plain, target: self, action: #selector(clearAllButtonTapped))
-        navigationItem.rightBarButtonItem = clearAllButton
-        
-        // Add observers for keyboard notifications
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
+            super.viewDidLoad()
+            view.backgroundColor = .systemBackground
+            title = "Compose Meal"
+            setupScrollView()
+            setupStackView()
+            setupSummaryView()
+            setupHeadline()
+            setupSearchableDropdownView()
+            searchableDropdownView.onDoneButtonTapped = { [weak self] in
+                self?.searchableDropdownView.isHidden = true
+                self?.clearAllButton.isEnabled = true // Show the "Clear All" button
+            }
+            fetchFoodItems()
+            addAddButtonRow()
+            
+            // Initialize "Clear All" button
+            clearAllButton = UIBarButtonItem(title: "Clear All", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+            navigationItem.rightBarButtonItem = clearAllButton
+            
+            // Add observers for keyboard notifications
+            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        }
     
     deinit {
         // Remove observers for keyboard notifications
@@ -47,25 +54,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func clearAllButtonTapped() {
-        view.endEditing(true) // This will hide the keyboard
-        let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
-            self.clearAllFoodItems()
+            view.endEditing(true) // This will hide the keyboard
+            let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
+                self.clearAllFoodItems()
+            }
+            alertController.addAction(cancelAction)
+            alertController.addAction(yesAction)
+            present(alertController, animated: true, completion: nil)
         }
-        alertController.addAction(cancelAction)
-        alertController.addAction(yesAction)
-        present(alertController, animated: true, completion: nil)
-    }
 
     private func clearAllFoodItems() {
-        //view.endEditing(true) // This will hide the keyboard
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
             row.removeFromSuperview()
         }
         foodItemRows.removeAll()
         updateTotalNetCarbs()
+        view.endEditing(true) // Hide the keyboard
+        navigationItem.rightBarButtonItem?.isEnabled = true // Enable the "Clear All" button
     }
     
     private func setupScrollView() {
@@ -196,23 +204,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func setupSearchableDropdownView() {
-        searchableDropdownView = SearchableDropdownView()
-        searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
-        searchableDropdownView.isHidden = true
-        view.addSubview(searchableDropdownView)
-        
-        NSLayoutConstraint.activate([
-            searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
-        ])
-        
-        searchableDropdownView.onSelectItem = { [weak self] foodItem in
-            self?.searchableDropdownView.isHidden = true
-            self?.addFoodItemRow(with: foodItem)
+            searchableDropdownView = SearchableDropdownView()
+            searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
+            searchableDropdownView.isHidden = true
+            view.addSubview(searchableDropdownView)
+            
+            NSLayoutConstraint.activate([
+                searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+            ])
+            
+            searchableDropdownView.onSelectItem = { [weak self] foodItem in
+                self?.searchableDropdownView.isHidden = true
+                self?.addFoodItemRow(with: foodItem)
+                self?.clearAllButton.isEnabled = true // Show the "Clear All" button
+            }
+
+            searchableDropdownView.onDoneButtonTapped = { [weak self] in
+                self?.searchableDropdownView.isHidden = true
+                self?.clearAllButton.isEnabled = true // Show the "Clear All" button
+            }
         }
-    }
     
     private func fetchFoodItems() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
@@ -258,9 +272,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func addButtonTapped() {
-        searchableDropdownView.isHidden = false
-        searchableDropdownView.searchBar.becomeFirstResponder()
-    }
+            searchableDropdownView.isHidden = false
+            searchableDropdownView.searchBar.becomeFirstResponder()
+            clearAllButton.isEnabled = false // Hide the "Clear All" button
+        }
     
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)

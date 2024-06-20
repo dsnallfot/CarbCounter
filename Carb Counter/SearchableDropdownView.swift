@@ -5,11 +5,13 @@
 //  Created by Daniel Snällfot on 2024-06-19.
 //
 
+
 import UIKit
 
 class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
 
     var onSelectItem: ((FoodItem) -> Void)?
+    var onDoneButtonTapped: (() -> Void)?
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
 
@@ -19,11 +21,28 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.barTintColor = .systemGray
         searchBar.backgroundImage = UIImage() // Removes the default background image
-        
+
         // Customize the text field inside the search bar
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.backgroundColor = .systemGray4
             textField.tintColor = .label // Set the cursor color
+            textField.autocorrectionType = .no // Disable autocorrection
+            textField.spellCheckingType = .no // Disable spell checking
+
+            // Remove predictive text
+            if #available(iOS 11.0, *) {
+                textField.inputAssistantItem.leadingBarButtonGroups = []
+                textField.inputAssistantItem.trailingBarButtonGroups = []
+            }
+
+            // Create toolbar with done button
+            let toolbar = UIToolbar()
+            toolbar.sizeToFit()
+            let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            toolbar.setItems([flexSpace, doneButton], animated: false)
+            
+            textField.inputAccessoryView = toolbar
         }
         
         return searchBar
@@ -62,6 +81,11 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+    }
+
+    @objc private func doneButtonTapped() {
+        searchBar.resignFirstResponder()
+        onDoneButtonTapped?()
     }
 
     func updateFoodItems(_ items: [FoodItem]) {
