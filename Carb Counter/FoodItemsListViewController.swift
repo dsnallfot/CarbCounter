@@ -56,7 +56,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         return toolbar
     }
     
-    
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
@@ -79,16 +78,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             toolbar.setItems([flexSpace, doneButton], animated: false)
             textField.inputAccessoryView = toolbar
         }
-
+        
         view.addSubview(searchBar)
-
+        
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
-
+    
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
     }
@@ -199,7 +198,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // For iOS 11 and later
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completionHandler) in
-            let alertController = UIAlertController(title: "Delete", message: "Do you want to delete?", preferredStyle: .alert)
+            let foodItem = self.filteredFoodItems[indexPath.row]
+            let alertController = UIAlertController(title: "Delete", message: "Do you want to delete \(foodItem.name ?? "this item")?", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
                 completionHandler(false) // Don't delete the item
             }
@@ -211,13 +211,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             alertController.addAction(yesAction)
             self.present(alertController, animated: true, completion: nil)
         }
-
+        
         let editAction = UIContextualAction(style: .normal, title: "Edit") { (action, view, completionHandler) in
             self.editFoodItem(at: indexPath)
             completionHandler(true)
         }
         editAction.backgroundColor = .blue
-
+        
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }
@@ -249,22 +249,22 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func editFoodItem(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
-        addFoodItemVC.delegate = self
-        addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
-        navigationController?.pushViewController(addFoodItemVC, animated: true)
+            addFoodItemVC.delegate = self
+            addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
-        }
+    }
     
     // MARK: - UISearchBar Delegate
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText.isEmpty {
+        if (searchText.isEmpty) {
             filteredFoodItems = foodItems
         } else {
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
         }
         sortFoodItems()
     }
-
+    
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         filteredFoodItems = foodItems
