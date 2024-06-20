@@ -13,7 +13,7 @@ protocol AddFoodItemDelegate: AnyObject {
     func didAddFoodItem()
 }
 
-class AddFoodItemViewController: UIViewController {
+class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var carbsTextField: UITextField!
@@ -45,6 +45,53 @@ class AddFoodItemViewController: UIViewController {
         
         fatView.layer.cornerRadius = 8
         fatView.layer.masksToBounds = true
+        
+        // Set delegates
+        nameTextField.delegate = self
+        carbsTextField.delegate = self
+        fatTextField.delegate = self
+        proteinTextField.delegate = self
+        
+        // Disable autocorrect
+        nameTextField.autocorrectionType = .no
+        carbsTextField.autocorrectionType = .no
+        fatTextField.autocorrectionType = .no
+        proteinTextField.autocorrectionType = .no
+        
+        // Add toolbar with "Next" and "Done" buttons
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let doneButton = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(doneButtonTapped))
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolbar.setItems([nextButton, flexibleSpace, doneButton], animated: false)
+        
+        nameTextField.inputAccessoryView = toolbar
+        carbsTextField.inputAccessoryView = toolbar
+        fatTextField.inputAccessoryView = toolbar
+        proteinTextField.inputAccessoryView = toolbar
+    }
+    
+    @objc func nextButtonTapped() {
+        if nameTextField.isFirstResponder {
+            carbsTextField.becomeFirstResponder()
+        } else if carbsTextField.isFirstResponder {
+            fatTextField.becomeFirstResponder()
+        } else if fatTextField.isFirstResponder {
+            proteinTextField.becomeFirstResponder()
+        } else if proteinTextField.isFirstResponder {
+            nameTextField.becomeFirstResponder()
+        }
+    }
+    
+    @objc func doneButtonTapped() {
+        view.endEditing(true)
+    }
+    
+    // Hide the autocorrect bar
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        textField.autocorrectionType = .no
+        return true
     }
     
     private func setupSaveButton() {
@@ -63,7 +110,6 @@ class AddFoodItemViewController: UIViewController {
             title = "Add Food Item"
         }
     }
-    
     
     @IBAction func saveButtonTap(_ sender: UIButton) {
         saveFoodItem()
