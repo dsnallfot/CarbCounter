@@ -362,7 +362,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             case -0.5...0.5:
                 remainsContainer.backgroundColor = .systemGreen
             case let x where x > 0.5:
-                remainsContainer.backgroundColor = .systemYellow
+                remainsContainer.backgroundColor = .systemOrange
             default:
                 remainsContainer.backgroundColor = .systemRed
             }
@@ -379,7 +379,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         case -0.5...0.5:
             remainsContainer.backgroundColor = .systemGreen
         case let x where x > 0.5:
-            remainsContainer.backgroundColor = .systemYellow
+            remainsContainer.backgroundColor = .systemOrange
         default:
             remainsContainer.backgroundColor = .systemRed
         }
