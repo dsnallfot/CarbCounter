@@ -812,7 +812,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     // MARK: - FoodItemRowViewDelegate
     
-    func didTapFoodItemTextField(_ rowView: FoodItemRowView) {
+    /*func didTapFoodItemTextField(_ rowView: FoodItemRowView) {
         // Ensure that the searchableDropdownView is added to the view hierarchy if not already added
         if searchableDropdownView.superview == nil {
             view.addSubview(searchableDropdownView)
@@ -830,7 +830,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             self.searchableDropdownView.searchBar.becomeFirstResponder()
         }
         clearAllButton.isEnabled = false // Hide the "Clear All" button
-    }
+    }*/
     
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField) {
         if let currentIndex = foodItemRows.firstIndex(of: rowView) {

@@ -8,7 +8,7 @@
 import UIKit
 
 protocol FoodItemRowViewDelegate: AnyObject {
-    func didTapFoodItemTextField(_ rowView: FoodItemRowView)
+    //func didTapFoodItemTextField(_ rowView: FoodItemRowView)
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField)
 }
 
@@ -42,6 +42,7 @@ class FoodItemRowView: UIView {
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 135).isActive = true
         textField.textColor = .label
+        textField.isUserInteractionEnabled = false // Make the text field non-interactable
         return textField
     }()
     
@@ -106,7 +107,7 @@ class FoodItemRowView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
-        setupTextFieldTargets()
+        //setupTextFieldTargets()
         addInputAccessoryView()
     }
     
@@ -134,9 +135,9 @@ class FoodItemRowView: UIView {
         notEatenTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
     }
 
-    private func setupTextFieldTargets() {
+    /*private func setupTextFieldTargets() {
         foodItemTextField.addTarget(self, action: #selector(foodItemTextFieldTapped), for: .editingDidBegin)
-    }
+    }*/
     
     private func addInputAccessoryView() {
         let toolbar = UIToolbar()
@@ -152,9 +153,9 @@ class FoodItemRowView: UIView {
         notEatenTextField.inputAccessoryView = toolbar
     }
     
-    @objc private func foodItemTextFieldTapped() {
+    /*@objc private func foodItemTextFieldTapped() {
         delegate?.didTapFoodItemTextField(self)
-    }
+    }*/
     
     @objc private func deleteButtonTapped() {
         onDelete?()

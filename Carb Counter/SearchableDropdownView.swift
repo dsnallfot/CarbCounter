@@ -114,9 +114,15 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             print("Failed to update food item count: \(error)")
         }
         
+        // Resign the searchBar as first responder
+        searchBar.resignFirstResponder()
+        
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
         clearSearch()
+        
+        // Hide the dropdown view
+        self.isHidden = true
     }
 
     @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
