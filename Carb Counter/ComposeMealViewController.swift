@@ -357,11 +357,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         container.addSubview(treatmentView)
         
         // Create the CR container
-        let crContainer = createContainerView(backgroundColor: .systemTeal)
+        let crContainer = createContainerView(backgroundColor: .systemCyan)
         treatmentView.addSubview(crContainer)
-        
+
         crLabel = createLabel(text: "CARB RATIO", fontSize: 10, weight: .bold, color: .white)
-        nowCRLabel = createLabel(text: String(format: "%.1f g/E", placeholderBolusCR), fontSize: 18, weight: .bold, color: .white)
+
+        // Check if the placeholderBolusCR contains decimals
+        if placeholderBolusCR.truncatingRemainder(dividingBy: 1) == 0 {
+            nowCRLabel = createLabel(text: String(format: "%.0f g/E", placeholderBolusCR), fontSize: 18, weight: .bold, color: .white)
+        } else {
+            nowCRLabel = createLabel(text: String(format: "%.1f g/E", placeholderBolusCR), fontSize: 18, weight: .bold, color: .white)
+        }
+
         let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
         setupStackView(crStack, in: crContainer)
         
