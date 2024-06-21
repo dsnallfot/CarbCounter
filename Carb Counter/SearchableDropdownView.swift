@@ -2,14 +2,15 @@ import UIKit
 
 class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
 
-    var onSelectItem: ((FoodItem) -> Void)?
-    var onDoneButtonTapped: (() -> Void)?
+    var onSelectItems: (([FoodItem]) -> Void)?
+    var onDoneButtonTapped: (([FoodItem]) -> Void)?
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
+    var selectedFoodItems: [FoodItem] = []
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Search Food Items"
+        searchBar.placeholder = "Search and Select Food Items"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.barTintColor = .systemGray
         searchBar.backgroundImage = UIImage() // Removes the default background image
@@ -83,14 +84,14 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     @objc private func doneButtonTapped() {
-        if searchBar.isFirstResponder {
-            searchBar.resignFirstResponder()
-        } else {
-            searchBar.becomeFirstResponder()
-            searchBar.resignFirstResponder()
-        }
+        // Add all selected items and then clear the selection and search
+        onDoneButtonTapped?(selectedFoodItems)
+        clearSelection()
         clearSearch()
-        onDoneButtonTapped?()
+    }
+
+    private func clearSelection() {
+        selectedFoodItems.removeAll()
     }
 
     private func clearSearch() {
@@ -117,13 +118,20 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .default, reuseIdentifier: "cell")
-        cell.textLabel?.text = filteredFoodItems[indexPath.row].name
+        let foodItem = filteredFoodItems[indexPath.row]
+        cell.textLabel?.text = foodItem.name
+        cell.accessoryType = selectedFoodItems.contains(foodItem) ? .checkmark : .none
         return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        onSelectItem?(filteredFoodItems[indexPath.row])
-        clearSearch()
+        let foodItem = filteredFoodItems[indexPath.row]
+        if let index = selectedFoodItems.firstIndex(of: foodItem) {
+            selectedFoodItems.remove(at: index)
+        } else {
+            selectedFoodItems.append(foodItem)
+        }
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {

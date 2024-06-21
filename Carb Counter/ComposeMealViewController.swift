@@ -79,10 +79,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
         
-        searchableDropdownView.onDoneButtonTapped = { [weak self] in
+        /*searchableDropdownView.onDoneButtonTapped = { [weak self] in
             self?.searchableDropdownView.isHidden = true
             self?.clearAllButton?.isEnabled = true // Show the "Clear All" button
-        }
+        }*/
         
         // Fetch food items and add the add button row
         fetchFoodItems()
@@ -642,16 +642,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 110), // Adjust search field position
             searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
         ])
-        searchableDropdownView.onSelectItem = { [weak self] foodItem in
+        
+        searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
             self?.searchableDropdownView.isHidden = true
-            self?.addFoodItemRow(with: foodItem)
+            selectedItems.forEach { self?.addFoodItemRow(with: $0) }
             self?.clearAllButton.isEnabled = true // Show the "Clear All" button
             self?.updateHeadlineVisibility() // Add this line
-        }
-        
-        searchableDropdownView.onDoneButtonTapped = { [weak self] in
-            self?.searchableDropdownView.isHidden = true
-            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
         }
     }
     
@@ -816,7 +812,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
        class AddButtonRowView: UIView {
            let addButton: UIButton = {
                let button = UIButton(type: .system)
-               button.setTitle("+ Add Item", for: .normal)
+               button.setTitle("+ Select Items", for: .normal)
                button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold) // Adjust font size and weight
                button.setTitleColor(.systemBlue, for: .normal) // Set the button color to your accent color
                button.translatesAutoresizingMaskIntoConstraints = false
