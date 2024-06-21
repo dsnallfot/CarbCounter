@@ -84,7 +84,7 @@ class HomeViewController: UIViewController {
             // Copyright label constraints
             copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80)
+            copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -110)
         ])
         
         // Add cog wheel icon to the top right corner

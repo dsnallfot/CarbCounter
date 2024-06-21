@@ -1,28 +1,41 @@
-//
-//  CoreDataHelper.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-21.
-//
-
 import CoreData
 import UIKit
 
 class CoreDataHelper {
     static let shared = CoreDataHelper()
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    
-    // Fetch Carb Ratios
-    func fetchCarbRatios() -> [CarbRatioSchedule] {
+
+    // Fetch Carb Ratios for all hours
+    func fetchCarbRatios() -> [Int: Double] {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
+
         do {
-            return try context.fetch(fetchRequest)
+            let results = try context.fetch(fetchRequest)
+            var carbRatios = [Int: Double]()
+            for result in results {
+                carbRatios[Int(result.hour)] = result.carbRatio
+            }
+            return carbRatios
         } catch {
             print("Failed to fetch carb ratios: \(error)")
-            return []
+            return [:]
         }
     }
-    
+
+    // Fetch Carb Ratio for a specific hour
+    func fetchCarbRatio(for hour: Int) -> Double? {
+        let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            return results.first?.carbRatio
+        } catch {
+            print("Failed to fetch carb ratio: \(error)")
+            return nil
+        }
+    }
+
     // Save Carb Ratio
     func saveCarbRatio(hour: Int, ratio: Double) {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
@@ -38,18 +51,38 @@ class CoreDataHelper {
             print("Failed to save carb ratio: \(error)")
         }
     }
-    
-    // Fetch Start Doses
-    func fetchStartDoses() -> [StartDoseSchedule] {
+
+    // Fetch Start Dose for all hours
+    func fetchStartDoses() -> [Int: Double] {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+
         do {
-            return try context.fetch(fetchRequest)
+            let results = try context.fetch(fetchRequest)
+            var startDoses = [Int: Double]()
+            for result in results {
+                startDoses[Int(result.hour)] = result.startDose
+            }
+            return startDoses
         } catch {
             print("Failed to fetch start doses: \(error)")
-            return []
+            return [:]
         }
     }
-    
+
+    // Fetch Start Dose for a specific hour
+    func fetchStartDose(for hour: Int) -> Double? {
+        let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            return results.first?.startDose
+        } catch {
+            print("Failed to fetch start dose: \(error)")
+            return nil
+        }
+    }
+
     // Save Start Dose
     func saveStartDose(hour: Int, dose: Double) {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()

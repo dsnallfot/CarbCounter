@@ -2,14 +2,13 @@ import UIKit
 
 class CarbRatioViewController: UITableViewController {
     
-    var carbRatios: [CarbRatioSchedule] = []
+    var carbRatios: [Int: Double] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        carbRatios = CoreDataHelper.shared.fetchCarbRatios()
         title = "Carb Ratio Schedule"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        
-        carbRatios = CoreDataHelper.shared.fetchCarbRatios()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -18,7 +17,7 @@ class CarbRatioViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let ratio = carbRatios.first { $0.hour == Int16(indexPath.row) }?.carbRatio ?? 0.0
+        let ratio = carbRatios[indexPath.row] ?? 0.0
         cell.textLabel?.text = "Hour \(indexPath.row): \(ratio)"
         return cell
     }
@@ -27,7 +26,7 @@ class CarbRatioViewController: UITableViewController {
         let alert = UIAlertController(title: "Edit Carb Ratio", message: "Enter a new carb ratio for hour \(indexPath.row)", preferredStyle: .alert)
         alert.addTextField { textField in
             textField.keyboardType = .decimalPad
-            let ratio = self.carbRatios.first { $0.hour == Int16(indexPath.row) }?.carbRatio ?? 0.0
+            let ratio = self.carbRatios[indexPath.row] ?? 0.0
             textField.text = "\(ratio)"
         }
         let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in

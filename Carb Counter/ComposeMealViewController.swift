@@ -29,8 +29,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var crLabel: UILabel! // Declare crLabel as a class-level variable
     var remainsContainer: UIView!
     
-    var placeholderStartAmount = Double(20) //To be replaced wioth user settings for different times of day
-    var placeholderBolusCR = Double(30) //To be replaced wioth user settings/Nightscout profile import for different times of day
+    var scheduledStartDose = Double(20) //To be replaced wioth user settings for different times of day
+    var scheduledCarbRatio = Double(30) //To be replaced wioth user settings/Nightscout profile import for different times of day
     
     // Add an outlet for the "Clear All" button
     var clearAllButton: UIBarButtonItem!
@@ -39,6 +39,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Menu"
+        
+        updatePlaceholderValuesForCurrentHour() // Add this line
         
         // Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
@@ -101,6 +103,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    private func updatePlaceholderValuesForCurrentHour() {
+        let currentHour = Calendar.current.component(.hour, from: Date())
+        if let carbRatio = CoreDataHelper.shared.fetchCarbRatio(for: currentHour) {
+            scheduledCarbRatio = carbRatio
+        }
+        if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
+            scheduledStartDose = startDose
+        }
     }
     
     @objc private func saveFavoriteMeals() {
@@ -362,11 +374,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
 
         crLabel = createLabel(text: "CARB RATIO", fontSize: 10, weight: .bold, color: .white)
 
-        // Check if the placeholderBolusCR contains decimals
-        if placeholderBolusCR.truncatingRemainder(dividingBy: 1) == 0 {
-            nowCRLabel = createLabel(text: String(format: "%.0f g/E", placeholderBolusCR), fontSize: 18, weight: .bold, color: .white)
+        // Check if the scheduledCarbRatio contains decimals
+        if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
+            nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
         } else {
-            nowCRLabel = createLabel(text: String(format: "%.1f g/E", placeholderBolusCR), fontSize: 18, weight: .bold, color: .white)
+            nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
         }
 
         let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
@@ -386,7 +398,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         treatmentView.addSubview(startAmountContainer)
         
         let startAmountLabel = createLabel(text: "START DOSE", fontSize: 10, weight: .bold, color: .white)
-        totalStartAmountLabel = createLabel(text: String(format: "%.0f g", placeholderStartAmount), fontSize: 18, weight: .semibold, color: .white)
+        totalStartAmountLabel = createLabel(text: String(format: "%.0f g", scheduledStartDose), fontSize: 18, weight: .semibold, color: .white)
         let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, totalStartAmountLabel])
         setupStackView(startAmountStack, in: startAmountContainer)
         
@@ -480,15 +492,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         totalNetProteinLabel?.text = String(format: "%.1f g", totalNetProtein)
         
         // Calculate and update totalBolusAmountLabel
-        let totalBolus = totalNetCarbs / placeholderBolusCR
+        let totalBolus = totalNetCarbs / scheduledCarbRatio
         let roundedBolus = roundToNearest05(totalBolus)
         totalBolusAmountLabel?.text = String(format: "%.2f E", roundedBolus)
         
         // Update totalStartAmountLabel based on the conditions
-        if totalNetCarbs > 0 && totalNetCarbs <= placeholderStartAmount {
+        if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
             totalStartAmountLabel?.text = String(format: "%.0f g", totalNetCarbs)
         } else {
-            totalStartAmountLabel?.text = String(format: "%.0f g", placeholderStartAmount)
+            totalStartAmountLabel?.text = String(format: "%.0f g", scheduledStartDose)
         }
         
         // Call the method to update remains value

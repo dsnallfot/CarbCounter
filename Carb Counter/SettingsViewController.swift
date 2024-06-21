@@ -13,6 +13,14 @@ class SettingsViewController: UITableViewController {
         super.viewDidLoad()
         title = "Settings"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        
+        // Add cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
+    }
+    
+    @objc private func cancelButtonTapped() {
+        dismiss(animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
