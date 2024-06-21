@@ -24,6 +24,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalStartAmountLabel: UILabel!
     var totalRegisteredLabel: UITextField!
     var totalRemainsLabel: UILabel!
+    var remainsLabel: UILabel! // Declare remainsLabel as a class-level variable
     var remainsContainer: UIView!
     
     var placeholderStartAmount = Double(20)
@@ -171,15 +172,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func showFavoriteMeals() {
-           let favoriteMealsVC = FavoriteMealsViewController()
-           navigationController?.pushViewController(favoriteMealsVC, animated: true)
-       }
+        let favoriteMealsVC = FavoriteMealsViewController()
+        navigationController?.pushViewController(favoriteMealsVC, animated: true)
+    }
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems() // Clear existing food items
-
+        
         guard let items = favoriteMeal.items as? [[String: Any]] else { return }
-
+        
         for item in items {
             if let name = item["name"] as? String,
                let portionServed = item["portionServed"] as? String {
@@ -192,27 +193,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     foodItemRows.append(rowView)
                     rowView.setSelectedFoodItem(foodItem)
                     rowView.portionServedTextField.text = portionServed
-
+                    
                     // Add a target to trigger the value change when portionServedTextField changes
                     rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-
-                    // Calculate nutrients immediately
-                    rowView.calculateNutrients()
-
+                    
                     rowView.onDelete = { [weak self] in
                         self?.removeFoodItemRow(rowView)
                     }
-
+                    
                     rowView.onValueChange = { [weak self] in
                         self?.updateTotalNutrients()
                     }
+                    rowView.calculateNutrients()
                 }
             }
         }
         updateTotalNutrients()
         updateClearAllButtonState()
     }
-
+    
     @objc private func textFieldDidChange(_ textField: UITextField) {
         // Replace commas with periods
         if let text = textField.text {
@@ -245,7 +244,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
-        
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .systemBackground
@@ -359,7 +357,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         remainsContainer = createContainerView(backgroundColor: .systemGreen)
         treatmentView.addSubview(remainsContainer)
         
-        let remainsLabel = createLabel(text: "REMAINS", fontSize: 10, weight: .bold, color: .white)
+        remainsLabel = createLabel(text: "REMAINS", fontSize: 10, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, totalRemainsLabel])
         setupStackView(remainsStack, in: remainsContainer)
@@ -402,7 +400,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
-        
         // Add this line to set up the toolbar for totalRegisteredLabel
         addDoneButtonToKeyboard()
     }
@@ -491,6 +488,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0f g", remainsValue)
             
+            // Update remainsLabel text based on remainsValue
+            if remainsValue < -0.5 {
+                remainsLabel.text = "OVERDOSE!"
+            } else {
+                remainsLabel.text = "REMAINS"
+            }
+            
             switch remainsValue {
             case -0.5...0.5:
                 remainsContainer.backgroundColor = .systemGreen
@@ -502,6 +506,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         } else {
             totalRemainsLabel.text = String(format: "%.0f g", totalCarbsValue)
             remainsContainer.backgroundColor = .systemGray
+            remainsLabel.text = "REMAINS"
         }
         
         // Switch colors based on comparison with totalNetCarbsLabel
@@ -786,4 +791,3 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
 }
-                                                                                    
