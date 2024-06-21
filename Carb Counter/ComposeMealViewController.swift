@@ -20,15 +20,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalNetProteinLabel: UILabel!
     var searchableDropdownView: SearchableDropdownView!
     
+    var nowCRLabel: UILabel!
     var totalBolusAmountLabel: UILabel!
     var totalStartAmountLabel: UILabel!
     var totalRegisteredLabel: UITextField!
     var totalRemainsLabel: UILabel!
     var remainsLabel: UILabel! // Declare remainsLabel as a class-level variable
+    var crLabel: UILabel! // Declare crLabel as a class-level variable
     var remainsContainer: UIView!
     
-    var placeholderStartAmount = Double(20)
-    var placeholderBolusCR = Double(30)
+    var placeholderStartAmount = Double(20) //To be replaced wioth user settings for different times of day
+    var placeholderBolusCR = Double(30) //To be replaced wioth user settings/Nightscout profile import for different times of day
     
     // Add an outlet for the "Clear All" button
     var clearAllButton: UIBarButtonItem!
@@ -135,7 +137,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             // Create the FavoriteMeals entity
             let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
             favoriteMeals.name = mealName
-            
+            favoriteMeals.id = UUID() // Add this line to set the UUID
+
             // Create an array to store the food items and their portions
             var items: [[String: Any]] = []
             for row in self.foodItemRows {
@@ -148,7 +151,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 }
             }
             favoriteMeals.items = items as NSObject
-            
+
             // Save the context
             CoreDataStack.shared.saveContext()
             
@@ -305,7 +308,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(carbsContainer)
         
         let summaryLabel = createLabel(text: "TOT CARBS", fontSize: 10, weight: .bold, color: .white)
-        totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         setupStackView(carbsStack, in: carbsContainer)
         
@@ -314,7 +317,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(fatContainer)
         
         let netFatLabel = createLabel(text: "TOT FAT", fontSize: 10, weight: .bold, color: .white)
-        totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         setupStackView(fatStack, in: fatContainer)
         
@@ -323,7 +326,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(proteinContainer)
         
         let netProteinLabel = createLabel(text: "TOT PROTEIN", fontSize: 10, weight: .bold, color: .white)
-        totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         setupStackView(proteinStack, in: proteinContainer)
         
@@ -353,12 +356,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         treatmentView.backgroundColor = .systemBackground
         container.addSubview(treatmentView)
         
+        // Create the CR container
+        let crContainer = createContainerView(backgroundColor: .systemTeal)
+        treatmentView.addSubview(crContainer)
+        
+        crLabel = createLabel(text: "CARB RATIO", fontSize: 10, weight: .bold, color: .white)
+        nowCRLabel = createLabel(text: String(format: "%.1f g/E", placeholderBolusCR), fontSize: 18, weight: .bold, color: .white)
+        let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
+        setupStackView(crStack, in: crContainer)
+        
         // Create the REMAINS container
         remainsContainer = createContainerView(backgroundColor: .systemGreen)
         treatmentView.addSubview(remainsContainer)
         
         remainsLabel = createLabel(text: "REMAINS", fontSize: 10, weight: .bold, color: .white)
-        totalRemainsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        totalRemainsLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, totalRemainsLabel])
         setupStackView(remainsStack, in: remainsContainer)
         
@@ -366,8 +378,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
         treatmentView.addSubview(startAmountContainer)
         
-        let startAmountLabel = createLabel(text: "START AMOUNT", fontSize: 10, weight: .bold, color: .white)
-        totalStartAmountLabel = createLabel(text: String(format: "%.0f g", placeholderStartAmount), fontSize: 18, weight: .bold, color: .white)
+        let startAmountLabel = createLabel(text: "START DOSE", fontSize: 10, weight: .bold, color: .white)
+        totalStartAmountLabel = createLabel(text: String(format: "%.0f g", placeholderStartAmount), fontSize: 18, weight: .semibold, color: .white)
         let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, totalStartAmountLabel])
         setupStackView(startAmountStack, in: startAmountContainer)
         
@@ -375,14 +387,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let registeredContainer = createContainerView(backgroundColor: .tertiarySystemBackground, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
         
-        let registeredLabel = createLabel(text: "REGISTERED g", fontSize: 10, weight: .bold, color: .label)
-        totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .bold, color: .label)
+        let registeredLabel = createLabel(text: "REGISTERED", fontSize: 10, weight: .bold, color: .label)
+        totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         setupStackView(registeredStack, in: registeredContainer)
         
         // Arrange the containers in a horizontal stack view
-        let hStack = UIStackView(arrangedSubviews: [startAmountContainer, registeredContainer, remainsContainer])
+        let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
@@ -763,7 +775,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("Add Item", for: .normal)
+            button.setTitle("+ Add Item", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 15) // Adjust font size as needed
             button.setTitleColor(.systemBlue, for: .normal) // Set the button color to your accent color
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -783,7 +795,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             addSubview(addButton)
             
             NSLayoutConstraint.activate([
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8)
