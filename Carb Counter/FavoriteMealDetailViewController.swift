@@ -87,7 +87,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         if let items = favoriteMeal.items as? [[String: Any]] {
             let item = items[indexPath.row]
             cell.textLabel?.text = item["name"] as? String
-            cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "") g"
+            cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "")"
         }
         return cell
     }
