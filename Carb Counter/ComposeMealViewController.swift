@@ -83,15 +83,68 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Set the delegate for the text field
         totalRegisteredLabel.delegate = self
         
+        // Add Favorites button
+        let showFavoriteMealsImage = UIImage(systemName: "star")
+        let showFavoriteMealsButton = UIBarButtonItem(image: showFavoriteMealsImage, style: .plain, target: self, action: #selector(showFavoriteMeals))
+        
+        // Add Save Favorite button
+        let saveFavoriteImage = UIImage(systemName: "plus.circle")
+        let saveFavoriteButton = UIBarButtonItem(image: saveFavoriteImage, style: .plain, target: self, action: #selector(saveFavoriteMeals))
+        
+        // Set both buttons on the left side
+        navigationItem.leftBarButtonItems = [showFavoriteMealsButton, saveFavoriteButton]
+        
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
+    @objc private func saveFavoriteMeals() {
+        guard !foodItemRows.isEmpty else {
+            // Show an alert if there are no items to save
+            let alert = UIAlertController(title: "No Items", message: "There are no items to save as a favorite.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
+        // Create the FavoriteMeals entity
+        let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
+        favoriteMeals.name = "My Favorite Meal"
+        
+        // Create an array to store the food items and their portions
+        var items: [[String: Any]] = []
+        for row in foodItemRows {
+            if let foodItem = row.selectedFoodItem {
+                let item = [
+                    "name": foodItem.name ?? "",
+                    "portionServed": row.portionServedTextField.text ?? ""
+                ]
+                items.append(item)
+            }
+        }
+        favoriteMeals.items = items as NSObject
+        
+        // Save the context
+        CoreDataStack.shared.saveContext()
+        
+        // Confirm save
+        let alert = UIAlertController(title: "Saved", message: "The meal has been saved as a favorite.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    // ... rest of the code ...
+    
     deinit {
         // Remove observers for keyboard notifications
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc private func showFavoriteMeals() {
+        let favoriteMealsVC = FavoriteMealsViewController()
+        navigationController?.pushViewController(favoriteMealsVC, animated: true)
     }
     
     @objc private func clearAllButtonTapped() {
@@ -116,7 +169,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         view.endEditing(true) // Hide the keyboard
         updateClearAllButtonState() // Add this line
     }
-    
     private func setupScrollView(below header: UIView) {
         scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -441,6 +493,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor, constant: -8)
         ])
     }
+    
     private func setupSearchableDropdownView() {
         searchableDropdownView = SearchableDropdownView()
         searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
@@ -488,7 +541,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         rowView.translatesAutoresizingMaskIntoConstraints = false
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
-        
         if let foodItem = foodItem {
             rowView.setSelectedFoodItem(foodItem)
         }
@@ -509,7 +561,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         addButtonRowView = AddButtonRowView()
         addButtonRowView.translatesAutoresizingMaskIntoConstraints = false
         addButtonRowView.addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
-        
         stackView.addArrangedSubview(addButtonRowView)
     }
     
@@ -618,16 +669,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
         }
     }
+    
     func didAddFoodItem() {
         fetchFoodItems() // Update the food items after adding a new one
     }
+    
     // Separate class for Add Button Row
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
-            let button = UIButton(type: .contactAdd)
+            let button = UIButton(type: .system)
+            button.setTitle("Add Item", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 15) // Adjust font size as needed
+            button.setTitleColor(.systemBlue, for: .normal) // Set the button color to your accent color
             button.translatesAutoresizingMaskIntoConstraints = false
             return button
         }()
+
         override init(frame: CGRect) {
             super.init(frame: frame)
             setupView()
@@ -639,12 +696,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         private func setupView() {
             addSubview(addButton)
+            
             NSLayoutConstraint.activate([
                 addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8)
+                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8)
             ])
         }
     }
 }
-           

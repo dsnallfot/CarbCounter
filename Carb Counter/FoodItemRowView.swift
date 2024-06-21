@@ -103,7 +103,7 @@ class FoodItemRowView: UIView {
         return button
     }()
     
-    private var selectedFoodItem: FoodItem?
+    var selectedFoodItem: FoodItem?
 
     override init(frame: CGRect) {
         super.init(frame: frame)

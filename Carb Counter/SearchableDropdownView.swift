@@ -1,10 +1,3 @@
-//
-//  SearchableDropdownView.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-19.
-//
-
 import UIKit
 
 class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
@@ -84,8 +77,18 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         ])
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        searchBar.becomeFirstResponder()
+    }
+
     @objc private func doneButtonTapped() {
-        searchBar.resignFirstResponder()
+        if searchBar.isFirstResponder {
+            searchBar.resignFirstResponder()
+        } else {
+            searchBar.becomeFirstResponder()
+            searchBar.resignFirstResponder()
+        }
         clearSearch()
         onDoneButtonTapped?()
     }
