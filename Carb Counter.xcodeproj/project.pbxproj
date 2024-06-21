@@ -30,6 +30,7 @@
 		659632872C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		65C75CF62C255C8F00114BD3 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */; };
 		65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */; };
+		65C75CFA2C256FA700114BD3 /* FavoriteMealDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,7 @@
 		65B7F58E2C244AB9005A4386 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMealsViewController.swift; sourceTree = "<group>"; };
+		65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMealDetailViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +140,7 @@
 				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
 				6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */,
 				65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */,
+				65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */,
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
 				6553EE042C20DA9400B0FDF5 /* Assets.xcassets */,
 				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
@@ -305,6 +308,7 @@
 				6553EE032C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
 				65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */,
+				65C75CFA2C256FA700114BD3 /* FavoriteMealDetailViewController.swift in Sources */,
 				6553EE4C2C2312BE00B0FDF5 /* SearchableDropdownView.swift in Sources */,
 				6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */,
 				6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */,

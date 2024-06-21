@@ -4,7 +4,6 @@
 //
 //  Created by Daniel Snällfot on 2024-06-17.
 //
-
 import UIKit
 import CoreData
 
@@ -21,12 +20,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalNetProteinLabel: UILabel!
     var searchableDropdownView: SearchableDropdownView!
     
+    var totalBolusAmountLabel: UILabel!
     var totalStartAmountLabel: UILabel!
     var totalRegisteredLabel: UITextField!
     var totalRemainsLabel: UILabel!
     var remainsContainer: UIView!
     
     var placeholderStartAmount = Double(20)
+    var placeholderBolusCR = Double(30)
     
     // Add an outlet for the "Clear All" button
     var clearAllButton: UIBarButtonItem!
@@ -108,33 +109,60 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             return
         }
         
-        // Create the FavoriteMeals entity
-        let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
-        favoriteMeals.name = "My Favorite Meal"
-        
-        // Create an array to store the food items and their portions
-        var items: [[String: Any]] = []
-        for row in foodItemRows {
-            if let foodItem = row.selectedFoodItem {
-                let item = [
-                    "name": foodItem.name ?? "",
-                    "portionServed": row.portionServedTextField.text ?? ""
-                ]
-                items.append(item)
+        // Prompt for the name of the favorite meal
+        let nameAlert = UIAlertController(title: "Save Favorite Meal", message: "Enter a name for this favorite meal:", preferredStyle: .alert)
+        nameAlert.addTextField { textField in
+            textField.placeholder = "Meal Name"
+            textField.autocorrectionType = .no
+            textField.spellCheckingType = .no
+            textField.autocapitalizationType = .none
+            
+            if #available(iOS 11.0, *) {
+                textField.textContentType = .none
+            }
+            
+            // Remove predictive text
+            if #available(iOS 11.0, *) {
+                textField.inputAssistantItem.leadingBarButtonGroups = []
+                textField.inputAssistantItem.trailingBarButtonGroups = []
             }
         }
-        favoriteMeals.items = items as NSObject
+        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            let mealName = nameAlert.textFields?.first?.text ?? "My Favorite Meal"
+            
+            // Create the FavoriteMeals entity
+            let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
+            favoriteMeals.name = mealName
+            
+            // Create an array to store the food items and their portions
+            var items: [[String: Any]] = []
+            for row in self.foodItemRows {
+                if let foodItem = row.selectedFoodItem {
+                    let item = [
+                        "name": foodItem.name ?? "",
+                        "portionServed": row.portionServedTextField.text ?? ""
+                    ]
+                    items.append(item)
+                }
+            }
+            favoriteMeals.items = items as NSObject
+            
+            // Save the context
+            CoreDataStack.shared.saveContext()
+            
+            // Confirm save
+            let confirmAlert = UIAlertController(title: "Saved", message: "The meal has been saved as a favorite.", preferredStyle: .alert)
+            confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(confirmAlert, animated: true)
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
-        // Save the context
-        CoreDataStack.shared.saveContext()
+        nameAlert.addAction(saveAction)
+        nameAlert.addAction(cancelAction)
         
-        // Confirm save
-        let alert = UIAlertController(title: "Saved", message: "The meal has been saved as a favorite.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        present(nameAlert, animated: true)
     }
-    
-    // ... rest of the code ...
     
     deinit {
         // Remove observers for keyboard notifications
@@ -143,10 +171,55 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func showFavoriteMeals() {
-        let favoriteMealsVC = FavoriteMealsViewController()
-        navigationController?.pushViewController(favoriteMealsVC, animated: true)
-    }
+           let favoriteMealsVC = FavoriteMealsViewController()
+           navigationController?.pushViewController(favoriteMealsVC, animated: true)
+       }
     
+    func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
+        clearAllFoodItems() // Clear existing food items
+
+        guard let items = favoriteMeal.items as? [[String: Any]] else { return }
+
+        for item in items {
+            if let name = item["name"] as? String,
+               let portionServed = item["portionServed"] as? String {
+                if let foodItem = foodItems.first(where: { $0.name == name }) {
+                    let rowView = FoodItemRowView()
+                    rowView.foodItems = foodItems
+                    rowView.delegate = self
+                    rowView.translatesAutoresizingMaskIntoConstraints = false
+                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                    foodItemRows.append(rowView)
+                    rowView.setSelectedFoodItem(foodItem)
+                    rowView.portionServedTextField.text = portionServed
+
+                    // Add a target to trigger the value change when portionServedTextField changes
+                    rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+
+                    // Calculate nutrients immediately
+                    rowView.calculateNutrients()
+
+                    rowView.onDelete = { [weak self] in
+                        self?.removeFoodItemRow(rowView)
+                    }
+
+                    rowView.onValueChange = { [weak self] in
+                        self?.updateTotalNutrients()
+                    }
+                }
+            }
+        }
+        updateTotalNutrients()
+        updateClearAllButtonState()
+    }
+
+    @objc private func textFieldDidChange(_ textField: UITextField) {
+        // Replace commas with periods
+        if let text = textField.text {
+            textField.text = text.replacingOccurrences(of: ",", with: ".")
+        }
+        updateTotalNutrients() // Ensure calculations are updated
+    }
     @objc private func clearAllButtonTapped() {
         view.endEditing(true) // This will hide the keyboard
         let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
@@ -158,7 +231,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
-    
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
@@ -221,11 +293,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.backgroundColor = .systemBackground
         container.addSubview(summaryView)
         
+        // Create the BOLUS container
+        let bolusContainer = createContainerView(backgroundColor: .systemBlue)
+        summaryView.addSubview(bolusContainer)
+        
+        let bolusLabel = createLabel(text: "TOT BOLUS", fontSize: 10, weight: .bold, color: .white)
+        totalBolusAmountLabel = createLabel(text: "0 E", fontSize: 18, weight: .bold, color: .white)
+        let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
+        setupStackView(bolusStack, in: bolusContainer)
+        
         // Create the CARBS container with outline
         let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .label, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "TOTAL CARBS", fontSize: 10, weight: .bold, color: .white)
+        let summaryLabel = createLabel(text: "TOT CARBS", fontSize: 10, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         setupStackView(carbsStack, in: carbsContainer)
@@ -234,7 +315,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
-        let netFatLabel = createLabel(text: "TOTAL FAT", fontSize: 10, weight: .bold, color: .white)
+        let netFatLabel = createLabel(text: "TOT FAT", fontSize: 10, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         setupStackView(fatStack, in: fatContainer)
@@ -243,13 +324,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
-        let netProteinLabel = createLabel(text: "TOTAL PROTEIN", fontSize: 10, weight: .bold, color: .white)
+        let netProteinLabel = createLabel(text: "TOT PROTEIN", fontSize: 10, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         setupStackView(proteinStack, in: proteinContainer)
         
         // Arrange the containers in a horizontal stack view
-        let hStack = UIStackView(arrangedSubviews: [fatContainer, proteinContainer, carbsContainer])
+        let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
@@ -303,7 +384,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         setupStackView(registeredStack, in: registeredContainer)
         
         // Arrange the containers in a horizontal stack view
-        let hStack = UIStackView(arrangedSubviews: [startAmountContainer, remainsContainer, registeredContainer])
+        let hStack = UIStackView(arrangedSubviews: [startAmountContainer, registeredContainer, remainsContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
@@ -325,7 +406,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Add this line to set up the toolbar for totalRegisteredLabel
         addDoneButtonToKeyboard()
     }
-    
     private func createContainerView(backgroundColor: UIColor, borderColor: UIColor? = nil, borderWidth: CGFloat = 0) -> UIView {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -338,7 +418,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         return containerView
     }
-    
     private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
         let label = UILabel()
         label.text = text
@@ -384,6 +463,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
         totalNetProteinLabel?.text = String(format: "%.1f g", totalNetProtein)
         
+        // Calculate and update totalBolusAmountLabel
+        let totalBolus = totalNetCarbs / placeholderBolusCR
+        let roundedBolus = roundToNearest05(totalBolus)
+        totalBolusAmountLabel?.text = String(format: "%.2f E", roundedBolus)
+        
         // Update totalStartAmountLabel based on the conditions
         if totalNetCarbs > 0 && totalNetCarbs <= placeholderStartAmount {
             totalStartAmountLabel?.text = String(format: "%.0f g", totalNetCarbs)
@@ -395,11 +479,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         registeredLabelDidChange()
     }
     
-    @objc private func textFieldDidChange(_ textField: UITextField) {
-        // Replace commas with periods
-        if let text = textField.text {
-            textField.text = text.replacingOccurrences(of: ",", with: ".")
-        }
+    private func roundToNearest05(_ value: Double) -> Double {
+        return (value * 20.0).rounded() / 20.0
     }
     
     @objc private func registeredLabelDidChange() {
@@ -524,7 +605,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-            
             // Ensure searchableDropdownView is not nil before calling updateFoodItems
             if let searchableDropdownView = searchableDropdownView {
                 searchableDropdownView.updateFoodItems(foodItems) // Update the dropdown view with the new items
@@ -684,7 +764,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             button.translatesAutoresizingMaskIntoConstraints = false
             return button
         }()
-
+        
         override init(frame: CGRect) {
             super.init(frame: frame)
             setupView()
@@ -706,3 +786,4 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
 }
+                                                                                    

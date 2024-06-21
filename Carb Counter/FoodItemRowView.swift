@@ -16,6 +16,7 @@ class FoodItemRowView: UIView {
     
     var onDelete: (() -> Void)?
     var onValueChange: (() -> Void)?
+    
     var netCarbs: Double = 0.0 {
         didSet {
             onValueChange?()
@@ -38,10 +39,8 @@ class FoodItemRowView: UIView {
     let foodItemTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Food Item"
-        //textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 135).isActive = true
-        //textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
     }()
@@ -61,7 +60,6 @@ class FoodItemRowView: UIView {
     
     let ppOr100g: UILabel = {
         let label = UILabel()
-        //label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: 10).isActive = true
@@ -113,7 +111,7 @@ class FoodItemRowView: UIView {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder😊 has not been implemented")
     }
     
     private func setupView() {
@@ -162,7 +160,7 @@ class FoodItemRowView: UIView {
         onDelete?()
     }
     
-    @objc private func calculateNutrients() {
+    @objc func calculateNutrients() {
         guard let selectedFoodItem = selectedFoodItem else { return }
         let portionServed = Double(portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
         let notEaten = Double(notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
