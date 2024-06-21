@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddFoodItemDelegate {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddFoodItemDelegate, UITextFieldDelegate {
     
     var foodItemRows: [FoodItemRowView] = []
     var stackView: UIStackView!
@@ -20,6 +20,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalNetFatLabel: UILabel!
     var totalNetProteinLabel: UILabel!
     var searchableDropdownView: SearchableDropdownView!
+    
+    var totalStartAmountLabel: UILabel!
+    var totalRegisteredLabel: UITextField!
+    var totalRemainsLabel: UILabel!
+    var remainsContainer: UIView!
+    
+    var placeholderStartAmount = Double(20)
     
     // Add an outlet for the "Clear All" button
     var clearAllButton: UIBarButtonItem!
@@ -38,11 +45,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 107) // Adjust height as needed
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
         ])
         
         // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
+        
+        // Setup treatment view
+        setupTreatmentView(in: fixedHeaderContainer)
         
         // Setup headline
         setupHeadline(in: fixedHeaderContainer)
@@ -66,6 +76,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Fetch food items and add the add button row
         fetchFoodItems()
         updateClearAllButtonState() // Add this line
+        
+        // Add observer for text changes in totalRegisteredLabel
+        totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
+        // Set the delegate for the text field
+        totalRegisteredLabel.delegate = self
         
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -150,36 +166,36 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func setupSummaryView(in container: UIView) {
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        summaryView.backgroundColor = .secondarySystemBackground // Set background color to secondary system background
+        summaryView.backgroundColor = .systemBackground
         container.addSubview(summaryView)
-
-        // Create the CARBS container
-        let carbsContainer = createContainerView(backgroundColor: .systemOrange)
+        
+        // Create the CARBS container with outline
+        let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .label, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "CARBS", fontSize: 10, weight: .bold, color: .white)
+        let summaryLabel = createLabel(text: "TOTAL CARBS", fontSize: 10, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         setupStackView(carbsStack, in: carbsContainer)
-
+        
         // Create the FAT container
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
-
-        let netFatLabel = createLabel(text: "FAT", fontSize: 10, weight: .bold, color: .white)
+        
+        let netFatLabel = createLabel(text: "TOTAL FAT", fontSize: 10, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         setupStackView(fatStack, in: fatContainer)
-
+        
         // Create the PROTEIN container
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
-
-        let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 10, weight: .bold, color: .white)
+        
+        let netProteinLabel = createLabel(text: "TOTAL PROTEIN", fontSize: 10, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         setupStackView(proteinStack, in: proteinContainer)
-
+        
         // Arrange the containers in a horizontal stack view
         let hStack = UIStackView(arrangedSubviews: [fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
@@ -187,29 +203,90 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         summaryView.addSubview(hStack)
-
+        
         NSLayoutConstraint.activate([
-            summaryView.heightAnchor.constraint(equalToConstant: 65),
+            summaryView.heightAnchor.constraint(equalToConstant: 60),
             summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             summaryView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             summaryView.topAnchor.constraint(equalTo: container.topAnchor),
-
             hStack.leadingAnchor.constraint(equalTo: summaryView.leadingAnchor, constant: 16),
             hStack.trailingAnchor.constraint(equalTo: summaryView.trailingAnchor, constant: -16),
-            hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 12),
-            hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -12)
+            hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 10),
+            hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -5)
         ])
     }
-
-    private func createContainerView(backgroundColor: UIColor) -> UIView {
+    
+    private func setupTreatmentView(in container: UIView) {
+        let treatmentView = UIView()
+        treatmentView.translatesAutoresizingMaskIntoConstraints = false
+        treatmentView.backgroundColor = .systemBackground
+        container.addSubview(treatmentView)
+        
+        // Create the REMAINS container
+        remainsContainer = createContainerView(backgroundColor: .systemGreen)
+        treatmentView.addSubview(remainsContainer)
+        
+        let remainsLabel = createLabel(text: "REMAINS", fontSize: 10, weight: .bold, color: .white)
+        totalRemainsLabel = createLabel(text: "0 g", fontSize: 18, weight: .bold, color: .white)
+        let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, totalRemainsLabel])
+        setupStackView(remainsStack, in: remainsContainer)
+        
+        // Create the START AMOUNT container
+        let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
+        treatmentView.addSubview(startAmountContainer)
+        
+        let startAmountLabel = createLabel(text: "START AMOUNT", fontSize: 10, weight: .bold, color: .white)
+        totalStartAmountLabel = createLabel(text: String(format: "%.0f g", placeholderStartAmount), fontSize: 18, weight: .bold, color: .white)
+        let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, totalStartAmountLabel])
+        setupStackView(startAmountStack, in: startAmountContainer)
+        
+        // Create the REGISTERED container with outline
+        let registeredContainer = createContainerView(backgroundColor: .tertiarySystemBackground, borderColor: .label, borderWidth: 2)
+        treatmentView.addSubview(registeredContainer)
+        
+        let registeredLabel = createLabel(text: "REGISTERED g", fontSize: 10, weight: .bold, color: .label)
+        totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .bold, color: .label)
+        totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
+        let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
+        setupStackView(registeredStack, in: registeredContainer)
+        
+        // Arrange the containers in a horizontal stack view
+        let hStack = UIStackView(arrangedSubviews: [startAmountContainer, remainsContainer, registeredContainer])
+        hStack.axis = .horizontal
+        hStack.spacing = 8
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        hStack.distribution = .fillEqually
+        treatmentView.addSubview(hStack)
+        
+        NSLayoutConstraint.activate([
+            treatmentView.heightAnchor.constraint(equalToConstant: 60),
+            treatmentView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            treatmentView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            treatmentView.topAnchor.constraint(equalTo: container.topAnchor, constant: 60),
+            
+            hStack.leadingAnchor.constraint(equalTo: treatmentView.leadingAnchor, constant: 16),
+            hStack.trailingAnchor.constraint(equalTo: treatmentView.trailingAnchor, constant: -16),
+            hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
+            hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
+        ])
+        
+        // Add this line to set up the toolbar for totalRegisteredLabel
+        addDoneButtonToKeyboard()
+    }
+    
+    private func createContainerView(backgroundColor: UIColor, borderColor: UIColor? = nil, borderWidth: CGFloat = 0) -> UIView {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.backgroundColor = backgroundColor
         containerView.layer.cornerRadius = 8
         containerView.clipsToBounds = true
+        if let borderColor = borderColor {
+            containerView.layer.borderColor = borderColor.cgColor
+            containerView.layer.borderWidth = borderWidth
+        }
         return containerView
     }
-
+    
     private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
         let label = UILabel()
         label.text = text
@@ -219,7 +296,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         label.textAlignment = .center
         return label
     }
-
+    
+    private func createTextField(placeholder: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UITextField {
+        let textField = UITextField()
+        textField.placeholder = placeholder
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        textField.textColor = color
+        textField.textAlignment = .right
+        textField.keyboardType = .decimalPad
+        return textField
+    }
+    
     private func setupStackView(_ stackView: UIStackView, in containerView: UIView) {
         stackView.axis = .vertical
         stackView.alignment = .center
@@ -233,32 +321,84 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -4)
         ])
     }
-
+    
     private func updateTotalNutrients() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         totalNetCarbsLabel?.text = String(format: "%.1f g", totalNetCarbs)
-
+        
         let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
         totalNetFatLabel?.text = String(format: "%.1f g", totalNetFat)
-
+        
         let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
         totalNetProteinLabel?.text = String(format: "%.1f g", totalNetProtein)
+        
+        // Update totalStartAmountLabel based on the conditions
+        if totalNetCarbs > 0 && totalNetCarbs <= placeholderStartAmount {
+            totalStartAmountLabel?.text = String(format: "%.0f g", totalNetCarbs)
+        } else {
+            totalStartAmountLabel?.text = String(format: "%.0f g", placeholderStartAmount)
+        }
+        
+        // Call the method to update remains value
+        registeredLabelDidChange()
     }
+    
+    @objc private func textFieldDidChange(_ textField: UITextField) {
+        // Replace commas with periods
+        if let text = textField.text {
+            textField.text = text.replacingOccurrences(of: ",", with: ".")
+        }
+    }
+    
+    @objc private func registeredLabelDidChange() {
+        let totalCarbsText = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let totalCarbsValue = Double(totalCarbsText) ?? 0.0
+        
+        if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
+            let remainsValue = totalCarbsValue - registeredValue
+            totalRemainsLabel.text = String(format: "%.0f g", remainsValue)
+            
+            switch remainsValue {
+            case -0.5...0.5:
+                remainsContainer.backgroundColor = .systemGreen
+            case let x where x > 0.5:
+                remainsContainer.backgroundColor = .systemYellow
+            default:
+                remainsContainer.backgroundColor = .systemRed
+            }
+        } else {
+            totalRemainsLabel.text = String(format: "%.0f g", totalCarbsValue)
+            remainsContainer.backgroundColor = .systemGray
+        }
+        
+        // Switch colors based on comparison with totalNetCarbsLabel
+        let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let remainsValue = Double(remainsText) ?? 0.0
+        
+        switch remainsValue {
+        case -0.5...0.5:
+            remainsContainer.backgroundColor = .systemGreen
+        case let x where x > 0.5:
+            remainsContainer.backgroundColor = .systemYellow
+        default:
+            remainsContainer.backgroundColor = .systemRed
+        }
+    }
+    
     private func setupHeadline(in container: UIView) {
         let headlineContainer = UIView()
         headlineContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(headlineContainer)
         
         NSLayoutConstraint.activate([
-            headlineContainer.topAnchor.constraint(equalTo: container.bottomAnchor, constant: -37),
+            headlineContainer.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: 0),
             headlineContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headlineContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            headlineContainer.heightAnchor.constraint(equalToConstant: 42) // Adjust height as needed
+            headlineContainer.heightAnchor.constraint(equalToConstant: 30) // Adjust height as needed
         ])
-        
         let headlineStackView = UIStackView()
         headlineStackView.axis = .horizontal
-        headlineStackView.spacing = 2
+        headlineStackView.spacing = 0
         headlineStackView.distribution = .fillProportionally
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
         headlineContainer.addSubview(headlineStackView)
@@ -301,7 +441,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor, constant: -8)
         ])
     }
-    
     private func setupSearchableDropdownView() {
         searchableDropdownView = SearchableDropdownView()
         searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
@@ -311,10 +450,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 62), //Justerar var sökfältet renderas
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 110), // Adjust search field position
             searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
         ])
-        
         searchableDropdownView.onSelectItem = { [weak self] foodItem in
             self?.searchableDropdownView.isHidden = true
             self?.addFoodItemRow(with: foodItem)
@@ -411,6 +549,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         stackView.addArrangedSubview(addButtonRowView)
     }
     
+    private func addDoneButtonToKeyboard() {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.setItems([flexSpace, doneButton], animated: false)
+        
+        totalRegisteredLabel?.inputAccessoryView = toolbar
+    }
+    
+    @objc private func doneButtonTapped() {
+        totalRegisteredLabel?.resignFirstResponder()
+    }
+    
     @objc private func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
@@ -466,11 +618,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
         }
     }
-    
     func didAddFoodItem() {
         fetchFoodItems() // Update the food items after adding a new one
     }
-    
     // Separate class for Add Button Row
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
@@ -497,3 +647,4 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
 }
+           
