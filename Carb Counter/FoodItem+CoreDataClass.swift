@@ -2,7 +2,7 @@
 //  FoodItem+CoreDataClass.swift
 //  Carb Counter
 //
-//  Created by Daniel Snällfot on 2024-06-20.
+//  Created by Daniel Snällfot on 2024-06-21.
 //
 //
 

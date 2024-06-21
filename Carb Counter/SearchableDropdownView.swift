@@ -46,6 +46,16 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
+    
+    let segmentedControl: UISegmentedControl = {
+        let items = ["Name A-Z", "Most Popular"]
+        let segmentedControl = UISegmentedControl(items: items)
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        segmentedControl.backgroundColor = .systemBackground // Set background color
+        segmentedControl.tintColor = .systemBlue // Set tint color
+        return segmentedControl
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -59,9 +69,11 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     private func setupView() {
+        addSubview(segmentedControl)
         addSubview(searchBar)
         addSubview(tableView)
 
+        segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         searchBar.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
@@ -71,7 +83,11 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             searchBar.leadingAnchor.constraint(equalTo: leadingAnchor),
             searchBar.trailingAnchor.constraint(equalTo: trailingAnchor),
 
-            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
+            segmentedControl.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
+            segmentedControl.leadingAnchor.constraint(equalTo: leadingAnchor),
+            segmentedControl.trailingAnchor.constraint(equalTo: trailingAnchor),
+
+            tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
@@ -84,10 +100,36 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     @objc private func doneButtonTapped() {
-        // Add all selected items and then clear the selection and search
+        // Increment count for each selected item and save context
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+        
+        for item in selectedFoodItems {
+            item.count += 1
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to update food item count: \(error)")
+        }
+        
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
         clearSearch()
+    }
+
+    @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
+        sortFoodItems()
+        tableView.reloadData()
+    }
+
+    private func sortFoodItems() {
+        if segmentedControl.selectedSegmentIndex == 0 {
+            filteredFoodItems.sort { ($0.name ?? "") < ($1.name ?? "") }
+        } else {
+            filteredFoodItems.sort { $0.count > $1.count }
+        }
     }
 
     private func clearSelection() {
@@ -97,6 +139,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     private func clearSearch() {
         searchBar.text = ""
         filteredFoodItems = foodItems
+        sortFoodItems()
         tableView.reloadData()
     }
 
@@ -107,8 +150,9 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     func updateFoodItems(_ items: [FoodItem]) {
-        self.foodItems = items.sorted { ($0.name ?? "") < ($1.name ?? "") }
+        self.foodItems = items
         self.filteredFoodItems = self.foodItems
+        sortFoodItems()
         tableView.reloadData()
     }
 
@@ -140,6 +184,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         } else {
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
         }
+        sortFoodItems()
         tableView.reloadData()
     }
 

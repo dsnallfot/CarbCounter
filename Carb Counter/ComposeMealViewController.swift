@@ -639,7 +639,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 110), // Adjust search field position
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 112), // Adjust search field position
             searchableDropdownView.heightAnchor.constraint(equalToConstant: 275)
         ])
         

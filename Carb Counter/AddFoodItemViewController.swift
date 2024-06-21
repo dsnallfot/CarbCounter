@@ -268,6 +268,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 newFoodItem.fatPP = 0.0
                 newFoodItem.proteinPP = 0.0
             }
+            // Set the count attribute to 0
+            newFoodItem.count = 0
         }
         do {
             try context.save()
@@ -280,10 +282,9 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 print("Navigation Controller is nil")
             }
         } catch {
-            print("Failed to save food item: \(error)")
+            print("Failed to save food item: (error)")
         }
     }
-    
     private func fetchAllFoodItems() -> [FoodItem] {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
         let context = appDelegate.persistentContainer.viewContext

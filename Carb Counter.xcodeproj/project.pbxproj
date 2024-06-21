@@ -76,8 +76,6 @@
 		6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownView.swift; sourceTree = "<group>"; };
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
-		65B7F58D2C244AB9005A4386 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
-		65B7F58E2C244AB9005A4386 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMealsViewController.swift; sourceTree = "<group>"; };
 		65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMealDetailViewController.swift; sourceTree = "<group>"; };
@@ -85,6 +83,8 @@
 		65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbRatioViewController.swift; sourceTree = "<group>"; };
 		65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartDoseViewController.swift; sourceTree = "<group>"; };
 		65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHelper.swift; sourceTree = "<group>"; };
+		65C75D032C25F88700114BD3 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
+		65C75D042C25F88700114BD3 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,8 +115,8 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
-				65B7F58D2C244AB9005A4386 /* FoodItem+CoreDataClass.swift */,
-				65B7F58E2C244AB9005A4386 /* FoodItem+CoreDataProperties.swift */,
+				65C75D032C25F88700114BD3 /* FoodItem+CoreDataClass.swift */,
+				65C75D042C25F88700114BD3 /* FoodItem+CoreDataProperties.swift */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EE112C20DA9400B0FDF5 /* Carb CounterTests */,
 				6553EE1B2C20DA9400B0FDF5 /* Carb CounterUITests */,
