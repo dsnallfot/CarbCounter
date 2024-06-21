@@ -1,15 +1,37 @@
 import UIKit
 import CoreData
 
-class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     
     var tableView: UITableView!
+    var searchBar: UISearchBar!
     var favoriteMeals: [FavoriteMeals] = []
-    
+    var filteredFavoriteMeals: [FavoriteMeals] = []
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Favorite Meals"
         
+        setupSearchBar()
+        setupTableView()
+        fetchFavoriteMeals()
+    }
+    
+    private func setupSearchBar() {
+        searchBar = UISearchBar()
+        searchBar.delegate = self
+        searchBar.placeholder = "Search Favorite Meals"
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(searchBar)
+        
+        NSLayoutConstraint.activate([
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+    
+    private func setupTableView() {
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
@@ -17,13 +39,11 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-        
-        fetchFavoriteMeals()
     }
     
     private func fetchFavoriteMeals() {
@@ -31,6 +51,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         do {
             favoriteMeals = try CoreDataStack.shared.context.fetch(fetchRequest)
+            filteredFavoriteMeals = favoriteMeals
             tableView.reloadData()
         } catch {
             print("Failed to fetch favorite meals: \(error)")
@@ -40,12 +61,12 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     // MARK: - UITableViewDataSource
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favoriteMeals.count
+        return filteredFavoriteMeals.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .default, reuseIdentifier: "cell")
-        let favoriteMeal = favoriteMeals[indexPath.row]
+        let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         cell.textLabel?.text = favoriteMeal.name
         return cell
     }
@@ -53,7 +74,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let favoriteMeal = favoriteMeals[indexPath.row]
+        let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
             composeMealVC.populateWithFavoriteMeal(favoriteMeal)
             navigationController?.popViewController(animated: true)
@@ -80,14 +101,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func editFavoriteMeal(at indexPath: IndexPath) {
-        let favoriteMeal = favoriteMeals[indexPath.row]
+        let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         let detailVC = FavoriteMealDetailViewController()
         detailVC.favoriteMeal = favoriteMeal
         navigationController?.pushViewController(detailVC, animated: true)
     }
     
     private func confirmDeleteFavoriteMeal(at indexPath: IndexPath) {
-        let favoriteMeal = favoriteMeals[indexPath.row]
+        let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         
         let deleteAlert = UIAlertController(title: "Delete Favorite Meal", message: "Do you want to delete \"\(favoriteMeal.name ?? "")\"?", preferredStyle: .alert)
         let deleteAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self] _ in
@@ -102,11 +123,30 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func deleteFavoriteMeal(at indexPath: IndexPath) {
-        let favoriteMeal = favoriteMeals[indexPath.row]
+        let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         CoreDataStack.shared.context.delete(favoriteMeal)
         CoreDataStack.shared.saveContext()
         
-        favoriteMeals.remove(at: indexPath.row)
+        favoriteMeals.removeAll { $0 == favoriteMeal }
+        filteredFavoriteMeals.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
+    }
+    
+    // MARK: - UISearchBarDelegate
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            filteredFavoriteMeals = favoriteMeals
+        } else {
+            filteredFavoriteMeals = favoriteMeals.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+        }
+        tableView.reloadData()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        filteredFavoriteMeals = favoriteMeals
+        tableView.reloadData()
+        searchBar.resignFirstResponder()
     }
 }

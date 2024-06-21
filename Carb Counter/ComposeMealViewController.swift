@@ -640,7 +640,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 110), // Adjust search field position
-            searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+            searchableDropdownView.heightAnchor.constraint(equalToConstant: 275)
         ])
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
@@ -812,7 +812,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
        class AddButtonRowView: UIView {
            let addButton: UIButton = {
                let button = UIButton(type: .system)
-               button.setTitle("+ Select Items", for: .normal)
+               button.setTitle("+ Select Food Items", for: .normal)
                button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold) // Adjust font size and weight
                button.setTitleColor(.systemBlue, for: .normal) // Set the button color to your accent color
                button.translatesAutoresizingMaskIntoConstraints = false
