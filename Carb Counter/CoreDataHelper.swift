@@ -36,7 +36,7 @@ class CoreDataHelper {
         }
     }
 
-    // Save Carb Ratio
+    // Save or update Carb Ratio
     func saveCarbRatio(hour: Int, ratio: Double) {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
@@ -83,7 +83,7 @@ class CoreDataHelper {
         }
     }
 
-    // Save Start Dose
+    // Save or update Start Dose
     func saveStartDose(hour: Int, dose: Double) {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)

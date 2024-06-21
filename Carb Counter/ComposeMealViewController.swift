@@ -3,9 +3,9 @@
 //  Carb Counter
 //
 //  Created by Daniel Snällfot on 2024-06-17.
-//
-import UIKit
+//import UIKit
 import CoreData
+import UIKit
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddFoodItemDelegate, UITextFieldDelegate {
     
@@ -27,28 +27,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalRemainsLabel: UILabel!
     var totalStartBolusLabel: UILabel!
     var totalRemainsBolusLabel: UILabel!
-    var remainsLabel: UILabel! // Declare remainsLabel as a class-level variable
-    var crLabel: UILabel! // Declare crLabel as a class-level variable
+    var remainsLabel: UILabel!
+    var crLabel: UILabel!
     var remainsContainer: UIView!
     
     var scheduledStartDose = Double(20)
-    var scheduledCarbRatio = Double(30) //To be replaced with Nightscout profile import for different times of day
+    var scheduledCarbRatio = Double(30) // To be replaced with Nightscout profile import for different times of day
     
     var foodItemLabel: UILabel!
     var portionServedLabel: UILabel!
     var notEatenLabel: UILabel!
     var netCarbsLabel: UILabel!
     
-    // Add an outlet for the "Clear All" button
     var clearAllButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Menu"
-        
-        updatePlaceholderValuesForCurrentHour() // Add this line
-        
+
+        updatePlaceholderValuesForCurrentHour()
+
         // Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -80,11 +79,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
-        
-        /*searchableDropdownView.onDoneButtonTapped = { [weak self] in
-            self?.searchableDropdownView.isHidden = true
-            self?.clearAllButton?.isEnabled = true // Show the "Clear All" button
-        }*/
         
         // Fetch food items and add the add button row
         fetchFoodItems()
@@ -123,16 +117,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
     
+    @objc private func registeredContainerTapped() {
+        totalRegisteredLabel.becomeFirstResponder()
+    }
+    
     @objc private func saveFavoriteMeals() {
         guard !foodItemRows.isEmpty else {
-            // Show an alert if there are no items to save
             let alert = UIAlertController(title: "No Items", message: "There are no items to save as a favorite.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
             return
         }
         
-        // Prompt for the name of the favorite meal
         let nameAlert = UIAlertController(title: "Save Favorite Meal", message: "Enter a name for this favorite meal:", preferredStyle: .alert)
         nameAlert.addTextField { textField in
             textField.placeholder = "Meal Name"
@@ -144,7 +140,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 textField.textContentType = .none
             }
             
-            // Remove predictive text
             if #available(iOS 11.0, *) {
                 textField.inputAssistantItem.leadingBarButtonGroups = []
                 textField.inputAssistantItem.trailingBarButtonGroups = []
@@ -154,12 +149,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             guard let self = self else { return }
             let mealName = nameAlert.textFields?.first?.text ?? "My Favorite Meal"
             
-            // Create the FavoriteMeals entity
             let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
             favoriteMeals.name = mealName
-            favoriteMeals.id = UUID() // Add this line to set the UUID
+            favoriteMeals.id = UUID()
             
-            // Create an array to store the food items and their portions
             var items: [[String: Any]] = []
             for row in self.foodItemRows {
                 if let foodItem = row.selectedFoodItem {
@@ -172,10 +165,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
             favoriteMeals.items = items as NSObject
             
-            // Save the context
             CoreDataStack.shared.saveContext()
             
-            // Confirm save
             let confirmAlert = UIAlertController(title: "Saved", message: "The meal has been saved as a favorite.", preferredStyle: .alert)
             confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
             self.present(confirmAlert, animated: true)
@@ -189,7 +180,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     deinit {
-        // Remove observers for keyboard notifications
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -200,7 +190,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
-        clearAllFoodItems() // Clear existing food items
+        clearAllFoodItems()
         
         guard let items = favoriteMeal.items as? [[String: Any]] else { return }
         
@@ -216,7 +206,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     foodItemRows.append(rowView)
                     rowView.setSelectedFoodItem(foodItem)
                     rowView.portionServedTextField.text = portionServed
-                    // Add a target to trigger the value change when portionServedTextField changes
                     rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
                     
                     rowView.onDelete = { [weak self] in
@@ -236,26 +225,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
-        // Replace commas with periods
         if let text = textField.text {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
         }
-        updateTotalNutrients() // Ensure calculations are updated
+        updateTotalNutrients()
         updateHeadlineVisibility()
     }
+    
     @objc private func clearAllButtonTapped() {
-        view.endEditing(true) // This will hide the keyboard
+        view.endEditing(true)
         let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
             self.clearAllFoodItems()
-            self.totalRegisteredLabel.text = "" // Clear the totalRegisteredLabel
+            self.totalRegisteredLabel.text = ""
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
-
+    
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
@@ -263,10 +252,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         foodItemRows.removeAll()
         updateTotalNutrients()
-        view.endEditing(true) // Hide the keyboard
-        updateClearAllButtonState() // Add this line
-        updateHeadlineVisibility() // Add this line
+        view.endEditing(true)
+        updateClearAllButtonState()
+        updateHeadlineVisibility()
     }
+    
     private func setupScrollView(below header: UIView) {
         scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -306,10 +296,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
         
-        // Fetch food items and add the add button row
         fetchFoodItems()
-        updateClearAllButtonState() // Add this line
-        updateHeadlineVisibility() // Add this line
+        updateClearAllButtonState()
+        updateHeadlineVisibility()
         addAddButtonRow()
     }
     
@@ -319,7 +308,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.backgroundColor = .systemBackground
         container.addSubview(summaryView)
         
-        // Create the BOLUS container
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
         
@@ -328,7 +316,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         setupStackView(bolusStack, in: bolusContainer)
         
-        // Create the CARBS container with outline
         let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .label, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
         
@@ -337,7 +324,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         setupStackView(carbsStack, in: carbsContainer)
         
-        // Create the FAT container
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
@@ -346,7 +332,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         setupStackView(fatStack, in: fatContainer)
         
-        // Create the PROTEIN container
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
@@ -355,7 +340,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         setupStackView(proteinStack, in: proteinContainer)
         
-        // Arrange the containers in a horizontal stack view
         let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
@@ -381,13 +365,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         treatmentView.backgroundColor = .systemBackground
         container.addSubview(treatmentView)
         
-        // Create the CR container
         let crContainer = createContainerView(backgroundColor: .systemCyan)
         treatmentView.addSubview(crContainer)
         
         crLabel = createLabel(text: "CARB RATIO", fontSize: 10, weight: .bold, color: .white)
         
-        // Check if the scheduledCarbRatio contains decimals
         if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
             nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 12, weight: .bold, color: .white)
         } else {
@@ -399,7 +381,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         crStack.spacing = 4
         setupStackView(crStack, in: crContainer)
         
-        // Create the REMAINS container
         remainsContainer = createContainerView(backgroundColor: .systemGreen)
         treatmentView.addSubview(remainsContainer)
         
@@ -416,7 +397,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         remainsStack.spacing = 4
         setupStackView(remainsStack, in: remainsContainer)
         
-        // Create the START AMOUNT container
         let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
         treatmentView.addSubview(startAmountContainer)
         
@@ -433,10 +413,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         startAmountStack.spacing = 4
         setupStackView(startAmountStack, in: startAmountContainer)
         
-        // Create the REGISTERED container with outline
         let registeredContainer = createContainerView(backgroundColor: .tertiarySystemBackground, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
         
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
+        registeredContainer.addGestureRecognizer(tapGesture)
+        registeredContainer.isUserInteractionEnabled = true
         let registeredLabel = createLabel(text: "REGISTERED", fontSize: 10, weight: .bold, color: .label)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
@@ -446,7 +428,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         registeredStack.spacing = 4
         setupStackView(registeredStack, in: registeredContainer)
         
-        // Arrange the containers in a horizontal stack view
         let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
@@ -466,7 +447,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
         
-        // Add this line to set up the toolbar for totalRegisteredLabel
         addDoneButtonToKeyboard()
     }
     
@@ -528,35 +508,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
         totalNetProteinLabel?.text = String(format: "%.1f g", totalNetProtein)
         
-        // Calculate and update totalBolusAmountLabel
         let totalBolus = totalNetCarbs / scheduledCarbRatio
         let roundedBolus = roundToNearest05(totalBolus)
         totalBolusAmountLabel?.text = String(format: "%.2f E", roundedBolus)
         
-        // Update totalStartAmountLabel based on the conditions
         if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
             totalStartAmountLabel?.text = String(format: "%.0fg", totalNetCarbs)
         } else {
             totalStartAmountLabel?.text = String(format: "%.0fg", scheduledStartDose)
         }
         
-        // Calculate and update totalStartBolusLabel
         let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
         let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
         totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
         
-        // Update remains bolus value
         updateRemainsBolus()
     }
-
+    
     private func roundToNearest05(_ value: Double) -> Double {
         return (value * 20.0).rounded() / 20.0
     }
-
+    
     @objc private func registeredLabelDidChange() {
         updateRemainsBolus()
     }
-
+    
     private func updateRemainsBolus() {
         let totalCarbsText = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let totalCarbsValue = Double(totalCarbsText) ?? 0.0
@@ -565,11 +541,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
             
-            // Calculate and update totalRemainsBolusLabel
             let remainsBolus = roundToNearest05(remainsValue / scheduledCarbRatio)
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             
-            // Update remainsLabel text based on remainsValue
             if remainsValue < -0.5 {
                 remainsLabel.text = "OVERDOSE!"
             } else {
@@ -587,7 +561,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
             
-            // Calculate and update totalRemainsBolusLabel when no registered value is present
             let remainsBolus = roundToNearest05(totalCarbsValue / scheduledCarbRatio)
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             
@@ -595,7 +568,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             remainsLabel.text = "REMAINING"
         }
         
-        // Switch colors based on comparison with totalNetCarbsLabel
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         let remainsValue = Double(remainsText) ?? 0.0
         
@@ -608,6 +580,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             remainsContainer.backgroundColor = .systemRed
         }
     }
+    
     private func setupHeadline(in container: UIView) {
         let headlineContainer = UIView()
         headlineContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -617,8 +590,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             headlineContainer.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: 0),
             headlineContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headlineContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            headlineContainer.heightAnchor.constraint(equalToConstant: 30) // Adjust height as needed
+            headlineContainer.heightAnchor.constraint(equalToConstant: 30)
         ])
+        
         let headlineStackView = UIStackView()
         headlineStackView.axis = .horizontal
         headlineStackView.spacing = 0
@@ -639,6 +613,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         portionServedLabel.textAlignment = .left
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
+        
         notEatenLabel = UILabel()
         notEatenLabel.text = "   LEFT  "
         notEatenLabel.textAlignment = .left
@@ -650,7 +625,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         netCarbsLabel.textAlignment = .right
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
-        
         headlineStackView.addArrangedSubview(foodItemLabel)
         headlineStackView.addArrangedSubview(portionServedLabel)
         headlineStackView.addArrangedSubview(notEatenLabel)
@@ -681,15 +655,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 112), // Adjust search field position
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 112),
             searchableDropdownView.heightAnchor.constraint(equalToConstant: 275)
         ])
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
             self?.searchableDropdownView.isHidden = true
             selectedItems.forEach { self?.addFoodItemRow(with: $0) }
-            self?.clearAllButton.isEnabled = true // Show the "Clear All" button
-            self?.updateHeadlineVisibility() // Add this line
+            self?.clearAllButton.isEnabled = true
+            self?.updateHeadlineVisibility()
         }
     }
     
@@ -699,10 +673,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-            // Ensure searchableDropdownView is not nil before calling updateFoodItems
-            if let searchableDropdownView = searchableDropdownView {
-                searchableDropdownView.updateFoodItems(foodItems) // Update the dropdown view with the new items
-            }
+            searchableDropdownView?.updateFoodItems(foodItems)
         } catch {
             print("Failed to fetch food items: \(error)")
         }
@@ -728,8 +699,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         
         updateTotalNutrients()
-        updateClearAllButtonState() // Add this line
-        updateHeadlineVisibility() // Add this line
+        updateClearAllButtonState()
+        updateHeadlineVisibility()
     }
     
     private func addAddButtonRow() {
@@ -740,7 +711,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func addButtonTapped() {
-        // Ensure that the searchableDropdownView is added to the view hierarchy if not already added
         if searchableDropdownView.superview == nil {
             view.addSubview(searchableDropdownView)
             NSLayoutConstraint.activate([
@@ -751,12 +721,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             ])
         }
         
-        // Show the searchableDropdownView and make the searchBar the first responder
         searchableDropdownView.isHidden = false
         DispatchQueue.main.async {
             self.searchableDropdownView.searchBar.becomeFirstResponder()
         }
-        clearAllButton.isEnabled = false // Hide the "Clear All" button
+        clearAllButton.isEnabled = false
     }
     
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
@@ -767,8 +736,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
         moveAddButtonRowToEnd()
         updateTotalNutrients()
-        updateClearAllButtonState() // Add this line
-        updateHeadlineVisibility() // Add this line
+        updateClearAllButtonState()
+        updateHeadlineVisibility()
     }
     
     private func moveAddButtonRowToEnd() {
@@ -805,32 +774,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func updateClearAllButtonState() {
-        if let clearAllButton = clearAllButton {
-            clearAllButton.isEnabled = !foodItemRows.isEmpty
+        guard let clearAllButton = clearAllButton else {
+            print("clearAllButton is nil")
+            return
         }
+        clearAllButton.isEnabled = !foodItemRows.isEmpty
     }
-    
-    // MARK: - FoodItemRowViewDelegate
-    
-    /*func didTapFoodItemTextField(_ rowView: FoodItemRowView) {
-        // Ensure that the searchableDropdownView is added to the view hierarchy if not already added
-        if searchableDropdownView.superview == nil {
-            view.addSubview(searchableDropdownView)
-            NSLayoutConstraint.activate([
-                searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
-            ])
-        }
-        
-        // Show the searchableDropdownView and make the searchBar the first responder
-        searchableDropdownView.isHidden = false
-        DispatchQueue.main.async {
-            self.searchableDropdownView.searchBar.becomeFirstResponder()
-        }
-        clearAllButton.isEnabled = false // Hide the "Clear All" button
-    }*/
     
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField) {
         if let currentIndex = foodItemRows.firstIndex(of: rowView) {
@@ -847,38 +796,38 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     func didAddFoodItem() {
-        fetchFoodItems() // Update the food items after adding a new one
+        fetchFoodItems()
     }
     
-    // Separate class for Add Button Row
-       class AddButtonRowView: UIView {
-           let addButton: UIButton = {
-               let button = UIButton(type: .system)
-               button.setTitle("+ Select Food Items", for: .normal)
-               button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold) // Adjust font size and weight
-               button.setTitleColor(.systemBlue, for: .normal) // Set the button color to your accent color
-               button.translatesAutoresizingMaskIntoConstraints = false
-               return button
-           }()
-           
-           override init(frame: CGRect) {
-               super.init(frame: frame)
-               setupView()
-           }
-           
-           required init?(coder: NSCoder) {
-               fatalError("init(coder:) has not been implemented")
-           }
-           
-           private func setupView() {
-               addSubview(addButton)
-               
-               NSLayoutConstraint.activate([
-                   addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
-                   addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
-                   addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                   addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8)
-               ])
-           }
-       }
-   }
+    class AddButtonRowView: UIView {
+        let addButton: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitle("+ Select Food Items", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+            button.setTitleColor(.systemBlue, for: .normal)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            return button
+        }()
+        
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            setupView()
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        private func setupView() {
+            addSubview(addButton)
+            
+            NSLayoutConstraint.activate([
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
+                addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8)
+            ])
+        }
+    }
+}
+

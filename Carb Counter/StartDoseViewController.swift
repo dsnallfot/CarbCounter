@@ -1,13 +1,13 @@
 import UIKit
 
-class StartDoseViewController: UITableViewController {
+class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     
     var startDoses: [Int: Double] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Start Dose Schedule"
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
         
         startDoses = CoreDataHelper.shared.fetchStartDoses()
     }
@@ -17,28 +17,138 @@ class StartDoseViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "StartDoseCell", for: indexPath) as! StartDoseCell
+        let hour = String(format: "%02d:00", indexPath.row)
         let dose = startDoses[indexPath.row] ?? 0.0
-        cell.textLabel?.text = "Hour \(indexPath.row): \(dose)"
+        cell.configure(hour: hour, dose: dose, delegate: self)
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let alert = UIAlertController(title: "Edit Start Dose", message: "Enter a new start dose for hour \(indexPath.row)", preferredStyle: .alert)
-        alert.addTextField { textField in
-            textField.keyboardType = .decimalPad
-            let dose = self.startDoses[indexPath.row] ?? 0.0
-            textField.text = "\(dose)"
+    // MARK: - UITextFieldDelegate
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        sanitizeInput(textField)
+        if let cell = textField.superview?.superview as? StartDoseCell,
+           let indexPath = tableView.indexPath(for: cell),
+           let text = textField.text, let value = Double(text) {
+            CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
+            startDoses[indexPath.row] = value
         }
-        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
-            if let textField = alert?.textFields?.first, let text = textField.text, let value = Double(text) {
-                CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
-                self?.startDoses = CoreDataHelper.shared.fetchStartDoses()
-                self?.tableView.reloadData()
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        moveToNextTextField(from: textField)
+        return true
+    }
+    
+    private func moveToNextTextField(from textField: UITextField) {
+        if let cell = textField.superview?.superview as? StartDoseCell,
+           let indexPath = tableView.indexPath(for: cell) {
+            let nextRow = indexPath.row + 1
+            if nextRow < 24 {
+                let nextIndexPath = IndexPath(row: nextRow, section: indexPath.section)
+                if let nextCell = tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
+                    nextCell.doseTextField.becomeFirstResponder()
+                } else {
+                    // Scroll to make the next cell visible and then make the text field the first responder
+                    tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if let nextCell = self.tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
+                            nextCell.doseTextField.becomeFirstResponder()
+                        }
+                    }
+                }
+            } else {
+                textField.resignFirstResponder()
             }
         }
-        alert.addAction(saveAction)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alert, animated: true)
+    }
+    
+    private func sanitizeInput(_ textField: UITextField) {
+        if let text = textField.text {
+            textField.text = text.replacingOccurrences(of: ",", with: ".")
+        }
+    }
+}
+
+class StartDoseCell: UITableViewCell {
+    
+    let hourLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    let doseTextField: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textAlignment = .right
+        textField.keyboardType = .decimalPad
+        return textField
+    }()
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        
+        contentView.addSubview(hourLabel)
+        contentView.addSubview(doseTextField)
+        
+        NSLayoutConstraint.activate([
+            hourLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            hourLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            
+            doseTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            doseTextField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            doseTextField.widthAnchor.constraint(equalToConstant: 100)
+        ])
+        
+        // Add toolbar with "Next" button to the keyboard
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolbar.setItems([flexSpace, nextButton], animated: false)
+        doseTextField.inputAccessoryView = toolbar
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(hour: String, dose: Double, delegate: UITextFieldDelegate) {
+        hourLabel.text = hour
+        doseTextField.text = String(dose)
+        doseTextField.delegate = delegate
+    }
+    
+    @objc private func nextButtonTapped() {
+        if let tableView = findSuperView(of: UITableView.self),
+           let indexPath = tableView.indexPath(for: self) {
+            let nextRow = indexPath.row + 1
+            if nextRow < 24 {
+                let nextIndexPath = IndexPath(row: nextRow, section: indexPath.section)
+                if let nextCell = tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
+                    nextCell.doseTextField.becomeFirstResponder()
+                } else {
+                    // Scroll to make the next cell visible and then make the text field the first responder
+                    tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if let nextCell = tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
+                            nextCell.doseTextField.becomeFirstResponder()
+                        }
+                    }
+                }
+            } else {
+                doseTextField.resignFirstResponder()
+            }
+        }
+    }
+    
+    private func findSuperView<T>(of type: T.Type) -> T? {
+        var view = superview
+        while view != nil && !(view is T) {
+            view = view?.superview
+        }
+        return view as? T
     }
 }
