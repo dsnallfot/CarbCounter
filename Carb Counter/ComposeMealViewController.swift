@@ -25,6 +25,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var totalStartAmountLabel: UILabel!
     var totalRegisteredLabel: UITextField!
     var totalRemainsLabel: UILabel!
+    var totalStartBolusLabel: UILabel!
+    var totalRemainsBolusLabel: UILabel!
     var remainsLabel: UILabel! // Declare remainsLabel as a class-level variable
     var crLabel: UILabel! // Declare crLabel as a class-level variable
     var remainsContainer: UIView!
@@ -387,29 +389,48 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Check if the scheduledCarbRatio contains decimals
         if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
-            nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
+            nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 12, weight: .bold, color: .white)
         } else {
-            nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
+            nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 12, weight: .bold, color: .white)
         }
         
         let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
+        crStack.axis = .vertical
+        crStack.spacing = 4
         setupStackView(crStack, in: crContainer)
         
         // Create the REMAINS container
         remainsContainer = createContainerView(backgroundColor: .systemGreen)
         treatmentView.addSubview(remainsContainer)
         
-        remainsLabel = createLabel(text: "REMAINS", fontSize: 10, weight: .bold, color: .white)
-        totalRemainsLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
-        let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, totalRemainsLabel])
+        remainsLabel = createLabel(text: "REMAINING", fontSize: 10, weight: .bold, color: .white)
+        totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
+        
+        let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
+        remainsValuesStack.axis = .horizontal
+        remainsValuesStack.spacing = 3
+        
+        let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, remainsValuesStack])
+        remainsStack.axis = .vertical
+        remainsStack.spacing = 4
         setupStackView(remainsStack, in: remainsContainer)
+        
         // Create the START AMOUNT container
         let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
         treatmentView.addSubview(startAmountContainer)
         
         let startAmountLabel = createLabel(text: "START DOSE", fontSize: 10, weight: .bold, color: .white)
-        totalStartAmountLabel = createLabel(text: String(format: "%.0f g", scheduledStartDose), fontSize: 18, weight: .semibold, color: .white)
-        let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, totalStartAmountLabel])
+        totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
+        totalStartBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
+        
+        let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
+        startAmountValuesStack.axis = .horizontal
+        startAmountValuesStack.spacing = 3
+        
+        let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
+        startAmountStack.axis = .vertical
+        startAmountStack.spacing = 4
         setupStackView(startAmountStack, in: startAmountContainer)
         
         // Create the REGISTERED container with outline
@@ -419,7 +440,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let registeredLabel = createLabel(text: "REGISTERED", fontSize: 10, weight: .bold, color: .label)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
+        
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
+        registeredStack.axis = .vertical
+        registeredStack.spacing = 4
         setupStackView(registeredStack, in: registeredContainer)
         
         // Arrange the containers in a horizontal stack view
@@ -441,6 +465,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
+        
         // Add this line to set up the toolbar for totalRegisteredLabel
         addDoneButtonToKeyboard()
     }
@@ -510,32 +535,45 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Update totalStartAmountLabel based on the conditions
         if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
-            totalStartAmountLabel?.text = String(format: "%.0f g", totalNetCarbs)
+            totalStartAmountLabel?.text = String(format: "%.0fg", totalNetCarbs)
         } else {
-            totalStartAmountLabel?.text = String(format: "%.0f g", scheduledStartDose)
+            totalStartAmountLabel?.text = String(format: "%.0fg", scheduledStartDose)
         }
         
-        // Call the method to update remains value
-        registeredLabelDidChange()
+        // Calculate and update totalStartBolusLabel
+        let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+        let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
+        totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
+        
+        // Update remains bolus value
+        updateRemainsBolus()
     }
-    
+
     private func roundToNearest05(_ value: Double) -> Double {
         return (value * 20.0).rounded() / 20.0
     }
-    
+
     @objc private func registeredLabelDidChange() {
+        updateRemainsBolus()
+    }
+
+    private func updateRemainsBolus() {
         let totalCarbsText = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let totalCarbsValue = Double(totalCarbsText) ?? 0.0
         
         if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
-            totalRemainsLabel.text = String(format: "%.0f g", remainsValue)
+            totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
+            
+            // Calculate and update totalRemainsBolusLabel
+            let remainsBolus = roundToNearest05(remainsValue / scheduledCarbRatio)
+            totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             
             // Update remainsLabel text based on remainsValue
             if remainsValue < -0.5 {
                 remainsLabel.text = "OVERDOSE!"
             } else {
-                remainsLabel.text = "REMAINS"
+                remainsLabel.text = "REMAINING"
             }
             
             switch remainsValue {
@@ -547,13 +585,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 remainsContainer.backgroundColor = .systemRed
             }
         } else {
-            totalRemainsLabel.text = String(format: "%.0f g", totalCarbsValue)
+            totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
+            
+            // Calculate and update totalRemainsBolusLabel when no registered value is present
+            let remainsBolus = roundToNearest05(totalCarbsValue / scheduledCarbRatio)
+            totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
+            
             remainsContainer.backgroundColor = .systemGray
-            remainsLabel.text = "REMAINS"
+            remainsLabel.text = "REMAINING"
         }
         
         // Switch colors based on comparison with totalNetCarbsLabel
-        let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         let remainsValue = Double(remainsText) ?? 0.0
         
         switch remainsValue {
@@ -565,7 +608,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             remainsContainer.backgroundColor = .systemRed
         }
     }
-    
     private func setupHeadline(in container: UIView) {
         let headlineContainer = UIView()
         headlineContainer.translatesAutoresizingMaskIntoConstraints = false
