@@ -27,7 +27,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = "Meal"
+        title = "Menu"
         
         // Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
