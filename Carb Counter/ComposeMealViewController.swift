@@ -247,11 +247,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
             self.clearAllFoodItems()
+            self.totalRegisteredLabel.text = "" // Clear the totalRegisteredLabel
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
+
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
