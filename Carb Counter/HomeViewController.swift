@@ -4,7 +4,7 @@ class HomeViewController: UIViewController {
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
-
+    
     override var shouldAutorotate: Bool {
         return false
     }
@@ -81,12 +81,21 @@ class HomeViewController: UIViewController {
             appIconImageView.bottomAnchor.constraint(equalTo: imageContainerView.bottomAnchor),
             appIconImageView.leadingAnchor.constraint(equalTo: imageContainerView.leadingAnchor),
             appIconImageView.trailingAnchor.constraint(equalTo: imageContainerView.trailingAnchor),
-            
             // Copyright label constraints
             copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80)
         ])
+        
+        // Add cog wheel icon to the top right corner
+        let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
+        navigationItem.rightBarButtonItem = settingsButton
+    }
+    
+    @objc private func openSettings() {
+        let settingsVC = SettingsViewController()
+        let navController = UINavigationController(rootViewController: settingsVC)
+        present(navController, animated: true, completion: nil)
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
