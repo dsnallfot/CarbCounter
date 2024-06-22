@@ -45,9 +45,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Menu"
-
-        updatePlaceholderValuesForCurrentHour()
-
+        
         // Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -112,6 +110,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         view.endEditing(true)
+        updatePlaceholderValuesForCurrentHour()
+        updateScheduledValuesUI()
     }
     
     private func updatePlaceholderValuesForCurrentHour() {
@@ -258,6 +258,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
+    
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
@@ -326,7 +327,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(bolusContainer)
         
         let bolusLabel = createLabel(text: "TOT BOLUS", fontSize: 10, weight: .bold, color: .white)
-        totalBolusAmountLabel = createLabel(text: "0 E", fontSize: 18, weight: .bold, color: .white)
+        totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
@@ -335,7 +336,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(carbsContainer)
         
         let summaryLabel = createLabel(text: "TOT KH", fontSize: 10, weight: .bold, color: .white)
-        totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
+        totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
@@ -344,7 +345,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(fatContainer)
         
         let netFatLabel = createLabel(text: "TOT FETT", fontSize: 10, weight: .bold, color: .white)
-        totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
+        totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(fatStack, in: fatContainer, padding: fatPadding)
@@ -353,7 +354,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         summaryView.addSubview(proteinContainer)
         
         let netProteinLabel = createLabel(text: "TOT PROTEIN", fontSize: 10, weight: .bold, color: .white)
-        totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
+        totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
@@ -405,7 +406,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         remainsLabel = createLabel(text: "ÅTERSTÅR", fontSize: 10, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
-        totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
         
         let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
         remainsValuesStack.axis = .horizontal
@@ -422,7 +423,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         let startAmountLabel = createLabel(text: "STARTDOS", fontSize: 10, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
-        totalStartBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
+        totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
         
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
@@ -698,7 +699,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Ensure the "Clear All" button is updated when the dropdown is dismissed
         updateClearAllButtonState()
     }
-
+    
     // Call this method when the dropdown view is hidden
     private func hideSearchableDropdownView() {
         searchableDropdownView.isHidden = true
@@ -760,7 +761,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
             ])
         }
-
+        
         searchableDropdownView.isHidden = false
         DispatchQueue.main.async {
             self.searchableDropdownView.searchBar.becomeFirstResponder()
@@ -824,6 +825,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             return
         }
         clearAllButton.isEnabled = !foodItemRows.isEmpty
+    }
+    
+    private func updateScheduledValuesUI() {
+        if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
+            nowCRLabel.text = String(format: "%.0f g/E", scheduledCarbRatio)
+        } else {
+            nowCRLabel.text = String(format: "%.1f g/E", scheduledCarbRatio)
+        }
+        
+        totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
+        
+        let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+        let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
+        totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
+        updateRemainsBolus()
     }
     
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField) {
