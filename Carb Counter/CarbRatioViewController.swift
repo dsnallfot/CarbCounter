@@ -101,12 +101,13 @@ class CarbRatioCell: UITableViewCell {
             ratioTextField.widthAnchor.constraint(equalToConstant: 100)
         ])
         
-        // Add toolbar with "Next" button to the keyboard
+        // Add toolbar with "Next" and "Done" buttons to the keyboard
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
         let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbar.setItems([nextButton, flexSpace], animated: false)
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
         ratioTextField.inputAccessoryView = toolbar
     }
     
@@ -141,6 +142,10 @@ class CarbRatioCell: UITableViewCell {
                 ratioTextField.resignFirstResponder()
             }
         }
+    }
+    
+    @objc private func doneButtonTapped() {
+        ratioTextField.resignFirstResponder()
     }
     
     private func findSuperView<T>(of type: T.Type) -> T? {
