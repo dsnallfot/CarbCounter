@@ -79,7 +79,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         navigationItem.rightBarButtonItem = clearAllButton
         
         // Initialize "Add from SearchableDropdown" button
-            addFromSearchableDropdownButton = UIBarButtonItem(title: "Lägg till", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
+            addFromSearchableDropdownButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
         
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
