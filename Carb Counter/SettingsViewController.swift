@@ -4,9 +4,7 @@
 //
 //  Created by Daniel Snällfot on 2024-06-21.
 //
-
 import UIKit
-
 class SettingsViewController: UITableViewController {
     
     private var allowShortcuts: Bool {
@@ -41,16 +39,18 @@ class SettingsViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return section == 0 ? 2 : 1
+        return section == 0 ? 3 : 1
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ _tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
             if indexPath.row == 0 {
                 cell.textLabel?.text = "Carb Ratio Schema"
-            } else {
+            } else if indexPath.row == 1 {
                 cell.textLabel?.text = "Startdoser Schema"
+            } else {
+                cell.textLabel?.text = "CSV Import/Export"
             }
             return cell
         } else {
@@ -63,15 +63,16 @@ class SettingsViewController: UITableViewController {
             return cell
         }
     }
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section == 0 else { return }
         let viewController: UIViewController
         if indexPath.row == 0 {
             viewController = CarbRatioViewController()
-        } else {
+        } else if indexPath.row == 1 {
             viewController = StartDoseViewController()
+        } else {
+            viewController = CSVImportExportViewController()
         }
         navigationController?.pushViewController(viewController, animated: true)
     }

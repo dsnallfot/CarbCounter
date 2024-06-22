@@ -10,6 +10,7 @@
 		6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6518ACB92C2434E100C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6518ACBA2C2434E200C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
+		653DE7A02C27520700A639D1 /* CSVImportExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */; };
 		6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */; };
 		6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */; };
 		6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */; };
@@ -55,6 +56,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportExportViewController.swift; sourceTree = "<group>"; };
 		6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Carb Counter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */,
 				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
 				65C75CFB2C25962E00114BD3 /* SettingsViewController.swift */,
+				653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */,
 				65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */,
 				65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */,
 				6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */,
@@ -322,6 +325,7 @@
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
 				65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */,
 				65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */,
+				653DE7A02C27520700A639D1 /* CSVImportExportViewController.swift in Sources */,
 				65C75CFA2C256FA700114BD3 /* FavoriteMealDetailViewController.swift in Sources */,
 				6553EE4C2C2312BE00B0FDF5 /* SearchableDropdownView.swift in Sources */,
 				65C75CFE2C25966200114BD3 /* CarbRatioViewController.swift in Sources */,
