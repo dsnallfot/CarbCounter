@@ -277,7 +277,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id,name,carbohydrates,carbsPP,fat,fatPP,netCarbs,netFat,netProtein,perPiece,protein,proteinPP,count\n"
+        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count\n"
         
         for item in foodItems {
             let id = item.id?.uuidString ?? ""
@@ -294,7 +294,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let proteinPP = item.proteinPP
             let count = item.count
             
-            csvString += "\(id),\(name),\(carbohydrates),\(carbsPP),\(fat),\(fatPP),\(netCarbs),\(netFat),\(netProtein),\(perPiece),\(protein),\(proteinPP),\(count)\n"
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count)\n"
         }
         
         return csvString

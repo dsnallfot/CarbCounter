@@ -420,6 +420,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
         treatmentView.addSubview(startAmountContainer)
+        let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
+        startAmountContainer.addGestureRecognizer(startAmountTapGesture)
+        startAmountContainer.isUserInteractionEnabled = true
         
         let startAmountLabel = createLabel(text: "STARTDOS", fontSize: 10, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
@@ -469,6 +472,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         ])
         
         addDoneButtonToKeyboard()
+    }
+    
+    @objc private func startAmountContainerTapped() {
+        var khValue = totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
+        var bolusValue = totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0"
+        
+        // Replace "." with ","
+        khValue = khValue.replacingOccurrences(of: ".", with: ",")
+        bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+        
+        let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"
+        
+        if let url = URL(string: urlString) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
+        }
     }
     
     private func createContainerView(backgroundColor: UIColor, borderColor: UIColor? = nil, borderWidth: CGFloat = 0) -> UIView {
