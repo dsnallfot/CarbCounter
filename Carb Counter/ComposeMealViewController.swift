@@ -729,6 +729,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     @objc private func registeredLabelDidChange() {
         updateRemainsBolus()
+        updateClearAllButtonState()
     }
     
     private func updateRemainsBolus() {
