@@ -46,7 +46,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = "Menu"
+        title = "Måltid"
         
         // Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
@@ -748,19 +748,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let font = UIFont.systemFont(ofSize: 10)
         
         foodItemLabel = UILabel()
-        foodItemLabel.text = "LIVSMEDEL             "
+        foodItemLabel.text = "LIVSMEDEL                    "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
         
         portionServedLabel = UILabel()
-        portionServedLabel.text = "PORTION    "
-        portionServedLabel.textAlignment = .right
+        portionServedLabel.text = "PORTION"
+        portionServedLabel.textAlignment = .left
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
-        notEatenLabel.text = "  LÄMNAT"
+        notEatenLabel.text = "     LÄMNAT"
         notEatenLabel.textAlignment = .right
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray

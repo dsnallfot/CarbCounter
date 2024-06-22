@@ -40,7 +40,7 @@ class FoodItemRowView: UIView {
         let textField = UITextField()
         textField.placeholder = "Food Item"
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 135).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 130).isActive = true
         textField.textColor = .label
         textField.isUserInteractionEnabled = false // Make the text field non-interactable
         return textField
@@ -53,9 +53,10 @@ class FoodItemRowView: UIView {
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 48).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
+        textField.adjustsFontSizeToFitWidth = true
         return textField
     }()
     
@@ -63,9 +64,10 @@ class FoodItemRowView: UIView {
         let label = UILabel()
         label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: 15).isActive = true
+        label.widthAnchor.constraint(equalToConstant: 14).isActive = true
         label.textAlignment = .left
         label.textColor = .label
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -76,7 +78,7 @@ class FoodItemRowView: UIView {
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        textField.widthAnchor.constraint(equalToConstant: 48).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
         return textField
@@ -88,6 +90,7 @@ class FoodItemRowView: UIView {
         label.widthAnchor.constraint(equalToConstant: 50).isActive = true
         label.textAlignment = .right
         label.textColor = .label
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
