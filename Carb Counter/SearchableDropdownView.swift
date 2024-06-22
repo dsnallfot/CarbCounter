@@ -32,7 +32,6 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
             let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-            //let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             toolbar.setItems([flexSpace, doneButton], animated: false)
             
@@ -95,10 +94,13 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         ])
     }
 
+    // Remove the automatic first responder setup
+    /*
     override func layoutSubviews() {
         super.layoutSubviews()
         searchBar.becomeFirstResponder()
     }
+    */
 
     @objc private func doneButtonTapped() {
         // Increment count for each selected item and save context

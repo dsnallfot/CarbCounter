@@ -3,9 +3,8 @@
 //  Carb Counter
 //
 //  Created by Daniel Snällfot on 2024-06-17.
-//import UIKit
-import CoreData
 import UIKit
+import CoreData
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddFoodItemDelegate, UITextFieldDelegate {
     
@@ -32,7 +31,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var remainsContainer: UIView!
     
     var scheduledStartDose = Double(20)
-    var scheduledCarbRatio = Double(30) // To be replaced with Nightscout profile import for different times of day
+    var scheduledCarbRatio = Double(30)
     
     var foodItemLabel: UILabel!
     var portionServedLabel: UILabel!
@@ -45,10 +44,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Menu"
-
+        
         updatePlaceholderValuesForCurrentHour()
-
-        // Setup the fixed header containing summary and headline
+        
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fixedHeaderContainer)
@@ -57,54 +55,41 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155)
         ])
         
-        // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
-        
-        // Setup treatment view
         setupTreatmentView(in: fixedHeaderContainer)
-        
-        // Setup headline
         setupHeadline(in: fixedHeaderContainer)
-        
-        // Setup scroll view
         setupScrollView(below: fixedHeaderContainer)
         
-        // Initialize "Clear All" button
-        clearAllButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearAllButtonTapped))
-        clearAllButton.tintColor = .red // Set the button color to red
+        clearAllButton = UIBarButtonItem(title: "Rensa allt", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton.tintColor = .red
         navigationItem.rightBarButtonItem = clearAllButton
         
-        // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
-        
-        // Fetch food items and add the add button row
         fetchFoodItems()
-        updateClearAllButtonState() // Add this line
-        updateHeadlineVisibility() // Add this line
+        updateClearAllButtonState()
+        updateHeadlineVisibility()
         
-        // Add observer for text changes in totalRegisteredLabel
         totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        
-        // Set the delegate for the text field
         totalRegisteredLabel.delegate = self
         
-        // Add Favorites button
         let showFavoriteMealsImage = UIImage(systemName: "star")
         let showFavoriteMealsButton = UIBarButtonItem(image: showFavoriteMealsImage, style: .plain, target: self, action: #selector(showFavoriteMeals))
         
-        // Add Save Favorite button
         let saveFavoriteImage = UIImage(systemName: "plus.circle")
         let saveFavoriteButton = UIBarButtonItem(image: saveFavoriteImage, style: .plain, target: self, action: #selector(saveFavoriteMeals))
         
-        // Set both buttons on the left side
         navigationItem.leftBarButtonItems = [showFavoriteMealsButton, saveFavoriteButton]
         
-        // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.endEditing(true)
     }
     
     private func updatePlaceholderValuesForCurrentHour() {
@@ -129,16 +114,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             return
         }
         
-        let nameAlert = UIAlertController(title: "Spara favoritmåltid", message: "ANge ett namn på favoritmåltiden:", preferredStyle: .alert)
+        let nameAlert = UIAlertController(title: "Spara favoritmåltid", message: "Ange ett namn på favoritmåltiden:", preferredStyle: .alert)
         nameAlert.addTextField { textField in
             textField.placeholder = "Namn"
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
             textField.autocapitalizationType = .none
-            
-            if #available(iOS 11.0, *) {
-                textField.textContentType = .none
-            }
+            textField.textContentType = .none
             
             if #available(iOS 11.0, *) {
                 textField.inputAssistantItem.leadingBarButtonGroups = []
@@ -234,17 +216,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     @objc private func clearAllButtonTapped() {
         view.endEditing(true)
-        let alertController = UIAlertController(title: "Rensa", message: "Vill du rensa allt?", preferredStyle: .alert)
+        
+        let alertController = UIAlertController(title: "Rensa allt", message: "Vill du rensa allt?", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
             self.clearAllFoodItems()
             self.totalRegisteredLabel.text = ""
+            self.updateTotalNutrients()
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
-    
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)
@@ -415,7 +398,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         let registeredContainer = createContainerView(backgroundColor: .tertiarySystemBackground, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
-        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
@@ -603,7 +585,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let font = UIFont.systemFont(ofSize: 11)
         
         foodItemLabel = UILabel()
-        foodItemLabel.text = "LIVSMEDEL                 "
+        foodItemLabel.text = "LIVSMEDEL             "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
@@ -621,7 +603,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
-        netCarbsLabel.text = "KH"
+        netCarbsLabel.text = "KOLHYDRATER"
         netCarbsLabel.textAlignment = .right
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
@@ -661,10 +643,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
             self?.searchableDropdownView.isHidden = true
+            
+            if selectedItems.isEmpty {
+                // No items were added, update the "Clear All" button state
+                self?.updateClearAllButtonState()
+                return
+            }
+            
             selectedItems.forEach { self?.addFoodItemRow(with: $0) }
             self?.clearAllButton.isEnabled = true
             self?.updateHeadlineVisibility()
         }
+    }
+    
+    @objc private func searchableDropdownViewDidDismiss() {
+        // Ensure the "Clear All" button is updated when the dropdown is dismissed
+        updateClearAllButtonState()
+    }
+
+    // Call this method when the dropdown view is hidden
+    private func hideSearchableDropdownView() {
+        searchableDropdownView.isHidden = true
+        searchableDropdownView.searchBar.resignFirstResponder()
+        searchableDropdownViewDidDismiss()
     }
     
     private func fetchFoodItems() {
@@ -720,12 +721,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
             ])
         }
-        
+
         searchableDropdownView.isHidden = false
         DispatchQueue.main.async {
             self.searchableDropdownView.searchBar.becomeFirstResponder()
         }
-        clearAllButton.isEnabled = false
+        
+        // Only disable the "Clear All" button if there are no food items present
+        if foodItemRows.isEmpty {
+            clearAllButton.isEnabled = false
+        }
     }
     
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
@@ -830,4 +835,3 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
 }
-
