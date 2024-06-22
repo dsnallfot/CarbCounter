@@ -11,14 +11,21 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var carbsTextField: UITextField!
     @IBOutlet weak var fatTextField: UITextField!
     @IBOutlet weak var proteinTextField: UITextField!
+    @IBOutlet weak var notesTextField: UITextField!
     @IBOutlet weak var saveButton: UIButton!
     @IBOutlet weak var foodItemView: UIView!
     @IBOutlet weak var carbohydratesView: UIView!
     @IBOutlet weak var proteinView: UIView!
     @IBOutlet weak var fatView: UIView!
+    @IBOutlet weak var notesView: UIView!
     @IBOutlet weak var carbsUnits: UILabel!
     @IBOutlet weak var fatUnits: UILabel!
     @IBOutlet weak var proteinUnits: UILabel!
+    @IBOutlet weak var nameStack: UIStackView!
+    @IBOutlet weak var carbsStack: UIStackView!
+    @IBOutlet weak var fatStack: UIStackView!
+    @IBOutlet weak var proteinStack: UIStackView!
+    @IBOutlet weak var notesStack: UIStackView!
     
     weak var delegate: AddFoodItemDelegate?
     var foodItem: FoodItem?
@@ -27,6 +34,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     // Variables to store initial values
     var initialName: String?
+    var initialNotes: String?
     var initialCarbs: String?
     var initialFat: String?
     var initialProtein: String?
@@ -50,17 +58,22 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         fatView.layer.cornerRadius = 8
         fatView.layer.masksToBounds = true
         
+        notesView.layer.cornerRadius = 8
+        notesView.layer.masksToBounds = true
+        
         // Set delegates
         nameTextField.delegate = self
         carbsTextField.delegate = self
         fatTextField.delegate = self
         proteinTextField.delegate = self
+        notesTextField.delegate = self
         
         // Disable autocorrect
         nameTextField.autocorrectionType = .no
         carbsTextField.autocorrectionType = .no
         fatTextField.autocorrectionType = .no
         proteinTextField.autocorrectionType = .no
+        notesTextField.autocorrectionType = .no
         
         // Add toolbar with "Next" and "Done" buttons
         let toolbar = UIToolbar()
@@ -74,6 +87,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         carbsTextField.inputAccessoryView = toolbar
         fatTextField.inputAccessoryView = toolbar
         proteinTextField.inputAccessoryView = toolbar
+        notesTextField.inputAccessoryView = toolbar
         
         // Add Cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
@@ -84,12 +98,59 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         initialCarbs = carbsTextField.text
         initialFat = fatTextField.text
         initialProtein = proteinTextField.text
+        initialNotes = notesTextField.text
         
         // Observe text field changes
         nameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         carbsTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         fatTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         proteinTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        notesTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
+        // Add tap gesture recognizers to labels
+        addTapGestureRecognizers()
+    }
+    
+    private func addTapGestureRecognizers() {
+        let nameTapGesture = UITapGestureRecognizer(target: self, action: #selector(nameStackTapped))
+        nameStack.addGestureRecognizer(nameTapGesture)
+        nameStack.isUserInteractionEnabled = true
+        
+        let carbsTapGesture = UITapGestureRecognizer(target: self, action: #selector(carbsStackTapped))
+        carbsStack.addGestureRecognizer(carbsTapGesture)
+        carbsStack.isUserInteractionEnabled = true
+        
+        let fatTapGesture = UITapGestureRecognizer(target: self, action: #selector(fatStackTapped))
+        fatStack.addGestureRecognizer(fatTapGesture)
+        fatStack.isUserInteractionEnabled = true
+        
+        let proteinTapGesture = UITapGestureRecognizer(target: self, action: #selector(proteinStackTapped))
+        proteinStack.addGestureRecognizer(proteinTapGesture)
+        proteinStack.isUserInteractionEnabled = true
+        
+        let notesTapGesture = UITapGestureRecognizer(target: self, action: #selector(notesStackTapped))
+        notesStack.addGestureRecognizer(notesTapGesture)
+        notesStack.isUserInteractionEnabled = true
+    }
+    
+    @objc private func nameStackTapped() {
+        nameTextField.becomeFirstResponder()
+    }
+    
+    @objc private func carbsStackTapped() {
+        carbsTextField.becomeFirstResponder()
+    }
+    
+    @objc private func fatStackTapped() {
+        fatTextField.becomeFirstResponder()
+    }
+    
+    @objc private func proteinStackTapped() {
+        proteinTextField.becomeFirstResponder()
+    }
+    
+    @objc private func notesStackTapped() {
+        notesTextField.becomeFirstResponder()
     }
     
     @objc func nextButtonTapped() {
@@ -100,6 +161,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         } else if fatTextField.isFirstResponder {
             proteinTextField.becomeFirstResponder()
         } else if proteinTextField.isFirstResponder {
+            notesTextField.becomeFirstResponder()
+        } else if notesTextField.isFirstResponder {
             nameTextField.becomeFirstResponder()
         }
     }
@@ -191,8 +254,9 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func setupUI() {
         if let foodItem = foodItem {
-            title = "Ändra livsmedek"
+            title = "Ändra livsmedel"
             nameTextField.text = foodItem.name
+            notesTextField.text = foodItem.notes
             if foodItem.perPiece {
                 isPerPiece = true
                 segmentedControl.selectedSegmentIndex = 1
@@ -229,6 +293,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         if let foodItem = foodItem {
             // Update existing food item
             foodItem.name = nameTextField.text ?? ""
+            foodItem.notes = notesTextField.text ?? ""
             if isPerPiece {
                 foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -251,6 +316,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
             newFoodItem.name = nameTextField.text ?? ""
+            newFoodItem.notes = notesTextField.text ?? ""
             if isPerPiece {
                 newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -282,9 +348,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 print("Navigation Controller is nil")
             }
         } catch {
-            print("Failed to save food item: (error)")
+            print("Failed to save food item: \(error)")
         }
     }
+    
     private func fetchAllFoodItems() -> [FoodItem] {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
         let context = appDelegate.persistentContainer.viewContext
@@ -303,16 +370,18 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func checkForChanges() {
         let currentName = nameTextField.text
+        let currentNotes = notesTextField.text
         let currentCarbs = carbsTextField.text
         let currentFat = fatTextField.text
         let currentProtein = proteinTextField.text
         
         let nameChanged = currentName != initialName
+        let notesChanged = currentNotes != initialNotes
         let carbsChanged = currentCarbs != initialCarbs
         let fatChanged = currentFat != initialFat
         let proteinChanged = currentProtein != initialProtein
         
-        saveButton.isEnabled = nameChanged || carbsChanged || fatChanged || proteinChanged
+        saveButton.isEnabled = nameChanged || carbsChanged || fatChanged || proteinChanged || notesChanged
         updateSaveButtonTitle()
     }
 }

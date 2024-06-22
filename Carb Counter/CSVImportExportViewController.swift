@@ -83,7 +83,7 @@ class CSVImportExportViewController: UIViewController {
     }
     
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count\n"
+        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes\n"
         
         for item in foodItems {
             let id = item.id?.uuidString ?? ""
@@ -99,8 +99,9 @@ class CSVImportExportViewController: UIViewController {
             let protein = item.protein
             let proteinPP = item.proteinPP
             let count = item.count
+            let notes = item.notes ?? ""
             
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count)\n"
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes)\n"
         }
         
         return csvString
@@ -200,7 +201,7 @@ class CSVImportExportViewController: UIViewController {
     }
     private func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 13 else {
+        guard columns.count == 14 else {
             showAlert(title: "Import misslyckades", message: "CSV-fil var inte korrekt formaterad")
             return
         }
@@ -211,7 +212,7 @@ class CSVImportExportViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 13 {
+            if values.count == 14 {
                 if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
                     let foodItem = FoodItem(context: context)
                     foodItem.id = id
@@ -227,6 +228,7 @@ class CSVImportExportViewController: UIViewController {
                     foodItem.protein = Double(values[10]) ?? 0.0
                     foodItem.proteinPP = Double(values[11]) ?? 0.0
                     foodItem.count = Int16(values[12]) ?? 0
+                    foodItem.notes = values[13]
                 }
             }
         }

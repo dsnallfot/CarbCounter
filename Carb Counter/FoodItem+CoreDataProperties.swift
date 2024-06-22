@@ -2,7 +2,7 @@
 //  FoodItem+CoreDataProperties.swift
 //  Carb Counter
 //
-//  Created by Daniel Snällfot on 2024-06-21.
+//  Created by Daniel Snällfot on 2024-06-22.
 //
 //
 
@@ -18,6 +18,7 @@ extension FoodItem {
 
     @NSManaged public var carbohydrates: Double
     @NSManaged public var carbsPP: Double
+    @NSManaged public var count: Int16
     @NSManaged public var fat: Double
     @NSManaged public var fatPP: Double
     @NSManaged public var id: UUID?
@@ -28,6 +29,6 @@ extension FoodItem {
     @NSManaged public var perPiece: Bool
     @NSManaged public var protein: Double
     @NSManaged public var proteinPP: Double
-    @NSManaged public var count: Int16
+    @NSManaged public var notes: String?
 
 }

@@ -57,6 +57,8 @@
 
 /* Begin PBXFileReference section */
 		653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportExportViewController.swift; sourceTree = "<group>"; };
+		653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
+		653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Carb Counter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -85,8 +87,6 @@
 		65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbRatioViewController.swift; sourceTree = "<group>"; };
 		65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartDoseViewController.swift; sourceTree = "<group>"; };
 		65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHelper.swift; sourceTree = "<group>"; };
-		65C75D032C25F88700114BD3 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
-		65C75D042C25F88700114BD3 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,8 +117,8 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
-				65C75D032C25F88700114BD3 /* FoodItem+CoreDataClass.swift */,
-				65C75D042C25F88700114BD3 /* FoodItem+CoreDataProperties.swift */,
+				653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */,
+				653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EE112C20DA9400B0FDF5 /* Carb CounterTests */,
 				6553EE1B2C20DA9400B0FDF5 /* Carb CounterUITests */,
