@@ -334,23 +334,30 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
             let context = appDelegate.persistentContainer.viewContext
             
+            // Fetch existing food item IDs
+            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+            let existingFoodItems = try context.fetch(fetchRequest)
+            let existingIDs = Set(existingFoodItems.compactMap { $0.id })
+            
             for row in rows[1...] {
                 let values = row.components(separatedBy: ";")
                 if values.count == 13 { // Adjusted to 13 to include count
-                    let foodItem = FoodItem(context: context)
-                    foodItem.id = UUID(uuidString: values[0])
-                    foodItem.name = values[1]
-                    foodItem.carbohydrates = Double(values[2]) ?? 0.0
-                    foodItem.carbsPP = Double(values[3]) ?? 0.0
-                    foodItem.fat = Double(values[4]) ?? 0.0
-                    foodItem.fatPP = Double(values[5]) ?? 0.0
-                    foodItem.netCarbs = Double(values[6]) ?? 0.0
-                    foodItem.netFat = Double(values[7]) ?? 0.0
-                    foodItem.netProtein = Double(values[8]) ?? 0.0
-                    foodItem.perPiece = values[9] == "true"
-                    foodItem.protein = Double(values[10]) ?? 0.0
-                    foodItem.proteinPP = Double(values[11]) ?? 0.0
-                    foodItem.count = Int16(values[12]) ?? 0 // Adjusted to parse count
+                    if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
+                        let foodItem = FoodItem(context: context)
+                        foodItem.id = id
+                        foodItem.name = values[1]
+                        foodItem.carbohydrates = Double(values[2]) ?? 0.0
+                        foodItem.carbsPP = Double(values[3]) ?? 0.0
+                        foodItem.fat = Double(values[4]) ?? 0.0
+                        foodItem.fatPP = Double(values[5]) ?? 0.0
+                        foodItem.netCarbs = Double(values[6]) ?? 0.0
+                        foodItem.netFat = Double(values[7]) ?? 0.0
+                        foodItem.netProtein = Double(values[8]) ?? 0.0
+                        foodItem.perPiece = values[9] == "true"
+                        foodItem.protein = Double(values[10]) ?? 0.0
+                        foodItem.proteinPP = Double(values[11]) ?? 0.0
+                        foodItem.count = Int16(values[12]) ?? 0 // Adjusted to parse count
+                    }
                 }
             }
             
