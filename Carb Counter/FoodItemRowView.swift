@@ -169,13 +169,13 @@ class FoodItemRowView: UIView {
             let proteinPP = selectedFoodItem.proteinPP
             
             if carbsPP > 0 {
-                message += "Kolhydrater: \(carbsPP) g/styck\n"
+                message += "Kolhydrater: \(carbsPP) g/st\n"
             }
             if fatPP > 0 {
-                message += "Fett: \(fatPP) g/styck\n"
+                message += "Fett: \(fatPP) g/st\n"
             }
             if proteinPP > 0 {
-                message += "Protein: \(proteinPP) g/styck\n"
+                message += "Protein: \(proteinPP) g/st\n"
             }
         } else {
             let carbohydrates = selectedFoodItem.carbohydrates
@@ -183,13 +183,13 @@ class FoodItemRowView: UIView {
             let protein = selectedFoodItem.protein
             
             if carbohydrates > 0 {
-                message += "Kolhydrater: \(carbohydrates) g/100g\n"
+                message += "Kolhydrater: \(carbohydrates)/100 g\n"
             }
             if fat > 0 {
-                message += "Fett: \(fat) g/100g\n"
+                message += "Fett: \(fat)/100 g\n"
             }
             if protein > 0 {
-                message += "Protein: \(protein) g/100g\n"
+                message += "Protein: \(protein)/100 g\n"
             }
         }
         
@@ -198,6 +198,10 @@ class FoodItemRowView: UIView {
         } else {
             // Remove the last newline character
             message = String(message.dropLast())
+            
+            // Regex replacement for ".0"
+            let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
+            message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
         }
         
         let alertController = UIAlertController(title: name, message: message, preferredStyle: .alert)

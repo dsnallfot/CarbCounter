@@ -28,17 +28,18 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
                 textField.inputAssistantItem.trailingBarButtonGroups = []
             }
 
-            // Create toolbar with done button
-            let toolbar = UIToolbar()
-            toolbar.sizeToFit()
-            let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            toolbar.setItems([flexSpace, doneButton], animated: false)
-            
-            textField.inputAccessoryView = toolbar
-        }
-        
-        return searchBar
+            // Create toolbar with done and cancel buttons
+                        let toolbar = UIToolbar()
+                        toolbar.sizeToFit()
+                        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+                        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+                        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+                        toolbar.setItems([cancelButton, flexSpace, doneButton], animated: false)
+                        
+                        textField.inputAccessoryView = toolbar
+                    }
+                    
+                    return searchBar
     }()
 
     let tableView: UITableView = {
@@ -95,30 +96,13 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     @objc private func doneButtonTapped() {
-        // Increment count for each selected item and save context
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
-        
-        for item in selectedFoodItems {
-            item.count += 1
-        }
-        
-        do {
-            try context.save()
-        } catch {
-            print("Failed to update food item count: \(error)")
-        }
-        
-        // Resign the searchBar as first responder
-        searchBar.resignFirstResponder()
-        
-        onDoneButtonTapped?(selectedFoodItems)
-        clearSelection()
-        clearSearch()
-        
-        // Hide the dropdown view
-        self.isHidden = true
+        completeSelection()
     }
+    
+    @objc private func cancelButtonTapped() {
+            // Dismiss the keyboard
+            searchBar.resignFirstResponder()
+        }
 
     @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         sortFoodItems()
@@ -210,4 +194,35 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
 
 extension Notification.Name {
     static let foodItemsDidChange = Notification.Name("foodItemsDidChange")
+}
+
+extension SearchableDropdownView {
+    func completeSelection() {
+        // Increment count for each selected item and save context
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+        
+        for item in selectedFoodItems {
+            item.count += 1
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to update food item count: \(error)")
+        }
+        
+        // Resign the searchBar as first responder
+        searchBar.resignFirstResponder()
+        
+        onDoneButtonTapped?(selectedFoodItems)
+        clearSelection()
+        clearSearch()
+        
+        // Hide the dropdown view
+        self.isHidden = true
+        
+        // Notify delegate to update navigation bar
+        (self.superview?.next as? ComposeMealViewController)?.hideSearchableDropdown()
+    }
 }

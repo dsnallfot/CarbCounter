@@ -40,6 +40,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     var clearAllButton: UIBarButtonItem!
     var saveFavoriteButton: UIBarButtonItem!
+    var addFromSearchableDropdownButton: UIBarButtonItem!
     
     var allowShortcuts: Bool = false
     
@@ -76,6 +77,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         clearAllButton = UIBarButtonItem(title: "Rensa allt", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
+        
+        // Initialize "Add from SearchableDropdown" button
+            addFromSearchableDropdownButton = UIBarButtonItem(title: "Lägg till", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
         
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
@@ -335,7 +339,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
         
-        let bolusLabel = createLabel(text: "TOT BOLUS", fontSize: 10, weight: .bold, color: .white)
+        let bolusLabel = createLabel(text: "BOLUS TOT", fontSize: 10, weight: .bold, color: .white)
         totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -349,7 +353,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "TOT KH", fontSize: 10, weight: .bold, color: .white)
+        let summaryLabel = createLabel(text: "KH TOT", fontSize: 10, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -363,7 +367,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
-        let netFatLabel = createLabel(text: "TOT FETT", fontSize: 10, weight: .bold, color: .white)
+        let netFatLabel = createLabel(text: "FETT TOT", fontSize: 10, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -377,7 +381,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
-        let netProteinLabel = createLabel(text: "TOT PROTEIN", fontSize: 10, weight: .bold, color: .white)
+        let netProteinLabel = createLabel(text: "PROTEIN TOT", fontSize: 10, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -406,30 +410,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -5)
         ])
     }
-
+    
     @objc private func showBolusInfo() {
-        showAlert(title: "TOT BOLUS", message: "Lorem Ipsum")
+        showAlert(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.")
     }
-
     @objc private func showCarbsInfo() {
-        showAlert(title: "TOT KH", message: "Lorem Ipsum")
+        showAlert(title: "Kolhydrater Totalt", message: "Den beräknade summan av alla kolhydrater i måltiden.")
     }
-
+    
     @objc private func showFatInfo() {
-        showAlert(title: "TOT FETT", message: "Lorem Ipsum")
+        showAlert(title: "Fett Totalt", message: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.")
     }
-
+    
     @objc private func showProteinInfo() {
-        showAlert(title: "TOT PROTEIN", message: "Lorem Ipsum")
+        showAlert(title: "Protein Totalt", message: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.")
     }
-
+    
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alertController.addAction(okAction)
         present(alertController, animated: true, completion: nil)
     }
-
+    
     private func setupTreatmentView(in container: UIView) {
         let treatmentView = UIView()
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
@@ -464,7 +467,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         remainsContainer.addGestureRecognizer(remainsTapGesture)
         remainsContainer.isUserInteractionEnabled = true
         
-        remainsLabel = createLabel(text: "ÅTERSTÅR", fontSize: 10, weight: .bold, color: .white)
+        remainsLabel = createLabel(text: "KVAR ATT GE", fontSize: 10, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
         totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
         
@@ -483,21 +486,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
-
+        
         let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 10, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
         totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
-
+        
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
         startAmountValuesStack.spacing = 3
-
+        
         let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
         startAmountStack.axis = .vertical
         startAmountStack.spacing = 7
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
-
+        
         let registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
@@ -506,13 +509,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 10, weight: .bold, color: .white)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
-
+        
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
         registeredStack.spacing = 4
         let registeredPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(registeredStack, in: registeredContainer, padding: registeredPadding)
-
+        
         let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
@@ -530,18 +533,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
-
+        
         addDoneButtonToKeyboard()
     }
-
+    
     @objc private func showCRInfo() {
-    showAlert(title: "INSULINKVOT", message: "Lorem Ipsum")
+        showAlert(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 1 E insulin till 25 g kolhydrater, eller 2 E insulin till 50 g kolhydrater.")
     }
     
     @objc private func allowShortcutsChanged() {
-            allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
-        }
-
+        allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
+    }
+    
     @objc private func startAmountContainerTapped() {
         var khValue = totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         var bolusValue = totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0"
@@ -558,7 +561,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 self.totalRegisteredLabel.text = khValue.replacingOccurrences(of: ",", with: ".")
                 self.updateTotalNutrients()
                 self.clearAllButton.isEnabled = true
-                
                 let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"
                 
                 if let url = URL(string: urlString) {
@@ -584,10 +586,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             present(alertController, animated: true, completion: nil)
         }
     }
-
+    
     @objc private func remainContainerTapped() {
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-
+        
         if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
             let alert = UIAlertController(title: "Varning", message: "Du har registrerat en större startdos än vad som slutligen åts! \n\nSe till att komplettera med minst \(khValue) kolhydrater för att undvika hypoglykemi!", preferredStyle: .alert)
@@ -596,7 +598,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         var khValue = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         var bolusValue = totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0"
         
@@ -646,7 +648,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             present(alertController, animated: true, completion: nil)
         }
     }
-
+    
     private func createContainerView(backgroundColor: UIColor, borderColor: UIColor? = nil, borderWidth: CGFloat = 0) -> UIView {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -721,7 +723,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         updateRemainsBolus()
     }
-    
     private func roundToNearest05(_ value: Double) -> Double {
         return (value * 20.0).rounded() / 20.0
     }
@@ -744,7 +745,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             if remainsValue < -0.5 {
                 remainsLabel.text = "ÖVERDOS!"
             } else {
-                remainsLabel.text = "ÅTERSTÅR"
+                remainsLabel.text = "KVAR ATT GE"
             }
             
             switch remainsValue {
@@ -762,7 +763,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             
             remainsContainer.backgroundColor = .systemGray
-            remainsLabel.text = "ÅTERSTÅR"
+            remainsLabel.text = "KVAR ATT GE"
         }
         
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
@@ -853,12 +854,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 112),
-            searchableDropdownView.heightAnchor.constraint(equalToConstant: 275)
+            //searchableDropdownView.heightAnchor.constraint(equalToConstant: 450) //275)
+            searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
             self?.searchableDropdownView.isHidden = true
-            
+                        
             if selectedItems.isEmpty {
                 // No items were added, update the "Clear All" button state
                 self?.updateClearAllButtonState()
@@ -868,7 +870,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             selectedItems.forEach { self?.addFoodItemRow(with: $0) }
             self?.clearAllButton.isEnabled = true
             self?.updateHeadlineVisibility()
+            
+            // Hide the dropdown and update the navigation bar
+            self?.hideSearchableDropdown()
         }
+    }
+    
+    func hideSearchableDropdown() {
+        searchableDropdownView.isHidden = true
+        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
+        clearAllButton.isHidden = false // Unhide the "Rensa allt" button
     }
     
     @objc private func searchableDropdownViewDidDismiss() {
@@ -881,6 +892,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         searchableDropdownView.isHidden = true
         searchableDropdownView.searchBar.resignFirstResponder()
         searchableDropdownViewDidDismiss()
+    }
+    
+    @objc private func addFromSearchableDropdownButtonTapped() {
+        searchableDropdownView.completeSelection()
     }
     
     private func fetchFoodItems() {
@@ -934,21 +949,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                searchableDropdownView.heightAnchor.constraint(equalToConstant: 400)
+                searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
             ])
         }
         
         searchableDropdownView.isHidden = false
-        DispatchQueue.main.async {
-            self.searchableDropdownView.searchBar.becomeFirstResponder()
-        }
-        
-        // Only disable the "Clear All" button if there are no food items present
-        if foodItemRows.isEmpty {
-            clearAllButton.isEnabled = false
-        }
+        navigationItem.rightBarButtonItem = addFromSearchableDropdownButton // Show "Lägg till" button
+        clearAllButton.isHidden = true // Hide the "Rensa allt" button
     }
-    
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
         rowView.removeFromSuperview()
@@ -970,15 +978,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func addDoneButtonToKeyboard() {
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-        toolbar.setItems([flexSpace, doneButton], animated: false)
+        toolbar.setItems([cancelButton, flexSpace, doneButton], animated: false)
         
         totalRegisteredLabel?.inputAccessoryView = toolbar
     }
     
     @objc private func doneButtonTapped() {
         totalRegisteredLabel?.resignFirstResponder()
+        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
+        clearAllButton.isHidden = false // Unhide the "Rensa allt" button
+    }
+    
+    @objc private func cancelButtonTapped() {
+        totalRegisteredLabel?.resignFirstResponder()
+        searchableDropdownView.isHidden = true
+        //navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
     }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
