@@ -11,11 +11,11 @@ class SettingsViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Settings"
+        title = "Inställningar"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
         // Add cancel button to the navigation bar
-        let cancelButton = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
     }
     
@@ -30,9 +30,9 @@ class SettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         if indexPath.row == 0 {
-            cell.textLabel?.text = "Carb Ratio Schedule"
+            cell.textLabel?.text = "Carb Ratio Schema"
         } else {
-            cell.textLabel?.text = "Start Dose Schedule"
+            cell.textLabel?.text = "Startdoser Schema"
         }
         return cell
     }

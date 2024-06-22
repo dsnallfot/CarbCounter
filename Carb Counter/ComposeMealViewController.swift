@@ -73,7 +73,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         setupScrollView(below: fixedHeaderContainer)
         
         // Initialize "Clear All" button
-        clearAllButton = UIBarButtonItem(title: "Clear all", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
@@ -123,15 +123,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     @objc private func saveFavoriteMeals() {
         guard !foodItemRows.isEmpty else {
-            let alert = UIAlertController(title: "No Items", message: "There are no items to save as a favorite.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Inga livsmedel", message: "Välj minst ett livsmedel för att spara en favorit.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
             return
         }
         
-        let nameAlert = UIAlertController(title: "Save Favorite Meal", message: "Enter a name for this favorite meal:", preferredStyle: .alert)
+        let nameAlert = UIAlertController(title: "Spara favoritmåltid", message: "ANge ett namn på favoritmåltiden:", preferredStyle: .alert)
         nameAlert.addTextField { textField in
-            textField.placeholder = "Meal Name"
+            textField.placeholder = "Namn"
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
             textField.autocapitalizationType = .none
@@ -145,9 +145,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 textField.inputAssistantItem.trailingBarButtonGroups = []
             }
         }
-        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+        let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            let mealName = nameAlert.textFields?.first?.text ?? "My Favorite Meal"
+            let mealName = nameAlert.textFields?.first?.text ?? "Min favoritmåltid"
             
             let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
             favoriteMeals.name = mealName
@@ -167,11 +167,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             
             CoreDataStack.shared.saveContext()
             
-            let confirmAlert = UIAlertController(title: "Saved", message: "The meal has been saved as a favorite.", preferredStyle: .alert)
+            let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
             confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
             self.present(confirmAlert, animated: true)
         }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         
         nameAlert.addAction(saveAction)
         nameAlert.addAction(cancelAction)
@@ -234,9 +234,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     @objc private func clearAllButtonTapped() {
         view.endEditing(true)
-        let alertController = UIAlertController(title: "Clear All", message: "Do you want to clear all entries?", preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
+        let alertController = UIAlertController(title: "Rensa", message: "Vill du rensa allt?", preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
             self.clearAllFoodItems()
             self.totalRegisteredLabel.text = ""
         }
@@ -319,7 +319,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .label, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "TOT CARBS", fontSize: 10, weight: .bold, color: .white)
+        let summaryLabel = createLabel(text: "TOT KH", fontSize: 10, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         setupStackView(carbsStack, in: carbsContainer)
@@ -327,7 +327,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
-        let netFatLabel = createLabel(text: "TOT FAT", fontSize: 10, weight: .bold, color: .white)
+        let netFatLabel = createLabel(text: "TOT FETT", fontSize: 10, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         setupStackView(fatStack, in: fatContainer)
@@ -368,7 +368,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let crContainer = createContainerView(backgroundColor: .systemCyan)
         treatmentView.addSubview(crContainer)
         
-        crLabel = createLabel(text: "CARB RATIO", fontSize: 10, weight: .bold, color: .white)
+        crLabel = createLabel(text: "CR", fontSize: 10, weight: .bold, color: .white)
         
         if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
             nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 12, weight: .bold, color: .white)
@@ -384,7 +384,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         remainsContainer = createContainerView(backgroundColor: .systemGreen)
         treatmentView.addSubview(remainsContainer)
         
-        remainsLabel = createLabel(text: "REMAINING", fontSize: 10, weight: .bold, color: .white)
+        remainsLabel = createLabel(text: "ÅTERSTÅR", fontSize: 10, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
         totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
         
@@ -400,7 +400,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
         treatmentView.addSubview(startAmountContainer)
         
-        let startAmountLabel = createLabel(text: "START DOSE", fontSize: 10, weight: .bold, color: .white)
+        let startAmountLabel = createLabel(text: "STARTDOS", fontSize: 10, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
         totalStartBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
         
@@ -419,7 +419,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
-        let registeredLabel = createLabel(text: "REGISTERED", fontSize: 10, weight: .bold, color: .label)
+        let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 10, weight: .bold, color: .label)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
         
@@ -545,9 +545,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             
             if remainsValue < -0.5 {
-                remainsLabel.text = "OVERDOSE!"
+                remainsLabel.text = "ÖVERDOS!"
             } else {
-                remainsLabel.text = "REMAINING"
+                remainsLabel.text = "ÅTERSTÅR"
             }
             
             switch remainsValue {
@@ -565,7 +565,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             
             remainsContainer.backgroundColor = .systemGray
-            remainsLabel.text = "REMAINING"
+            remainsLabel.text = "ÅTERSTÅR"
         }
         
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
@@ -603,25 +603,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let font = UIFont.systemFont(ofSize: 11)
         
         foodItemLabel = UILabel()
-        foodItemLabel.text = "FOOD ITEM                 "
+        foodItemLabel.text = "LIVSMEDEL                 "
         foodItemLabel.textAlignment = .left
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
         
         portionServedLabel = UILabel()
-        portionServedLabel.text = "SERVED   "
+        portionServedLabel.text = "SERVERAT "
         portionServedLabel.textAlignment = .left
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
-        notEatenLabel.text = "   LEFT  "
+        notEatenLabel.text = "  EJ ÄTITS "
         notEatenLabel.textAlignment = .left
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
-        netCarbsLabel.text = "NET CARBS"
+        netCarbsLabel.text = "KH"
         netCarbsLabel.textAlignment = .right
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
@@ -749,7 +749,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
         toolbar.setItems([flexSpace, doneButton], animated: false)
         
         totalRegisteredLabel?.inputAccessoryView = toolbar
@@ -802,7 +802,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("+ Select Food Items", for: .normal)
+            button.setTitle("+ Välj livsmedel", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
             button.setTitleColor(.systemBlue, for: .normal)
             button.translatesAutoresizingMaskIntoConstraints = false

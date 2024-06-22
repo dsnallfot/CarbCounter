@@ -10,7 +10,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Favorite Meals"
+        title = "Favoritmåltider"
         
         setupSearchBar()
         setupTableView()
@@ -20,7 +20,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Search Favorite Meals"
+        searchBar.placeholder = "Sök favoritmåltid"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchBar)
         
@@ -84,14 +84,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     // Implement swipe actions
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         // Edit action
-        let editAction = UIContextualAction(style: .normal, title: "Edit") { [weak self] (action, view, completionHandler) in
+        let editAction = UIContextualAction(style: .normal, title: "Ändra") { [weak self] (action, view, completionHandler) in
             self?.editFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
         editAction.backgroundColor = .systemBlue
         
         // Delete action
-        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (action, view, completionHandler) in
+        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { [weak self] (action, view, completionHandler) in
             self?.confirmDeleteFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
@@ -110,11 +110,11 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func confirmDeleteFavoriteMeal(at indexPath: IndexPath) {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         
-        let deleteAlert = UIAlertController(title: "Delete Favorite Meal", message: "Do you want to delete \"\(favoriteMeal.name ?? "")\"?", preferredStyle: .alert)
-        let deleteAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self] _ in
+        let deleteAlert = UIAlertController(title: "Radera favoritemåltid", message: "Vill du radera \"\(favoriteMeal.name ?? "")\"?", preferredStyle: .alert)
+        let deleteAction = UIAlertAction(title: "Ja", style: .destructive) { [weak self] _ in
             self?.deleteFavoriteMeal(at: indexPath)
         }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         
         deleteAlert.addAction(deleteAction)
         deleteAlert.addAction(cancelAction)

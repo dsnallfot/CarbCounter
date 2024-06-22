@@ -9,7 +9,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Edit Favorite Meal"
+        title = "Ändra favoritmåltid"
         
         setupView()
         setupNavigationBar()
@@ -46,7 +46,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func setupNavigationBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .done, target: self, action: #selector(saveChanges))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Spara", style: .done, target: self, action: #selector(saveChanges))
     }
     
     @objc private func saveChanges() {
@@ -63,7 +63,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         doneToolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonAction))
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonAction))
         
         let items = [flexSpace, done]
         doneToolbar.items = items
@@ -98,14 +98,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         guard let items = favoriteMeal.items as? [[String: Any]] else { return }
         let item = items[indexPath.row]
         
-        let editAlert = UIAlertController(title: "Edit Portion", message: "Enter a new portion for \(item["name"] as? String ?? ""):", preferredStyle: .alert)
+        let editAlert = UIAlertController(title: "Ändra Portion", message: "ANge en ny portion för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
         editAlert.addTextField { textField in
             textField.text = item["portionServed"] as? String
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
             self.addDoneButtonOnKeyboard(to: textField)
         }
-        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+        let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
             guard let self = self, let newPortion = editAlert.textFields?.first?.text else { return }
             self.favoriteMeal.items = self.updatePortion(for: item["name"] as? String ?? "", with: newPortion)
             
@@ -113,7 +113,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             CoreDataStack.shared.saveContext()
             self.tableView.reloadData()
         }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: "AVbryt", style: .cancel, handler: nil)
         
         editAlert.addAction(saveAction)
         editAlert.addAction(cancelAction)
@@ -137,7 +137,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         doneToolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneEditingTextField))
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneEditingTextField))
         
         let items = [flexSpace, done]
         doneToolbar.items = items

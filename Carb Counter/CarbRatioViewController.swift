@@ -7,7 +7,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         carbRatios = CoreDataHelper.shared.fetchCarbRatios()
-        title = "Carb Ratio Schedule"
+        title = "Carb Ratio Schema"
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
     }
     
@@ -104,9 +104,9 @@ class CarbRatioCell: UITableViewCell {
         // Add toolbar with "Next" button to the keyboard
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
-        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbar.setItems([flexSpace, nextButton], animated: false)
+        toolbar.setItems([nextButton, flexSpace], animated: false)
         ratioTextField.inputAccessoryView = toolbar
     }
     

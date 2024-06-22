@@ -112,7 +112,7 @@ class FoodItemRowView: UIView {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder😊 has not been implemented")
+        fatalError("init(coder: ) has not been implemented")
     }
     
     private func setupView() {
@@ -143,8 +143,9 @@ class FoodItemRowView: UIView {
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
         
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
-        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
+        //let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
+        let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         
         toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
@@ -201,7 +202,7 @@ class FoodItemRowView: UIView {
     func setSelectedFoodItem(_ item: FoodItem) {
         self.selectedFoodItem = item
         foodItemTextField.text = item.name
-        ppOr100g.text = item.perPiece ? "p" : "g"
+        ppOr100g.text = item.perPiece ? "st" : "g"
         calculateNutrients()
     }
 }

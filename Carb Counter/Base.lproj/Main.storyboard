@@ -359,11 +359,11 @@
             </objects>
             <point key="canvasLocation" x="-1750.3816793893129" y="153.52112676056339"/>
         </scene>
-        <!--Meal-->
+        <!--Måltid-->
         <scene sceneID="igo-sq-oby">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="MNd-4I-Xx5" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Meal" image="takeoutbag.and.cup.and.straw" catalog="system" selectedImage="takeoutbag.and.cup.and.straw" id="kNM-lm-0Vi"/>
+                    <tabBarItem key="tabBarItem" title="Måltid" image="takeoutbag.and.cup.and.straw" catalog="system" selectedImage="takeoutbag.and.cup.and.straw" id="kNM-lm-0Vi"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Uzx-0w-3xT">
                         <rect key="frame" x="0.0" y="20" width="375" height="44"/>
@@ -403,13 +403,13 @@
         <image name="list.bullet.clipboard" catalog="system" width="98" height="128"/>
         <image name="takeoutbag.and.cup.and.straw" catalog="system" width="128" height="114"/>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray5Color">
-            <color red="0.8980392157" green="0.8980392157" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.89803921568627454" green="0.89803921568627454" blue="0.91764705882352937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

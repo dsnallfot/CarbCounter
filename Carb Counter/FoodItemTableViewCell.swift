@@ -49,20 +49,20 @@ class FoodItemTableViewCell: UITableViewCell {
         
         if foodItem.perPiece {
             if foodItem.carbsPP > 0 {
-                details.append("Carbs \(String(format: "%.0f", foodItem.carbsPP))g/piece")
+                details.append("Kh \(String(format: "%.0f", foodItem.carbsPP))g/st")
             }
             if foodItem.fatPP > 0 {
-                details.append("Fat \(String(format: "%.0f", foodItem.fatPP))g/piece")
+                details.append("Fett \(String(format: "%.0f", foodItem.fatPP))g/st")
             }
             if foodItem.proteinPP > 0 {
-                details.append("Protein \(String(format: "%.0f", foodItem.proteinPP))g/piece")
+                details.append("Protein \(String(format: "%.0f", foodItem.proteinPP))g/st")
             }
         } else {
             if foodItem.carbohydrates > 0 {
-                details.append("Carbs \(String(format: "%.0f", foodItem.carbohydrates))/100g")
+                details.append("Kh \(String(format: "%.0f", foodItem.carbohydrates))/100g")
             }
             if foodItem.fat > 0 {
-                details.append("Fat \(String(format: "%.0f", foodItem.fat))/100g")
+                details.append("Fett \(String(format: "%.0f", foodItem.fat))/100g")
             }
             if foodItem.protein > 0 {
                 details.append("Protein \(String(format: "%.0f", foodItem.protein))/100g")

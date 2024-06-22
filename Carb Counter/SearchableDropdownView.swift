@@ -10,7 +10,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Search and Select Food Items"
+        searchBar.placeholder = "Sök och välj livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.barTintColor = .systemGray
         searchBar.backgroundImage = UIImage() // Removes the default background image
@@ -31,7 +31,8 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             // Create toolbar with done button
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
-            let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+            let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+            //let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             toolbar.setItems([flexSpace, doneButton], animated: false)
             
@@ -48,7 +49,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }()
     
     let segmentedControl: UISegmentedControl = {
-        let items = ["Name A-Z", "Most Popular"]
+        let items = ["Namn A-Ö", "Mest populära"]
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false

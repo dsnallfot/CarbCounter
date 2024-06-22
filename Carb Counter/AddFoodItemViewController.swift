@@ -65,8 +65,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         // Add toolbar with "Next" and "Done" buttons
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
-        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
-        let doneButton = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(doneButtonTapped))
+        let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         toolbar.setItems([nextButton, flexibleSpace, doneButton], animated: false)
         
@@ -124,7 +124,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func setupSegmentedControl() {
-        segmentedControl = UISegmentedControl(items: ["Per 100g", "Per Piece"])
+        segmentedControl = UISegmentedControl(items: ["Per 100g", "Per Styck"])
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -147,9 +147,9 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func updateUnitsLabels() {
         if isPerPiece {
-            carbsUnits.text = "g/piece"
-            fatUnits.text = "g/piece"
-            proteinUnits.text = "g/piece"
+            carbsUnits.text = "g/st"
+            fatUnits.text = "g/st"
+            proteinUnits.text = "g/st"
         } else {
             carbsUnits.text = "g/100g"
             fatUnits.text = "g/100g"
@@ -179,19 +179,19 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         if let foodItem = foodItem {
             // Edit mode
             if saveButton.isEnabled {
-                saveButton.setTitle("Save Changes", for: .normal)
+                saveButton.setTitle("Spara ändringar", for: .normal)
             } else {
-                saveButton.setTitle("No Changes", for: .normal)
+                saveButton.setTitle("Inga ändringar", for: .normal)
             }
         } else {
             // New mode
-            saveButton.setTitle("Save", for: .normal)
+            saveButton.setTitle("Spara", for: .normal)
         }
     }
     
     private func setupUI() {
         if let foodItem = foodItem {
-            title = "Edit Food Item"
+            title = "Ändra livsmedek"
             nameTextField.text = foodItem.name
             if foodItem.perPiece {
                 isPerPiece = true
@@ -207,7 +207,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 proteinTextField.text = String(foodItem.protein)
             }
         } else {
-            title = "Add Food Item"
+            title = "Lägg till livsmedel"
         }
         updateUnitsLabels() // Ensure labels are set correctly when the view is loaded
     }

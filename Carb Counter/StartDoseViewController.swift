@@ -6,7 +6,7 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Start Dose Schedule"
+        title = "Startdoser Schema"
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
         
         startDoses = CoreDataHelper.shared.fetchStartDoses()
@@ -105,9 +105,9 @@ class StartDoseCell: UITableViewCell {
         // Add toolbar with "Next" button to the keyboard
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
-        let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbar.setItems([flexSpace, nextButton], animated: false)
+        toolbar.setItems([nextButton, flexSpace], animated: false)
         doseTextField.inputAccessoryView = toolbar
     }
     

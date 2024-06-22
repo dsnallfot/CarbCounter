@@ -43,7 +43,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     private func setupNavigationBarTitle() {
         // Set the title of the navigation bar
-        title = "Food Items"
+        title = "Livsmedel"
     }
     
     private func createToolbar() -> UIToolbar {
@@ -51,7 +51,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         toolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        //let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
         
         toolbar.setItems([flexSpace, doneButton], animated: false)
         toolbar.isUserInteractionEnabled = true
@@ -62,7 +63,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Search Food Items"
+        searchBar.placeholder = "Sök livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
         // Disable predictive text and autocomplete
@@ -77,7 +78,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+            let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
             toolbar.setItems([flexSpace, doneButton], animated: false)
             textField.inputAccessoryView = toolbar
         }
@@ -96,7 +97,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupSortSegmentedControl() {
-        let items = ["Name A-Z", "Per Piece", "Popular"]
+        let items = ["Namn A-Ö", "Per Styck", "Populära"]
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(sortSegmentChanged(_:)), for: .valueChanged)
@@ -190,11 +191,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completionHandler) in
             let foodItem = self.filteredFoodItems[indexPath.row]
-            let alertController = UIAlertController(title: "Delete", message: "Do you want to delete \(foodItem.name ?? "this item")?", preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            let alertController = UIAlertController(title: "Radera", message: "Vill du radera \(foodItem.name ?? "detta livsmedel")?", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
                 completionHandler(false) // Don't delete the item
             }
-            let yesAction = UIAlertAction(title: "Yes", style: .destructive) { _ in
+            let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
                 self.deleteFoodItem(at: indexPath)
                 completionHandler(true) //Delete the item
             }
@@ -202,7 +203,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             alertController.addAction(yesAction)
             self.present(alertController, animated: true, completion: nil)
         }
-        let editAction = UIContextualAction(style: .normal, title: "Edit") { (action, view, completionHandler) in
+        let editAction = UIContextualAction(style: .normal, title: "Ändra") { (action, view, completionHandler) in
             self.editFoodItem(at: indexPath)
             completionHandler(true)
         }
@@ -356,10 +357,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             try context.save()
             fetchFoodItems()
             tableView.reloadData()
-            showAlert(title: "Import Successful", message: "Food items have been successfully imported.")
+            showAlert(title: "Import lyckades!", message: "Livsmedel har importerats")
         } catch {
             print("Failed to read CSV file: \(error)")
-            showAlert(title: "Import Failed", message: "Failed to read CSV file: \(error)")
+            showAlert(title: "Import misslyckades!", message: "Kunde inte läsa CSV fil: \(error)")
         }
     }
     
