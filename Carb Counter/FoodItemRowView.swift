@@ -8,7 +8,6 @@
 import UIKit
 
 protocol FoodItemRowViewDelegate: AnyObject {
-    //func didTapFoodItemTextField(_ rowView: FoodItemRowView)
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField)
 }
 
@@ -36,14 +35,14 @@ class FoodItemRowView: UIView {
     weak var delegate: FoodItemRowViewDelegate?
     var foodItems: [FoodItem] = []
     
-    let foodItemTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Food Item"
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.widthAnchor.constraint(equalToConstant: 130).isActive = true
-        textField.textColor = .label
-        textField.isUserInteractionEnabled = false // Make the text field non-interactable
-        return textField
+    let foodItemLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Food Item"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.widthAnchor.constraint(equalToConstant: 130).isActive = true
+        label.textColor = .label
+        label.isUserInteractionEnabled = true // Make the label interactable
+        return label
     }()
     
     let portionServedTextField: UITextField = {
@@ -81,6 +80,7 @@ class FoodItemRowView: UIView {
         textField.widthAnchor.constraint(equalToConstant: 48).isActive = true
         textField.backgroundColor = .secondarySystemBackground
         textField.textColor = .label
+        textField.adjustsFontSizeToFitWidth = true
         return textField
     }()
     
@@ -106,12 +106,12 @@ class FoodItemRowView: UIView {
     }()
     
     var selectedFoodItem: FoodItem?
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
-        //setupTextFieldTargets()
         addInputAccessoryView()
+        setupLabelTapGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -119,7 +119,7 @@ class FoodItemRowView: UIView {
     }
     
     private func setupView() {
-        let stackView = UIStackView(arrangedSubviews: [foodItemTextField, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
+        let stackView = UIStackView(arrangedSubviews: [foodItemLabel, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -137,16 +137,16 @@ class FoodItemRowView: UIView {
         portionServedTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
         notEatenTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
     }
-
-    /*private func setupTextFieldTargets() {
-        foodItemTextField.addTarget(self, action: #selector(foodItemTextFieldTapped), for: .editingDidBegin)
-    }*/
+    
+    private func setupLabelTapGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped))
+        foodItemLabel.addGestureRecognizer(tapGesture)
+    }
     
     private func addInputAccessoryView() {
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
         
-        //let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
         let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
         let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
@@ -157,9 +157,67 @@ class FoodItemRowView: UIView {
         notEatenTextField.inputAccessoryView = toolbar
     }
     
-    /*@objc private func foodItemTextFieldTapped() {
-        delegate?.didTapFoodItemTextField(self)
-    }*/
+    @objc private func foodItemLabelTapped() {
+        guard let selectedFoodItem = selectedFoodItem else { return }
+        
+        let name = selectedFoodItem.name ?? "Unknown"
+        var message = ""
+        
+        if selectedFoodItem.perPiece {
+            let carbsPP = selectedFoodItem.carbsPP
+            let fatPP = selectedFoodItem.fatPP
+            let proteinPP = selectedFoodItem.proteinPP
+            
+            if carbsPP > 0 {
+                message += "Kolhydrater: \(carbsPP) g/styck\n"
+            }
+            if fatPP > 0 {
+                message += "Fett: \(fatPP) g/styck\n"
+            }
+            if proteinPP > 0 {
+                message += "Protein: \(proteinPP) g/styck\n"
+            }
+        } else {
+            let carbohydrates = selectedFoodItem.carbohydrates
+            let fat = selectedFoodItem.fat
+            let protein = selectedFoodItem.protein
+            
+            if carbohydrates > 0 {
+                message += "Kolhydrater: \(carbohydrates) g/100g\n"
+            }
+            if fat > 0 {
+                message += "Fett: \(fat) g/100g\n"
+            }
+            if protein > 0 {
+                message += "Protein: \(protein) g/100g\n"
+            }
+        }
+        
+        if message.isEmpty {
+            message = "Ingen näringsinformation tillgänlig."
+        } else {
+            // Remove the last newline character
+            message = String(message.dropLast())
+        }
+        
+        let alertController = UIAlertController(title: name, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        if let viewController = self.getViewController() {
+            viewController.present(alertController, animated: true, completion: nil)
+        }
+    }
+    
+    private func getViewController() -> UIViewController? {
+        var nextResponder: UIResponder? = self
+        while nextResponder != nil {
+            nextResponder = nextResponder?.next
+            if let viewController = nextResponder as? UIViewController {
+                return viewController
+            }
+        }
+        return nil
+    }
     
     @objc private func deleteButtonTapped() {
         onDelete?()
@@ -185,7 +243,6 @@ class FoodItemRowView: UIView {
             netFat = (fatPer100g * portionServed / 100) - (fatPer100g * notEaten / 100)
             netProtein = (proteinPer100g * portionServed / 100) - (proteinPer100g * notEaten / 100)
         }
-        
         netCarbsLabel.text = String(format: "%.0f g", netCarbs)
     }
     
@@ -204,7 +261,7 @@ class FoodItemRowView: UIView {
     
     func setSelectedFoodItem(_ item: FoodItem) {
         self.selectedFoodItem = item
-        foodItemTextField.text = item.name
+        foodItemLabel.text = item.name
         ppOr100g.text = item.perPiece ? "st" : "g"
         calculateNutrients()
     }

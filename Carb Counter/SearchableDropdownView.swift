@@ -10,7 +10,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Sök och välj livsmedel"
+        searchBar.placeholder = "Sök & välj ett eller flera livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.barTintColor = .systemGray
         searchBar.backgroundImage = UIImage() // Removes the default background image
@@ -48,7 +48,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }()
     
     let segmentedControl: UISegmentedControl = {
-        let items = ["Namn A-Ö", "Mest populära"]
+        let items = ["Namn A-Ö", "Skolmat", "Mest populära"]
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -94,14 +94,6 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         ])
     }
 
-    // Remove the automatic first responder setup
-    /*
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        searchBar.becomeFirstResponder()
-    }
-    */
-
     @objc private func doneButtonTapped() {
         // Increment count for each selected item and save context
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
@@ -134,10 +126,24 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     private func sortFoodItems() {
-        if segmentedControl.selectedSegmentIndex == 0 {
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
             filteredFoodItems.sort { ($0.name ?? "") < ($1.name ?? "") }
-        } else {
+        case 1:
+            filteredFoodItems.sort {
+                if let name1 = $0.name, let name2 = $1.name {
+                    if name1.hasPrefix("Skolmat") && !name2.hasPrefix("Skolmat") {
+                        return true
+                    } else if !name1.hasPrefix("Skolmat") && name2.hasPrefix("Skolmat") {
+                        return false
+                    }
+                }
+                return ($0.name ?? "") < ($1.name ?? "")
+            }
+        case 2:
             filteredFoodItems.sort { $0.count > $1.count }
+        default:
+            break
         }
     }
 

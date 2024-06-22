@@ -152,7 +152,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             return
         }
         
-        let nameAlert = UIAlertController(title: "Spara favoritmåltid", message: "Ange ett namn på favoritmåltiden:", preferredStyle: .alert)
+        let nameAlert = UIAlertController(title: "Spara som favoritmåltid", message: "Ange ett namn på måltiden:", preferredStyle: .alert)
         nameAlert.addTextField { textField in
             textField.placeholder = "Namn"
             textField.autocorrectionType = .no
@@ -341,6 +341,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
         
+        // Add tap gesture for bolusContainer
+        let bolusTapGesture = UITapGestureRecognizer(target: self, action: #selector(showBolusInfo))
+        bolusContainer.isUserInteractionEnabled = true
+        bolusContainer.addGestureRecognizer(bolusTapGesture)
+        
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
         
@@ -349,6 +354,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
+        
+        // Add tap gesture for carbsContainer
+        let carbsTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCarbsInfo))
+        carbsContainer.isUserInteractionEnabled = true
+        carbsContainer.addGestureRecognizer(carbsTapGesture)
         
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
@@ -359,6 +369,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(fatStack, in: fatContainer, padding: fatPadding)
         
+        // Add tap gesture for fatContainer
+        let fatTapGesture = UITapGestureRecognizer(target: self, action: #selector(showFatInfo))
+        fatContainer.isUserInteractionEnabled = true
+        fatContainer.addGestureRecognizer(fatTapGesture)
+        
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
@@ -367,6 +382,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
+        
+        // Add tap gesture for proteinContainer
+        let proteinTapGesture = UITapGestureRecognizer(target: self, action: #selector(showProteinInfo))
+        proteinContainer.isUserInteractionEnabled = true
+        proteinContainer.addGestureRecognizer(proteinTapGesture)
         
         let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
@@ -386,7 +406,30 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -5)
         ])
     }
-    
+
+    @objc private func showBolusInfo() {
+        showAlert(title: "TOT BOLUS", message: "Lorem Ipsum")
+    }
+
+    @objc private func showCarbsInfo() {
+        showAlert(title: "TOT KH", message: "Lorem Ipsum")
+    }
+
+    @objc private func showFatInfo() {
+        showAlert(title: "TOT FETT", message: "Lorem Ipsum")
+    }
+
+    @objc private func showProteinInfo() {
+        showAlert(title: "TOT PROTEIN", message: "Lorem Ipsum")
+    }
+
+    private func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        present(alertController, animated: true, completion: nil)
+    }
+
     private func setupTreatmentView(in container: UIView) {
         let treatmentView = UIView()
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
@@ -409,6 +452,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         crStack.spacing = 4
         let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(crStack, in: crContainer, padding: crPadding)
+        
+        // Add tap gesture for crContainer
+        let crTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCRInfo))
+        crContainer.isUserInteractionEnabled = true
+        crContainer.addGestureRecognizer(crTapGesture)
         
         remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(remainsContainer)
@@ -435,36 +483,36 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
-        
+
         let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 10, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
         totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
-        
+
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
         startAmountValuesStack.spacing = 3
-        
+
         let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
         startAmountStack.axis = .vertical
         startAmountStack.spacing = 7
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
-        
-        let registeredContainer = createContainerView(backgroundColor: .tertiarySystemBackground, borderColor: .label, borderWidth: 2)
+
+        let registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
-        let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 10, weight: .bold, color: .label)
+        let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 10, weight: .bold, color: .white)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
-        
+
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
         registeredStack.spacing = 4
         let registeredPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(registeredStack, in: registeredContainer, padding: registeredPadding)
-        
+
         let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
@@ -482,8 +530,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
-        
+
         addDoneButtonToKeyboard()
+    }
+
+    @objc private func showCRInfo() {
+    showAlert(title: "INSULINKVOT", message: "Lorem Ipsum")
     }
     
     @objc private func allowShortcutsChanged() {
@@ -987,10 +1039,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("+ Välj livsmedel", for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-            button.setTitleColor(.systemBlue, for: .normal)
+            button.setTitle("   + VÄLJ LIVSMEDEL   ", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            button.setTitleColor(.white, for: .normal) // Set the title color to white
+            button.backgroundColor = .systemBlue // Set the background color to accent color
             button.translatesAutoresizingMaskIntoConstraints = false
+            button.layer.cornerRadius = 14 // Half the height for a pill shape
+            button.layer.borderWidth = 2
+            button.layer.borderColor = UIColor.label.cgColor // Set the border color to accent color
+            button.clipsToBounds = true
             return button
         }()
         
@@ -1007,10 +1064,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             addSubview(addButton)
             
             NSLayoutConstraint.activate([
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8)
+                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: 0),
+                addButton.heightAnchor.constraint(equalToConstant: 28) // Set height for the pill shape
             ])
         }
     }
