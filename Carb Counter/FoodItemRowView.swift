@@ -63,7 +63,7 @@ class FoodItemRowView: UIView {
         let label = UILabel()
         label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: 10).isActive = true
+        label.widthAnchor.constraint(equalToConstant: 15).isActive = true
         label.textAlignment = .left
         label.textColor = .label
         return label
@@ -85,7 +85,7 @@ class FoodItemRowView: UIView {
     let netCarbsLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: 55).isActive = true
+        label.widthAnchor.constraint(equalToConstant: 50).isActive = true
         label.textAlignment = .right
         label.textColor = .label
         return label

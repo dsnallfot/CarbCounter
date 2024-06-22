@@ -39,14 +39,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var netCarbsLabel: UILabel!
     
     var clearAllButton: UIBarButtonItem!
+    var saveFavoriteButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Menu"
-        
+
         updatePlaceholderValuesForCurrentHour()
-        
+
+        // Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fixedHeaderContainer)
@@ -55,34 +57,54 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155)
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
         ])
         
+        // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
+        
+        // Setup treatment view
         setupTreatmentView(in: fixedHeaderContainer)
+        
+        // Setup headline
         setupHeadline(in: fixedHeaderContainer)
+        
+        // Setup scroll view
         setupScrollView(below: fixedHeaderContainer)
         
-        clearAllButton = UIBarButtonItem(title: "Rensa allt", style: .plain, target: self, action: #selector(clearAllButtonTapped))
-        clearAllButton.tintColor = .red
+        // Initialize "Clear All" button
+        clearAllButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
+        // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
+        
+        // Fetch food items and add the add button row
         fetchFoodItems()
         updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
         
+        // Add observer for text changes in totalRegisteredLabel
         totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
+        // Set the delegate for the text field
         totalRegisteredLabel.delegate = self
         
+        // Add Favorites button
         let showFavoriteMealsImage = UIImage(systemName: "star")
         let showFavoriteMealsButton = UIBarButtonItem(image: showFavoriteMealsImage, style: .plain, target: self, action: #selector(showFavoriteMeals))
         
+        // Add Save Favorite button
         let saveFavoriteImage = UIImage(systemName: "plus.circle")
-        let saveFavoriteButton = UIBarButtonItem(image: saveFavoriteImage, style: .plain, target: self, action: #selector(saveFavoriteMeals))
+        saveFavoriteButton = UIBarButtonItem(image: saveFavoriteImage, style: .plain, target: self, action: #selector(saveFavoriteMeals))
+        saveFavoriteButton.isEnabled = false // Initially disabled
         
+        // Set both buttons on the left side
         navigationItem.leftBarButtonItems = [showFavoriteMealsButton, saveFavoriteButton]
         
+        // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -100,6 +122,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
             scheduledStartDose = startDose
         }
+    }
+    
+    private func updateSaveFavoriteButtonState() {
+        guard let saveFavoriteButton = saveFavoriteButton else {
+            print("saveFavoriteButton is nil")
+            return
+        }
+        saveFavoriteButton.isEnabled = !foodItemRows.isEmpty
     }
     
     @objc private func registeredContainerTapped() {
@@ -237,6 +267,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         updateTotalNutrients()
         view.endEditing(true)
         updateClearAllButtonState()
+        updateSaveFavoriteButtonState() // Add this line
         updateHeadlineVisibility()
     }
     
@@ -582,7 +613,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
         headlineContainer.addSubview(headlineStackView)
         
-        let font = UIFont.systemFont(ofSize: 11)
+        let font = UIFont.systemFont(ofSize: 10)
         
         foodItemLabel = UILabel()
         foodItemLabel.text = "LIVSMEDEL             "
@@ -591,14 +622,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         foodItemLabel.textColor = .gray
         
         portionServedLabel = UILabel()
-        portionServedLabel.text = "SERVERAT "
-        portionServedLabel.textAlignment = .left
+        portionServedLabel.text = "PORTION    "
+        portionServedLabel.textAlignment = .right
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
-        notEatenLabel.text = "  EJ ÄTITS "
-        notEatenLabel.textAlignment = .left
+        notEatenLabel.text = "  LÄMNAT"
+        notEatenLabel.textAlignment = .right
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
         
@@ -701,6 +732,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         updateTotalNutrients()
         updateClearAllButtonState()
+        updateSaveFavoriteButtonState() // Add this line
         updateHeadlineVisibility()
     }
     
@@ -742,6 +774,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         moveAddButtonRowToEnd()
         updateTotalNutrients()
         updateClearAllButtonState()
+        updateSaveFavoriteButtonState() // Add this line
         updateHeadlineVisibility()
     }
     

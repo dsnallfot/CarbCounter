@@ -269,7 +269,7 @@
         <!--Food Items-->
         <scene sceneID="SwK-su-QgQ">
             <objects>
-                <viewController storyboardIdentifier="FoodItemsListViewController" title="Food Items" id="AZi-TP-gJ5" customClass="FoodItemsListViewController" customModule="Carb_Counter" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="FoodItemsListViewController" title="Livsmedel" id="AZi-TP-gJ5" customClass="FoodItemsListViewController" customModule="Carb_Counter" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="KgY-DL-gnl">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -308,7 +308,7 @@
         <!--Home-->
         <scene sceneID="4Ne-1j-ztf">
             <objects>
-                <viewController storyboardIdentifier="HomeViewController" title="Home" id="BEx-OW-pxv" customClass="HomeViewController" customModule="Carb_Counter" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="HomeViewController" title="Hem" id="BEx-OW-pxv" customClass="HomeViewController" customModule="Carb_Counter" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="NXk-vk-nxO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -344,7 +344,7 @@
         <scene sceneID="zLc-Lo-MZc">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="KDM-4M-LyA" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Food Items" image="list.bullet.clipboard" catalog="system" selectedImage="list.bullet.clipboard" id="deS-7R-KdV"/>
+                    <tabBarItem key="tabBarItem" title="Livsmedel" image="list.bullet.clipboard" catalog="system" selectedImage="list.bullet.clipboard" id="deS-7R-KdV"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Ia0-vj-LT4">
                         <rect key="frame" x="0.0" y="20" width="375" height="44"/>
@@ -382,7 +382,7 @@
         <scene sceneID="0Ey-gn-Il5">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="PIw-SW-IeR" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Home" image="house" catalog="system" selectedImage="house" id="Xuu-Go-pzw"/>
+                    <tabBarItem key="tabBarItem" title="Hem" image="house" catalog="system" selectedImage="house" id="Xuu-Go-pzw"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="LVP-dw-4Tk">
                         <rect key="frame" x="0.0" y="20" width="375" height="44"/>
