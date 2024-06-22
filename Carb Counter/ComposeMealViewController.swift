@@ -328,7 +328,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let bolusLabel = createLabel(text: "TOT BOLUS", fontSize: 10, weight: .bold, color: .white)
         totalBolusAmountLabel = createLabel(text: "0 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
-        setupStackView(bolusStack, in: bolusContainer)
+        let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
         
         let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .label, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
@@ -336,7 +337,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let summaryLabel = createLabel(text: "TOT KH", fontSize: 10, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
-        setupStackView(carbsStack, in: carbsContainer)
+        let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
         
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
@@ -344,7 +346,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let netFatLabel = createLabel(text: "TOT FETT", fontSize: 10, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
-        setupStackView(fatStack, in: fatContainer)
+        let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(fatStack, in: fatContainer, padding: fatPadding)
         
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
@@ -352,7 +355,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let netProteinLabel = createLabel(text: "TOT PROTEIN", fontSize: 10, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
-        setupStackView(proteinStack, in: proteinContainer)
+        let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
         
         let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
@@ -382,18 +386,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let crContainer = createContainerView(backgroundColor: .systemCyan)
         treatmentView.addSubview(crContainer)
         
-        crLabel = createLabel(text: "CR", fontSize: 10, weight: .bold, color: .white)
+        crLabel = createLabel(text: "INSULINKVOT", fontSize: 10, weight: .bold, color: .white)
         
         if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
-            nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 12, weight: .bold, color: .white)
+            nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
         } else {
-            nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 12, weight: .bold, color: .white)
+            nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
         }
         
         let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
         crStack.axis = .vertical
         crStack.spacing = 4
-        setupStackView(crStack, in: crContainer)
+        let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(crStack, in: crContainer, padding: crPadding)
         
         remainsContainer = createContainerView(backgroundColor: .systemGreen)
         treatmentView.addSubview(remainsContainer)
@@ -408,8 +413,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, remainsValuesStack])
         remainsStack.axis = .vertical
-        remainsStack.spacing = 4
-        setupStackView(remainsStack, in: remainsContainer)
+        remainsStack.spacing = 7
+        let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
+        setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
         
         let startAmountContainer = createContainerView(backgroundColor: .systemPurple)
         treatmentView.addSubview(startAmountContainer)
@@ -424,8 +430,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
         startAmountStack.axis = .vertical
-        startAmountStack.spacing = 4
-        setupStackView(startAmountStack, in: startAmountContainer)
+        startAmountStack.spacing = 7
+        let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
+        setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
         
         let registeredContainer = createContainerView(backgroundColor: .tertiarySystemBackground, borderColor: .label, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
@@ -439,7 +446,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
         registeredStack.spacing = 4
-        setupStackView(registeredStack, in: registeredContainer)
+        let registeredPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(registeredStack, in: registeredContainer, padding: registeredPadding)
         
         let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
         hStack.axis = .horizontal
@@ -447,7 +455,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         treatmentView.addSubview(hStack)
-        
         NSLayoutConstraint.activate([
             treatmentView.heightAnchor.constraint(equalToConstant: 60),
             treatmentView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -497,17 +504,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         return textField
     }
     
-    private func setupStackView(_ stackView: UIStackView, in containerView: UIView) {
+    private func setupStackView(_ stackView: UIStackView, in containerView: UIView, padding: UIEdgeInsets) {
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(stackView)
         
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 4),
-            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -4),
-            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 4),
-            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -4)
+            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: padding.left),
+            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -padding.right),
+            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: padding.top),
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -padding.bottom)
         ])
     }
     
