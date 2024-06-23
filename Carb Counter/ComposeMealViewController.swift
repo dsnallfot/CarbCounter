@@ -556,28 +556,28 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     @objc private func startAmountContainerTapped() {
         var khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
-        
+
+        // Ask if the user wants to give a bolus
+        let bolusAlertController = UIAlertController(title: "Startdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
+        let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
+            bolusValue = "0"
+            self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
+        }
+        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+            self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
+        }
+        bolusAlertController.addAction(yesAction)
+        bolusAlertController.addAction(noAction)
+        present(bolusAlertController, animated: true, completion: nil)
+    }
+
+    private func proceedWithStartAmount(khValue: String, bolusValue: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
                 let alertController = UIAlertController(title: "Startdos", message: "Vill du registrera startdosen i iAPS?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    khValue = khValue.replacingOccurrences(of: ".", with: ",")
-                    bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
-                    let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-                    let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-                    let newRegisteredValue = currentRegisteredValue + remainsValue
-                    self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-                    //self.totalRegisteredLabel.text = khValue.replacingOccurrences(of: ",", with: ".")
-                    self.updateTotalNutrients()
-                    self.clearAllButton.isEnabled = true
-                    let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"
-                    
-                    if let url = URL(string: urlString) {
-                        if UIApplication.shared.canOpenURL(url) {
-                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                        }
-                    }
+                    self.registerStartAmountInIAPS(khValue: khValue, bolusValue: bolusValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(yesAction)
@@ -586,13 +586,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 let alertController = UIAlertController(title: "Startdos", message: "Registrera nu den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin manuellt i iAPS", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-                    let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-                    let newRegisteredValue = currentRegisteredValue + remainsValue
-                    self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-                    //self.totalRegisteredLabel.text = khValue.replacingOccurrences(of: ",", with: ".")
-                    self.updateTotalNutrients()
-                    self.clearAllButton.isEnabled = true
+                    self.updateRegisteredAmount(khValue: khValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(okAction)
@@ -602,23 +596,33 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             let alertController = UIAlertController(title: "Startdos", message: "Vill du registrera den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin i iAPS?", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-                let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-                let newRegisteredValue = currentRegisteredValue + remainsValue
-                self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-                //self.totalRegisteredLabel.text = khValue.replacingOccurrences(of: ",", with: ".")
-                self.updateTotalNutrients()
-                self.clearAllButton.isEnabled = true
-                
+                self.updateRegisteredAmount(khValue: khValue)
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering:\nDatum:\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
+        }
+    }
+
+    private func registerStartAmountInIAPS(khValue: String, bolusValue: String) {
+        var khValue = khValue.replacingOccurrences(of: ".", with: ",")
+        var bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+        let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let newRegisteredValue = currentRegisteredValue + remainsValue
+        totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        updateTotalNutrients()
+        clearAllButton.isEnabled = true
+        let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"
+        
+        if let url = URL(string: urlString) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
         }
     }
 
@@ -639,31 +643,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         var proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
         var bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
+        // Ask if the user wants to give a bolus
+        let bolusAlertController = UIAlertController(title: "Slutdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
+        let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
+            bolusValue = "0"
+            self.proceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+        }
+        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+            self.proceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+        }
+        bolusAlertController.addAction(yesAction)
+        bolusAlertController.addAction(noAction)
+        present(bolusAlertController, animated: true, completion: nil)
+    }
+    private func proceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
                 let alertController = UIAlertController(title: "Slutdos", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    khValue = khValue.replacingOccurrences(of: ".", with: ",")
-                    fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
-                    proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
-                    bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
-                    
-                    let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-                    let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-                    let newRegisteredValue = currentRegisteredValue + remainsValue
-                    
-                    self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-                    self.updateTotalNutrients()
-                    self.clearAllButton.isEnabled = true
-                    
-                    let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)_fat_\(fatValue)_protein_\(proteinValue)"
-                    
-                    if let url = URL(string: urlString) {
-                        if UIApplication.shared.canOpenURL(url) {
-                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                        }
-                    }
+                    self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(yesAction)
@@ -672,8 +671,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 var alertMessage = "Registrera nu manuellt de kolhydrater som ännu inte registreras i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n\(fatValue) g fett"
-                }
+                    alertMessage += "\n\(fatValue) g fett"        }
                 if let protein = Double(proteinValue), protein > 0 {
                     alertMessage += "\n\(proteinValue) g protein"
                 }
@@ -683,12 +681,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 let alertController = UIAlertController(title: "Slutdos", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-                    let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-                    let newRegisteredValue = currentRegisteredValue + remainsValue
-                    self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-                    self.updateTotalNutrients()
-                    self.clearAllButton.isEnabled = true
+                    self.updateRegisteredAmount(khValue: khValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(okAction)
@@ -709,17 +702,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             let alertController = UIAlertController(title: "Slutdos", message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-                let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-                let newRegisteredValue = currentRegisteredValue + remainsValue
-                self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-                self.updateTotalNutrients()
-                self.clearAllButton.isEnabled = true
-                
+                self.updateRegisteredAmount(khValue: khValue)
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering:\nDatum:\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
@@ -728,9 +714,30 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
 
+    private func registerRemainingAmountInIAPS(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+    var khValue = khValue.replacingOccurrences(of: ".", with: ",")
+    var fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
+    var proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
+    var bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+        let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let newRegisteredValue = currentRegisteredValue + remainsValue
+
+        totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        updateTotalNutrients()
+        clearAllButton.isEnabled = true
+
+        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)_fat_\(fatValue)_protein_\(proteinValue)"
+
+        if let url = URL(string: urlString) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
+        }
+    }
+
     private func sendMealRequest(combinedString: String) {
-        let method = UserDefaultsRepository.method
-        
+    let method = UserDefaultsRepository.method
         if method == "iOS Shortcuts" {
             print("iOS shortcuts can not be combined with Twilio SMS API")
         } else {
@@ -762,7 +769,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
         }
     }
-
+    private func updateRegisteredAmount(khValue: String) {
+    let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+    let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+    let newRegisteredValue = currentRegisteredValue + remainsValue
+    totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+    updateTotalNutrients()
+    clearAllButton.isEnabled = true
+    }
+    
     private func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?
