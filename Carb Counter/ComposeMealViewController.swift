@@ -556,6 +556,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         return doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", doubleValue) : String(doubleValue)
     }
     
+    // Function to get the current date in UTC format
+    func getCurrentDateUTC() -> String {
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        return dateFormatter.string(from: Date())
+    }
+    
     @objc private func startAmountContainerTapped() {
         var khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
@@ -563,7 +570,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Ask if the user wants to give a bolus
         let bolusAlertController = UIAlertController(title: "Startdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            bolusValue = "0"
+            bolusValue = "0.0"
             self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
         }
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
@@ -602,7 +609,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 self.updateRegisteredAmount(khValue: khValue)
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering:\nDatum:\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
+                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering:\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
@@ -649,7 +657,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Ask if the user wants to give a bolus
         let bolusAlertController = UIAlertController(title: "Slutdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            bolusValue = "0"
+            bolusValue = "0.0"
             self.proceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
         }
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
@@ -708,7 +716,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 self.updateRegisteredAmount(khValue: khValue)
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering:\nDatum:\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
+                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering:\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
