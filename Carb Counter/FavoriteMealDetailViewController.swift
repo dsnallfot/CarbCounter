@@ -11,6 +11,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         super.viewDidLoad()
         title = "Ändra favoritmåltid"
         
+        // Ensure the view's background color is set to the system background color
+        view.backgroundColor = .systemBackground
+        
         setupView()
         setupNavigationBar()
     }
@@ -31,6 +34,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.backgroundColor = .systemBackground
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -46,6 +50,21 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func setupNavigationBar() {
+        // Ensure the navigation bar is configured for both light and dark modes
+        if #available(iOS 13.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = .systemBackground
+            appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+            appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
+            
+            navigationController?.navigationBar.standardAppearance = appearance
+            navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        } else {
+            navigationController?.navigationBar.barTintColor = .systemBackground
+            navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
+        }
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Spara", style: .done, target: self, action: #selector(saveChanges))
     }
     
@@ -98,7 +117,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         guard let items = favoriteMeal.items as? [[String: Any]] else { return }
         let item = items[indexPath.row]
         
-        let editAlert = UIAlertController(title: "Ändra Portion", message: "ANge en ny portion för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
+        let editAlert = UIAlertController(title: "Ändra Portion", message: "Ange en ny portion för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
         editAlert.addTextField { textField in
             textField.text = item["portionServed"] as? String
             textField.autocorrectionType = .no
@@ -113,7 +132,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             CoreDataStack.shared.saveContext()
             self.tableView.reloadData()
         }
-        let cancelAction = UIAlertAction(title: "AVbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         
         editAlert.addAction(saveAction)
         editAlert.addAction(cancelAction)

@@ -12,9 +12,21 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         super.viewDidLoad()
         title = "Favoritmåltider"
         
+        // Ensure the view's background color is set to the system background color
+        view.backgroundColor = .systemBackground
+        
+        // Add Cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
+        
         setupSearchBar()
         setupTableView()
+        setupNavigationBar()
         fetchFavoriteMeals()
+    }
+    
+    @objc private func cancelButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
     
     private func setupSearchBar() {
@@ -22,6 +34,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         searchBar.delegate = self
         searchBar.placeholder = "Sök favoritmåltid"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.barTintColor = .systemBackground // Ensure the search bar background is correct
+        searchBar.backgroundColor = .systemBackground // Ensure the search bar background is correct
         view.addSubview(searchBar)
         
         NSLayoutConstraint.activate([
@@ -36,6 +50,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.backgroundColor = .systemBackground // Ensure the table view background is correct
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -44,6 +59,23 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+    }
+    
+    private func setupNavigationBar() {
+        // Ensure the navigation bar is configured for both light and dark modes
+        if #available(iOS 13.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = .systemBackground
+            appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+            appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
+            
+            navigationController?.navigationBar.standardAppearance = appearance
+            navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        } else {
+            navigationController?.navigationBar.barTintColor = .systemBackground
+            navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
+        }
     }
     
     private func fetchFavoriteMeals() {

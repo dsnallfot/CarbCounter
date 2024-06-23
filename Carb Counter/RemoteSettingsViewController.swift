@@ -1,9 +1,3 @@
-//
-//  RemoteSettingsViewController.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-23.
-//
 import UIKit
 
 class RemoteSettingsViewController: UITableViewController {
@@ -32,14 +26,14 @@ class RemoteSettingsViewController: UITableViewController {
             method = "iOS Shortcuts"
         }
     
-    // Add Done button to the navigation bar
+        // Add Done button to the navigation bar
         let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = doneButton
     }
     
     @objc private func doneButtonTapped() {
-            navigationController?.popViewController(animated: true)
-        }
+        navigationController?.popViewController(animated: true)
+    }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         return sectionHeaders.count

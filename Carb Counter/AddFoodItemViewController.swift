@@ -75,6 +75,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         proteinTextField.autocorrectionType = .no
         notesTextField.autocorrectionType = .no
         
+        // Add Cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
+        
         // Add toolbar with "Next" and "Done" buttons
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
@@ -88,10 +92,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         fatTextField.inputAccessoryView = toolbar
         proteinTextField.inputAccessoryView = toolbar
         notesTextField.inputAccessoryView = toolbar
-        
-        // Add Cancel button to the navigation bar
-        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        
+
         // Store initial values
         initialName = nameTextField.text
         initialCarbs = carbsTextField.text
