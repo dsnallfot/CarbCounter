@@ -345,7 +345,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
         
-        let bolusLabel = createLabel(text: "BOLUS TOT", fontSize: 10, weight: .bold, color: .white)
+        let bolusLabel = createLabel(text: "BOLUS", fontSize: 10, weight: .bold, color: .white)
         totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -359,7 +359,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "KH TOT", fontSize: 10, weight: .bold, color: .white)
+        let summaryLabel = createLabel(text: "KOLHYDRATER", fontSize: 10, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -373,7 +373,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
-        let netFatLabel = createLabel(text: "FETT TOT", fontSize: 10, weight: .bold, color: .white)
+        let netFatLabel = createLabel(text: "FETT", fontSize: 10, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -387,7 +387,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
-        let netProteinLabel = createLabel(text: "PROTEIN TOT", fontSize: 10, weight: .bold, color: .white)
+        let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 10, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)

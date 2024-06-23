@@ -59,6 +59,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		65231E842C283DA300D78667 /* Carb Counter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Carb Counter.entitlements"; sourceTree = "<group>"; };
 		653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportExportViewController.swift; sourceTree = "<group>"; };
 		653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
 		653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -145,6 +146,7 @@
 		6553EDF72C20DA9200B0FDF5 /* Carb Counter */ = {
 			isa = PBXGroup;
 			children = (
+				65231E842C283DA300D78667 /* Carb Counter.entitlements */,
 				659632842C2436470098DF69 /* launch.png */,
 				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
 				65C75CFB2C25962E00114BD3 /* SettingsViewController.swift */,
@@ -528,6 +530,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Carb Counter/Carb Counter.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RMSRR5SURS;
@@ -556,6 +559,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Carb Counter/Carb Counter.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RMSRR5SURS;

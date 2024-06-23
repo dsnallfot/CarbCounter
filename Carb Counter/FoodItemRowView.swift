@@ -115,7 +115,7 @@ class FoodItemRowView: UIView {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder: ) has not been implemented")
+        fatalError("init(coder:) has not been implemented")
     }
     
     private func setupView() {
@@ -193,8 +193,13 @@ class FoodItemRowView: UIView {
             }
         }
         
+        // Add notes if they are not empty
+        if let notes = selectedFoodItem.notes, !notes.isEmpty {
+            message += "\nAnteckningar: \(notes)"
+        }
+        
         if message.isEmpty {
-            message = "Ingen näringsinformation tillgänlig."
+            message = "Ingen näringsinformation tillgänglig."
         } else {
             // Remove the last newline character
             message = String(message.dropLast())
