@@ -345,7 +345,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
         
-        let bolusLabel = createLabel(text: "BOLUS", fontSize: 10, weight: .bold, color: .white)
+        let bolusLabel = createLabel(text: "BOLUS", fontSize: 9, weight: .bold, color: .white)
         totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -359,7 +359,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "KOLHYDRATER", fontSize: 10, weight: .bold, color: .white)
+        let summaryLabel = createLabel(text: "KOLHYDRATER", fontSize: 9, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -373,7 +373,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
-        let netFatLabel = createLabel(text: "FETT", fontSize: 10, weight: .bold, color: .white)
+        let netFatLabel = createLabel(text: "FETT", fontSize: 9, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -387,7 +387,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
-        let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 10, weight: .bold, color: .white)
+        let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 9, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -448,7 +448,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             let crContainer = createContainerView(backgroundColor: .systemCyan)
             treatmentView.addSubview(crContainer)
             
-            crLabel = createLabel(text: "INSULINKVOT", fontSize: 10, weight: .bold, color: .white)
+            crLabel = createLabel(text: "INSULINKVOT", fontSize: 9, weight: .bold, color: .white)
             
             if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
                 nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
@@ -473,7 +473,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             remainsContainer.addGestureRecognizer(remainsTapGesture)
             remainsContainer.isUserInteractionEnabled = true
             
-            remainsLabel = createLabel(text: "KVAR ATT GE", fontSize: 10, weight: .bold, color: .white)
+            remainsLabel = createLabel(text: "KVAR ATT GE", fontSize: 9, weight: .bold, color: .white)
             totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
             totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
             
@@ -493,7 +493,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             startAmountContainer.addGestureRecognizer(startAmountTapGesture)
             startAmountContainer.isUserInteractionEnabled = true
             
-            let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 10, weight: .bold, color: .white)
+            let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 9, weight: .bold, color: .white)
             totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
             totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
             
@@ -511,7 +511,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
-        let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 10, weight: .bold, color: .white)
+        let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 9, weight: .bold, color: .white)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
         
@@ -1001,7 +1001,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
-        notEatenLabel.text = "     LÄMNAT"
+        notEatenLabel.text = "LÄMNAT"
         notEatenLabel.textAlignment = .right
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray

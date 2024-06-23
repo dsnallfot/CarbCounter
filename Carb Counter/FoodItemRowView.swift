@@ -4,7 +4,6 @@
 //
 //  Created by Daniel Snällfot on 2024-06-19.
 //
-
 import UIKit
 
 protocol FoodItemRowViewDelegate: AnyObject {
@@ -35,15 +34,29 @@ class FoodItemRowView: UIView {
     weak var delegate: FoodItemRowViewDelegate?
     var foodItems: [FoodItem] = []
     
+    let infoLabel: UILabel = {
+        let label = UILabel()
+        label.text = "ⓘ "
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.widthAnchor.constraint(equalToConstant: 13).isActive = true
+        label.textColor = .label
+        label.adjustsFontSizeToFitWidth = true
+        label.isHidden = true
+        label.font = UIFont.boldSystemFont(ofSize: label.font.pointSize) // Set the font to bold
+        return label
+    }()
+    
     let foodItemLabel: UILabel = {
         let label = UILabel()
         label.text = "Food Item"
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: 130).isActive = true
         label.textColor = .label
         label.isUserInteractionEnabled = true // Make the label interactable
         return label
     }()
+    
+    var foodItemLabelWidthConstraintWithInfo: NSLayoutConstraint!
+    var foodItemLabelWidthConstraintWithoutInfo: NSLayoutConstraint!
     
     let portionServedTextField: UITextField = {
         let textField = UITextField()
@@ -119,11 +132,15 @@ class FoodItemRowView: UIView {
     }
     
     private func setupView() {
-        let stackView = UIStackView(arrangedSubviews: [foodItemLabel, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
+        let stackView = UIStackView(arrangedSubviews: [infoLabel, foodItemLabel, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
         stackView.axis = .horizontal
-        stackView.spacing = 8
+        stackView.spacing = 2
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
+        
+        foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 125)
+        foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 140)
+        foodItemLabelWidthConstraintWithoutInfo.isActive = true
         
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -163,6 +180,10 @@ class FoodItemRowView: UIView {
         let name = selectedFoodItem.name ?? "Unknown"
         var message = ""
         
+        if let notes = selectedFoodItem.notes, !notes.isEmpty {
+            message += "Not: \(notes)\n\n"
+        }
+        
         if selectedFoodItem.perPiece {
             let carbsPP = selectedFoodItem.carbsPP
             let fatPP = selectedFoodItem.fatPP
@@ -191,11 +212,6 @@ class FoodItemRowView: UIView {
             if protein > 0 {
                 message += "Protein: \(protein)/100 g\n"
             }
-        }
-        
-        // Add notes if they are not empty
-        if let notes = selectedFoodItem.notes, !notes.isEmpty {
-            message += "\nAnteckningar: \(notes)"
         }
         
         if message.isEmpty {
@@ -227,11 +243,9 @@ class FoodItemRowView: UIView {
         }
         return nil
     }
-    
     @objc private func deleteButtonTapped() {
         onDelete?()
     }
-    
     @objc func calculateNutrients() {
         guard let selectedFoodItem = selectedFoodItem else { return }
         let portionServed = Double(portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
@@ -271,7 +285,19 @@ class FoodItemRowView: UIView {
     func setSelectedFoodItem(_ item: FoodItem) {
         self.selectedFoodItem = item
         foodItemLabel.text = item.name
+        
+        if let notes = item.notes, !notes.isEmpty {
+            infoLabel.isHidden = false
+            foodItemLabelWidthConstraintWithoutInfo.isActive = false
+            foodItemLabelWidthConstraintWithInfo.isActive = true
+        } else {
+            infoLabel.isHidden = true
+            foodItemLabelWidthConstraintWithInfo.isActive = false
+            foodItemLabelWidthConstraintWithoutInfo.isActive = true
+        }
+        
         ppOr100g.text = item.perPiece ? "st" : "g"
         calculateNutrients()
     }
 }
+   
