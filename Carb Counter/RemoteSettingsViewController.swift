@@ -94,11 +94,11 @@ class RemoteSettingsViewController: UITableViewController {
                 cell.textField.text = UserDefaultsRepository.twilioSIDString
             case "Twilio Secret":
                 cell.textField.text = UserDefaultsRepository.twilioSecretString
-            case "Twilio From Number":
+            case "Twilio From #":
                 cell.textField.text = UserDefaultsRepository.twilioFromNumberString
-            case "Twilio To Number":
+            case "Twilio To #":
                 cell.textField.text = UserDefaultsRepository.twilioToNumberString
-            case "User Name":
+            case "Entered By":
                 cell.textField.text = UserDefaultsRepository.caregiverName
             case "Secret Code":
                 cell.textField.text = UserDefaultsRepository.remoteSecretCode
@@ -142,11 +142,11 @@ extension RemoteSettingsViewController: UITextFieldDelegate {
             UserDefaultsRepository.twilioSIDString = textField.text ?? ""
         case "Twilio Secret":
             UserDefaultsRepository.twilioSecretString = textField.text ?? ""
-        case "Twilio From Number":
+        case "Twilio From #":
             UserDefaultsRepository.twilioFromNumberString = textField.text ?? ""
-        case "Twilio To Number":
+        case "Twilio To #":
             UserDefaultsRepository.twilioToNumberString = textField.text ?? ""
-        case "Caregiver Name":
+        case "Entered By":
             UserDefaultsRepository.caregiverName = textField.text ?? ""
         case "Secret Code":
             UserDefaultsRepository.remoteSecretCode = textField.text ?? ""
@@ -185,29 +185,6 @@ class CustomTableViewCell: UITableViewCell {
             textField.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
             textField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             textField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-    }
-}
-
-/*extension RemoteSettingsViewController {
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerLabel = UILabel()
-        headerLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        headerLabel.textColor = .gray
-        headerLabel.backgroundColor = .clear
-
-        if section == 0 {
-            headerLabel.text = "  SELECT REMOTE COMMANDS METHOD"
-        } else if section == 1 {
-            headerLabel.text = "  TWILIO SETTINGS"
-        } else if section == 2 {
-            headerLabel.text = "  REMOTE CONFIGURATION"
-        }
-
-        return headerLabel
-    }
-
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40
-    }
-}*/
+            ])
+            }
+            }
