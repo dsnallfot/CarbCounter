@@ -8,8 +8,12 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         super.viewDidLoad()
         title = "Startdoser Schema"
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         startDoses = CoreDataHelper.shared.fetchStartDoses()
+        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -33,6 +37,7 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
            let text = textField.text, let value = Double(text) {
             CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
             startDoses[indexPath.row] = value
+            print("Saved startdose ration \(value) for hour \(indexPath.row)")
         }
     }
     

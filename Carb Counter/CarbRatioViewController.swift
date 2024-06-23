@@ -6,9 +6,19 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        carbRatios = CoreDataHelper.shared.fetchCarbRatios()
         title = "Carb Ratio Schema"
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
+        loadCarbRatios()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadCarbRatios() // Reload data when the view appears
+    }
+    
+    private func loadCarbRatios() {
+        carbRatios = CoreDataHelper.shared.fetchCarbRatios()
+        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -32,6 +42,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
            let text = textField.text, let value = Double(text) {
             CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
             carbRatios[indexPath.row] = value
+            print("Saved CR \(value) for hour \(indexPath.row)")
         }
     }
     

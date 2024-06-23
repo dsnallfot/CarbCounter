@@ -23,7 +23,7 @@ class RemoteSettingsViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Remote Settings"
+        title = "Remote Inställningar"
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
         tableView.tableFooterView = UIView()
