@@ -547,46 +547,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
     }
     
-    func authenticateUser(completion: @escaping (Bool) -> Void) {
-        let context = LAContext()
-        var error: NSError?
-        
-        // Check if the device supports biometric authentication
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "Authenticate to proceed with the request"
-            
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
-                DispatchQueue.main.async {
-                    if success {
-                        completion(true)
-                    } else {
-                        // Failed to authenticate
-                        completion(false)
-                    }
-                }
-            }
-        } else {
-            // No biometry
-            completion(false)
-        }
+    // Helper function to format values and remove trailing .0
+    func formatValue(_ value: String) -> String {
+        let doubleValue = Double(value) ?? 0.0
+        return doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", doubleValue) : String(doubleValue)
     }
-    
+
     @objc private func startAmountContainerTapped() {
-        var khValue = totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
-        var bolusValue = totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0"
-        
-        // Helper function to format values and remove trailing .0
-        func formatValue(_ value: String) -> String {
-            let doubleValue = Double(value) ?? 0.0
-            return doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", doubleValue) : String(doubleValue)
-        }
-        
-        khValue = formatValue(khValue)
-        bolusValue = formatValue(bolusValue)
+        var khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
+        var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera startdos", message: "Vill du registrera startdosen i iAPS?", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Startdos", message: "Vill du registrera startdosen i iAPS?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     khValue = khValue.replacingOccurrences(of: ".", with: ",")
@@ -607,16 +580,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                let alertController = UIAlertController(title: "Registrera startdos", message: "Registrera nu den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin manuellt i iAPS", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Startdos", message: "Registrera nu den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin manuellt i iAPS", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     self.totalRegisteredLabel.text = khValue.replacingOccurrences(of: ",", with: ".")
                     self.updateTotalNutrients()
                     self.clearAllButton.isEnabled = true
                 }
+                alertController.addAction(cancelAction)
+                alertController.addAction(okAction)
+                present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos", message: "Vill du registrera den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin i iAPS?", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Startdos", message: "Vill du registrera den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin i iAPS?", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.totalRegisteredLabel.text = khValue.replacingOccurrences(of: ",", with: ".")
@@ -634,7 +610,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             present(alertController, animated: true, completion: nil)
         }
     }
-    
+
     @objc private func remainContainerTapped() {
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
@@ -647,25 +623,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             return
         }
         
-        var khValue = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
-        var fatValue = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
-        var proteinValue = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
-        var bolusValue = totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0"
-        
-        // Helper function to format values and remove trailing .0
-        func formatValue(_ value: String) -> String {
-            let doubleValue = Double(value) ?? 0.0
-            return doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", doubleValue) : String(doubleValue)
-        }
-        
-        khValue = formatValue(khValue)
-        fatValue = formatValue(fatValue)
-        proteinValue = formatValue(proteinValue)
-        bolusValue = formatValue(bolusValue)
+        var khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
+        var fatValue = formatValue(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
+        var proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
+        var bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Slutsummering måltid", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Slutdos", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     khValue = khValue.replacingOccurrences(of: ".", with: ",")
@@ -673,7 +638,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
                     bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
                     
-                    // Calculate new value for totalRegisteredLabel
                     let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
                     let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
                     let newRegisteredValue = currentRegisteredValue + remainsValue
@@ -705,7 +669,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 
                 alertMessage += "\n\(bolusValue) E insulin"
                 
-                let alertController = UIAlertController(title: "Slutsummering måltid", message: alertMessage, preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Slutdos", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
@@ -714,8 +678,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     self.totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
                     self.updateTotalNutrients()
                     self.clearAllButton.isEnabled = true
-                    
                 }
+                alertController.addAction(cancelAction)
+                alertController.addAction(okAction)
+                present(alertController, animated: true, completion: nil)
             }
         } else {
             var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
@@ -729,7 +695,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             
             alertMessage += "\n\(bolusValue) E insulin"
             
-            let alertController = UIAlertController(title: "Slutsummering måltid", message: alertMessage, preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Slutdos", message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 let currentRegisteredValue = Double(self.totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
@@ -750,8 +716,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             present(alertController, animated: true, completion: nil)
         }
     }
-    
-    // Implement the sendMealRequest method
+
     private func sendMealRequest(combinedString: String) {
         let method = UserDefaultsRepository.method
         
@@ -786,7 +751,54 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
         }
     }
-    
+
+    private func authenticateUser(completion: @escaping (Bool) -> Void) {
+        let context = LAContext()
+        var error: NSError?
+        
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            let reason = "Authenticate with biometrics to proceed"
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
+                DispatchQueue.main.async {
+                    if success {
+                        // Authentication successful
+                        completion(true)
+                    } else {
+                        // Check for passcode authentication if biometrics fail
+                        if let error = authenticationError as NSError?,
+                           error.code == LAError.biometryNotAvailable.rawValue || error.code == LAError.biometryNotEnrolled.rawValue || error.code == LAError.biometryLockout.rawValue {
+                            // Biometry (Face ID or Touch ID) is not available, not enrolled, or locked out, use passcode
+                            self.authenticateWithPasscode(completion: completion)
+                        } else {
+                            // Authentication failed
+                            completion(false)
+                        }
+                    }
+                }
+            }
+        } else {
+            // Biometry is not available, use passcode
+            authenticateWithPasscode(completion: completion)
+        }
+    }
+
+    private func authenticateWithPasscode(completion: @escaping (Bool) -> Void) {
+        let context = LAContext()
+        let reason = "Authenticate with passcode to proceed"
+        
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    // Passcode authentication successful
+                    completion(true)
+                } else {
+                    // Passcode authentication failed
+                    completion(false)
+                }
+            }
+        }
+    }
+        
     private func createContainerView(backgroundColor: UIColor, borderColor: UIColor? = nil, borderWidth: CGFloat = 0) -> UIView {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false

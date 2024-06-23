@@ -48,5 +48,9 @@
     </dict>
     <key>NSDocumentsFolderUsageDescription</key>
     <string>We need access to your documents to import and export food items.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>This app requires Face ID to securely authenticate your identity for sending meal requests.</string>
+    <key>NSBiometricUsageDescription</key>
+    <string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
 </dict>
 </plist>
