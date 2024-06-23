@@ -356,7 +356,7 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <toolbarItems/>
-                    <navigationItem key="navigationItem" id="Dfo-7M-I2U"/>
+                    <navigationItem key="navigationItem" title="Livsmedel" id="Dfo-7M-I2U"/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="tableView" destination="j3G-mO-va8" id="EOf-yk-YCe"/>
