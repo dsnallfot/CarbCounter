@@ -47,7 +47,7 @@ class SettingsViewController: UITableViewController {
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "switchCell", for: indexPath)
-            cell.textLabel?.text = "Appen körs på en Loop-telefon"
+            cell.textLabel?.text = "Tillåt automatiseringar"
             let toggleSwitch = UISwitch()
             toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
             toggleSwitch.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
