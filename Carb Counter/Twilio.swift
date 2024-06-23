@@ -5,7 +5,7 @@
 //  Created by Daniel Snällfot on 2024-06-23.
 //
 
-/*import Foundation
+import Foundation
 
 protocol TwilioRequestable {
     func twilioRequest(combinedString: String, completion: @escaping (Result<Void, Error>) -> Void)
@@ -13,10 +13,10 @@ protocol TwilioRequestable {
 
 extension TwilioRequestable {
     func twilioRequest(combinedString: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let twilioSID = UserDefaultsRepository.twilioSIDString.value
-        let twilioSecret = UserDefaultsRepository.twilioSecretString.value
-        let fromNumber = UserDefaultsRepository.twilioFromNumberString.value
-        let toNumber = UserDefaultsRepository.twilioToNumberString.value
+        let twilioSID = UserDefaultsRepository.twilioSIDString
+        let twilioSecret = UserDefaultsRepository.twilioSecretString
+        let fromNumber = UserDefaultsRepository.twilioFromNumberString
+        let toNumber = UserDefaultsRepository.twilioToNumberString
         let message = combinedString
         
         // Build the request
@@ -55,7 +55,7 @@ extension TwilioRequestable {
 enum NetworkError: Error {
     case invalidURL
 }
-*/
+
 /*
  func sendMealRequest(combinedString: String) {
      // Retrieve the method value from UserDefaultsRepository
