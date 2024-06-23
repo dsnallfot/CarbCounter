@@ -90,8 +90,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         notesTextField.inputAccessoryView = toolbar
         
         // Add Cancel button to the navigation bar
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         
         // Store initial values
         initialName = nameTextField.text

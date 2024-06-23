@@ -9,6 +9,10 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         title = "Carb Ratio Schema"
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
         loadCarbRatios()
+        
+        // Add Done button to the navigation bar
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -19,6 +23,10 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     private func loadCarbRatios() {
         carbRatios = CoreDataHelper.shared.fetchCarbRatios()
         tableView.reloadData()
+    }
+    
+    @objc private func doneButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

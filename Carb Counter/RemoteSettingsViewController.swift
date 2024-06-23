@@ -31,7 +31,15 @@ class RemoteSettingsViewController: UITableViewController {
         if method.isEmpty {
             method = "iOS Shortcuts"
         }
+    
+    // Add Done button to the navigation bar
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
     }
+    
+    @objc private func doneButtonTapped() {
+            navigationController?.popViewController(animated: true)
+        }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         return sectionHeaders.count
@@ -87,7 +95,7 @@ class RemoteSettingsViewController: UITableViewController {
             cell.label.text = settingName
             cell.textField.placeholder = "Enter \(settingName)"
             cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID"))
-            cell.textField.keyboardType = settingName.contains("Number") ? .phonePad : .default
+            cell.textField.keyboardType = settingName.contains("#") ? .phonePad : .default
 
             switch settingName {
             case "Twilio SID":
@@ -158,7 +166,7 @@ extension RemoteSettingsViewController: UITextFieldDelegate {
 
 class CustomTableViewCell: UITableViewCell {
     let label = UILabel()
-    let textField = UITextField()
+    let textField = CustomSecureTextField() // Use CustomSecureTextField
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -185,6 +193,39 @@ class CustomTableViewCell: UITableViewCell {
             textField.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
             textField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             textField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-            ])
+        ])
+    }
+}
+
+class CustomSecureTextField: UITextField {
+
+    override var isSecureTextEntry: Bool {
+        didSet {
+            if isSecureTextEntry {
+                self.delegate = self
             }
+        }
+    }
+
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if isSecureTextEntry {
+            if action == #selector(paste(_:)) || action == #selector(copy(_:)) {
+                return true
             }
+            return false
+        }
+        return super.canPerformAction(action, withSender: sender)
+    }
+}
+
+extension CustomSecureTextField: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        // Disable secure entry temporarily to allow copying/pasting
+        isSecureTextEntry = false
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        // Re-enable secure entry after editing
+        isSecureTextEntry = true
+    }
+}

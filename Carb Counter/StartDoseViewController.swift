@@ -8,6 +8,10 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         super.viewDidLoad()
         title = "Startdoser Schema"
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
+        
+    // Add Done button to the navigation bar
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -15,6 +19,10 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         startDoses = CoreDataHelper.shared.fetchStartDoses()
         tableView.reloadData()
     }
+    
+    @objc private func doneButtonTapped() {
+            navigationController?.popViewController(animated: true)
+        }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 24

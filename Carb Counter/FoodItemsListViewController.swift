@@ -186,7 +186,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     // For iOS 11 and later
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completionHandler) in
+        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (action, view, completionHandler) in
             let foodItem = self.filteredFoodItems[indexPath.row]
             let alertController = UIAlertController(title: "Radera", message: "Vill du radera \(foodItem.name ?? "detta livsmedel")?", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
