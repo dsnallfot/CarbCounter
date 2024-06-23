@@ -1,22 +1,17 @@
-//
-//  SceneDelegate.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-17.
-//
-
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
+    private var backgroundEnterTime: Date?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        window = UIWindow(windowScene: windowScene)
+        window?.rootViewController = storyboard.instantiateInitialViewController()
+        window?.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -29,6 +24,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        if let backgroundEnterTime = backgroundEnterTime {
+            let timeInterval = Date().timeIntervalSince(backgroundEnterTime)
+            if timeInterval > 300 { // Check if app was in background for more than 5 minutes (300 seconds)
+                resetToHomeViewController()
+            }
+            self.backgroundEnterTime = nil
+        }
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
@@ -46,10 +48,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
 
+        // Save the time when the app enters the background
+        backgroundEnterTime = Date()
+
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
     }
 
-
+    private func resetToHomeViewController() {
+        if let tabBarController = window?.rootViewController as? UITabBarController {
+            tabBarController.selectedIndex = 0
+        }
+    }
 }
-
