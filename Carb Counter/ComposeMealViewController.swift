@@ -151,9 +151,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
 
-        print("setupSummaryView ran")
-        print("setupScrollView ran")
-        print("setupStackView ran")
+        //print("setupSummaryView ran")
+        //print("setupScrollView ran")
+        //print("setupStackView ran")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -167,9 +167,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
 
-        print("viewWillAppear: totalNetCarbsLabel: \(totalNetCarbsLabel?.text ?? "nil")")
-        print("viewWillAppear: clearAllButton: \(clearAllButton != nil)")
-        print("viewWillAppear: saveFavoriteButton: \(saveFavoriteButton != nil)")
+        //print("viewWillAppear: totalNetCarbsLabel: \(totalNetCarbsLabel?.text ?? "nil")")
+        //print("viewWillAppear: clearAllButton: \(clearAllButton != nil)")
+        //print("viewWillAppear: saveFavoriteButton: \(saveFavoriteButton != nil)")
     }
     
     private func updatePlaceholderValuesForCurrentHour() {
@@ -268,7 +268,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems()
-        print("Populating with favorite meal: \(favoriteMeal.name ?? "Unknown")")
+        //print("Populating with favorite meal: \(favoriteMeal.name ?? "Unknown")")
         
         guard let items = favoriteMeal.items as? [[String: Any]] else {
             print("Error: Unable to cast favoriteMeal.items to [[String: Any]].")
@@ -278,9 +278,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         for item in items {
             if let name = item["name"] as? String,
                let portionServed = item["portionServed"] as? String {
-                print("Item name: \(name), Portion Served: \(portionServed)")
+                //print("Item name: \(name), Portion Served: \(portionServed)")
                 if let foodItem = foodItems.first(where: { $0.name == name }) {
-                    print("Food Item Found: \(foodItem.name ?? "")")
+                    //print("Food Item Found: \(foodItem.name ?? "")")
                     let rowView = FoodItemRowView()
                     rowView.foodItems = foodItems
                     rowView.delegate = self
@@ -311,16 +311,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
-        print("Completed populateWithFavoriteMeal")
+        //print("Completed populateWithFavoriteMeal")
     }
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
         clearAllFoodItems()
-        print("Populating with meal history: \(mealHistory)")
+        //print("Populating with meal history: \(mealHistory)")
         
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.name }) {
-                print("Adding food item: \(foodItem.name ?? "")")
+                //print("Adding food item: \(foodItem.name ?? "")")
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -348,7 +348,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
-        print("Completed populateWithMealHistory")
+        //print("Completed populateWithMealHistory")
     }
     @objc private func textFieldDidChange(_ textField: UITextField) {
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
@@ -465,11 +465,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         remainsLabel.text = "KVAR ATT GE"
         
         // Print debug information
-        print("clearAllFoodItems called and all states reset.")
+        //print("clearAllFoodItems called and all states reset.")
     }
     
     private func setupScrollView(below header: UIView) {
-        print("setupScrollView ran")
+        //print("setupScrollView ran")
         scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
@@ -495,7 +495,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func setupStackView() {
-        print("setupStackView ran")
+        //print("setupStackView ran")
         stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = 10
@@ -517,7 +517,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func setupSummaryView(in container: UIView) {
-        print("setupSummaryView ran")
+        //print("setupSummaryView ran")
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         summaryView.backgroundColor = .systemBackground
@@ -1090,7 +1090,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             print("Error: totalNetCarbsLabel is nil")
             return
         }
-        print("updateTotalNutrients ran")
+        //print("updateTotalNutrients ran")
         
         totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
         
