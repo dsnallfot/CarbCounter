@@ -12,11 +12,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     var tableView: UITableView!
     var mealHistories: [MealHistory] = []
+    var filteredMealHistories: [MealHistory] = []
+    var datePicker: UIDatePicker!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Måltidshistorik"
         view.backgroundColor = .systemBackground
+        setupDatePicker()
         setupTableView()
         fetchMealHistories()
         
@@ -29,6 +32,26 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         navigationController?.popViewController(animated: true)
     }
     
+    private func setupDatePicker() {
+        datePicker = UIDatePicker()
+        datePicker.translatesAutoresizingMaskIntoConstraints = false
+        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .inline
+        datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
+        
+        view.addSubview(datePicker)
+        
+        NSLayoutConstraint.activate([
+            datePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+    }
+    
+    @objc private func datePickerValueChanged() {
+        filterMealHistories(by: datePicker.date)
+    }
+    
     private func setupTableView() {
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -38,7 +61,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 8),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
@@ -54,6 +77,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         do {
             mealHistories = try context.fetch(fetchRequest)
+            filteredMealHistories = mealHistories
             tableView.reloadData()
         } catch {
             print("Failed to fetch meal histories: \(error)")
@@ -61,12 +85,12 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return mealHistories.count
+        return filteredMealHistories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "MealHistoryCell")
-        let mealHistory = mealHistories[indexPath.row]
+        let mealHistory = filteredMealHistories[indexPath.row]
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
@@ -98,14 +122,15 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let mealHistory = mealHistories[indexPath.row]
+            let mealHistory = filteredMealHistories[indexPath.row]
             guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
             let context = appDelegate.persistentContainer.viewContext
             context.delete(mealHistory)
             
             do {
                 try context.save()
-                mealHistories.remove(at: indexPath.row)
+                mealHistories.removeAll { $0 == mealHistory }
+                filteredMealHistories.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .fade)
             } catch {
                 print("Failed to delete meal history: \(error)")
@@ -114,9 +139,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let mealHistory = mealHistories[indexPath.row]
+        let mealHistory = filteredMealHistories[indexPath.row]
         let detailVC = MealHistoryDetailViewController()
         detailVC.mealHistory = mealHistory
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    private func filterMealHistories(by date: Date) {
+        filteredMealHistories = mealHistories.filter { mealHistory in
+            if let mealDate = mealHistory.mealDate {
+                return Calendar.current.isDate(mealDate, inSameDayAs: date)
+            }
+            return false
+        }
+        tableView.reloadData()
     }
 }
