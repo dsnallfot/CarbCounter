@@ -5,6 +5,8 @@
 //  Created by Daniel Snällfot on 2024-06-22.
 //
 
+// CSVImportExportViewController.swift
+
 import UIKit
 import CoreData
 import UniformTypeIdentifiers
@@ -26,25 +28,27 @@ class CSVImportExportViewController: UIViewController {
     }
     
     @objc private func exportData() {
-        let alert = UIAlertController(title: "Exportera data", message: "Välj vilken data du vill exportera", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Export Data", message: "Choose which data to export", preferredStyle: .actionSheet)
         
         alert.addAction(UIAlertAction(title: "Food Items", style: .default, handler: { _ in self.exportFoodItemsToCSV() }))
         alert.addAction(UIAlertAction(title: "Favorite Meals", style: .default, handler: { _ in self.exportFavoriteMealsToCSV() }))
         alert.addAction(UIAlertAction(title: "Carb Ratio Schedule", style: .default, handler: { _ in self.exportCarbRatioScheduleToCSV() }))
         alert.addAction(UIAlertAction(title: "Start Dose Schedule", style: .default, handler: { _ in self.exportStartDoseScheduleToCSV() }))
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Meal History", style: .default, handler: { _ in self.exportMealHistoryToCSV() }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         present(alert, animated: true, completion: nil)
     }
     
     @objc private func importData() {
-        let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Import Data", message: "Choose which data to import", preferredStyle: .actionSheet)
         
         alert.addAction(UIAlertAction(title: "Food Items", style: .default, handler: { _ in self.importCSV(for: "Food Items") }))
         alert.addAction(UIAlertAction(title: "Favorite Meals", style: .default, handler: { _ in self.importCSV(for: "Favorite Meals") }))
         alert.addAction(UIAlertAction(title: "Carb Ratio Schedule", style: .default, handler: { _ in self.importCSV(for: "Carb Ratio Schedule") }))
         alert.addAction(UIAlertAction(title: "Start Dose Schedule", style: .default, handler: { _ in self.importCSV(for: "Start Dose Schedule") }))
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Meal History", style: .default, handler: { _ in self.importCSV(for: "Meal History") }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         present(alert, animated: true, completion: nil)
     }
@@ -67,6 +71,11 @@ class CSVImportExportViewController: UIViewController {
     @objc private func exportStartDoseScheduleToCSV() {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "StartDoseSchedule.csv", createCSV: createCSV(from:))
+    }
+    
+    @objc private func exportMealHistoryToCSV() {
+        let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
+        exportToCSV(fetchRequest: fetchRequest, fileName: "MealHistory.csv", createCSV: createCSV(from:))
     }
     
     private func exportToCSV<T: NSFetchRequestResult>(fetchRequest: NSFetchRequest<T>, fileName: String, createCSV: ([T]) -> String) {
@@ -152,11 +161,38 @@ class CSVImportExportViewController: UIViewController {
         return csvString
     }
     
+    private func createCSV(from mealHistories: [MealHistory]) -> String {
+        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;foodEntries\n"
+        
+        for mealHistory in mealHistories {
+            let id = mealHistory.id?.uuidString ?? ""
+            let mealDate = mealHistory.mealDate.map { DateFormatter.localizedString(from: $0, dateStyle: .short, timeStyle: .short) } ?? ""
+            let totalNetCarbs = mealHistory.totalNetCarbs
+            let totalNetFat = mealHistory.totalNetFat
+            let totalNetProtein = mealHistory.totalNetProtein
+            
+            let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
+                [
+                    entry.name ?? "",
+                    entry.portionServed,
+                    entry.notEaten,
+                    entry.carbohydrates,
+                    entry.fat,
+                    entry.protein,
+                    entry.perPiece ? "1" : "0"
+                ].map { "\($0)" }.joined(separator: ",")
+            }.joined(separator: "|") ?? ""
+            
+            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(foodEntries)\n"
+        }
+        
+        return csvString
+    }
+    
     private func saveCSV(data: String, fileName: String) {
         let path = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(fileName)
-        
         do {
-            try data.write(to: path!, atomically: true, encoding: String.Encoding.utf8)
+            try data.write(to: path!, atomically: true, encoding: .utf8)
             let activityViewController = UIActivityViewController(activityItems: [path!], applicationActivities: nil)
             present(activityViewController, animated: true, completion: nil)
         } catch {
@@ -188,21 +224,24 @@ class CSVImportExportViewController: UIViewController {
                 parseCarbRatioScheduleCSV(rows, context: context)
             case "Start Dose Schedule":
                 parseStartDoseScheduleCSV(rows, context: context)
+            case "Meal History":
+                parseMealHistoryCSV(rows, context: context)
             default:
                 break
             }
             
             try context.save()
-            showAlert(title: "Import lyckades", message: "\(entityName) har importerats")
+            showAlert(title: "Import Successful", message: "\(entityName) has been imported")
         } catch {
             print("Failed to read CSV file: \(error)")
-            showAlert(title: "Import misslyckades", message: "Kunde inte läsa CSV-fil: (error)")
+            showAlert(title: "Import Failed", message: "Could not read CSV file: \(error)")
         }
     }
+    
     private func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 14 else {
-            showAlert(title: "Import misslyckades", message: "CSV-fil var inte korrekt formaterad")
+            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
@@ -237,7 +276,7 @@ class CSVImportExportViewController: UIViewController {
     private func parseFavoriteMealsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 3 else {
-            showAlert(title: "Import misslyckades", message: "CSV-fil var inte korrekt formaterad")
+            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
@@ -266,7 +305,7 @@ class CSVImportExportViewController: UIViewController {
     private func parseCarbRatioScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 2 else {
-            showAlert(title: "Import misslyckades", message: "CSV-fil var inte korrekt formaterad")
+            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
@@ -283,7 +322,7 @@ class CSVImportExportViewController: UIViewController {
     private func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 2 else {
-            showAlert(title: "Import misslyckades", message: "CSV-fil var inte korrekt formaterad")
+            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
@@ -293,6 +332,50 @@ class CSVImportExportViewController: UIViewController {
                 let startDoseSchedule = StartDoseSchedule(context: context)
                 startDoseSchedule.hour = Int16(values[0]) ?? 0
                 startDoseSchedule.startDose = Double(values[1]) ?? 0.0
+            }
+        }
+    }
+    
+    private func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) {
+        let columns = rows[0].components(separatedBy: ";")
+        guard columns.count == 6 else {
+            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+            return
+        }
+        
+        let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
+        let existingMealHistories = try? context.fetch(fetchRequest)
+        let existingIDs = Set(existingMealHistories?.compactMap { $0.id } ?? [])
+        
+        for row in rows[1...] {
+            let values = row.components(separatedBy: ";")
+            if values.count == 6 {
+                if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
+                    let mealHistory = MealHistory(context: context)
+                    mealHistory.id = id
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                    mealHistory.mealDate = dateFormatter.date(from: values[1])
+                    mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
+                    mealHistory.totalNetFat = Double(values[3]) ?? 0.0
+                    mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
+                    
+                    let foodEntriesValues = values[5].components(separatedBy: "|")
+                    for foodEntryValue in foodEntriesValues {
+                        let foodEntryParts = foodEntryValue.components(separatedBy: ",")
+                        if foodEntryParts.count == 7 {
+                            let foodEntry = FoodItemEntry(context: context)
+                            foodEntry.name = foodEntryParts[0]
+                            foodEntry.portionServed = Double(foodEntryParts[1]) ?? 0.0
+                            foodEntry.notEaten = Double(foodEntryParts[2]) ?? 0.0
+                            foodEntry.carbohydrates = Double(foodEntryParts[3]) ?? 0.0
+                            foodEntry.fat = Double(foodEntryParts[4]) ?? 0.0
+                            foodEntry.protein = Double(foodEntryParts[5]) ?? 0.0
+                            foodEntry.perPiece = foodEntryParts[6] == "1"
+                            mealHistory.addToFoodEntries(foodEntry)
+                        }
+                    }
+                }
             }
         }
     }
@@ -315,7 +398,6 @@ extension CSVImportExportViewController: UIDocumentPickerDelegate {
             parseCSV(at: url, for: entityName)
         }
     }
-    
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
     }

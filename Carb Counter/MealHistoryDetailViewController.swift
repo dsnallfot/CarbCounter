@@ -15,6 +15,14 @@ class MealHistoryDetailViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupDetailView()
+        
+        // Add Cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
+    }
+    
+    @objc private func cancelButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
     
     private func setupDetailView() {
