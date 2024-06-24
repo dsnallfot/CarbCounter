@@ -308,6 +308,36 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         updateClearAllButtonState()
     }
     
+    func populateWithMealHistory(_ mealHistory: MealHistory) {
+        clearAllFoodItems()
+        
+        for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
+            if let foodItem = foodItems.first(where: { $0.name == foodEntry.name }) {
+                let rowView = FoodItemRowView()
+                rowView.foodItems = foodItems
+                rowView.delegate = self
+                rowView.translatesAutoresizingMaskIntoConstraints = false
+                stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                foodItemRows.append(rowView)
+                rowView.setSelectedFoodItem(foodItem)
+                rowView.portionServedTextField.text = String(foodEntry.portionServed)
+                rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+                
+                rowView.onDelete = { [weak self] in
+                    self?.removeFoodItemRow(rowView)
+                }
+                
+                rowView.onValueChange = { [weak self] in
+                    self?.updateTotalNutrients()
+                    self?.updateHeadlineVisibility()
+                }
+                rowView.calculateNutrients()
+            }
+        }
+        updateTotalNutrients()
+        updateClearAllButtonState()
+    }
+    
     @objc private func textFieldDidChange(_ textField: UITextField) {
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
@@ -554,72 +584,68 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func setupTreatmentView(in container: UIView) {
-            let treatmentView = UIView()
-            treatmentView.translatesAutoresizingMaskIntoConstraints = false
-            treatmentView.backgroundColor = .systemBackground
-            container.addSubview(treatmentView)
+        let treatmentView = UIView()
+        treatmentView.translatesAutoresizingMaskIntoConstraints = false
+        treatmentView.backgroundColor = .systemBackground
+        container.addSubview(treatmentView)
+        
+        let crContainer = createContainerView(backgroundColor: .systemCyan)
+        treatmentView.addSubview(crContainer)
+        
+        crLabel = createLabel(text: "INSULINKVOT", fontSize: 9, weight: .bold, color: .white)
+        nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
+        
+        let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
+        crStack.axis = .vertical
+        crStack.spacing = 4
+        let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        setupStackView(crStack, in: crContainer, padding: crPadding)
+        
+        // Add tap gesture for crContainer
+        let crTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCRInfo))
+        crContainer.isUserInteractionEnabled = true
+        crContainer.addGestureRecognizer(crTapGesture)
             
-            let crContainer = createContainerView(backgroundColor: .systemCyan)
-            treatmentView.addSubview(crContainer)
-            
-            crLabel = createLabel(text: "INSULINKVOT", fontSize: 9, weight: .bold, color: .white)
-            
-            if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
-                nowCRLabel = createLabel(text: String(format: "%.0f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
-            } else {
-                nowCRLabel = createLabel(text: String(format: "%.1f g/E", scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
-            }
-            
-            let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
-            crStack.axis = .vertical
-            crStack.spacing = 4
-            let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
-            setupStackView(crStack, in: crContainer, padding: crPadding)
-            
-            // Add tap gesture for crContainer
-            let crTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCRInfo))
-            crContainer.isUserInteractionEnabled = true
-            crContainer.addGestureRecognizer(crTapGesture)
-            
-            remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 2)
-            treatmentView.addSubview(remainsContainer)
-            let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
-            remainsContainer.addGestureRecognizer(remainsTapGesture)
-            remainsContainer.isUserInteractionEnabled = true
-            
-            remainsLabel = createLabel(text: "KVAR ATT GE", fontSize: 9, weight: .bold, color: .white)
-            totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
-            totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
-            
-            let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
-            remainsValuesStack.axis = .horizontal
-            remainsValuesStack.spacing = 3
-            
-            let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, remainsValuesStack])
-            remainsStack.axis = .vertical
-            remainsStack.spacing = 7
-            let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
-            setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
-            
-            startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 2) // Properly initialize startAmountContainer
-            treatmentView.addSubview(startAmountContainer)
-            let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
-            startAmountContainer.addGestureRecognizer(startAmountTapGesture)
-            startAmountContainer.isUserInteractionEnabled = true
-            
-            let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 9, weight: .bold, color: .white)
-            totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
-            totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
-            
-            let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
-            startAmountValuesStack.axis = .horizontal
-            startAmountValuesStack.spacing = 3
-            
-            let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
-            startAmountStack.axis = .vertical
-            startAmountStack.spacing = 7
-            let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
+        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 2)
+        treatmentView.addSubview(remainsContainer)
+        let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
+        remainsContainer.addGestureRecognizer(remainsTapGesture)
+        remainsContainer.isUserInteractionEnabled = true
+
+        remainsLabel = createLabel(text: "KVAR ATT GE", fontSize: 9, weight: .bold, color: .white)
+        totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
+
+        let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
+        remainsValuesStack.axis = .horizontal
+        remainsValuesStack.spacing = 3
+
+        let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, remainsValuesStack])
+        remainsStack.axis = .vertical
+        remainsStack.spacing = 7
+        let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
+        setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
+
+        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 2) // Properly initialize startAmountContainer
+        treatmentView.addSubview(startAmountContainer)
+        let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
+        startAmountContainer.addGestureRecognizer(startAmountTapGesture)
+        startAmountContainer.isUserInteractionEnabled = true
+
+        let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 9, weight: .bold, color: .white)
+        totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
+        totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
+
+        let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
+        startAmountValuesStack.axis = .horizontal
+        startAmountValuesStack.spacing = 3
+
+        let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
+        startAmountStack.axis = .vertical
+        startAmountStack.spacing = 7
+        let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
+
         registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 2) // Properly initialize registeredContainer
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
@@ -628,19 +654,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 9, weight: .bold, color: .white)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
-        
+
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
         registeredStack.spacing = 4
         let registeredPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(registeredStack, in: registeredContainer, padding: registeredPadding)
-        
+
         let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         treatmentView.addSubview(hStack)
+
         NSLayoutConstraint.activate([
             treatmentView.heightAnchor.constraint(equalToConstant: 60),
             treatmentView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -652,7 +679,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
-        
+
         addDoneButtonToKeyboard()
     }
     
@@ -1034,9 +1061,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             totalStartAmountLabel?.text = String(format: "%.0fg", scheduledStartDose)
         }
         
-        let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
-        let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
-        totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
+        if let totalStartAmountText = totalStartAmountLabel?.text?.replacingOccurrences(of: "g", with: ""),
+           let totalStartAmount = Double(totalStartAmountText) {
+            let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
+            totalStartBolusLabel?.text = String(format: "%.2fE", startBolus)
+        } else {
+            totalStartBolusLabel?.text = "0.00E" // Default value if conversion fails
+        }
         
         updateRemainsBolus()
     }
@@ -1057,50 +1088,55 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func updateRemainsBolus() {
+        guard let totalNetCarbsLabel = totalNetCarbsLabel else {
+            print("totalNetCarbsLabel is nil")
+            return
+        }
+
         let totalCarbsText = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let totalCarbsValue = Double(totalCarbsText) ?? 0.0
-        
-        if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
+
+        if let registeredText = totalRegisteredLabel?.text, let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
-            totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
-            
+            totalRemainsLabel?.text = String(format: "%.0fg", remainsValue)
+
             let remainsBolus = roundToNearest05(remainsValue / scheduledCarbRatio)
-            totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
-            
+            totalRemainsBolusLabel?.text = String(format: "%.2fE", remainsBolus)
+
             if remainsValue < -0.5 {
-                remainsLabel.text = "ÖVERDOS!"
+                remainsLabel?.text = "ÖVERDOS!"
             } else {
-                remainsLabel.text = "KVAR ATT GE"
+                remainsLabel?.text = "KVAR ATT GE"
             }
-            
+
             switch remainsValue {
             case -0.5...0.5:
-                remainsContainer.backgroundColor = .systemGreen
+                remainsContainer?.backgroundColor = .systemGreen
             case let x where x > 0.5:
-                remainsContainer.backgroundColor = .systemOrange
+                remainsContainer?.backgroundColor = .systemOrange
             default:
-                remainsContainer.backgroundColor = .systemRed
+                remainsContainer?.backgroundColor = .systemRed
             }
         } else {
-            totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
-            
+            totalRemainsLabel?.text = String(format: "%.0fg", totalCarbsValue)
+
             let remainsBolus = roundToNearest05(totalCarbsValue / scheduledCarbRatio)
-            totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
-            
-            remainsContainer.backgroundColor = .systemGray
-            remainsLabel.text = "KVAR ATT GE"
+            totalRemainsBolusLabel?.text = String(format: "%.2fE", remainsBolus)
+
+            remainsContainer?.backgroundColor = .systemGray
+            remainsLabel?.text = "KVAR ATT GE"
         }
-        
-        let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
+
+        let remainsText = totalRemainsLabel?.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         let remainsValue = Double(remainsText) ?? 0.0
-        
+
         switch remainsValue {
         case -0.5...0.5:
-            remainsContainer.backgroundColor = .systemGreen
+            remainsContainer?.backgroundColor = .systemGreen
         case let x where x > 0.5:
-            remainsContainer.backgroundColor = .systemOrange
+            remainsContainer?.backgroundColor = .systemOrange
         default:
-            remainsContainer.backgroundColor = .systemRed
+            remainsContainer?.backgroundColor = .systemRed
         }
     }
     

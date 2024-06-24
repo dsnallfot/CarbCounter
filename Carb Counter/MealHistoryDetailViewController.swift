@@ -15,6 +15,7 @@ class MealHistoryDetailViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupDetailView()
+        setupActionButton()
         
         // Add Cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
@@ -23,6 +24,33 @@ class MealHistoryDetailViewController: UIViewController {
     
     @objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    private func setupActionButton() {
+        let actionButton = UIButton(type: .system)
+        actionButton.setTitle("Ät samma måltid igen", for: .normal)
+        actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .regular)
+        actionButton.backgroundColor = .systemBlue
+        actionButton.setTitleColor(.white, for: .normal)
+        actionButton.layer.cornerRadius = 10
+        actionButton.translatesAutoresizingMaskIntoConstraints = false
+        actionButton.addTarget(self, action: #selector(repeatMeal), for: .touchUpInside)
+        
+        view.addSubview(actionButton)
+        
+        NSLayoutConstraint.activate([
+            actionButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            actionButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            actionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            actionButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+
+    @objc private func repeatMeal() {
+        guard let mealHistory = mealHistory else { return }
+        let composeMealVC = ComposeMealViewController()
+        composeMealVC.populateWithMealHistory(mealHistory)
+        navigationController?.pushViewController(composeMealVC, animated: true)
     }
     
     private func setupDetailView() {

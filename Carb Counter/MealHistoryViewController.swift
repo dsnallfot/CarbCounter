@@ -42,7 +42,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         view.addSubview(datePicker)
         
         NSLayoutConstraint.activate([
-            datePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            datePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
             datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
