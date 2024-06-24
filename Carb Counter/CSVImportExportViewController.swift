@@ -125,10 +125,11 @@ class CSVImportExportViewController: UIViewController {
             let itemsData = (meal.items as? [[String: Any]]) ?? []
             let items = itemsData.compactMap { item in
                 guard let name = item["name"] as? String,
-                      let portionServed = item["portionServed"] as? String else {
+                      let portionServed = item["portionServed"] as? String,
+                      let perPiece = item["perPiece"] as? Bool else {
                     return nil
                 }
-                return "\(name):\(portionServed)"
+                return "\(name):\(portionServed):\(perPiece)"
             }.joined(separator: "|")
             
             csvString += "\(id);\(name);\(items)\n"
@@ -294,7 +295,11 @@ class CSVImportExportViewController: UIViewController {
                     
                     let itemsData = values[2].components(separatedBy: "|").map { item -> [String: Any] in
                         let parts = item.components(separatedBy: ":")
-                        return ["name": parts[0], "portionServed": parts[1]]
+                        return [
+                            "name": parts[0],
+                            "portionServed": parts[1],
+                            "perPiece": parts[2] == "true"
+                        ]
                     }
                     favoriteMeal.items = itemsData as NSObject
                 }

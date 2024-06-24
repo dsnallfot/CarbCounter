@@ -116,15 +116,15 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
                 }
                 
                 if let perPiece = item["perPiece"] as? Bool, perPiece {
-                    cell.detailTextLabel?.text = "Portion: \(formattedPortion) st"
+                    cell.detailTextLabel?.text = "Mängd: \(formattedPortion) st"
                 } else {
-                    cell.detailTextLabel?.text = "Portion: \(formattedPortion) g"
+                    cell.detailTextLabel?.text = "Mängd: \(formattedPortion) g"
                 }
             } else {
                 if let perPiece = item["perPiece"] as? Bool, perPiece {
-                    cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "") st"
+                    cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") st"
                 } else {
-                    cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "") g"
+                    cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") g"
                 }
             }
         }
@@ -137,7 +137,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         guard let items = favoriteMeal.items as? [[String: Any]] else { return }
         let item = items[indexPath.row]
         
-        let editAlert = UIAlertController(title: "Ändra Portion", message: "Ange en ny portion för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
+        let editAlert = UIAlertController(title: "Ändra mängd", message: "Ange en ny mängd för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
         editAlert.addTextField { textField in
             if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
                 if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {

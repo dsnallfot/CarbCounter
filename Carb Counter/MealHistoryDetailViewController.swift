@@ -28,8 +28,8 @@ class MealHistoryDetailViewController: UIViewController {
     
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
-        actionButton.setTitle("Ät samma måltid igen", for: .normal)
-        actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .regular)
+        actionButton.setTitle("Servera samma måltid", for: .normal)
+        actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
         actionButton.backgroundColor = .systemBlue
         actionButton.setTitleColor(.white, for: .normal)
         actionButton.layer.cornerRadius = 10
