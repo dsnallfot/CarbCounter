@@ -48,6 +48,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     var allowShortcuts: Bool = false
     
+    var saveMealToHistory: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -84,6 +86,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Initialize "Add from SearchableDropdown" button
         addFromSearchableDropdownButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
+    
         
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
@@ -105,18 +108,64 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Load allowShortcuts from UserDefaults
         allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
-        
+/*
+        // Add history button
+        let calendarImage = UIImage(systemName: "calendar")
+        let historyButton = UIBarButtonItem(image: calendarImage, style: .plain, target: self, action: #selector(showMealHistory))
+
         // Add Favorites button
         let showFavoriteMealsImage = UIImage(systemName: "star")
         let showFavoriteMealsButton = UIBarButtonItem(image: showFavoriteMealsImage, style: .plain, target: self, action: #selector(showFavoriteMeals))
-        
+
         // Add Save Favorite button
         let saveFavoriteImage = UIImage(systemName: "plus.circle")
         saveFavoriteButton = UIBarButtonItem(image: saveFavoriteImage, style: .plain, target: self, action: #selector(saveFavoriteMeals))
         saveFavoriteButton.isEnabled = false // Initially disabled
+
+        // Flexible space item with negative width
+        let negativeSpacer = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
+        negativeSpacer.width = -20 // Adjust this value to decrease the spacing
+
+        // Set all three buttons on the left side with negative spacers
+        navigationItem.leftBarButtonItems = [historyButton, negativeSpacer, showFavoriteMealsButton, negativeSpacer, saveFavoriteButton]
+        */
         
-        // Set both buttons on the left side
-        navigationItem.leftBarButtonItems = [showFavoriteMealsButton, saveFavoriteButton]
+        // Create buttons
+            let calendarImage = UIImage(systemName: "calendar")
+            let historyButton = UIButton(type: .system)
+            historyButton.setImage(calendarImage, for: .normal)
+            historyButton.addTarget(self, action: #selector(showMealHistory), for: .touchUpInside)
+            
+            let showFavoriteMealsImage = UIImage(systemName: "star")
+            let showFavoriteMealsButton = UIButton(type: .system)
+            showFavoriteMealsButton.setImage(showFavoriteMealsImage, for: .normal)
+            showFavoriteMealsButton.addTarget(self, action: #selector(showFavoriteMeals), for: .touchUpInside)
+            
+            let saveFavoriteImage = UIImage(systemName: "plus.circle")
+            let saveFavoriteButton = UIButton(type: .system)
+            saveFavoriteButton.setImage(saveFavoriteImage, for: .normal)
+            saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
+            saveFavoriteButton.isEnabled = false // Initially disabled
+
+            // Create stack view
+            let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
+            stackView.axis = .horizontal
+            stackView.spacing = 14 // Adjust this value to decrease the spacing
+
+            // Create custom view
+            let customView = UIView()
+            customView.addSubview(stackView)
+            
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                stackView.leadingAnchor.constraint(equalTo: customView.leadingAnchor),
+                stackView.trailingAnchor.constraint(equalTo: customView.trailingAnchor),
+                stackView.topAnchor.constraint(equalTo: customView.topAnchor),
+                stackView.bottomAnchor.constraint(equalTo: customView.bottomAnchor)
+            ])
+            
+            let customBarButtonItem = UIBarButtonItem(customView: customView)
+            navigationItem.leftBarButtonItem = customBarButtonItem
         
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -209,6 +258,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         present(nameAlert, animated: true)
     }
     
+    @objc private func showMealHistory() {
+        let mealHistoryVC = MealHistoryViewController()
+        navigationController?.pushViewController(mealHistoryVC, animated: true)
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -255,7 +309,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
-        if let text = textField.text {
+        if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
         }
         updateTotalNutrients()
@@ -268,6 +322,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let alertController = UIAlertController(title: "Rensa allt", message: "Vill du rensa allt?", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+            if self.saveMealToHistory {
+                            self.saveMealHistory() // Save MealHistory if the flag is true
+                        }
             self.clearAllFoodItems()
             self.totalRegisteredLabel.text = ""
             self.updateTotalNutrients()
@@ -276,6 +333,63 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
+    }
+    
+    private func saveMealHistory() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+
+        let mealHistory = MealHistory(context: context)
+        mealHistory.id = UUID() // Set the id attribute
+        mealHistory.mealDate = Date()
+        mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+        mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
+        mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
+        
+        /*print("Saving MealHistory:")
+            print("  ID: \(mealHistory.id?.uuidString ?? "nil")")
+            print("  Date: \(mealHistory.mealDate ?? Date())")
+            print("  Total Net Carbs: \(mealHistory.totalNetCarbs)")
+            print("  Total Net Fat: \(mealHistory.totalNetFat)")
+            print("  Total Net Protein: \(mealHistory.totalNetProtein)")*/
+
+        for row in foodItemRows {
+            if let foodItem = row.selectedFoodItem {
+                let foodEntry = FoodItemEntry(context: context)
+                foodEntry.name = foodItem.name
+                foodEntry.carbohydrates = foodItem.carbohydrates
+                foodEntry.fat = foodItem.fat
+                foodEntry.protein = foodItem.protein
+                foodEntry.portionServed = Double(row.portionServedTextField.text ?? "0") ?? 0
+                foodEntry.notEaten = Double(row.notEatenTextField.text ?? "0") ?? 0
+                foodEntry.carbsPP = foodItem.carbsPP
+                foodEntry.fatPP = foodItem.fatPP
+                foodEntry.proteinPP = foodItem.proteinPP
+                foodEntry.perPiece = foodItem.perPiece
+                mealHistory.addToFoodEntries(foodEntry)
+                
+                /*print("  Adding FoodItemEntry:")
+                            print("    Name: \(foodEntry.name ?? "nil")")
+                            print("    Carbs: \(foodEntry.carbohydrates)")
+                            print("    Fat: \(foodEntry.fat)")
+                            print("    Protein: \(foodEntry.protein)")
+                            print("    Portion Served: \(foodEntry.portionServed)")
+                            print("    Not Eaten: \(foodEntry.notEaten)")
+                            print("    Carbs Per Portion: \(foodEntry.carbsPP)")
+                            print("    Fat Per Portion: \(foodEntry.fatPP)")
+                            print("    Protein Per Portion: \(foodEntry.proteinPP)")
+                            print("    Per Piece: \(foodEntry.perPiece)")*/
+            }
+        }
+
+        do {
+            try context.save()
+            print("MealHistory saved successfully!")
+        } catch {
+            print("Failed to save MealHistory: \(error)")
+        }
+
+        saveMealToHistory = false // Reset the flag after saving
     }
     
     private func clearAllFoodItems() {
@@ -788,6 +902,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
         updateTotalNutrients()
         clearAllButton.isEnabled = true
+        if totalRegisteredLabel.text == "" {
+            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
+            //print ("saveMealToHistory = false")
+        } else {
+            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
+            //print ("saveMealToHistory = true")
+        }
     }
     
     private func authenticateUser(completion: @escaping (Bool) -> Void) {
@@ -926,6 +1047,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     @objc private func registeredLabelDidChange() {
         updateRemainsBolus()
         updateClearAllButtonState()
+        if totalRegisteredLabel.text == "" {
+            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
+            //print ("saveMealToHistory = false")
+        } else {
+            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
+            //print ("saveMealToHistory = true")
+        }
     }
     
     private func updateRemainsBolus() {
