@@ -43,7 +43,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var netCarbsLabel: UILabel!
     
     var clearAllButton: UIBarButtonItem!
-    //var saveFavoriteButton: UIBarButtonItem!
     var saveFavoriteButton: UIButton!
     var addFromSearchableDropdownButton: UIBarButtonItem!
     
@@ -209,7 +208,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             textField.placeholder = "Namn"
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
-            textField.autocapitalizationType = .none
+            textField.autocapitalizationType = .sentences
             textField.textContentType = .none
             
             if #available(iOS 11.0, *) {
@@ -217,6 +216,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 textField.inputAssistantItem.trailingBarButtonGroups = []
             }
         }
+        
         let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
             guard let self = self else { return }
             let mealName = nameAlert.textFields?.first?.text ?? "Min favoritmåltid"
@@ -228,9 +228,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             var items: [[String: Any]] = []
             for row in self.foodItemRows {
                 if let foodItem = row.selectedFoodItem {
-                    let item = [
+                    let item: [String: Any] = [
                         "name": foodItem.name ?? "",
-                        "portionServed": row.portionServedTextField.text ?? ""
+                        "portionServed": row.portionServedTextField.text ?? "",
+                        "perPiece": foodItem.perPiece
                     ]
                     items.append(item)
                 }
@@ -243,6 +244,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
             self.present(confirmAlert, animated: true)
         }
+        
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         
         nameAlert.addAction(saveAction)
@@ -278,9 +280,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         for item in items {
             if let name = item["name"] as? String,
                let portionServed = item["portionServed"] as? String {
-                //print("Item name: \(name), Portion Served: \(portionServed)")
+                print("Item name: \(name), Portion Served: \(portionServed)")
                 if let foodItem = foodItems.first(where: { $0.name == name }) {
-                    //print("Food Item Found: \(foodItem.name ?? "")")
+                    print("Food Item Found: \(foodItem.name ?? "")")
                     let rowView = FoodItemRowView()
                     rowView.foodItems = foodItems
                     rowView.delegate = self

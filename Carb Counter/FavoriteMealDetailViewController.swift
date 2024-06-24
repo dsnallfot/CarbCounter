@@ -106,7 +106,27 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         if let items = favoriteMeal.items as? [[String: Any]] {
             let item = items[indexPath.row]
             cell.textLabel?.text = item["name"] as? String
-            cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "")"
+            
+            if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
+                let formattedPortion: String
+                if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
+                    formattedPortion = String(format: "%.0f", portionServedDouble)
+                } else {
+                    formattedPortion = String(format: "%.1f", portionServedDouble)
+                }
+                
+                if let perPiece = item["perPiece"] as? Bool, perPiece {
+                    cell.detailTextLabel?.text = "Portion: \(formattedPortion) st"
+                } else {
+                    cell.detailTextLabel?.text = "Portion: \(formattedPortion) g"
+                }
+            } else {
+                if let perPiece = item["perPiece"] as? Bool, perPiece {
+                    cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "") st"
+                } else {
+                    cell.detailTextLabel?.text = "Portion: \(item["portionServed"] as? String ?? "") g"
+                }
+            }
         }
         return cell
     }
@@ -119,7 +139,16 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         
         let editAlert = UIAlertController(title: "Ändra Portion", message: "Ange en ny portion för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
         editAlert.addTextField { textField in
-            textField.text = item["portionServed"] as? String
+            if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
+                if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
+                    textField.text = String(format: "%.0f", portionServedDouble)
+                } else {
+                    textField.text = String(format: "%.1f", portionServedDouble)
+                }
+            } else {
+                textField.text = item["portionServed"] as? String
+            }
+            
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
             self.addDoneButtonOnKeyboard(to: textField)
