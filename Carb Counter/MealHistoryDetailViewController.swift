@@ -47,10 +47,26 @@ class MealHistoryDetailViewController: UIViewController {
     }
 
     @objc private func repeatMeal() {
-        guard let mealHistory = mealHistory else { return }
+        guard let mealHistory = mealHistory else {
+            print("mealHistory is nil")
+            return
+        }
+
+        // Initialize ComposeMealViewController
         let composeMealVC = ComposeMealViewController()
+
+        // Populate the new view controller with the meal history data
         composeMealVC.populateWithMealHistory(mealHistory)
-        navigationController?.pushViewController(composeMealVC, animated: true)
+
+        // Ensure navigationController is not nil
+        guard let navigationController = navigationController else {
+            print("navigationController is nil")
+            return
+        }
+
+        // Navigate to ComposeMealViewController
+        navigationController.pushViewController(composeMealVC, animated: true)
+        print("Navigated to ComposeMealViewController")
     }
     
     private func setupDetailView() {

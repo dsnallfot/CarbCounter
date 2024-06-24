@@ -43,7 +43,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var netCarbsLabel: UILabel!
     
     var clearAllButton: UIBarButtonItem!
-    var saveFavoriteButton: UIBarButtonItem!
+    //var saveFavoriteButton: UIBarButtonItem!
+    var saveFavoriteButton: UIButton!
     var addFromSearchableDropdownButton: UIBarButtonItem!
     
     var allowShortcuts: Bool = false
@@ -70,6 +71,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
         
+        // Ensure totalNetCarbsLabel is initialized
+        guard totalNetCarbsLabel != nil else {
+            print("Error: totalNetCarbsLabel is nil after setupSummaryView")
+            return
+        }
+        
         // Setup treatment view
         setupTreatmentView(in: fixedHeaderContainer)
         
@@ -86,7 +93,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Initialize "Add from SearchableDropdown" button
         addFromSearchableDropdownButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
-    
         
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
@@ -108,70 +114,50 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Load allowShortcuts from UserDefaults
         allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
-/*
-        // Add history button
-        let calendarImage = UIImage(systemName: "calendar")
-        let historyButton = UIBarButtonItem(image: calendarImage, style: .plain, target: self, action: #selector(showMealHistory))
-
-        // Add Favorites button
-        let showFavoriteMealsImage = UIImage(systemName: "star")
-        let showFavoriteMealsButton = UIBarButtonItem(image: showFavoriteMealsImage, style: .plain, target: self, action: #selector(showFavoriteMeals))
-
-        // Add Save Favorite button
-        let saveFavoriteImage = UIImage(systemName: "plus.circle")
-        saveFavoriteButton = UIBarButtonItem(image: saveFavoriteImage, style: .plain, target: self, action: #selector(saveFavoriteMeals))
-        saveFavoriteButton.isEnabled = false // Initially disabled
-
-        // Flexible space item with negative width
-        let negativeSpacer = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
-        negativeSpacer.width = -20 // Adjust this value to decrease the spacing
-
-        // Set all three buttons on the left side with negative spacers
-        navigationItem.leftBarButtonItems = [historyButton, negativeSpacer, showFavoriteMealsButton, negativeSpacer, saveFavoriteButton]
-        */
         
         // Create buttons
-            let calendarImage = UIImage(systemName: "calendar")
-            let historyButton = UIButton(type: .system)
-            historyButton.setImage(calendarImage, for: .normal)
-            historyButton.addTarget(self, action: #selector(showMealHistory), for: .touchUpInside)
-            
-            let showFavoriteMealsImage = UIImage(systemName: "star")
-            let showFavoriteMealsButton = UIButton(type: .system)
-            showFavoriteMealsButton.setImage(showFavoriteMealsImage, for: .normal)
-            showFavoriteMealsButton.addTarget(self, action: #selector(showFavoriteMeals), for: .touchUpInside)
-            
-            let saveFavoriteImage = UIImage(systemName: "plus.circle")
-            let saveFavoriteButton = UIButton(type: .system)
-            saveFavoriteButton.setImage(saveFavoriteImage, for: .normal)
-            saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
-            saveFavoriteButton.isEnabled = true//false // Initially disabled
+        let calendarImage = UIImage(systemName: "calendar")
+        let historyButton = UIButton(type: .system)
+        historyButton.setImage(calendarImage, for: .normal)
+        historyButton.addTarget(self, action: #selector(showMealHistory), for: .touchUpInside)
 
-            // Create stack view
-            let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
-            stackView.axis = .horizontal
-            stackView.spacing = 14 // Adjust this value to decrease the spacing
+        let showFavoriteMealsImage = UIImage(systemName: "star")
+        let showFavoriteMealsButton = UIButton(type: .system)
+        showFavoriteMealsButton.setImage(showFavoriteMealsImage, for: .normal)
+        showFavoriteMealsButton.addTarget(self, action: #selector(showFavoriteMeals), for: .touchUpInside)
 
-            // Create custom view
-            let customView = UIView()
-            customView.addSubview(stackView)
-            
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                stackView.leadingAnchor.constraint(equalTo: customView.leadingAnchor),
-                stackView.trailingAnchor.constraint(equalTo: customView.trailingAnchor),
-                stackView.topAnchor.constraint(equalTo: customView.topAnchor),
-                stackView.bottomAnchor.constraint(equalTo: customView.bottomAnchor)
-            ])
-            
-            let customBarButtonItem = UIBarButtonItem(customView: customView)
-            navigationItem.leftBarButtonItem = customBarButtonItem
+        let saveFavoriteImage = UIImage(systemName: "plus.circle")
+        saveFavoriteButton = UIButton(type: .system)
+        saveFavoriteButton.setImage(saveFavoriteImage, for: .normal)
+        saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
+        saveFavoriteButton.isEnabled = false // Initially disabled
+        saveFavoriteButton.tintColor = .gray // Change appearance to indicate disabled state
+
+        // Create stack view
+        let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
+        stackView.axis = .horizontal
+        stackView.spacing = 14 // Adjust this value to decrease the spacing
+
+        // Create custom view
+        let customView = UIView()
+        customView.addSubview(stackView)
+
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: customView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: customView.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: customView.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: customView.bottomAnchor)
+        ])
+
+        let customBarButtonItem = UIBarButtonItem(customView: customView)
+        navigationItem.leftBarButtonItem = customBarButtonItem
         
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         view.endEditing(true)
@@ -179,6 +165,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         updateScheduledValuesUI()
         updateBorderColor() // Add this line to ensure the border color updates
         addButtonRowView.updateBorderColor() // Add this line to update the border color of the AddButtonRowView
+        
+        // Ensure updateTotalNutrients is called after all initializations
+        updateTotalNutrients()
     }
     
     private func updatePlaceholderValuesForCurrentHour() {
@@ -196,7 +185,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             print("saveFavoriteButton is nil")
             return
         }
-        saveFavoriteButton.isEnabled = !foodItemRows.isEmpty
+        let isEnabled = !foodItemRows.isEmpty
+        saveFavoriteButton.isEnabled = isEnabled
+        saveFavoriteButton.tintColor = isEnabled ? .systemBlue : .gray // Update appearance based on state
     }
     
     @objc private func registeredContainerTapped() {
@@ -311,8 +302,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     func populateWithMealHistory(_ mealHistory: MealHistory) {
         clearAllFoodItems()
         
+        print("Meal History: \(mealHistory)")
+
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.name }) {
+                print("Adding food item: \(foodItem.name ?? "")")
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -332,6 +326,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     self?.updateHeadlineVisibility()
                 }
                 rowView.calculateNutrients()
+            } else {
+                print("Food item not found for name: \(foodEntry.name ?? "")")
             }
         }
         updateTotalNutrients()
@@ -476,6 +472,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         fetchFoodItems()
         updateClearAllButtonState()
+        updateSaveFavoriteButtonState() // Add this line
         updateHeadlineVisibility()
         addAddButtonRow()
     }
@@ -1048,6 +1045,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     private func updateTotalNutrients() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+        
+        guard let totalNetCarbsLabel = totalNetCarbsLabel else {
+            print("Error: totalNetCarbsLabel is nil")
+            return
+        }
+        print("updateTotalNutrients ran")
+        
         totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
         
         let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
@@ -1071,6 +1075,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
         
         updateRemainsBolus()
+        updateSaveFavoriteButtonState() // Add this line
     }
     private func roundToNearest05(_ value: Double) -> Double {
         return (value * 20.0).rounded() / 20.0
