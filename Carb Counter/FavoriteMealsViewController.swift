@@ -107,9 +107,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
+        print("Selected favorite meal: \(favoriteMeal.name ?? "Unknown")")
+        
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
             composeMealVC.populateWithFavoriteMeal(favoriteMeal)
             navigationController?.popViewController(animated: true)
+            print("Navigated back to ComposeMealViewController and populated with favorite meal.")
+        } else {
+            print("ComposeMealViewController not found in navigation stack.")
         }
     }
     
