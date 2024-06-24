@@ -67,6 +67,7 @@
 		6502A9A92C2980D800414DC0 /* FoodItemEntry+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataProperties.swift"; path = "Carb Counter/FoodItemEntry+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MealHistory+CoreDataClass.swift"; path = "Carb Counter/MealHistory+CoreDataClass.swift"; sourceTree = "<group>"; };
 		6502A9AB2C2980D800414DC0 /* MealHistory+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MealHistory+CoreDataProperties.swift"; path = "Carb Counter/MealHistory+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		6502A9CA2C2A197E00414DC0 /* Carb_Counter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Carb_Counter.entitlements; sourceTree = "<group>"; };
 		65231E842C283DA300D78667 /* Carb Counter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Carb Counter.entitlements"; sourceTree = "<group>"; };
 		653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportExportViewController.swift; sourceTree = "<group>"; };
 		653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -187,6 +188,7 @@
 				65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */,
 				653DE7A32C278F7600A639D1 /* Twilio.swift */,
 				653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */,
+				6502A9CA2C2A197E00414DC0 /* Carb_Counter.entitlements */,
 			);
 			path = "Carb Counter";
 			sourceTree = "<group>";
@@ -552,6 +554,7 @@
 				DEVELOPMENT_TEAM = RMSRR5SURS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Carb Counter";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -581,6 +584,7 @@
 				DEVELOPMENT_TEAM = RMSRR5SURS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Carb Counter";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

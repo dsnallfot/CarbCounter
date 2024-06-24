@@ -52,5 +52,17 @@
     <string>This app requires Face ID to securely authenticate your identity for sending meal requests.</string>
     <key>NSBiometricUsageDescription</key>
     <string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
+    
+    <!-- Add the following keys for iCloud and CloudKit support -->
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+        <string>iCloud.com.dsnallfot.Carb-Counter</string> <!-- Replace with your actual container identifier -->
+    </array>
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+        <string>CloudKit</string>
+    </array>
+    <key>com.apple.developer.ubiquity-kvstore-identifier</key>
+    <string>iCloud.com.dsnallfot.Carb-Counter</string> <!-- Replace with your actual container identifier -->
 </dict>
 </plist>
