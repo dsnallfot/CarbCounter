@@ -125,15 +125,24 @@ class MealHistoryDetailViewController: UIViewController {
         var summaryText = "Summa:   "
         
         if mealHistory.totalNetCarbs > 0 {
-            summaryText += "Kh \(String(format: "%.0f", mealHistory.totalNetCarbs)) g"
+            let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.0f", mealHistory.totalNetCarbs) :
+                String(format: "%.1f", mealHistory.totalNetCarbs)
+            summaryText += "Kh \(carbs) g"
         }
         if mealHistory.totalNetFat > 0 {
-            summaryText += summaryText.isEmpty ? "" : " • "
-            summaryText += "Fett \(String(format: "%.0f", mealHistory.totalNetFat)) g"
+            if !summaryText.isEmpty { summaryText += " • " }
+            let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.0f", mealHistory.totalNetFat) :
+                String(format: "%.1f", mealHistory.totalNetFat)
+            summaryText += "Fett \(fat) g"
         }
         if mealHistory.totalNetProtein > 0 {
-            summaryText += summaryText.isEmpty ? "" : " • "
-            summaryText += "Protein \(String(format: "%.0f", mealHistory.totalNetProtein)) g"
+            if !summaryText.isEmpty { summaryText += " • " }
+            let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.0f", mealHistory.totalNetProtein) :
+                String(format: "%.1f", mealHistory.totalNetProtein)
+            summaryText += "Protein \(protein) g"
         }
         
         return summaryText
@@ -141,21 +150,22 @@ class MealHistoryDetailViewController: UIViewController {
     
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {
         var detailText = ""
-        
-        if foodEntry.portionServed > 0 {
-            if foodEntry.perPiece {
-                detailText += "Serverades: \(String(format: "%.0f", foodEntry.portionServed)) st"
-            } else {
-                detailText += "Serverades: \(String(format: "%.0f", foodEntry.portionServed)) g"
-            }
-        }
-        
+        let portionServedFormatted = foodEntry.portionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.portionServed) : String(format: "%.1f", foodEntry.portionServed)
+        let notEatenFormatted = foodEntry.notEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.notEaten) : String(format: "%.1f", foodEntry.notEaten)
+        let eatenAmount = foodEntry.portionServed - foodEntry.notEaten
+        let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.1f", eatenAmount)
+
         if foodEntry.notEaten > 0 {
-            detailText += detailText.isEmpty ? "" : " • "
             if foodEntry.perPiece {
-                detailText += "Lämnade: \(String(format: "%.0f", foodEntry.notEaten)) st"
+                detailText = "Åt \(eatenAmountFormatted) st   (Serverades \(portionServedFormatted) st • Lämnade \(notEatenFormatted) st)"
             } else {
-                detailText += "Lämnade: \(String(format: "%.0f", foodEntry.notEaten)) g"
+                detailText = "Åt \(eatenAmountFormatted) g   (Serverades \(portionServedFormatted) g • Lämnade \(notEatenFormatted) g)"
+            }
+        } else {
+            if foodEntry.perPiece {
+                detailText = "Åt \(portionServedFormatted) st"
+            } else {
+                detailText = "Åt \(portionServedFormatted) g"
             }
         }
         

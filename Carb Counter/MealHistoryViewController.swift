@@ -100,15 +100,24 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         var detailText = ""
         if mealHistory.totalNetCarbs > 0 {
-            detailText += "Kolhydrater: \(String(format: "%.0f", mealHistory.totalNetCarbs)) g"
+            let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.0f", mealHistory.totalNetCarbs) :
+                String(format: "%.1f", mealHistory.totalNetCarbs)
+            detailText += "Kolhydrater: \(carbs) g"
         }
         if mealHistory.totalNetFat > 0 {
-            detailText += detailText.isEmpty ? "" : " • "
-            detailText += "Fett: \(String(format: "%.0f", mealHistory.totalNetFat)) g"
+            if !detailText.isEmpty { detailText += " • " }
+            let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.0f", mealHistory.totalNetFat) :
+                String(format: "%.1f", mealHistory.totalNetFat)
+            detailText += "Fett: \(fat) g"
         }
         if mealHistory.totalNetProtein > 0 {
-            detailText += detailText.isEmpty ? "" : " • "
-            detailText += "Protein: \(String(format: "%.0f", mealHistory.totalNetProtein)) g"
+            if !detailText.isEmpty { detailText += " • " }
+            let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.0f", mealHistory.totalNetProtein) :
+                String(format: "%.1f", mealHistory.totalNetProtein)
+            detailText += "Protein: \(protein) g"
         }
         cell.detailTextLabel?.text = detailText
         cell.detailTextLabel?.textColor = .gray

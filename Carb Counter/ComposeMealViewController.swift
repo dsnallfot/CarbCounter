@@ -390,13 +390,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
         mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
         
-        /*print("Saving MealHistory:")
-         print("  ID: \(mealHistory.id?.uuidString ?? "nil")")
-         print("  Date: \(mealHistory.mealDate ?? Date())")
-         print("  Total Net Carbs: \(mealHistory.totalNetCarbs)")
-         print("  Total Net Fat: \(mealHistory.totalNetFat)")
-         print("  Total Net Protein: \(mealHistory.totalNetProtein)")*/
-        
         for row in foodItemRows {
             if let foodItem = row.selectedFoodItem {
                 let foodEntry = FoodItemEntry(context: context)
@@ -404,8 +397,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 foodEntry.carbohydrates = foodItem.carbohydrates
                 foodEntry.fat = foodItem.fat
                 foodEntry.protein = foodItem.protein
-                foodEntry.portionServed = Double(row.portionServedTextField.text ?? "0") ?? 0
-                foodEntry.notEaten = Double(row.notEatenTextField.text ?? "0") ?? 0
+                
+                // Replace commas with dots for EU decimal separators
+                let portionServedText = row.portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
+                let notEatenText = row.notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
+                
+                foodEntry.portionServed = Double(portionServedText) ?? 0
+                foodEntry.notEaten = Double(notEatenText) ?? 0
+                
                 foodEntry.carbsPP = foodItem.carbsPP
                 foodEntry.fatPP = foodItem.fatPP
                 foodEntry.proteinPP = foodItem.proteinPP
