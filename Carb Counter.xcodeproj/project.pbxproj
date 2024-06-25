@@ -178,7 +178,6 @@
 			children = (
 				6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */,
 				6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */,
-				6502A9D62C2B1AF800414DC0 /* Controllers */,
 			);
 			path = MealHistoryView;
 			sourceTree = "<group>";
@@ -186,6 +185,7 @@
 		6502A9D62C2B1AF800414DC0 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
 				6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */,
 				65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */,
 				65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */,
@@ -194,6 +194,14 @@
 				653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */,
 			);
 			path = Controllers;
+			sourceTree = "<group>";
+		};
+		6502A9D72C2B1BCB00414DC0 /* HomeView */ = {
+			isa = PBXGroup;
+			children = (
+				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
+			);
+			path = HomeView;
 			sourceTree = "<group>";
 		};
 		6553EDEC2C20DA9100B0FDF5 = {
@@ -225,18 +233,18 @@
 		6553EDF72C20DA9200B0FDF5 /* Carb Counter */ = {
 			isa = PBXGroup;
 			children = (
-				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
-				6553EE012C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld */,
-				65231E842C283DA300D78667 /* Carb Counter.entitlements */,
-				6502A9CA2C2A197E00414DC0 /* Carb_Counter.entitlements */,
-				6553EE092C20DA9400B0FDF5 /* Info.plist */,
-				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
+				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
+				6502A9D72C2B1BCB00414DC0 /* HomeView */,
 				6502A9D12C2B1A5300414DC0 /* SettingsView */,
 				6502A9D22C2B1A7C00414DC0 /* FoodItemsView */,
 				6502A9D32C2B1A9600414DC0 /* ComposeMealView */,
 				6502A9D42C2B1AAB00414DC0 /* FavoritesView */,
 				6502A9D52C2B1AB600414DC0 /* MealHistoryView */,
-				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
+				6502A9D62C2B1AF800414DC0 /* Controllers */,
+				6553EE012C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld */,
+				65231E842C283DA300D78667 /* Carb Counter.entitlements */,
+				6502A9CA2C2A197E00414DC0 /* Carb_Counter.entitlements */,
+				6553EE092C20DA9400B0FDF5 /* Info.plist */,
 				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
 				6553EE042C20DA9400B0FDF5 /* Assets.xcassets */,
 				659632842C2436470098DF69 /* launch.png */,
