@@ -8,7 +8,6 @@ class CoreDataHelper {
     // Fetch Carb Ratios for all hours
     func fetchCarbRatios() -> [Int: Double] {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
-
         do {
             let results = try context.fetch(fetchRequest)
             var carbRatios = [Int: Double]()
@@ -26,7 +25,6 @@ class CoreDataHelper {
     func fetchCarbRatio(for hour: Int) -> Double? {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
-
         do {
             let results = try context.fetch(fetchRequest)
             return results.first?.carbRatio
@@ -40,7 +38,6 @@ class CoreDataHelper {
     func fetchCarbRatioSchedule(hour: Int) -> CarbRatioSchedule? {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
-
         do {
             let results = try context.fetch(fetchRequest)
             return results.first
@@ -53,7 +50,6 @@ class CoreDataHelper {
     // Fetch Start Dose for all hours
     func fetchStartDoses() -> [Int: Double] {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
-
         do {
             let results = try context.fetch(fetchRequest)
             var startDoses = [Int: Double]()
@@ -71,7 +67,6 @@ class CoreDataHelper {
     func fetchStartDose(for hour: Int) -> Double? {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
-
         do {
             let results = try context.fetch(fetchRequest)
             return results.first?.startDose
@@ -85,7 +80,6 @@ class CoreDataHelper {
     func fetchStartDoseSchedule(hour: Int) -> StartDoseSchedule? {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
-
         do {
             let results = try context.fetch(fetchRequest)
             return results.first
@@ -105,25 +99,53 @@ class CoreDataHelper {
             let carbRatio = results.first ?? CarbRatioSchedule(context: context)
             carbRatio.hour = Int16(hour)
             carbRatio.carbRatio = ratio
+            if carbRatio.id == nil {
+                carbRatio.id = UUID() // Set the id if it's not already set
+            }
             try context.save()
         } catch {
             print("Failed to save carb ratio: \(error)")
         }
     }
 
+
     // Save or update Start Dose
     func saveStartDose(hour: Int, dose: Double) {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
-
         do {
             let results = try context.fetch(fetchRequest)
             let startDose = results.first ?? StartDoseSchedule(context: context)
+            startDose.id = startDose.id ?? UUID() // Ensure id is set
             startDose.hour = Int16(hour)
             startDose.startDose = dose
             try context.save()
         } catch {
             print("Failed to save start dose: \(error)")
+        }
+    }
+
+    // Clear all Carb Ratio entries
+    func clearAllCarbRatios() {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CarbRatioSchedule.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("Failed to clear carb ratios: \(error)")
+        }
+    }
+
+    // Clear all Start Dose entries
+    func clearAllStartDoses() {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = StartDoseSchedule.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("Failed to clear start doses: \(error)")
         }
     }
 }

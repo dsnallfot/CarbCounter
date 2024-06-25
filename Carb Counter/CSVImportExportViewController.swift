@@ -140,24 +140,26 @@ class CSVImportExportViewController: UIViewController {
     }
     
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
-        var csvString = "hour;carbRatio\n"
+        var csvString = "id;hour;carbRatio\n"
         
         for schedule in carbRatioSchedules {
+            let id = schedule.id?.uuidString ?? ""
             let hour = schedule.hour
             let carbRatio = schedule.carbRatio
-            csvString += "\(hour);\(carbRatio)\n"
+            csvString += "\(id);\(hour);\(carbRatio)\n"
         }
         
         return csvString
     }
     
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
-        var csvString = "hour;startDose\n"
+        var csvString = "id;hour;startDose\n"
         
         for schedule in startDoseSchedules {
+            let id = schedule.id?.uuidString ?? ""
             let hour = schedule.hour
             let startDose = schedule.startDose
-            csvString += "\(hour);\(startDose)\n"
+            csvString += "\(id);\(hour);\(startDose)\n"
         }
         
         return csvString
@@ -313,37 +315,54 @@ class CSVImportExportViewController: UIViewController {
     
     private func parseCarbRatioScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 2 else {
+        guard columns.count == 3 else {  // id;hour;carbRatio
             showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 2 {
-                let carbRatioSchedule = CarbRatioSchedule(context: context)
-                carbRatioSchedule.hour = Int16(values[0]) ?? 0
-                carbRatioSchedule.carbRatio = Double(values[1]) ?? 0.0
+            if values.count == 3 {
+                let id = UUID(uuidString: values[0]) ?? UUID()
+                let hour = Int16(values[1]) ?? 0
+                let carbRatio = Double(values[2]) ?? 0.0
+                
+                let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+                
+                let existingSchedules = try? context.fetch(fetchRequest)
+                let carbRatioSchedule = existingSchedules?.first ?? CarbRatioSchedule(context: context)
+                carbRatioSchedule.id = id
+                carbRatioSchedule.hour = hour
+                carbRatioSchedule.carbRatio = carbRatio
             }
         }
+    }
+    private func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
+    let columns = rows[0].components(separatedBy: ";")
+    guard columns.count == 3 else {  // id;hour;startDose
+        showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+        return
     }
     
-    private func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
-        let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 2 else {
-            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
-            return
-        }
-        
-        for row in rows[1...] {
-            let values = row.components(separatedBy: ";")
-            if values.count == 2 {
-                let startDoseSchedule = StartDoseSchedule(context: context)
-                startDoseSchedule.hour = Int16(values[0]) ?? 0
-                startDoseSchedule.startDose = Double(values[1]) ?? 0.0
-            }
+    for row in rows[1...] {
+        let values = row.components(separatedBy: ";")
+        if values.count == 3 {
+            let id = UUID(uuidString: values[0]) ?? UUID()
+            let hour = Int16(values[1]) ?? 0
+            let startDose = Double(values[2]) ?? 0.0
+            
+            let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            
+            let existingSchedules = try? context.fetch(fetchRequest)
+            let startDoseSchedule = existingSchedules?.first ?? StartDoseSchedule(context: context)
+            startDoseSchedule.id = id
+            startDoseSchedule.hour = hour
+            startDoseSchedule.startDose = startDose
         }
     }
+}
     
     private func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")

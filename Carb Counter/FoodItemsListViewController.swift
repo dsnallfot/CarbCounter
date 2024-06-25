@@ -28,6 +28,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         fetchFoodItems()
         setupAddButton()
+        setupClearButton()
         setupNavigationBarTitle()
         setupSearchBar()
         setupSortSegmentedControl()
@@ -38,8 +39,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         navigationItem.rightBarButtonItems = [addButton]
     }
     
+    private func setupClearButton() {
+        let clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
+        navigationItem.leftBarButtonItem = clearButton
+    }
+    
     private func setupNavigationBarTitle() {
-        // Set the title of the navigation bar
         title = "Livsmedel"
     }
     
@@ -49,7 +55,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-        //let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
         
         toolbar.setItems([flexSpace, doneButton], animated: false)
         toolbar.isUserInteractionEnabled = true
@@ -63,7 +68,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         searchBar.placeholder = "Sök livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
-        // Disable predictive text and autocomplete
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
             textField.autocapitalizationType = .none
@@ -71,7 +75,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             textField.inputAssistantItem.leadingBarButtonGroups = []
             textField.inputAssistantItem.trailingBarButtonGroups = []
             
-            // Add "Done" button to the keyboard
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
@@ -164,7 +167,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         case .name:
             filteredFoodItems.sort { $0.name ?? "" < $1.name ?? "" }
         case .perPiece:
-            filteredFoodItems.sort { $0.perPiece && !$1.perPiece } // Sort so true values are at the top
+            filteredFoodItems.sort { $0.perPiece && !$1.perPiece }
         case .count:
             filteredFoodItems.sort { $0.count > $1.count }
         }
@@ -184,17 +187,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: - Swipe Actions
     
-    // For iOS 11 and later
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (action, view, completionHandler) in
             let foodItem = self.filteredFoodItems[indexPath.row]
             let alertController = UIAlertController(title: "Radera", message: "Vill du radera \(foodItem.name ?? "detta livsmedel")?", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
-                completionHandler(false) // Don't delete the item
+                completionHandler(false)
             }
             let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
                 self.deleteFoodItem(at: indexPath)
-                completionHandler(true) //Delete the item
+                completionHandler(true)
             }
             alertController.addAction(cancelAction)
             alertController.addAction(yesAction)
@@ -209,14 +211,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         return configuration
     }
     
-    // For iOS 10 and earlier
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             deleteFoodItem(at: indexPath)
         }
     }
     
-    // Delete Food Item
     private func deleteFoodItem(at indexPath: IndexPath) {
         let foodItem = filteredFoodItems[indexPath.row]
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
@@ -231,7 +231,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             print("Failed to delete food item: (error)")
         }
     }
-    // Edit Food Item
     private func editFoodItem(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -241,7 +240,47 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    // MARK: - UISearchBar Delegate
+    @objc private func clearButtonTapped() {
+        let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .alert)
+        let continueAction = UIAlertAction(title: "Fortsätt", style: .destructive) { _ in
+            self.showSecondClearAlert()
+        }
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        
+        firstAlertController.addAction(continueAction)
+        firstAlertController.addAction(cancelAction)
+        
+        present(firstAlertController, animated: true, completion: nil)
+    }
+    
+    private func showSecondClearAlert() {
+        let secondAlertController = UIAlertController(title: "Rensa allt", message: "Är du helt säker? Åtgärden går inte att ångra.", preferredStyle: .alert)
+        let clearAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
+            self.clearAllFoodItems()
+        }
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        
+        secondAlertController.addAction(clearAction)
+        secondAlertController.addAction(cancelAction)
+        
+        present(secondAlertController, animated: true, completion: nil)
+    }
+    
+    private func clearAllFoodItems() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItem.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+            fetchFoodItems()
+        } catch {
+            print("Failed to clear food items: \(error)")
+        }
+    }
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
             filteredFoodItems = foodItems
@@ -258,5 +297,3 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         searchBar.resignFirstResponder()
     }
 }
-
-

@@ -9,8 +9,10 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
         loadCarbRatios()
         
-        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = doneButton
+        // Add Clear button to the navigation bar
+        let clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
+        navigationItem.rightBarButtonItem = clearButton
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -23,8 +25,18 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         tableView.reloadData()
     }
     
-    @objc private func doneButtonTapped() {
-        navigationController?.popViewController(animated: true)
+    @objc private func clearButtonTapped() {
+        let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .alert)
+        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+            CoreDataHelper.shared.clearAllCarbRatios()
+            self.loadCarbRatios()
+        }
+        let noAction = UIAlertAction(title: "Nej", style: .cancel, handler: nil)
+        
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -35,7 +47,8 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CarbRatioCell", for: indexPath) as! CarbRatioCell
         let hour = String(format: "%02d:00", indexPath.row)
         let ratio = carbRatios[indexPath.row] ?? 0.0
-        cell.configure(hour: hour, ratio: ratio, delegate: self)
+        let formattedRatio = ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio)
+        cell.configure(hour: hour, ratio: formattedRatio, delegate: self)
         return cell
     }
     
@@ -43,7 +56,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         sanitizeInput(textField)
-        if let cell = textField.superview(of: CarbRatioCell.self),
+        if let cell = textField.superview?.superview as? CarbRatioCell,
            let indexPath = tableView.indexPath(for: cell),
            let text = textField.text, let value = Double(text) {
             CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
@@ -68,7 +81,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
     
     private func moveToNextTextField(from textField: UITextField) {
-        if let cell = textField.superview(of: CarbRatioCell.self),
+        if let cell = textField.superview?.superview as? CarbRatioCell,
            let indexPath = tableView.indexPath(for: cell) {
             let nextRow = indexPath.row + 1
             if nextRow < 24 {
@@ -95,18 +108,6 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         }
     }
 }
-
-extension UIView {
-    func superview<T>(of type: T.Type) -> T? {
-        var view = superview
-        while view != nil && !(view is T) {
-            view = view?.superview
-        }
-        return view as? T
-    }
-}
-
-import UIKit
 
 class CarbRatioCell: UITableViewCell {
     let hourLabel: UILabel = {
@@ -150,9 +151,9 @@ class CarbRatioCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(hour: String, ratio: Double, delegate: UITextFieldDelegate) {
+    func configure(hour: String, ratio: String, delegate: UITextFieldDelegate) {
         hourLabel.text = hour
-        ratioTextField.text = String(ratio)
+        ratioTextField.text = ratio
         ratioTextField.delegate = delegate
     }
     
