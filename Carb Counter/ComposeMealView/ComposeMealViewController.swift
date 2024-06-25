@@ -130,7 +130,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         // Create stack view
         let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
         stackView.axis = .horizontal
-        stackView.spacing = 14 // Adjust this value to decrease the spacing
+        stackView.spacing = 20 // Adjust this value to decrease the spacing
         
         // Create custom view
         let customView = UIView()

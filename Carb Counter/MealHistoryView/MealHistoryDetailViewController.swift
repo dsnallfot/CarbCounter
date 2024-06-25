@@ -77,7 +77,7 @@ class MealHistoryDetailViewController: UIViewController {
         let summaryLabel = UILabel()
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
         summaryLabel.numberOfLines = 0
-        summaryLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        summaryLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
         summaryLabel.text = formatSummary(mealHistory)
         view.addSubview(summaryLabel)
         
@@ -122,13 +122,13 @@ class MealHistoryDetailViewController: UIViewController {
     }
     
     private func formatSummary(_ mealHistory: MealHistory) -> String {
-        var summaryText = "Summa:   "
+        var summaryText = ""
         
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
                 String(format: "%.1f", mealHistory.totalNetCarbs)
-            summaryText += "Kh \(carbs) g"
+            summaryText += "Kolhydrater \(carbs) g"
         }
         if mealHistory.totalNetFat > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
