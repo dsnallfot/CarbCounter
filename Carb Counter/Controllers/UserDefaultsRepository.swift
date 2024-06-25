@@ -87,4 +87,21 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "allowDataClearing")
         }
     }
+    static var maxCarbs: Double {
+           get {
+               return UserDefaults.standard.double(forKey: "maxCarbs")
+           }
+           set {
+               UserDefaults.standard.set(newValue, forKey: "maxCarbs")
+           }
+       }
+       
+       static var maxBolus: Double {
+           get {
+               return UserDefaults.standard.double(forKey: "maxBolus")
+           }
+           set {
+               UserDefaults.standard.set(newValue, forKey: "maxBolus")
+           }
+       }
 }
