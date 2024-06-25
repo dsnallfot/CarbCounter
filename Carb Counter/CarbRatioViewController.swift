@@ -43,7 +43,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         sanitizeInput(textField)
-        if let cell = textField.superview?.superview as? CarbRatioCell,
+        if let cell = textField.superview(of: CarbRatioCell.self),
            let indexPath = tableView.indexPath(for: cell),
            let text = textField.text, let value = Double(text) {
             CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
@@ -68,7 +68,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
     
     private func moveToNextTextField(from textField: UITextField) {
-        if let cell = textField.superview?.superview as? CarbRatioCell,
+        if let cell = textField.superview(of: CarbRatioCell.self),
            let indexPath = tableView.indexPath(for: cell) {
             let nextRow = indexPath.row + 1
             if nextRow < 24 {
@@ -95,6 +95,18 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         }
     }
 }
+
+extension UIView {
+    func superview<T>(of type: T.Type) -> T? {
+        var view = superview
+        while view != nil && !(view is T) {
+            view = view?.superview
+        }
+        return view as? T
+    }
+}
+
+import UIKit
 
 class CarbRatioCell: UITableViewCell {
     let hourLabel: UILabel = {
@@ -133,6 +145,7 @@ class CarbRatioCell: UITableViewCell {
         toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
         ratioTextField.inputAccessoryView = toolbar
     }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -151,14 +164,14 @@ class CarbRatioCell: UITableViewCell {
                 let nextIndexPath = IndexPath(row: nextRow, section: indexPath.section)
                 if let nextCell = tableView.cellForRow(at: nextIndexPath) as? CarbRatioCell {
                     nextCell.ratioTextField.becomeFirstResponder()
-                } /*else {
+                } else {
                     tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        if let nextCell = self.tableView.cellForRow(at: nextIndexPath) as? CarbRatioCell {
+                        if let nextCell = tableView.cellForRow(at: nextIndexPath) as? CarbRatioCell {
                             nextCell.ratioTextField.becomeFirstResponder()
                         }
                     }
-                }*/
+                }
             } else {
                 ratioTextField.resignFirstResponder()
             }

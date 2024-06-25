@@ -129,9 +129,14 @@ class CloudKitShareController {
     }
 
     func shareCarbRatioScheduleRecord(carbRatioSchedule: CarbRatioSchedule, completion: @escaping (CKShare?, Error?) -> Void) {
-        let carbRatioScheduleRecordID = CKRecord.ID(recordName: carbRatioSchedule.id!.uuidString, zoneID: customZone.zoneID)
+        guard let carbRatioScheduleID = carbRatioSchedule.id else {
+            completion(nil, NSError(domain: "CloudKitShareController", code: 1, userInfo: [NSLocalizedDescriptionKey: "Carb Ratio Schedule ID is nil"]))
+            return
+        }
+
+        let carbRatioScheduleRecordID = CKRecord.ID(recordName: carbRatioScheduleID.uuidString, zoneID: customZone.zoneID)
         let carbRatioScheduleRecord = CKRecord(recordType: "CarbRatioSchedule", recordID: carbRatioScheduleRecordID)
-        carbRatioScheduleRecord["id"] = carbRatioSchedule.id!.uuidString as CKRecordValue
+        carbRatioScheduleRecord["id"] = carbRatioScheduleID.uuidString as CKRecordValue
         carbRatioScheduleRecord["carbRatio"] = carbRatioSchedule.carbRatio as NSNumber
         carbRatioScheduleRecord["hour"] = carbRatioSchedule.hour as NSNumber
 
@@ -147,9 +152,14 @@ class CloudKitShareController {
     }
 
     func shareStartDoseScheduleRecord(startDoseSchedule: StartDoseSchedule, completion: @escaping (CKShare?, Error?) -> Void) {
-        let startDoseScheduleRecordID = CKRecord.ID(recordName: startDoseSchedule.id!.uuidString, zoneID: customZone.zoneID)
+        guard let startDoseScheduleID = startDoseSchedule.id else {
+            completion(nil, NSError(domain: "CloudKitShareController", code: 1, userInfo: [NSLocalizedDescriptionKey: "Start Dose Schedule ID is nil"]))
+            return
+        }
+
+        let startDoseScheduleRecordID = CKRecord.ID(recordName: startDoseScheduleID.uuidString, zoneID: customZone.zoneID)
         let startDoseScheduleRecord = CKRecord(recordType: "StartDoseSchedule", recordID: startDoseScheduleRecordID)
-        startDoseScheduleRecord["id"] = startDoseSchedule.id!.uuidString as CKRecordValue
+        startDoseScheduleRecord["id"] = startDoseScheduleID.uuidString as CKRecordValue
         startDoseScheduleRecord["startDose"] = startDoseSchedule.startDose as NSNumber
         startDoseScheduleRecord["hour"] = startDoseSchedule.hour as NSNumber
 
