@@ -132,6 +132,70 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6502A9D12C2B1A5300414DC0 /* SettingsView */ = {
+			isa = PBXGroup;
+			children = (
+				65C75CFB2C25962E00114BD3 /* SettingsViewController.swift */,
+				65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */,
+				653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */,
+				653DE7A52C27930F00A639D1 /* RemoteSettingsViewController.swift */,
+				65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */,
+			);
+			path = SettingsView;
+			sourceTree = "<group>";
+		};
+		6502A9D22C2B1A7C00414DC0 /* FoodItemsView */ = {
+			isa = PBXGroup;
+			children = (
+				6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */,
+				6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */,
+				6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */,
+			);
+			path = FoodItemsView;
+			sourceTree = "<group>";
+		};
+		6502A9D32C2B1A9600414DC0 /* ComposeMealView */ = {
+			isa = PBXGroup;
+			children = (
+				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
+				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
+				6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */,
+			);
+			path = ComposeMealView;
+			sourceTree = "<group>";
+		};
+		6502A9D42C2B1AAB00414DC0 /* FavoritesView */ = {
+			isa = PBXGroup;
+			children = (
+				65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */,
+				65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */,
+			);
+			path = FavoritesView;
+			sourceTree = "<group>";
+		};
+		6502A9D52C2B1AB600414DC0 /* MealHistoryView */ = {
+			isa = PBXGroup;
+			children = (
+				6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */,
+				6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */,
+				6502A9D62C2B1AF800414DC0 /* Controllers */,
+			);
+			path = MealHistoryView;
+			sourceTree = "<group>";
+		};
+		6502A9D62C2B1AF800414DC0 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */,
+				65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */,
+				65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */,
+				6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */,
+				653DE7A32C278F7600A639D1 /* Twilio.swift */,
+				653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
@@ -161,37 +225,21 @@
 		6553EDF72C20DA9200B0FDF5 /* Carb Counter */ = {
 			isa = PBXGroup;
 			children = (
-				65231E842C283DA300D78667 /* Carb Counter.entitlements */,
-				659632842C2436470098DF69 /* launch.png */,
-				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
-				65C75CFB2C25962E00114BD3 /* SettingsViewController.swift */,
-				65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */,
-				653DE79F2C27520700A639D1 /* CSVImportExportViewController.swift */,
-				653DE7A52C27930F00A639D1 /* RemoteSettingsViewController.swift */,
-				65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */,
-				6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */,
-				6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */,
-				6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */,
-				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
-				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
-				6553EE4B2C2312BE00B0FDF5 /* SearchableDropdownView.swift */,
-				65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */,
-				65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */,
-				6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */,
-				6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */,
-				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
-				6553EE042C20DA9400B0FDF5 /* Assets.xcassets */,
-				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
-				6553EE092C20DA9400B0FDF5 /* Info.plist */,
 				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
-				6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */,
 				6553EE012C20DA9200B0FDF5 /* Carb_Counter.xcdatamodeld */,
-				65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */,
-				65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */,
-				653DE7A32C278F7600A639D1 /* Twilio.swift */,
-				653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */,
+				65231E842C283DA300D78667 /* Carb Counter.entitlements */,
 				6502A9CA2C2A197E00414DC0 /* Carb_Counter.entitlements */,
-				6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */,
+				6553EE092C20DA9400B0FDF5 /* Info.plist */,
+				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
+				6502A9D12C2B1A5300414DC0 /* SettingsView */,
+				6502A9D22C2B1A7C00414DC0 /* FoodItemsView */,
+				6502A9D32C2B1A9600414DC0 /* ComposeMealView */,
+				6502A9D42C2B1AAB00414DC0 /* FavoritesView */,
+				6502A9D52C2B1AB600414DC0 /* MealHistoryView */,
+				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
+				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
+				6553EE042C20DA9400B0FDF5 /* Assets.xcassets */,
+				659632842C2436470098DF69 /* launch.png */,
 			);
 			path = "Carb Counter";
 			sourceTree = "<group>";
