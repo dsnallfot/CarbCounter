@@ -416,6 +416,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 foodEntry.entryCarbohydrates = foodItem.carbohydrates
                 foodEntry.entryFat = foodItem.fat
                 foodEntry.entryProtein = foodItem.protein
+                foodEntry.entryEmoji = foodItem.emoji
                 
                 // Replace commas with dots for EU decimal separators
                 let portionServedText = row.portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"

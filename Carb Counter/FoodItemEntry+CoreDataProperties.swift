@@ -21,6 +21,7 @@ extension FoodItemEntry {
     @NSManaged public var entryFat: Double
     @NSManaged public var entryFatPP: Double
     @NSManaged public var entryFoodItem: String?
+    @NSManaged public var entryEmoji: String?
     @NSManaged public var entryName: String?
     @NSManaged public var entryNotEaten: Double
     @NSManaged public var entryPerPiece: Bool

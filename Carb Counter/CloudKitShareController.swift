@@ -41,6 +41,7 @@ class CloudKitShareController {
                 let foodEntryRecord = CKRecord(recordType: "FoodItemEntry", recordID: foodEntryRecordID)
                 foodEntryRecord["id"] = foodEntry.entryId!.uuidString as CKRecordValue
                 foodEntryRecord["name"] = foodEntry.entryName! as CKRecordValue
+                foodEntryRecord["emoji"] = foodEntry.entryEmoji! as CKRecordValue
                 foodEntryRecord["carbohydrates"] = foodEntry.entryCarbohydrates as NSNumber
                 foodEntryRecord["fat"] = foodEntry.entryFat as NSNumber
                 foodEntryRecord["protein"] = foodEntry.entryProtein as NSNumber
@@ -87,6 +88,7 @@ class CloudKitShareController {
         let foodItemRecord = CKRecord(recordType: "FoodItem", recordID: foodItemRecordID)
         foodItemRecord["id"] = foodItem.id!.uuidString as CKRecordValue
         foodItemRecord["name"] = foodItem.name! as CKRecordValue
+        foodItemRecord["emoji"] = foodItem.emoji! as CKRecordValue
         foodItemRecord["notes"] = foodItem.notes! as CKRecordValue
         foodItemRecord["carbohydrates"] = foodItem.carbohydrates as NSNumber
         foodItemRecord["fat"] = foodItem.fat as NSNumber

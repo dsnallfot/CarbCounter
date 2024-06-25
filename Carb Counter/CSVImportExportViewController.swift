@@ -92,29 +92,30 @@ class CSVImportExportViewController: UIViewController {
     }
     
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes\n"
-        
-        for item in foodItems {
-            let id = item.id?.uuidString ?? ""
-            let name = item.name ?? ""
-            let carbohydrates = item.carbohydrates
-            let carbsPP = item.carbsPP
-            let fat = item.fat
-            let fatPP = item.fatPP
-            let netCarbs = item.netCarbs
-            let netFat = item.netFat
-            let netProtein = item.netProtein
-            let perPiece = item.perPiece
-            let protein = item.protein
-            let proteinPP = item.proteinPP
-            let count = item.count
-            let notes = item.notes ?? ""
+            var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
             
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes)\n"
+            for item in foodItems {
+                let id = item.id?.uuidString ?? ""
+                let name = item.name ?? ""
+                let carbohydrates = item.carbohydrates
+                let carbsPP = item.carbsPP
+                let fat = item.fat
+                let fatPP = item.fatPP
+                let netCarbs = item.netCarbs
+                let netFat = item.netFat
+                let netProtein = item.netProtein
+                let perPiece = item.perPiece
+                let protein = item.protein
+                let proteinPP = item.proteinPP
+                let count = item.count
+                let notes = item.notes ?? ""
+                let emoji = item.emoji ?? ""
+                
+                csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji)\n"
+            }
+            
+            return csvString
         }
-        
-        return csvString
-    }
     
     private func createCSV(from favoriteMeals: [FavoriteMeals]) -> String {
         var csvString = "id;name;items\n"
@@ -163,27 +164,28 @@ class CSVImportExportViewController: UIViewController {
     }
     
     private func createCSV(from mealHistories: [MealHistory]) -> String {
-        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;foodEntries\n"
-        
-        for mealHistory in mealHistories {
-            let id = mealHistory.id?.uuidString ?? ""
-            let mealDate = mealHistory.mealDate.map { DateFormatter.localizedString(from: $0, dateStyle: .short, timeStyle: .short) } ?? ""
-            let totalNetCarbs = mealHistory.totalNetCarbs
-            let totalNetFat = mealHistory.totalNetFat
-            let totalNetProtein = mealHistory.totalNetProtein
+            var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;foodEntries\n"
             
-            let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
-                [
-                    entry.entryId?.uuidString ?? "",
-                    entry.entryName ?? "",
-                    entry.entryPortionServed,
-                    entry.entryNotEaten,
-                    entry.entryCarbohydrates,
-                    entry.entryFat,
-                    entry.entryProtein,
-                    entry.entryPerPiece ? "1" : "0"
-                ].map { "\($0)" }.joined(separator: ",")
-            }.joined(separator: "|") ?? ""
+            for mealHistory in mealHistories {
+                let id = mealHistory.id?.uuidString ?? ""
+                let mealDate = mealHistory.mealDate.map { DateFormatter.localizedString(from: $0, dateStyle: .short, timeStyle: .short) } ?? ""
+                let totalNetCarbs = mealHistory.totalNetCarbs
+                let totalNetFat = mealHistory.totalNetFat
+                let totalNetProtein = mealHistory.totalNetProtein
+                
+                let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
+                    [
+                        entry.entryId?.uuidString ?? "",
+                        entry.entryName ?? "",
+                        entry.entryPortionServed,
+                        entry.entryNotEaten,
+                        entry.entryCarbohydrates,
+                        entry.entryFat,
+                        entry.entryProtein,
+                        entry.entryPerPiece ? "1" : "0",
+                        entry.entryEmoji ?? ""
+                    ].map { "\($0)" }.joined(separator: ",")
+                }.joined(separator: "|") ?? ""
             
             csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(foodEntries)\n"
         }
@@ -242,7 +244,7 @@ class CSVImportExportViewController: UIViewController {
     
     private func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 14 else {
+        guard columns.count == 15 else {
             showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
@@ -253,7 +255,7 @@ class CSVImportExportViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 14 {
+            if values.count == 15 {
                 if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
                     let foodItem = FoodItem(context: context)
                     foodItem.id = id
@@ -270,6 +272,7 @@ class CSVImportExportViewController: UIViewController {
                     foodItem.proteinPP = Double(values[11]) ?? 0.0
                     foodItem.count = Int16(values[12]) ?? 0
                     foodItem.notes = values[13]
+                    foodItem.emoji = values[14]
                 }
             }
         }
@@ -369,7 +372,7 @@ class CSVImportExportViewController: UIViewController {
                     let foodEntriesValues = values[5].components(separatedBy: "|")
                     for foodEntryValue in foodEntriesValues {
                         let foodEntryParts = foodEntryValue.components(separatedBy: ",")
-                        if foodEntryParts.count == 8 {
+                        if foodEntryParts.count == 9 {
                             let foodEntry = FoodItemEntry(context: context)
                             foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
                             foodEntry.entryName = foodEntryParts[1]
@@ -379,6 +382,7 @@ class CSVImportExportViewController: UIViewController {
                             foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
                             foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
                             foodEntry.entryPerPiece = foodEntryParts[7] == "1"
+                            foodEntry.entryEmoji = foodEntryParts[8]
                             mealHistory.addToFoodEntries(foodEntry)
                         }
                     }

@@ -302,6 +302,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Update existing food item
             foodItem.name = nameTextField.text ?? ""
             foodItem.notes = notesTextField.text ?? ""
+            foodItem.emoji = notesTextField.text ?? ""
             if isPerPiece {
                 foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -325,6 +326,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             newFoodItem.id = UUID()
             newFoodItem.name = nameTextField.text ?? ""
             newFoodItem.notes = notesTextField.text ?? ""
+            newFoodItem.emoji = notesTextField.text ?? ""
             if isPerPiece {
                 newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0

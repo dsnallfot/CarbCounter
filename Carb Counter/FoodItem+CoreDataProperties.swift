@@ -19,6 +19,7 @@ extension FoodItem {
     @NSManaged public var carbohydrates: Double
     @NSManaged public var carbsPP: Double
     @NSManaged public var count: Int16
+    @NSManaged public var emoji: String?
     @NSManaged public var fat: Double
     @NSManaged public var fatPP: Double
     @NSManaged public var id: UUID?
