@@ -279,9 +279,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         navigationController?.pushViewController(favoriteMealsVC, animated: true)
     }
     
+    // Helper method to format the double values
+    private func formattedValue(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems()
-        //print("Populating with favorite meal: \(favoriteMeal.name ?? "Unknown")")
         
         guard let items = favoriteMeal.items as? [[String: Any]] else {
             print("Error: Unable to cast favoriteMeal.items to [[String: Any]].")
@@ -290,7 +298,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         for item in items {
             if let name = item["name"] as? String,
-               let portionServed = item["portionServed"] as? String {
+               let portionServedString = item["portionServed"] as? String,
+               let portionServed = Double(portionServedString) {
                 print("Item name: \(name), Portion Served: \(portionServed)")
                 if let foodItem = foodItems.first(where: { $0.name == name }) {
                     print("Food Item Found: \(foodItem.name ?? "")")
@@ -301,7 +310,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
                     foodItemRows.append(rowView)
                     rowView.setSelectedFoodItem(foodItem)
-                    rowView.portionServedTextField.text = portionServed
+                    rowView.portionServedTextField.text = formattedValue(portionServed)
                     rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
                     
                     rowView.onDelete = { [weak self] in
@@ -329,11 +338,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
         clearAllFoodItems()
-        //print("Populating with meal history: \(mealHistory)")
         
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
-                //print("Adding food item: \(foodItem.entryName ?? "")")
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -341,7 +348,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
                 foodItemRows.append(rowView)
                 rowView.setSelectedFoodItem(foodItem)
-                rowView.portionServedTextField.text = String(foodEntry.entryPortionServed)
+                rowView.portionServedTextField.text = formattedValue(foodEntry.entryPortionServed)
                 rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
                 
                 rowView.onDelete = { [weak self] in
@@ -361,8 +368,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
-        //print("Completed populateWithMealHistory")
     }
+
     @objc private func textFieldDidChange(_ textField: UITextField) {
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
