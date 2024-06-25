@@ -8,6 +8,7 @@ protocol AddFoodItemDelegate: AnyObject {
 class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var emojiTextField: UITextField!
     @IBOutlet weak var carbsTextField: UITextField!
     @IBOutlet weak var fatTextField: UITextField!
     @IBOutlet weak var proteinTextField: UITextField!
@@ -34,6 +35,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     // Variables to store initial values
     var initialName: String?
+    var initialEmoji: String?
     var initialNotes: String?
     var initialCarbs: String?
     var initialFat: String?
@@ -63,6 +65,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Set delegates
         nameTextField.delegate = self
+        emojiTextField.delegate = self
         carbsTextField.delegate = self
         fatTextField.delegate = self
         proteinTextField.delegate = self
@@ -70,6 +73,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Disable autocorrect
         nameTextField.autocorrectionType = .no
+        emojiTextField.autocorrectionType = .no
         carbsTextField.autocorrectionType = .no
         fatTextField.autocorrectionType = .no
         proteinTextField.autocorrectionType = .no
@@ -88,6 +92,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         toolbar.setItems([nextButton, flexibleSpace, doneButton], animated: false)
         
         nameTextField.inputAccessoryView = toolbar
+        emojiTextField.inputAccessoryView = toolbar
         carbsTextField.inputAccessoryView = toolbar
         fatTextField.inputAccessoryView = toolbar
         proteinTextField.inputAccessoryView = toolbar
@@ -95,6 +100,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Store initial values
         initialName = nameTextField.text
+        initialEmoji = emojiTextField.text
         initialCarbs = carbsTextField.text
         initialFat = fatTextField.text
         initialProtein = proteinTextField.text
@@ -102,6 +108,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Observe text field changes
         nameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        emojiTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         carbsTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         fatTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         proteinTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
@@ -164,6 +171,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     @objc func nextButtonTapped() {
         if nameTextField.isFirstResponder {
+            emojiTextField.becomeFirstResponder()
+        } else if emojiTextField.isFirstResponder {
             carbsTextField.becomeFirstResponder()
         } else if carbsTextField.isFirstResponder {
             fatTextField.becomeFirstResponder()
@@ -265,6 +274,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             title = "Ändra livsmedel"
             nameTextField.text = foodItem.name
             notesTextField.text = foodItem.notes
+            emojiTextField.text = foodItem.emoji
             if foodItem.perPiece {
                 isPerPiece = true
                 segmentedControl.selectedSegmentIndex = 1
@@ -302,7 +312,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Update existing food item
             foodItem.name = nameTextField.text ?? ""
             foodItem.notes = notesTextField.text ?? ""
-            foodItem.emoji = notesTextField.text ?? ""
+            foodItem.emoji = emojiTextField.text ?? ""
             if isPerPiece {
                 foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -326,7 +336,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             newFoodItem.id = UUID()
             newFoodItem.name = nameTextField.text ?? ""
             newFoodItem.notes = notesTextField.text ?? ""
-            newFoodItem.emoji = notesTextField.text ?? ""
+            newFoodItem.emoji = emojiTextField.text ?? ""
             if isPerPiece {
                 newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -392,20 +402,21 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func checkForChanges() {
         let currentName = nameTextField.text
+        let currentEmoji = emojiTextField.text
         let currentNotes = notesTextField.text
         let currentCarbs = carbsTextField.text
         let currentFat = fatTextField.text
         let currentProtein = proteinTextField.text
         
         let nameChanged = currentName != initialName
+        let emojiChanged = currentEmoji != initialEmoji
         let notesChanged = currentNotes != initialNotes
         let carbsChanged = currentCarbs != initialCarbs
         let fatChanged = currentFat != initialFat
         let proteinChanged = currentProtein != initialProtein
         
-        saveButton.isEnabled = nameChanged || carbsChanged || fatChanged || proteinChanged || notesChanged
+        saveButton.isEnabled = nameChanged || emojiChanged || carbsChanged || fatChanged || proteinChanged || notesChanged
         updateSaveButtonTitle()
     }
 }
-    
-   
+       

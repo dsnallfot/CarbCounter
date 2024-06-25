@@ -6,7 +6,13 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     var onDoneButtonTapped: (([FoodItem]) -> Void)?
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
-    var selectedFoodItems: [FoodItem] = []
+    var selectedFoodItems: [FoodItem] = [] {
+            didSet {
+                updateCombinedEmojis()
+                print("combinedEmojis updated")
+            }
+        }
+    var combinedEmojis: String = "🍽️"
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -212,6 +218,10 @@ extension SearchableDropdownView {
             print("Failed to update food item count: \(error)")
         }
         
+        // Save combined emojis before clearing selection
+        let emojis = combinedEmojis
+        print("saved emojis: \(emojis)")
+        
         // Resign the searchBar as first responder
         searchBar.resignFirstResponder()
         
@@ -224,5 +234,27 @@ extension SearchableDropdownView {
         
         // Notify delegate to update navigation bar
         (self.superview?.next as? ComposeMealViewController)?.hideSearchableDropdown()
+        
+        // Set combined emojis back to the previously saved value
+        combinedEmojis = emojis
     }
+    
+    func updateCombinedEmojis() {
+            // Extract emojis from selected food items
+            let emojis = selectedFoodItems.compactMap { $0.emoji }
+            
+            if emojis.isEmpty {
+                combinedEmojis = "🍽️" // Default emoji if no emojis are available
+            } else {
+            combinedEmojis = emojis.joined()
+            }
+        
+        // Notify if needed
+            onSelectItems?(selectedFoodItems)
+            print(combinedEmojis)
+        }
+
+        func getCombinedEmojis() -> String {
+            return combinedEmojis
+        }
 }

@@ -172,6 +172,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         //print("viewWillAppear: saveFavoriteButton: \(saveFavoriteButton != nil)")
     }
     
+    private func getCombinedEmojis() -> String {
+            return searchableDropdownView?.combinedEmojis ?? "🍽️"
+        }
+    
     private func updatePlaceholderValuesForCurrentHour() {
         let currentHour = Calendar.current.component(.hour, from: Date())
         if let carbRatio = CoreDataHelper.shared.fetchCarbRatio(for: currentHour) {
@@ -476,6 +480,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         totalStartAmountLabel.text = "0.0 g"
         totalRemainsLabel.text = "0 g"
         totalRemainsBolusLabel.text = "0.00 E"
+        //dold string med alla emoji?
         
         // Reset the startBolus amount
         totalStartBolusLabel.text = "0.00 E"
@@ -812,8 +817,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 self.updateRegisteredAmount(khValue: khValue)
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+                let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getCombinedEmojis() // Check if foodItemRows is empty and set emojis accordingly
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering:\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
@@ -919,8 +925,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 self.updateRegisteredAmount(khValue: khValue)
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+                let emojis = "🍽️"//self.getCombinedEmojis() // Fetch the combined emojis
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering:\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
