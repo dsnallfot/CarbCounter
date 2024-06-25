@@ -72,13 +72,19 @@ class UserDefaultsRepository {
 
     static var allowShortcuts: Bool {
         get {
-            if UserDefaults.standard.object(forKey: "allowShortcuts") == nil {
-                UserDefaults.standard.set(false, forKey: "allowShortcuts")
-            }
             return UserDefaults.standard.bool(forKey: "allowShortcuts")
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "allowShortcuts")
+        }
+    }
+
+    static var allowDataClearing: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "allowDataClearing")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "allowDataClearing")
         }
     }
 }

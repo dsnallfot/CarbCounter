@@ -8,9 +8,8 @@
 import UIKit
 
 class SettingsViewController: UITableViewController, UITextFieldDelegate {
-
     private var shareURLTextField: UITextField!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Inställningar"
@@ -19,7 +18,6 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "buttonCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "textFieldCell")
 
-        // Add cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(title: "Stäng", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
     }
@@ -37,7 +35,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         case 0:
             return 4
         case 1:
-            return 1
+            return 2
         case 2:
             return 2
         default:
@@ -63,10 +61,16 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             return cell
         } else if indexPath.section == 1 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "switchCell", for: indexPath)
-            cell.textLabel?.text = "Tillåt automatiseringar"
             let toggleSwitch = UISwitch()
-            toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
-            toggleSwitch.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
+            if indexPath.row == 0 {
+                cell.textLabel?.text = "Tillåt automatiseringar"
+                toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
+                toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
+            } else {
+                cell.textLabel?.text = "Tillåt datarensning"
+                toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
+                toggleSwitch.addTarget(self, action: #selector(dataClearingSwitchChanged(_:)), for: .valueChanged)
+            }
             cell.accessoryView = toggleSwitch
             return cell
         } else {
@@ -86,6 +90,16 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 return cell
             }
         }
+    }
+
+    @objc private func shortcutsSwitchChanged(_ sender: UISwitch) {
+        UserDefaultsRepository.allowShortcuts = sender.isOn
+        NotificationCenter.default.post(name: Notification.Name("AllowShortcutsChanged"), object: nil)
+    }
+
+    @objc private func dataClearingSwitchChanged(_ sender: UISwitch) {
+        UserDefaultsRepository.allowDataClearing = sender.isOn
+        NotificationCenter.default.post(name: Notification.Name("AllowDataClearingChanged"), object: nil)
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -112,17 +126,12 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         navigationController?.pushViewController(viewController, animated: true)
     }
 
-    @objc private func switchChanged(_ sender: UISwitch) {
-        UserDefaultsRepository.allowShortcuts = sender.isOn
-        NotificationCenter.default.post(name: Notification.Name("AllowShortcutsChanged"), object: nil)
-    }
-
     private func acceptSharedData() {
         guard let shareURLString = shareURLTextField.text, !shareURLString.isEmpty, let shareURL = URL(string: shareURLString) else {
             showAlert(title: "Felaktig URL", message: "Vänligen ange en giltig delnings-URL.")
             return
         }
-        
+
         CloudKitShareController.shared.acceptShare(from: shareURL) { error in
             DispatchQueue.main.async {
                 if let error = error {

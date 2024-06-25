@@ -16,6 +16,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var sortOption: SortOption = .name
     var segmentedControl: UISegmentedControl!
     var searchBar: UISearchBar!
+    var clearButton: UIBarButtonItem!
     
     enum SortOption {
         case name, perPiece, count
@@ -28,23 +29,75 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         fetchFoodItems()
         setupAddButton()
-        setupClearButton()
         setupNavigationBarTitle()
         setupSearchBar()
         setupSortSegmentedControl()
+        
+        // Setup Clear button
+                clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+                clearButton.tintColor = .red
+                navigationItem.leftBarButtonItem = clearButton
+                
+                // Listen for changes to allowDataClearing setting
+                NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+                
+                // Update Clear button visibility based on the current setting
+                updateClearButtonVisibility()
+        }
+        
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+        
+    @objc private func updateClearButtonVisibility() {
+        clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
+    }
+    @objc private func clearButtonTapped() {
+        let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .alert)
+        let continueAction = UIAlertAction(title: "Fortsätt", style: .destructive) { _ in
+            self.showSecondClearAlert()
+        }
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        
+        firstAlertController.addAction(continueAction)
+        firstAlertController.addAction(cancelAction)
+        
+        present(firstAlertController, animated: true, completion: nil)
+    }
+    
+    private func showSecondClearAlert() {
+        let secondAlertController = UIAlertController(title: "Rensa allt", message: "Är du helt säker? Åtgärden går inte att ångra.", preferredStyle: .alert)
+        let clearAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
+            self.clearAllFoodItems()
+        }
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        
+        secondAlertController.addAction(clearAction)
+        secondAlertController.addAction(cancelAction)
+        
+        present(secondAlertController, animated: true, completion: nil)
+    }
+    
+    private func clearAllFoodItems() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItem.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+            fetchFoodItems()
+        } catch {
+            print("Failed to clear food items: \(error)")
+        }
     }
     
     private func setupAddButton() {
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
         navigationItem.rightBarButtonItems = [addButton]
     }
-    
-    private func setupClearButton() {
-        let clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
-        clearButton.tintColor = .red
-        navigationItem.leftBarButtonItem = clearButton
-    }
-    
+
     private func setupNavigationBarTitle() {
         title = "Livsmedel"
     }
@@ -237,47 +290,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             addFoodItemVC.delegate = self
             addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
             navigationController?.pushViewController(addFoodItemVC, animated: true)
-        }
-    }
-    
-    @objc private func clearButtonTapped() {
-        let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .alert)
-        let continueAction = UIAlertAction(title: "Fortsätt", style: .destructive) { _ in
-            self.showSecondClearAlert()
-        }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-        
-        firstAlertController.addAction(continueAction)
-        firstAlertController.addAction(cancelAction)
-        
-        present(firstAlertController, animated: true, completion: nil)
-    }
-    
-    private func showSecondClearAlert() {
-        let secondAlertController = UIAlertController(title: "Rensa allt", message: "Är du helt säker? Åtgärden går inte att ångra.", preferredStyle: .alert)
-        let clearAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
-            self.clearAllFoodItems()
-        }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-        
-        secondAlertController.addAction(clearAction)
-        secondAlertController.addAction(cancelAction)
-        
-        present(secondAlertController, animated: true, completion: nil)
-    }
-    
-    private func clearAllFoodItems() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItem.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        
-        do {
-            try context.execute(deleteRequest)
-            try context.save()
-            fetchFoodItems()
-        } catch {
-            print("Failed to clear food items: \(error)")
         }
     }
     

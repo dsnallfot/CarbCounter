@@ -2,6 +2,8 @@ import UIKit
 
 class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     var startDoses: [Int: Double] = [:]
+    var clearButton: UIBarButtonItem!
+    var doneButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -9,10 +11,32 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
         loadStartDoses()
         
-        // Add Clear button to the navigation bar
-        let clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
-        clearButton.tintColor = .red
-        navigationItem.rightBarButtonItem = clearButton
+        // Add Done button to the navigation bar
+        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
+        
+        // Setup Clear button
+                clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+                clearButton.tintColor = .red
+                navigationItem.rightBarButtonItem = clearButton
+                
+                // Listen for changes to allowDataClearing setting
+                NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+                
+                // Update Clear button visibility based on the current setting
+                updateClearButtonVisibility()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func updateClearButtonVisibility() {
+        clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
+    }
+    
+    @objc private func updateDoneButtonVisibility() {
+        doneButton.isHidden = UserDefaultsRepository.allowDataClearing
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -24,6 +48,11 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         startDoses = CoreDataHelper.shared.fetchStartDoses()
         tableView.reloadData()
     }
+    
+    @objc private func doneButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+    
     @objc private func clearButtonTapped() {
         let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .alert)
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in

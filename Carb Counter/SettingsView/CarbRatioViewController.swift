@@ -2,6 +2,8 @@ import UIKit
 
 class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     var carbRatios: [Int: Double] = [:]
+    var clearButton: UIBarButtonItem!
+    var doneButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -9,10 +11,32 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
         loadCarbRatios()
         
-        // Add Clear button to the navigation bar
-        let clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
-        clearButton.tintColor = .red
-        navigationItem.rightBarButtonItem = clearButton
+        // Add Done button to the navigation bar
+        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
+        
+        // Setup Clear button
+                clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+                clearButton.tintColor = .red
+                navigationItem.rightBarButtonItem = clearButton
+                
+                // Listen for changes to allowDataClearing setting
+                NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+                
+                // Update Clear button visibility based on the current setting
+                updateClearButtonVisibility()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func updateClearButtonVisibility() {
+        clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
+    }
+    
+    @objc private func updateDoneButtonVisibility() {
+        doneButton.isHidden = UserDefaultsRepository.allowDataClearing
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -23,6 +47,10 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     private func loadCarbRatios() {
         carbRatios = CoreDataHelper.shared.fetchCarbRatios()
         tableView.reloadData()
+    }
+    
+    @objc private func doneButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
     
     @objc private func clearButtonTapped() {
@@ -108,6 +136,18 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         }
     }
 }
+
+extension UIView {
+    func superview<T>(of type: T.Type) -> T? {
+        var view = superview
+        while view != nil && !(view is T) {
+            view = view?.superview
+        }
+        return view as? T
+    }
+}
+
+import UIKit
 
 class CarbRatioCell: UITableViewCell {
     let hourLabel: UILabel = {
