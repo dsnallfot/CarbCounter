@@ -92,7 +92,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         fatTextField.inputAccessoryView = toolbar
         proteinTextField.inputAccessoryView = toolbar
         notesTextField.inputAccessoryView = toolbar
-
+        
         // Store initial values
         initialName = nameTextField.text
         initialCarbs = carbsTextField.text
@@ -109,6 +109,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Add tap gesture recognizers to labels
         addTapGestureRecognizers()
+    }
+    
+    // Helper method to format the double values
+    func formattedValue(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
     
     private func addTapGestureRecognizers() {
@@ -251,7 +260,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             saveButton.setTitle("Spara", for: .normal)
         }
     }
-    
     private func setupUI() {
         if let foodItem = foodItem {
             title = "Ändra livsmedel"
@@ -260,15 +268,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             if foodItem.perPiece {
                 isPerPiece = true
                 segmentedControl.selectedSegmentIndex = 1
-                carbsTextField.text = String(foodItem.carbsPP)
-                fatTextField.text = String(foodItem.fatPP)
-                proteinTextField.text = String(foodItem.proteinPP)
+                carbsTextField.text = formattedValue(foodItem.carbsPP)
+                fatTextField.text = formattedValue(foodItem.fatPP)
+                proteinTextField.text = formattedValue(foodItem.proteinPP)
             } else {
                 isPerPiece = false
                 segmentedControl.selectedSegmentIndex = 0
-                carbsTextField.text = String(foodItem.carbohydrates)
-                fatTextField.text = String(foodItem.fat)
-                proteinTextField.text = String(foodItem.protein)
+                carbsTextField.text = formattedValue(foodItem.carbohydrates)
+                fatTextField.text = formattedValue(foodItem.fat)
+                proteinTextField.text = formattedValue(foodItem.protein)
             }
         } else {
             title = "Lägg till livsmedel"
@@ -336,7 +344,19 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             }
             // Set the count attribute to 0
             newFoodItem.count = 0
+            
+            // Share the new food item
+            CloudKitShareController.shared.shareFoodItemRecord(foodItem: newFoodItem) { share, error in
+                if let error = error {
+                    print("Error sharing food item: \(error)")
+                } else if let share = share {
+                    // Provide share URL to the other users
+                    print("Share URL: \(share.url?.absoluteString ?? "No URL")")
+                    // Optionally, present the share URL to the user via UI
+                }
+            }
         }
+        
         do {
             try context.save()
             delegate?.didAddFoodItem()
@@ -385,3 +405,5 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         updateSaveButtonTitle()
     }
 }
+    
+   

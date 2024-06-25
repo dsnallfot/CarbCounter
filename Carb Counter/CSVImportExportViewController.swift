@@ -174,13 +174,14 @@ class CSVImportExportViewController: UIViewController {
             
             let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
                 [
-                    entry.name ?? "",
-                    entry.portionServed,
-                    entry.notEaten,
-                    entry.carbohydrates,
-                    entry.fat,
-                    entry.protein,
-                    entry.perPiece ? "1" : "0"
+                    entry.entryId?.uuidString ?? "",
+                    entry.entryName ?? "",
+                    entry.entryPortionServed,
+                    entry.entryNotEaten,
+                    entry.entryCarbohydrates,
+                    entry.entryFat,
+                    entry.entryProtein,
+                    entry.entryPerPiece ? "1" : "0"
                 ].map { "\($0)" }.joined(separator: ",")
             }.joined(separator: "|") ?? ""
             
@@ -368,15 +369,16 @@ class CSVImportExportViewController: UIViewController {
                     let foodEntriesValues = values[5].components(separatedBy: "|")
                     for foodEntryValue in foodEntriesValues {
                         let foodEntryParts = foodEntryValue.components(separatedBy: ",")
-                        if foodEntryParts.count == 7 {
+                        if foodEntryParts.count == 8 {
                             let foodEntry = FoodItemEntry(context: context)
-                            foodEntry.name = foodEntryParts[0]
-                            foodEntry.portionServed = Double(foodEntryParts[1]) ?? 0.0
-                            foodEntry.notEaten = Double(foodEntryParts[2]) ?? 0.0
-                            foodEntry.carbohydrates = Double(foodEntryParts[3]) ?? 0.0
-                            foodEntry.fat = Double(foodEntryParts[4]) ?? 0.0
-                            foodEntry.protein = Double(foodEntryParts[5]) ?? 0.0
-                            foodEntry.perPiece = foodEntryParts[6] == "1"
+                            foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
+                            foodEntry.entryName = foodEntryParts[1]
+                            foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
+                            foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
+                            foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
+                            foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
+                            foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
+                            foodEntry.entryPerPiece = foodEntryParts[7] == "1"
                             mealHistory.addToFoodEntries(foodEntry)
                         }
                     }

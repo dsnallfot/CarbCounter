@@ -2,7 +2,7 @@
 //  FoodItemEntry+CoreDataProperties.swift
 //  Carb Counter
 //
-//  Created by Daniel Snällfot on 2024-06-24.
+//  Created by Daniel Snällfot on 2024-06-25.
 //
 //
 
@@ -16,17 +16,18 @@ extension FoodItemEntry {
         return NSFetchRequest<FoodItemEntry>(entityName: "FoodItemEntry")
     }
 
-    @NSManaged public var foodItem: String?
-    @NSManaged public var portionServed: Double
-    @NSManaged public var notEaten: Double
-    @NSManaged public var name: String?
-    @NSManaged public var carbohydrates: Double
-    @NSManaged public var fat: Double
-    @NSManaged public var protein: Double
-    @NSManaged public var fatPP: Double
-    @NSManaged public var carbsPP: Double
-    @NSManaged public var proteinPP: Double
-    @NSManaged public var perPiece: Bool
+    @NSManaged public var entryCarbohydrates: Double
+    @NSManaged public var entryCarbsPP: Double
+    @NSManaged public var entryFat: Double
+    @NSManaged public var entryFatPP: Double
+    @NSManaged public var entryFoodItem: String?
+    @NSManaged public var entryName: String?
+    @NSManaged public var entryNotEaten: Double
+    @NSManaged public var entryPerPiece: Bool
+    @NSManaged public var entryPortionServed: Double
+    @NSManaged public var entryProtein: Double
+    @NSManaged public var entryProteinPP: Double
+    @NSManaged public var entryId: UUID?
     @NSManaged public var mealHistory: MealHistory?
 
 }

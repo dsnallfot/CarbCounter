@@ -7,6 +7,7 @@ import UIKit
 import CoreData
 import AudioToolbox
 import LocalAuthentication
+import CloudKit
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddFoodItemDelegate, UITextFieldDelegate, TwilioRequestable {
     
@@ -237,8 +238,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 }
             }
             favoriteMeals.items = items as NSObject
-            
             CoreDataStack.shared.saveContext()
+            
+            // Share the favorite meals
+            CloudKitShareController.shared.shareFavoriteMealsRecord(favoriteMeals: favoriteMeals) { share, error in
+                if let error = error {
+                    print("Error sharing favorite meals: \(error)")
+                } else if let share = share {
+                    // Provide share URL to the other users
+                    print("Share URL: \(share.url?.absoluteString ?? "No URL")")
+                    // Optionally, present the share URL to the user via UI
+                }
+            }
             
             let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
             confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -321,8 +332,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         //print("Populating with meal history: \(mealHistory)")
         
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
-            if let foodItem = foodItems.first(where: { $0.name == foodEntry.name }) {
-                //print("Adding food item: \(foodItem.name ?? "")")
+            if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
+                //print("Adding food item: \(foodItem.entryName ?? "")")
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -330,7 +341,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
                 foodItemRows.append(rowView)
                 rowView.setSelectedFoodItem(foodItem)
-                rowView.portionServedTextField.text = String(foodEntry.portionServed)
+                rowView.portionServedTextField.text = String(foodEntry.entryPortionServed)
                 rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
                 
                 rowView.onDelete = { [weak self] in
@@ -343,7 +354,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 }
                 rowView.calculateNutrients()
             } else {
-                print("Food item not found for name: \(foodEntry.name ?? "")")
+                print("Food item not found for name: \(foodEntry.entryName ?? "")")
             }
         }
         updateTotalNutrients()
@@ -393,48 +404,48 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         for row in foodItemRows {
             if let foodItem = row.selectedFoodItem {
                 let foodEntry = FoodItemEntry(context: context)
-                foodEntry.name = foodItem.name
-                foodEntry.carbohydrates = foodItem.carbohydrates
-                foodEntry.fat = foodItem.fat
-                foodEntry.protein = foodItem.protein
+                foodEntry.entryId = UUID()
+                foodEntry.entryName = foodItem.name
+                foodEntry.entryCarbohydrates = foodItem.carbohydrates
+                foodEntry.entryFat = foodItem.fat
+                foodEntry.entryProtein = foodItem.protein
                 
                 // Replace commas with dots for EU decimal separators
                 let portionServedText = row.portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
                 let notEatenText = row.notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
                 
-                foodEntry.portionServed = Double(portionServedText) ?? 0
-                foodEntry.notEaten = Double(notEatenText) ?? 0
+                foodEntry.entryPortionServed = Double(portionServedText) ?? 0
+                foodEntry.entryNotEaten = Double(notEatenText) ?? 0
                 
-                foodEntry.carbsPP = foodItem.carbsPP
-                foodEntry.fatPP = foodItem.fatPP
-                foodEntry.proteinPP = foodItem.proteinPP
-                foodEntry.perPiece = foodItem.perPiece
+                foodEntry.entryCarbsPP = foodItem.carbsPP
+                foodEntry.entryFatPP = foodItem.fatPP
+                foodEntry.entryProteinPP = foodItem.proteinPP
+                foodEntry.entryPerPiece = foodItem.perPiece
                 mealHistory.addToFoodEntries(foodEntry)
-                
-                /*print("  Adding FoodItemEntry:")
-                 print("    Name: \(foodEntry.name ?? "nil")")
-                 print("    Carbs: \(foodEntry.carbohydrates)")
-                 print("    Fat: \(foodEntry.fat)")
-                 print("    Protein: \(foodEntry.protein)")
-                 print("    Portion Served: \(foodEntry.portionServed)")
-                 print("    Not Eaten: \(foodEntry.notEaten)")
-                 print("    Carbs Per Portion: \(foodEntry.carbsPP)")
-                 print("    Fat Per Portion: \(foodEntry.fatPP)")
-                 print("    Protein Per Portion: \(foodEntry.proteinPP)")
-                 print("    Per Piece: \(foodEntry.perPiece)")*/
             }
         }
         
         do {
             try context.save()
             print("MealHistory saved successfully!")
+           /*
+            // Share the MealHistory record
+            CloudKitShareController.shared.shareMealHistoryRecord(mealHistory: mealHistory, from: MealHistoryViewController) { share, error in
+                if let error = error {
+                    print("Error sharing meal history: \(error)")
+                } else if let share = share {
+                    // Provide share URL to the other users
+                    print("Share URL: \(share.url?.absoluteString ?? "No URL")")
+                    // Optionally, present the share URL to the user via UI
+                }
+            }
+            */
         } catch {
             print("Failed to save MealHistory: \(error)")
         }
         
         saveMealToHistory = false // Reset the flag after saving
     }
-    
     private func clearAllFoodItems() {
         for row in foodItemRows {
             stackView.removeArrangedSubview(row)

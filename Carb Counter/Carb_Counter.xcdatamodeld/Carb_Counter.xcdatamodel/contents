@@ -3,6 +3,7 @@
     <entity name="CarbRatioSchedule" representedClassName="CarbRatioSchedule" syncable="YES" codeGenerationType="class">
         <attribute name="carbRatio" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="hour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
     <entity name="FavoriteMeals" representedClassName="FavoriteMeals" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
@@ -26,18 +27,18 @@
         <attribute name="proteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
     <entity name="FoodItemEntry" representedClassName="FoodItemEntry" syncable="YES" codeGenerationType="class">
-        <attribute name="carbohydrates" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="carbsPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="fat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="fatPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="foodItem" optional="YES" attributeType="String"/>
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="notEaten" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="perPiece" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="portionServed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="protein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="proteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryCarbohydrates" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryCarbsPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryFat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryFatPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryFoodItem" optional="YES" attributeType="String"/>
+        <attribute name="entryId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="entryName" optional="YES" attributeType="String"/>
+        <attribute name="entryNotEaten" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryPerPiece" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="entryPortionServed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryProtein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="entryProteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="mealHistory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MealHistory" inverseName="foodEntries" inverseEntity="MealHistory"/>
     </entity>
     <entity name="MealHistory" representedClassName="MealHistory" syncable="YES" codeGenerationType="class">
@@ -50,6 +51,7 @@
     </entity>
     <entity name="StartDoseSchedule" representedClassName="StartDoseSchedule" syncable="YES" codeGenerationType="class">
         <attribute name="hour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="startDose" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
 </model>

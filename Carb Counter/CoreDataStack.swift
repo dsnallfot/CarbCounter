@@ -1,24 +1,28 @@
-//
-//  CoreDataStack.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-21.
-//
-
 import CoreData
+import CloudKit
 
 class CoreDataStack {
     static let shared = CoreDataStack()
 
     private init() {}
 
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "Carb_Counter")
+    lazy var persistentContainer: NSPersistentCloudKitContainer = {
+        let container = NSPersistentCloudKitContainer(name: "Carb_Counter")
+        guard let description = container.persistentStoreDescriptions.first else {
+            fatalError("No descriptions found")
+        }
+        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.yourteam.yourapp")
+        description.shouldMigrateStoreAutomatically = true
+        description.shouldInferMappingModelAutomatically = true
+
         container.loadPersistentStores { storeDescription, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         }
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
         return container
     }()
 

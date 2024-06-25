@@ -94,7 +94,7 @@ class MealHistoryDetailViewController: UIViewController {
             foodNameLabel.translatesAutoresizingMaskIntoConstraints = false
             foodNameLabel.numberOfLines = 0
             foodNameLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-            foodNameLabel.text = "\(foodEntry.name ?? "")"
+            foodNameLabel.text = "\(foodEntry.entryName ?? "")"
             view.addSubview(foodNameLabel)
             
             NSLayoutConstraint.activate([
@@ -150,19 +150,19 @@ class MealHistoryDetailViewController: UIViewController {
     
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {
         var detailText = ""
-        let portionServedFormatted = foodEntry.portionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.portionServed) : String(format: "%.1f", foodEntry.portionServed)
-        let notEatenFormatted = foodEntry.notEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.notEaten) : String(format: "%.1f", foodEntry.notEaten)
-        let eatenAmount = foodEntry.portionServed - foodEntry.notEaten
+        let portionServedFormatted = foodEntry.entryPortionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryPortionServed) : String(format: "%.1f", foodEntry.entryPortionServed)
+        let notEatenFormatted = foodEntry.entryNotEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryNotEaten) : String(format: "%.1f", foodEntry.entryNotEaten)
+        let eatenAmount = foodEntry.entryPortionServed - foodEntry.entryNotEaten
         let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.1f", eatenAmount)
 
-        if foodEntry.notEaten > 0 {
-            if foodEntry.perPiece {
+        if foodEntry.entryNotEaten > 0 {
+            if foodEntry.entryPerPiece {
                 detailText = "Åt \(eatenAmountFormatted) st   (Serverades \(portionServedFormatted) st • Lämnade \(notEatenFormatted) st)"
             } else {
                 detailText = "Åt \(eatenAmountFormatted) g   (Serverades \(portionServedFormatted) g • Lämnade \(notEatenFormatted) g)"
             }
         } else {
-            if foodEntry.perPiece {
+            if foodEntry.entryPerPiece {
                 detailText = "Åt \(portionServedFormatted) st"
             } else {
                 detailText = "Åt \(portionServedFormatted) g"
