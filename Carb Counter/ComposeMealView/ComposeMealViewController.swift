@@ -241,7 +241,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     items.append(item)
                 }
             }
-            favoriteMeals.items = items as NSObject
+            
+            // Serialize the items array to JSON
+            if let jsonData = try? JSONSerialization.data(withJSONObject: items, options: []),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                favoriteMeals.items = jsonString as NSObject
+            }
+            
             CoreDataStack.shared.saveContext()
             
             // Share the favorite meals
@@ -295,7 +301,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems()
         
-        guard let items = favoriteMeal.items as? [[String: Any]] else {
+        guard let itemsString = favoriteMeal.items as? String,
+              let data = itemsString.data(using: .utf8),
+              let items = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
             print("Error: Unable to cast favoriteMeal.items to [[String: Any]].")
             return
         }
