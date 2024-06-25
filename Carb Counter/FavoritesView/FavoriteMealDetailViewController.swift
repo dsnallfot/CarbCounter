@@ -1,7 +1,11 @@
 import UIKit
 import CoreData
 
+protocol FavoriteMealDetailViewControllerDelegate: AnyObject {
+    func favoriteMealDetailViewControllerDidSave(_ controller: FavoriteMealDetailViewController)
+}
 class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    weak var delegate: FavoriteMealDetailViewControllerDelegate?
     
     var favoriteMeal: FavoriteMeals!
     var tableView: UITableView!
@@ -74,8 +78,12 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         // Save the context
         CoreDataStack.shared.saveContext()
         
+        delegate?.favoriteMealDetailViewControllerDidSave(self)
+        
         navigationController?.popViewController(animated: true)
     }
+    
+
     
     private func addDoneButtonOnKeyboard() {
         let doneToolbar: UIToolbar = UIToolbar()

@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, FavoriteMealDetailViewControllerDelegate {
     
     var tableView: UITableView!
     var searchBar: UISearchBar!
@@ -24,6 +24,15 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         setupNavigationBar()
         fetchFavoriteMeals()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchFavoriteMeals()
+    }
+    
+    func favoriteMealDetailViewControllerDidSave(_ controller: FavoriteMealDetailViewController) {
+            fetchFavoriteMeals()
+        }
     
     @objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)
@@ -141,6 +150,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         let detailVC = FavoriteMealDetailViewController()
         detailVC.favoriteMeal = favoriteMeal
+        detailVC.delegate = self
         navigationController?.pushViewController(detailVC, animated: true)
     }
     
