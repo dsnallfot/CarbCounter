@@ -51,6 +51,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     var saveMealToHistory: Bool = false
     
+    var zeroBolus: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -852,7 +854,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
         }
     }
-    
+
     @objc private func remainContainerTapped() {
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
@@ -865,33 +867,34 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             return
         }
         
-        var khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        var fatValue = formatValue(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
-        var proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
+        let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
+        let fatValue = formatValue(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
+        let proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
         var bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
         let bolusAlertController = UIAlertController(title: "Slutdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            bolusValue = "0.0"
+            self.zeroBolus = true
             self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
         }
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+            self.zeroBolus = false
             self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
         }
         bolusAlertController.addAction(noAction)
         bolusAlertController.addAction(yesAction)
         present(bolusAlertController, animated: true, completion: nil)
     }
-    
+
     private func checkAndProceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         // Check if khValue exceeds maxCarbs
         var adjustedKhValue = khValue
-        var adjustedBolusValue = bolusValue
+        var adjustedBolusValue = self.zeroBolus ? "0.0" : bolusValue
         if let maxCarbs = UserDefaultsRepository.maxCarbs as Double?, let khValueDouble = Double(khValue), khValueDouble > maxCarbs {
             adjustedKhValue = String(format: "%.0f", maxCarbs)
             if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0") {
-                adjustedBolusValue = String(format: "%.2f", maxCarbs / carbRatio)
+                adjustedBolusValue = self.zeroBolus ? "0.0" : String(format: "%.2f", maxCarbs / carbRatio)
             }
             let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "Måltiden innehåller en större mängd kolhydrater, fett eller protein än den inställda maxgränsen \(Int(maxCarbs)) g. \n\nMåltidsregistreringen och bolusdosen justeras därför ner till maxgränsen i nästa steg.", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
@@ -900,16 +903,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             maxCarbsAlert.addAction(okAction)
             present(maxCarbsAlert, animated: true, completion: nil)
         } else {
-            self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+            self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
         }
     }
+
     private func proceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
                 let alertController = UIAlertController(title: "Slutdos", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+                    self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(yesAction)
@@ -924,7 +929,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                     alertMessage += "\n\(proteinValue) g protein"
                 }
                 
-                alertMessage += "\n\(bolusValue) E insulin"
+                alertMessage += "\n\(finalBolusValue) E insulin"
                 
                 let alertController = UIAlertController(title: "Manuell Slutdos", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
@@ -945,7 +950,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 alertMessage += "\n\(proteinValue) g protein"
             }
             
-            alertMessage += "\n\(bolusValue) E insulin"
+            alertMessage += "\n\(finalBolusValue) E insulin"
             
             let alertController = UIAlertController(title: "Slutdos", message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
@@ -955,7 +960,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
                 let emojis = "🍽️" //self.getCombinedEmojis() // Fetch the combined emojis
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
@@ -973,20 +978,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
         
-        totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        totalRegisteredLabel.text = String(format:"%.0f”", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
         updateTotalNutrients()
         clearAllButton.isEnabled = true
-        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_(khValue)bolus(bolusValue)fat(fatValue)protein(proteinValue)"
+        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_(khValue)bolus_(bolusValue)fat_(fatValue)protein_(proteinValue)"
         if let url = URL(string: urlString) {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
+        if UIApplication.shared.canOpenURL(url) {
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
-    }
-    
-    
-    
-    
+        }
+        }
+
     private func sendMealRequest(combinedString: String) {
         let method = UserDefaultsRepository.method
         if method == "iOS Shortcuts" {
@@ -994,7 +996,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         } else {
             authenticateUser { [weak self] authenticated in
                 guard let self = self else { return }
-                
                 if authenticated {
                     self.twilioRequest(combinedString: combinedString) { result in
                         switch result {
@@ -1016,6 +1017,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             }
         }
     }
+    
     private func updateRegisteredAmount(khValue: String) {
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
@@ -1539,11 +1541,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             addSubview(addButton)
             
             NSLayoutConstraint.activate([
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
+                addButton.centerXAnchor.constraint(equalTo: centerXAnchor),
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: 0),
-                addButton.heightAnchor.constraint(equalToConstant: 28) // Set height for the pill shape
+                addButton.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 4),
+                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
+                addButton.heightAnchor.constraint(equalToConstant: 32) // Set height for the pill shape
             ])
             updateBorderColor() // Ensure border color is set correctly initially
         }

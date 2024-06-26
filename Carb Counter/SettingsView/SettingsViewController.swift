@@ -43,13 +43,13 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             cell.accessoryType = .disclosureIndicator
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Carb Ratio Schema"
+                cell.textLabel?.text = "Carb Ratio schema"
             case 1:
-                cell.textLabel?.text = "Startdoser Schema"
+                cell.textLabel?.text = "Startdoser schema"
             case 2:
                 cell.textLabel?.text = "Dela data"
             case 3:
-                cell.textLabel?.text = "Remote Settings"
+                cell.textLabel?.text = "Remote inställningar"
             default:
                 break
             }
