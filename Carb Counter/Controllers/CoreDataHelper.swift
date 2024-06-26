@@ -3,7 +3,7 @@ import UIKit
 
 class CoreDataHelper {
     static let shared = CoreDataHelper()
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let context = CoreDataStack.shared.context
 
     // Fetch Carb Ratios for all hours
     func fetchCarbRatios() -> [Int: Double] {
@@ -107,7 +107,6 @@ class CoreDataHelper {
             print("Failed to save carb ratio: \(error)")
         }
     }
-
 
     // Save or update Start Dose
     func saveStartDose(hour: Int, dose: Double) {

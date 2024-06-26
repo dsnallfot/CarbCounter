@@ -64,5 +64,10 @@
     </array>
     <key>com.apple.developer.ubiquity-kvstore-identifier</key>
     <string>iCloud.com.dsnallfot.Carb-Counter</string> <!-- Replace with your actual container identifier -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
 </dict>
 </plist>

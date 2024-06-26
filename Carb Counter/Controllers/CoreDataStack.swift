@@ -11,7 +11,9 @@ class CoreDataStack {
         guard let description = container.persistentStoreDescriptions.first else {
             fatalError("No descriptions found")
         }
-        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.yourteam.yourapp")
+        
+        // Ensure the container identifier matches in both AppDelegate and CoreDataStack
+        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.dsnallfot.Carb-Counter")
         description.shouldMigrateStoreAutomatically = true
         description.shouldInferMappingModelAutomatically = true
 

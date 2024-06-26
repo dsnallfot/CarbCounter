@@ -205,8 +205,7 @@ extension Notification.Name {
 extension SearchableDropdownView {
     func completeSelection() {
         // Increment count for each selected item and save context
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
+        let context = CoreDataStack.shared.context
         
         for item in selectedFoodItems {
             item.count += 1
@@ -240,21 +239,21 @@ extension SearchableDropdownView {
     }
     
     func updateCombinedEmojis() {
-            // Extract emojis from selected food items
-            let emojis = selectedFoodItems.compactMap { $0.emoji }
-            
-            if emojis.isEmpty {
-                combinedEmojis = "🍽️" // Default emoji if no emojis are available
-            } else {
+        // Extract emojis from selected food items
+        let emojis = selectedFoodItems.compactMap { $0.emoji }
+        
+        if emojis.isEmpty {
+            combinedEmojis = "🍽️" // Default emoji if no emojis are available
+        } else {
             combinedEmojis = emojis.joined()
-            }
+        }
         
         // Notify if needed
-            onSelectItems?(selectedFoodItems)
-            print(combinedEmojis)
-        }
+        onSelectItems?(selectedFoodItems)
+        print(combinedEmojis)
+    }
 
-        func getCombinedEmojis() -> String {
-            return combinedEmojis
-        }
+    func getCombinedEmojis() -> String {
+        return combinedEmojis
+    }
 }

@@ -69,20 +69,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func fetchMealHistories() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
-        let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        
-        do {
-            mealHistories = try context.fetch(fetchRequest)
-            filteredMealHistories = mealHistories
-            tableView.reloadData()
-        } catch {
-            print("Failed to fetch meal histories: \(error)")
+            let context = CoreDataStack.shared.context
+            let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
+            let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
+            fetchRequest.sortDescriptors = [sortDescriptor]
+            
+            do {
+                mealHistories = try context.fetch(fetchRequest)
+                filteredMealHistories = mealHistories
+                tableView.reloadData()
+            } catch {
+                print("Failed to fetch meal histories: \(error)")
+            }
         }
-    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredMealHistories.count
@@ -130,19 +129,18 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let mealHistory = filteredMealHistories[indexPath.row]
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-            let context = appDelegate.persistentContainer.viewContext
-            context.delete(mealHistory)
-            
-            do {
-                try context.save()
-                mealHistories.removeAll { $0 == mealHistory }
-                filteredMealHistories.remove(at: indexPath.row)
-                tableView.deleteRows(at: [indexPath], with: .fade)
-            } catch {
-                print("Failed to delete meal history: \(error)")
+            if editingStyle == .delete {
+                let mealHistory = filteredMealHistories[indexPath.row]
+                let context = CoreDataStack.shared.context
+                context.delete(mealHistory)
+                
+                do {
+                    try context.save()
+                    mealHistories.removeAll { $0 == mealHistory }
+                    filteredMealHistories.remove(at: indexPath.row)
+                    tableView.deleteRows(at: [indexPath], with: .fade)
+                } catch {
+                    print("Failed to delete meal history: \(error)")
             }
         }
     }

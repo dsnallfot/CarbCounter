@@ -1,8 +1,8 @@
+
 import UIKit
 
 class SettingsViewController: UITableViewController, UITextFieldDelegate {
     
-    private var shareURLTextField: UITextField!
     private var maxCarbsTextField: UITextField!
     private var maxBolusTextField: UITextField!
     
@@ -23,7 +23,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 2 // Reduced to 2
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -32,8 +32,6 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             return 4
         case 1:
             return 4 // Changed from 2 to 4 to include maxCarbs and maxBolus
-        case 2:
-            return 2
         default:
             return 0
         }
@@ -42,24 +40,24 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+            cell.accessoryType = .disclosureIndicator
             switch indexPath.row {
             case 0:
                 cell.textLabel?.text = "Carb Ratio Schema"
             case 1:
                 cell.textLabel?.text = "Startdoser Schema"
             case 2:
-                cell.textLabel?.text = "CSV Import/Export"
+                cell.textLabel?.text = "Dela data"
             case 3:
                 cell.textLabel?.text = "Remote Settings"
             default:
                 break
             }
             return cell
-        } else if indexPath.section == 1 {
+        } else {
             if indexPath.row < 2 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "switchCell", for: indexPath)
                 let toggleSwitch = UISwitch()
-                // In the cellForRowAt indexPath method for the switch
                 if indexPath.row == 0 {
                     cell.textLabel?.text = "Manuellt läge"
                     toggleSwitch.isOn = !UserDefaultsRepository.allowShortcuts // Set the switch to the inverse of allowShortcuts
@@ -73,7 +71,6 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "textFieldCell", for: indexPath)
-                
                 let label = UILabel(frame: .zero)
                 label.translatesAutoresizingMaskIntoConstraints = false
                 cell.contentView.addSubview(label)
@@ -81,45 +78,40 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 let textField = UITextField(frame: .zero)
                 textField.keyboardType = .decimalPad
                 textField.delegate = self
+                textField.textAlignment = .right
                 textField.translatesAutoresizingMaskIntoConstraints = false
                 cell.contentView.addSubview(textField)
+                
+                let unitLabel = UILabel(frame: .zero)
+                unitLabel.translatesAutoresizingMaskIntoConstraints = false
+                cell.contentView.addSubview(unitLabel)
                 
                 NSLayoutConstraint.activate([
                     label.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 15),
                     label.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
                     
-                    textField.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -15),
+                    unitLabel.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -15),
+                    unitLabel.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
+                    
+                    textField.trailingAnchor.constraint(equalTo: unitLabel.leadingAnchor, constant: -5),
                     textField.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
                     textField.widthAnchor.constraint(equalToConstant: 50),
+                    
                     label.trailingAnchor.constraint(lessThanOrEqualTo: textField.leadingAnchor, constant: -8)
                 ])
                 
                 if indexPath.row == 2 {
-                    label.text = "Max Kolhydrater"
+                    label.text = "Maxgräns Kolhydrater"
                     maxCarbsTextField = textField
                     maxCarbsTextField.text = formatValue(UserDefaultsRepository.maxCarbs)
+                    unitLabel.text = " g"
                 } else {
-                    label.text = "Max Bolus"
+                    label.text = "Maxgräns Bolus"
                     maxBolusTextField = textField
                     maxBolusTextField.text = formatValue(UserDefaultsRepository.maxBolus)
+                    unitLabel.text = " E"
                 }
                 
-                return cell
-            }
-        } else {
-            if indexPath.row == 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "textFieldCell", for: indexPath)
-                shareURLTextField = UITextField(frame: cell.contentView.bounds.insetBy(dx: 15, dy: 0))
-                shareURLTextField.placeholder = "Ange URL för datadelning"
-                shareURLTextField.autocapitalizationType = .none
-                shareURLTextField.keyboardType = .URL
-                shareURLTextField.delegate = self
-                cell.contentView.addSubview(shareURLTextField)
-                return cell
-            } else {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "buttonCell", for: indexPath)
-                cell.textLabel?.text = "Acceptera datadelning"
-                cell.textLabel?.textAlignment = .center
                 return cell
             }
         }
@@ -128,9 +120,6 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section == 0 else {
-            if indexPath.section == 2 && indexPath.row == 1 {
-                acceptSharedData()
-            }
             return
         }
         let viewController: UIViewController
@@ -140,7 +129,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         case 1:
             viewController = StartDoseViewController()
         case 2:
-            viewController = CSVImportExportViewController()
+            viewController = DataSharingViewController()
         case 3:
             viewController = RemoteSettingsViewController()
         default:
@@ -157,29 +146,6 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     @objc private func dataClearingSwitchChanged(_ sender: UISwitch) {
         UserDefaultsRepository.allowDataClearing = sender.isOn
         NotificationCenter.default.post(name: Notification.Name("AllowDataClearingChanged"), object: nil)
-    }
-    
-    private func acceptSharedData() {
-        guard let shareURLString = shareURLTextField.text, !shareURLString.isEmpty, let shareURL = URL(string: shareURLString) else {
-            showAlert(title: "Felaktig URL", message: "Vänligen ange en giltig delnings-URL.")
-            return
-        }
-        CloudKitShareController.shared.acceptShare(from: shareURL) { error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self.showAlert(title: "Misslyckades att acceptera delning", message: "Error: \(error.localizedDescription)")
-                } else {
-                    self.showAlert(title: "Lyckades", message: "Delning av data accepterades.")
-                }
-            }
-        }
-    }
-    
-    private func showAlert(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-        alertController.addAction(okAction)
-        present(alertController, animated: true, completion: nil)
     }
     
     // Update UserDefaults when text fields end editing

@@ -34,24 +34,25 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         setupSortSegmentedControl()
         
         // Setup Clear button
-                clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
-                clearButton.tintColor = .red
-                navigationItem.leftBarButtonItem = clearButton
-                
-                // Listen for changes to allowDataClearing setting
-                NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
-                
-                // Update Clear button visibility based on the current setting
-                updateClearButtonVisibility()
-        }
+        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
+        navigationItem.leftBarButtonItem = clearButton
         
+        // Listen for changes to allowDataClearing setting
+        NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+        
+        // Update Clear button visibility based on the current setting
+        updateClearButtonVisibility()
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-        
+    
     @objc private func updateClearButtonVisibility() {
         clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
     }
+    
     @objc private func clearButtonTapped() {
         let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .alert)
         let continueAction = UIAlertAction(title: "Fortsätt", style: .destructive) { _ in
@@ -79,8 +80,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func clearAllFoodItems() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
+        let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItem.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
@@ -97,7 +97,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
         navigationItem.rightBarButtonItems = [addButton]
     }
-
+    
     private func setupNavigationBarTitle() {
         title = "Livsmedel"
     }
@@ -203,8 +203,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     func fetchFoodItems() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
+        let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             foodItems = try context.fetch(fetchRequest)
@@ -263,7 +262,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }
-    
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             deleteFoodItem(at: indexPath)
@@ -272,8 +270,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     private func deleteFoodItem(at indexPath: IndexPath) {
         let foodItem = filteredFoodItems[indexPath.row]
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
+        let context = CoreDataStack.shared.context
         context.delete(foodItem)
         do {
             try context.save()
@@ -281,9 +278,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
         } catch {
-            print("Failed to delete food item: (error)")
+            print("Failed to delete food item: \(error)")
         }
     }
+    
     private func editFoodItem(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
