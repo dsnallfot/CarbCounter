@@ -1,9 +1,9 @@
 import UIKit
+import CloudKit
 import CoreData
 import UniformTypeIdentifiers
-import CloudKit
 
-class DataSharingViewController: UIViewController, UITextFieldDelegate {
+class DataSharingViewController: UIViewController {
     
     private var shareURLTextField: UITextField!
     
@@ -14,7 +14,7 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
         
         setupNavigationBarButtons()
         setupShareButtons()
-        setupDataSharingControls()
+        setupURLTextFieldAndButton() // Moved from SettingsViewController
     }
     
     private func setupNavigationBarButtons() {
@@ -53,12 +53,11 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func setupDataSharingControls() {
-        shareURLTextField = UITextField(frame: .zero)
+    private func setupURLTextFieldAndButton() {
+        shareURLTextField = UITextField(frame: .zero) // Remove 'let'
         shareURLTextField.placeholder = "Ange URL för datadelning"
         shareURLTextField.autocapitalizationType = .none
         shareURLTextField.keyboardType = .URL
-        shareURLTextField.delegate = self
         shareURLTextField.borderStyle = .roundedRect
         shareURLTextField.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(shareURLTextField)
@@ -70,13 +69,29 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(acceptButton)
         
         NSLayoutConstraint.activate([
-            shareURLTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            shareURLTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            shareURLTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            shareURLTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            shareURLTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            shareURLTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            acceptButton.topAnchor.constraint(equalTo: shareURLTextField.bottomAnchor, constant: 16),
+            acceptButton.topAnchor.constraint(equalTo: shareURLTextField.bottomAnchor, constant: 20),
             acceptButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+    }
+    
+    @objc private func acceptSharedData() {
+        guard let shareURLString = shareURLTextField.text, !shareURLString.isEmpty, let shareURL = URL(string: shareURLString) else {
+            showAlert(title: "Felaktig URL", message: "Vänligen ange en giltig delnings-URL.")
+            return
+        }
+        CloudKitShareController.shared.acceptShare(from: shareURL) { error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.showAlert(title: "Misslyckades att acceptera delning", message: "Error: \(error.localizedDescription)")
+                } else {
+                    self.showAlert(title: "Lyckades", message: "Delning av data accepterades.")
+                }
+            }
+        }
     }
     
     // MARK: - Sharing Data
@@ -116,9 +131,66 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func createShare(for entityName: String, with email: String) {
-        // Create a CloudKit share for the given entity and email
-        // You need to implement the logic to create a CKShare for the specified entity and share it with the given email address.
-        // Use CloudKit APIs to create the share and add the recipient's email as a participant.
+        let context = CoreDataStack.shared.context
+
+        // Fetch the objects you want to share
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
+        
+        do {
+            let objectsToShare = try context.fetch(fetchRequest)
+            
+            guard let objectToShare = objectsToShare.first else {
+                print("No objects found to share.")
+                return
+            }
+            
+            // Create a CKRecord from the managed object
+            let record = CKRecord(recordType: entityName) // Ensure this matches your CKRecord setup
+            record["id"] = objectToShare.value(forKey: "id") as? CKRecordValue
+
+            // Create the share
+            let share = CKShare(rootRecord: record)
+            share[CKShare.SystemFieldKey.title] = "Shared \(entityName)" as CKRecordValue
+            
+            // Fetch the user identity for the email
+            let container = CKContainer.default()
+            
+            container.fetchShareParticipant(withEmailAddress: email) { participant, error in
+                guard error == nil else {
+                    print("Failed to fetch participant: \(String(describing: error))")
+                    return
+                }
+                
+                guard let participant = participant else {
+                    print("No participant found for the provided email.")
+                    return
+                }
+                
+                // Set the participant's role and permission
+                participant.role = .privateUser
+                participant.permission = .readWrite
+                
+                // Add the participant to the share
+                share.addParticipant(participant)
+                
+                // Save the share to the private database
+                let privateDatabase = container.privateCloudDatabase
+                let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [record, share], recordIDsToDelete: nil)
+                modifyRecordsOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, operationError in
+                    if let error = operationError {
+                        print("Failed to save share: \(error)")
+                    } else {
+                        print("Successfully shared the record!")
+                        if let shareURL = share.url {
+                            print("Share URL: \(shareURL)")
+                        }
+                    }
+                }
+                privateDatabase.add(modifyRecordsOperation)
+            }
+        } catch {
+            print("Failed to fetch objects: \(error)")
+        }
     }
     
     @objc private func exportData() {
@@ -143,7 +215,6 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
         alert.addAction(UIAlertAction(title: "Start Dose Schedule", style: .default, handler: { _ in self.importCSV(for: "Start Dose Schedule") }))
         alert.addAction(UIAlertAction(title: "Meal History", style: .default, handler: { _ in self.importCSV(for: "Meal History") }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
         present(alert, animated: true, completion: nil)
     }
     
@@ -174,6 +245,7 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
     
     private func exportToCSV<T: NSFetchRequestResult>(fetchRequest: NSFetchRequest<T>, fileName: String, createCSV: ([T]) -> String) {
         let context = CoreDataStack.shared.context
+        
         do {
             let entities = try context.fetch(fetchRequest)
             let csvData = createCSV(entities)
@@ -243,7 +315,6 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
         
         return csvString
     }
-    
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
         var csvString = "id;hour;startDose\n"
         
@@ -345,7 +416,6 @@ class DataSharingViewController: UIViewController, UITextFieldDelegate {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         let existingFoodItems = try? context.fetch(fetchRequest)
         let existingIDs = Set(existingFoodItems?.compactMap { $0.id } ?? [])
-        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 15 {
@@ -518,20 +588,5 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
     }
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
-    }
-    @objc private func acceptSharedData() {
-        guard let shareURLString = shareURLTextField.text, !shareURLString.isEmpty, let shareURL = URL(string: shareURLString) else {
-            showAlert(title: "Felaktig URL", message: "Vänligen ange en giltig delnings-URL.")
-            return
-        }
-        CloudKitShareController.shared.acceptShare(from: shareURL) { error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self.showAlert(title: "Misslyckades att acceptera delning", message: "Error: \(error.localizedDescription)")
-                } else {
-                    self.showAlert(title: "Lyckades", message: "Delning av data accepterades.")
-                }
-            }
-        }
     }
 }
