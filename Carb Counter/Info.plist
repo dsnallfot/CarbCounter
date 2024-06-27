@@ -69,5 +69,8 @@
         <string>fetch</string>
         <string>remote-notification</string>
     </array>
+    <!-- Add CKSharingSupported key -->
+    <key>CKSharingSupported</key>
+    <true/>
 </dict>
 </plist>
