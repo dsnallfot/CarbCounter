@@ -1,13 +1,13 @@
 //
-//  Carb_CounterUITests.swift
-//  Carb CounterUITests
+//  CarbsCounterUITests.swift
+//  CarbsCounterUITests
 //
 //  Created by Daniel Snällfot on 2024-06-17.
 //
 
 import XCTest
 
-final class Carb_CounterUITests: XCTestCase {
+final class CarbsCounterUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

@@ -7,13 +7,13 @@ class CoreDataStack {
     private init() {}
 
     lazy var persistentContainer: NSPersistentCloudKitContainer = {
-        let container = NSPersistentCloudKitContainer(name: "Carb_Counter")
+        let container = NSPersistentCloudKitContainer(name: "CarbsCounter")
         guard let description = container.persistentStoreDescriptions.first else {
             fatalError("No descriptions found")
         }
         
         // Ensure the container identifier matches in both AppDelegate and CoreDataStack
-        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.dsnallfot.Carb-Counter")
+        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.dsnallfot.CarbsCounter")
         description.shouldMigrateStoreAutomatically = true
         description.shouldInferMappingModelAutomatically = true
 

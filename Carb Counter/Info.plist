@@ -2,75 +2,72 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-    </array>
-    <key>UIApplicationSceneManifest</key>
-    <dict>
-        <key>UIApplicationSupportsMultipleScenes</key>
-        <false/>
-        <key>UISceneConfigurations</key>
-        <dict>
-            <key>UIWindowSceneSessionRoleApplication</key>
-            <array>
-                <dict>
-                    <key>UISceneConfigurationName</key>
-                    <string>Default Configuration</string>
-                    <key>UISceneDelegateClassName</key>
-                    <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-                    <key>UISceneStoryboardFile</key>
-                    <string>Main</string>
-                </dict>
-            </array>
-        </dict>
-    </dict>
-    <key>UIFileSharingEnabled</key>
-    <true/>
-    <key>LSSupportsOpeningDocumentsInPlace</key>
-    <true/>
-    <key>NSUbiquitousContainers</key>
-    <dict>
-        <key>iCloud.com.dsnallfot.Carb-Counter</key>
-        <dict>
-            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
-            <true/>
-            <key>NSUbiquitousContainerSupportedFolderLevels</key>
-            <string>Any</string>
-            <key>NSUbiquitousContainerName</key>
-            <string>Carb Counter</string>
-        </dict>
-    </dict>
-    <key>NSDocumentsFolderUsageDescription</key>
-    <string>We need access to your documents to import and export food items.</string>
-    <key>NSFaceIDUsageDescription</key>
-    <string>This app requires Face ID to securely authenticate your identity for sending meal requests.</string>
-    <key>NSBiometricUsageDescription</key>
-    <string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
-    
-    <!-- Add the following keys for iCloud and CloudKit support -->
-    <key>com.apple.developer.icloud-container-identifiers</key>
-    <array>
-        <string>iCloud.com.dsnallfot.Carb-Counter</string> <!-- Replace with your actual container identifier -->
-    </array>
-    <key>com.apple.developer.icloud-services</key>
-    <array>
-        <string>CloudKit</string>
-    </array>
-    <key>com.apple.developer.ubiquity-kvstore-identifier</key>
-    <string>iCloud.com.dsnallfot.Carb-Counter</string> <!-- Replace with your actual container identifier -->
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-    </array>
-    <!-- Add CKSharingSupported key -->
-    <key>CKSharingSupported</key>
-    <true/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSUbiquitousContainers</key>
+	<dict>
+		<key>iCloud.com.dsnallfot.CarbsCounter</key>
+		<dict>
+			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
+			<true/>
+			<key>NSUbiquitousContainerSupportedFolderLevels</key>
+			<string>Any</string>
+			<key>NSUbiquitousContainerName</key>
+			<string>CarbsCounter</string>
+		</dict>
+	</dict>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>We need access to your documents to import and export food items.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This app requires Face ID to securely authenticate your identity for sending meal requests.</string>
+	<key>NSBiometricUsageDescription</key>
+	<string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.com.dsnallfot.CarbsCounter</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	<string>iCloud.com.dsnallfot.CarbsCounter</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>CKSharingSupported</key>
+	<true/>
 </dict>
 </plist>

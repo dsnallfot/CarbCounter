@@ -1,13 +1,13 @@
 //
-//  Carb_CounterUITestsLaunchTests.swift
-//  Carb CounterUITests
+//  CarbsCounterUITestsLaunchTests.swift
+//  CarbsCounterUITests
 //
 //  Created by Daniel Snällfot on 2024-06-17.
 //
 
 import XCTest
 
-final class Carb_CounterUITestsLaunchTests: XCTestCase {
+final class CarbsCounterUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

@@ -1,6 +1,6 @@
 //
-//  Carb_CounterTests.swift
-//  Carb CounterTests
+//  CarbsCounterTests.swift
+//  CarbsCounterTests
 //
 //  Created by Daniel Snällfot on 2024-06-17.
 //
@@ -8,7 +8,7 @@
 import XCTest
 @testable import Carb_Counter
 
-final class Carb_CounterTests: XCTestCase {
+final class CarbsCounterTests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

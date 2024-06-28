@@ -3,12 +3,15 @@ import UIKit
 
 class CloudKitShareController {
     static let shared = CloudKitShareController()
-    private let container = CKContainer(identifier: "iCloud.com.dsnallfot.Carb-Counter")
+    private let container: CKContainer
     private let privateDatabase: CKDatabase
-    private let customZone: CKRecordZone
+    private let sharedDatabase: CKDatabase
+    let customZone: CKRecordZone
 
     private init() {
+        self.container = CKContainer(identifier: "iCloud.com.dsnallfot.CarbsCounter")
         self.privateDatabase = container.privateCloudDatabase
+        self.sharedDatabase = container.sharedCloudDatabase
         self.customZone = CKRecordZone(zoneName: "CustomZone")
         createCustomZone()
     }
@@ -25,7 +28,7 @@ class CloudKitShareController {
         privateDatabase.add(modifyZonesOperation)
     }
 
-    func shareMealHistoryRecord(mealHistory: MealHistory, from viewController: UIViewController, completion: @escaping (CKShare?, Error?) -> Void) {
+    func shareMealHistoryRecord(mealHistory: MealHistory, from viewController: UIViewController, completion: @escaping (CKShare?, URL?, Error?) -> Void) {
         let mealHistoryRecordID = CKRecord.ID(recordName: mealHistory.id!.uuidString, zoneID: customZone.zoneID)
         let mealHistoryRecord = CKRecord(recordType: "MealHistory", recordID: mealHistoryRecordID)
         mealHistoryRecord["id"] = mealHistory.id!.uuidString as CKRecordValue
@@ -51,7 +54,7 @@ class CloudKitShareController {
                 foodEntryRecord["fatPP"] = foodEntry.entryFatPP as NSNumber
                 foodEntryRecord["proteinPP"] = foodEntry.entryProteinPP as NSNumber
                 foodEntryRecord["perPiece"] = foodEntry.entryPerPiece as NSNumber
-                foodEntryRecord["foodItem"] = CKRecord.Reference(recordID: mealHistoryRecordID, action: .deleteSelf)
+                foodEntryRecord["mealHistory"] = CKRecord.Reference(recordID: mealHistoryRecordID, action: .deleteSelf)
 
                 foodItemEntryRecords.append(foodEntryRecord)
             }
@@ -62,7 +65,7 @@ class CloudKitShareController {
 
         let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [mealHistoryRecord, share] + foodItemEntryRecords)
         modifyRecordsOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, error) in
-            completion(share, error)
+            completion(share, share.url, error)
             if let url = share.url {
                 DispatchQueue.main.async {
                     self.showShareURL(url, from: viewController)
@@ -82,8 +85,8 @@ class CloudKitShareController {
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
     }
-
-    func shareFoodItemRecord(foodItem: FoodItem, completion: @escaping (CKShare?, Error?) -> Void) {
+    
+    func shareFoodItemRecord(foodItem: FoodItem, from viewController: UIViewController, completion: @escaping (CKShare?, Error?) -> Void) {
         let foodItemRecordID = CKRecord.ID(recordName: foodItem.id!.uuidString, zoneID: customZone.zoneID)
         let foodItemRecord = CKRecord(recordType: "FoodItem", recordID: foodItemRecordID)
         foodItemRecord["id"] = foodItem.id!.uuidString as CKRecordValue
@@ -98,36 +101,41 @@ class CloudKitShareController {
         foodItemRecord["proteinPP"] = foodItem.proteinPP as NSNumber
         foodItemRecord["perPiece"] = foodItem.perPiece as NSNumber
         foodItemRecord["count"] = foodItem.count as NSNumber
-        
+
         let share = CKShare(rootRecord: foodItemRecord)
         share[CKShare.SystemFieldKey.title] = "Shared Food Item" as CKRecordValue
-        
+
         let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [foodItemRecord, share])
         modifyRecordsOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, error) in
+            if let url = share.url {
+                DispatchQueue.main.async {
+                    self.showShareURL(url, from: viewController)
+                }
+            }
             completion(share, error)
+        }
+
+        privateDatabase.add(modifyRecordsOperation)
+    }
+    
+    func shareFavoriteMealsRecord(favoriteMeals: FavoriteMeals, completion: @escaping (CKShare?, Error?) -> Void) {
+            let favoriteMealsRecordID = CKRecord.ID(recordName: favoriteMeals.id!.uuidString, zoneID: customZone.zoneID)
+            let favoriteMealsRecord = CKRecord(recordType: "FavoriteMeals", recordID: favoriteMealsRecordID)
+            favoriteMealsRecord["id"] = favoriteMeals.id!.uuidString as CKRecordValue
+            favoriteMealsRecord["name"] = favoriteMeals.name! as CKRecordValue
+            favoriteMealsRecord["items"] = favoriteMeals.items! as! CKRecordValue
+
+            let share = CKShare(rootRecord: favoriteMealsRecord)
+            share[CKShare.SystemFieldKey.title] = "Shared Favorite Meals" as CKRecordValue
+
+            let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [favoriteMealsRecord, share])
+            modifyRecordsOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, error) in
+                completion(share, error)
         }
         
         privateDatabase.add(modifyRecordsOperation)
     }
-
-    func shareFavoriteMealsRecord(favoriteMeals: FavoriteMeals, completion: @escaping (CKShare?, Error?) -> Void) {
-        let favoriteMealsRecordID = CKRecord.ID(recordName: favoriteMeals.id!.uuidString, zoneID: customZone.zoneID)
-        let favoriteMealsRecord = CKRecord(recordType: "FavoriteMeals", recordID: favoriteMealsRecordID)
-        favoriteMealsRecord["id"] = favoriteMeals.id!.uuidString as CKRecordValue
-        favoriteMealsRecord["name"] = favoriteMeals.name! as CKRecordValue
-        favoriteMealsRecord["items"] = favoriteMeals.items! as! any CKRecordValue as CKRecordValue
-
-        let share = CKShare(rootRecord: favoriteMealsRecord)
-        share[CKShare.SystemFieldKey.title] = "Shared Favorite Meals" as CKRecordValue
-
-        let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [favoriteMealsRecord, share])
-        modifyRecordsOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, error) in
-            completion(share, error)
-        }
-
-        privateDatabase.add(modifyRecordsOperation)
-    }
-
+    
     func shareCarbRatioScheduleRecord(carbRatioSchedule: CarbRatioSchedule, completion: @escaping (CKShare?, Error?) -> Void) {
         guard let carbRatioScheduleID = carbRatioSchedule.id else {
             completion(nil, NSError(domain: "CloudKitShareController", code: 1, userInfo: [NSLocalizedDescriptionKey: "Carb Ratio Schedule ID is nil"]))
@@ -162,7 +170,6 @@ class CloudKitShareController {
         startDoseScheduleRecord["id"] = startDoseScheduleID.uuidString as CKRecordValue
         startDoseScheduleRecord["startDose"] = startDoseSchedule.startDose as NSNumber
         startDoseScheduleRecord["hour"] = startDoseSchedule.hour as NSNumber
-
         let share = CKShare(rootRecord: startDoseScheduleRecord)
         share[CKShare.SystemFieldKey.title] = "Shared Start Dose Schedule" as CKRecordValue
 
@@ -180,19 +187,19 @@ class CloudKitShareController {
                 completion(error)
                 return
             }
-            
+
             let acceptShareOperation = CKAcceptSharesOperation(shareMetadatas: [metadata])
             acceptShareOperation.perShareCompletionBlock = { metadata, share, error in
                 if let error = error {
-                print("Error accepting share: (error)")
+                    print("Error accepting share: \(error)")
                 }
-                }
-                acceptShareOperation.acceptSharesCompletionBlock = { error in
+            }
+            acceptShareOperation.acceptSharesCompletionBlock = { error in
                 DispatchQueue.main.async {
-                completion(error)
+                    completion(error)
                 }
-                }
-                self.container.add(acceptShareOperation)
-                }
-                }
-                }
+            }
+            self.container.add(acceptShareOperation)
+        }
+    }
+}

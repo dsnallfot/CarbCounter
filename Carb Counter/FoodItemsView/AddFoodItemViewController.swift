@@ -357,7 +357,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                         newFoodItem.count = 0
                         
                         // Share the new food item
-                        CloudKitShareController.shared.shareFoodItemRecord(foodItem: newFoodItem) { share, error in
+                CloudKitShareController.shared.shareFoodItemRecord(foodItem: newFoodItem, from: self) { share, error in
                             if let error = error {
                                 print("Error sharing food item: \(error)")
                             } else if let share = share {
