@@ -69,6 +69,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
         ])
+        
+        // Reset lateBreakfast to false
+            UserDefaults.standard.set(false, forKey: "lateBreakfast")
+            lateBreakfast = false
 
         // Ensure addButtonRowView is initialized
             addButtonRowView = AddButtonRowView()
