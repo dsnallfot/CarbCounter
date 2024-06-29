@@ -104,4 +104,22 @@ class UserDefaultsRepository {
                UserDefaults.standard.set(newValue, forKey: "maxBolus")
            }
        }
+    
+    static var lateBreakfastFactor: Double {
+            get {
+                return UserDefaults.standard.double(forKey: "lateBreakfastFactor")
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "lateBreakfastFactor")
+            }
+        }
+    
+    static var scheduledCarbRatio: Double {
+        get {
+            return UserDefaults.standard.double(forKey: "scheduledCarbRatio") != 0 ? UserDefaults.standard.double(forKey: "scheduledCarbRatio") : 30.0
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "scheduledCarbRatio")
+        }
+    }
 }

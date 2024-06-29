@@ -31,7 +31,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         case 0:
             return 4
         case 1:
-            return 4 // Changed from 2 to 4 to include maxCarbs and maxBolus
+            return 5 // Increased to include lateBreakfastFactor
         default:
             return 0
         }
@@ -100,16 +100,23 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                     label.trailingAnchor.constraint(lessThanOrEqualTo: textField.leadingAnchor, constant: -8)
                 ])
                 
-                if indexPath.row == 2 {
+                switch indexPath.row {
+                case 2:
                     label.text = "Maxgräns Kolhydrater"
                     maxCarbsTextField = textField
                     maxCarbsTextField.text = formatValue(UserDefaultsRepository.maxCarbs)
                     unitLabel.text = " g"
-                } else {
+                case 3:
                     label.text = "Maxgräns Bolus"
                     maxBolusTextField = textField
                     maxBolusTextField.text = formatValue(UserDefaultsRepository.maxBolus)
                     unitLabel.text = " E"
+                case 4:
+                    label.text = "Sen Frukost Faktor"
+                    textField.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
+                    unitLabel.text = "" // No unit needed, change if necessary
+                default:
+                    break
                 }
                 
                 return cell
@@ -148,12 +155,13 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         NotificationCenter.default.post(name: Notification.Name("AllowDataClearingChanged"), object: nil)
     }
     
-    // Update UserDefaults when text fields end editing
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == maxCarbsTextField, let text = textField.text, let value = Double(text) {
             UserDefaultsRepository.maxCarbs = value
         } else if textField == maxBolusTextField, let text = textField.text, let value = Double(text) {
             UserDefaultsRepository.maxBolus = value
+        } else if let text = textField.text, let value = Double(text) {
+            UserDefaultsRepository.lateBreakfastFactor = value
         }
     }
     

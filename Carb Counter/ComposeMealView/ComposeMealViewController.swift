@@ -48,10 +48,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var addFromSearchableDropdownButton: UIBarButtonItem!
     
     var allowShortcuts: Bool = false
-    
     var saveMealToHistory: Bool = false
-    
     var zeroBolus: Bool = false
+    var lateBreakfast: Bool = false
+    var lateBreakfastFactor = Double(1.5)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,6 +69,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
         ])
+
+        // Ensure addButtonRowView is initialized
+            addButtonRowView = AddButtonRowView()
+            
+            lateBreakfast = UserDefaults.standard.bool(forKey: "lateBreakfast")
+            
+            if let addButtonRowView = addButtonRowView {
+                addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
+            }
+
+            updatePlaceholderValuesForCurrentHour()
+
+            if lateBreakfast {
+                scheduledCarbRatio /= lateBreakfastFactor
+            }
         
         // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
@@ -153,6 +168,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         
+        addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
+        
         //print("setupSummaryView ran")
         //print("setupScrollView ran")
         //print("setupStackView ran")
@@ -161,7 +178,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         view.endEditing(true)
+        
         updatePlaceholderValuesForCurrentHour()
+            
+            if lateBreakfast {
+                scheduledCarbRatio /= lateBreakfastFactor
+            }
         updateScheduledValuesUI()
         updateBorderColor() // Add this line to ensure the border color updates
         addButtonRowView.updateBorderColor() // Add this line to update the border color of the AddButtonRowView
@@ -173,6 +195,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         //print("viewWillAppear: clearAllButton: \(clearAllButton != nil)")
         //print("viewWillAppear: saveFavoriteButton: \(saveFavoriteButton != nil)")
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        if lateBreakfast {
+            scheduledCarbRatio *= lateBreakfastFactor
+        }
+        UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
+    }
+     
     
     private func getCombinedEmojis() -> String {
         return searchableDropdownView?.combinedEmojis ?? "🍽️"
@@ -1513,6 +1545,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         fetchFoodItems()
     }
     
+    @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
+        lateBreakfast = sender.isOn
+        UserDefaults.standard.set(lateBreakfast, forKey: "lateBreakfast")
+
+        if lateBreakfast {
+            scheduledCarbRatio /= lateBreakfastFactor
+        } else {
+            updatePlaceholderValuesForCurrentHour()
+        }
+
+        updateScheduledValuesUI()
+        updateTotalNutrients()
+    }
+    
+   /*
+    // Modify the AddButtonRowView class to include a checkbox
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
@@ -1556,3 +1604,142 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         }
     }
 }
+*/
+
+/*// Modify the AddButtonRowView class to include a checkbox
+ class AddButtonRowView: UIView {
+     let addButton: UIButton = {
+         let button = UIButton(type: .system)
+         button.setTitle("   + VÄLJ LIVSMEDEL   ", for: .normal)
+         button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+         button.setTitleColor(.white, for: .normal)
+         button.backgroundColor = .systemBlue
+         button.translatesAutoresizingMaskIntoConstraints = false
+         button.layer.cornerRadius = 14
+         button.layer.borderWidth = 2
+         button.layer.borderColor = UIColor.label.cgColor
+         button.clipsToBounds = true
+         return button
+     }()
+     
+     let lateBreakfastSwitch: UISwitch = {
+         let toggle = UISwitch()
+         toggle.translatesAutoresizingMaskIntoConstraints = false
+         return toggle
+     }()
+     
+     let lateBreakfastLabel: UILabel = {
+         let label = UILabel()
+         label.text = "Sen Frukost"
+         label.font = UIFont.systemFont(ofSize: 12)
+         label.translatesAutoresizingMaskIntoConstraints = false
+         return label
+     }()
+     
+     override init(frame: CGRect) {
+         super.init(frame: frame)
+         setupView()
+     }
+     
+     required init?(coder: NSCoder) {
+         fatalError("init(coder:) has not been implemented")
+     }
+     
+     private func setupView() {
+         addSubview(addButton)
+         addSubview(lateBreakfastSwitch)
+         addSubview(lateBreakfastLabel)
+         
+         NSLayoutConstraint.activate([
+             addButton.centerXAnchor.constraint(equalTo: centerXAnchor),
+             addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+             addButton.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 4),
+             addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
+             addButton.heightAnchor.constraint(equalToConstant: 32),
+             addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+             
+             lateBreakfastSwitch.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 24),
+             lateBreakfastSwitch.leadingAnchor.constraint(equalTo: addButton.leadingAnchor),
+             
+             lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastSwitch.centerYAnchor),
+             lateBreakfastLabel.leadingAnchor.constraint(equalTo: lateBreakfastSwitch.trailingAnchor, constant: 8)
+         ])
+         updateBorderColor() // Ensure border color is set correctly initially
+     }
+     
+     func updateBorderColor() {
+         addButton.layer.borderColor = UIColor.label.cgColor
+     }
+ }
+}
+*/
+    // Modify the AddButtonRowView class to include a checkbox
+    class AddButtonRowView: UIView {
+        let addButton: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitle("   + VÄLJ LIVSMEDEL   ", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            button.setTitleColor(.white, for: .normal)
+            button.backgroundColor = .systemBlue
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.layer.cornerRadius = 14
+            button.layer.borderWidth = 2
+            button.layer.borderColor = UIColor.label.cgColor
+            button.clipsToBounds = true
+            return button
+        }()
+        
+        let lateBreakfastSwitch: UISwitch = {
+            let toggle = UISwitch()
+            toggle.translatesAutoresizingMaskIntoConstraints = false
+            return toggle
+        }()
+        
+        let lateBreakfastLabel: UILabel = {
+            let label = UILabel()
+            label.text = "SEN FRUKOST"
+            label.font = UIFont.systemFont(ofSize: 12)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }()
+        
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            setupView()
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        private func setupView() {
+            addSubview(addButton)
+            addSubview(lateBreakfastSwitch)
+            addSubview(lateBreakfastLabel)
+            
+            NSLayoutConstraint.activate([
+                addButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -85),
+                addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+                addButton.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 4),
+                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
+                addButton.heightAnchor.constraint(equalToConstant: 32),
+                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+                
+                //lateBreakfastSwitch.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 24),
+                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
+                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 40),
+                
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastSwitch.centerYAnchor),
+                lateBreakfastLabel.leadingAnchor.constraint(equalTo: lateBreakfastSwitch.trailingAnchor, constant: 8)
+            ])
+            updateBorderColor() // Ensure border color is set correctly initially
+        }
+        
+        func updateBorderColor() {
+            addButton.layer.borderColor = UIColor.label.cgColor
+        }
+    }
+   }
+
+
+ 
