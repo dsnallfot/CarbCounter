@@ -72,18 +72,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
 
         // Ensure addButtonRowView is initialized
             addButtonRowView = AddButtonRowView()
-            updatePlaceholderValuesForCurrentHour()
-            updateScheduledValuesUI()
         
-        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
-
+        updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
+        
+        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor // Fetch factor for calculating late breakfast CR
             
         lateBreakfast = UserDefaults.standard.bool(forKey: "lateBreakfast")
            addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
 
            if lateBreakfast {
-               scheduledCarbRatio /= lateBreakfastFactor
+               scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
            }
+
+        updateScheduledValuesUI() // Update labels
         
         // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
@@ -179,15 +180,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         super.viewWillAppear(animated)
         view.endEditing(true)
         
-        updatePlaceholderValuesForCurrentHour()
-        updateScheduledValuesUI()
+        updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
         
-        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
+        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor // Fetch factor for calculating late breakfast CR
             
             if lateBreakfast {
-                scheduledCarbRatio /= lateBreakfastFactor
+                scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
             }
-        updateScheduledValuesUI()
+        updateScheduledValuesUI() // Update labels
+
         updateBorderColor() // Add this line to ensure the border color updates
         addButtonRowView.updateBorderColor() // Add this line to update the border color of the AddButtonRowView
         
@@ -203,9 +204,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         super.viewWillDisappear(animated)
 
         if lateBreakfast {
-            scheduledCarbRatio *= lateBreakfastFactor
+            scheduledCarbRatio *= lateBreakfastFactor // Reset scheduledCarbRatio when leaving view
         }
-        UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
+        UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
      
     
