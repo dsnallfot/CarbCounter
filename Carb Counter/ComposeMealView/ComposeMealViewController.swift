@@ -72,18 +72,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
 
         // Ensure addButtonRowView is initialized
             addButtonRowView = AddButtonRowView()
-            
-            lateBreakfast = UserDefaults.standard.bool(forKey: "lateBreakfast")
-            
-            if let addButtonRowView = addButtonRowView {
-                addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
-            }
-
             updatePlaceholderValuesForCurrentHour()
+            updateScheduledValuesUI()
+        
+        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
 
-            if lateBreakfast {
-                scheduledCarbRatio /= lateBreakfastFactor
-            }
+            
+        lateBreakfast = UserDefaults.standard.bool(forKey: "lateBreakfast")
+           addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
+
+           if lateBreakfast {
+               scheduledCarbRatio /= lateBreakfastFactor
+           }
         
         // Setup summary view
         setupSummaryView(in: fixedHeaderContainer)
@@ -180,6 +180,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         view.endEditing(true)
         
         updatePlaceholderValuesForCurrentHour()
+        updateScheduledValuesUI()
+        
+        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
             
             if lateBreakfast {
                 scheduledCarbRatio /= lateBreakfastFactor
@@ -528,7 +531,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         // Reset the remainsContainer color and label
         remainsContainer.backgroundColor = .systemGray
-        remainsLabel.text = "KVAR ATT GE"
+        remainsLabel.text = "+ SLUTDOS"
         
         // Print debug information
         //print("clearAllFoodItems called and all states reset.")
@@ -720,7 +723,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         remainsContainer.addGestureRecognizer(remainsTapGesture)
         remainsContainer.isUserInteractionEnabled = true
         
-        remainsLabel = createLabel(text: "KVAR ATT GE", fontSize: 9, weight: .bold, color: .white)
+        remainsLabel = createLabel(text: "GE RESTEN", fontSize: 9, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
         totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
         
@@ -740,7 +743,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
         
-        let startAmountLabel = createLabel(text: "GE STARTDOS", fontSize: 9, weight: .bold, color: .white)
+        let startAmountLabel = createLabel(text: "+ STARTDOS", fontSize: 9, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
         totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
         
@@ -817,7 +820,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Startdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
             bolusValue = "0.0"
             self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
@@ -833,7 +836,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func proceedWithStartAmount(khValue: String, bolusValue: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Startdos", message: "Vill du registrera startdosen i iAPS?", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerStartAmountInIAPS(khValue: khValue, bolusValue: bolusValue)
@@ -842,7 +845,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                let alertController = UIAlertController(title: "Manuell Startdos", message: "Registrera nu den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin i iAPS", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Manuell registrering", message: "Registrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     self.updateRegisteredAmount(khValue: khValue)
@@ -852,7 +855,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Startdos", message: "Vill du registrera den angivna startdosen \(khValue) g kh och \(bolusValue) E insulin i iAPS?", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS?", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -905,7 +908,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         var bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Slutdos", message: "Vill du ge en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du ge även en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
             self.zeroBolus = true
             self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
@@ -943,7 +946,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Slutdos", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
@@ -963,7 +966,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 
                 alertMessage += "\n\(finalBolusValue) E insulin"
                 
-                let alertController = UIAlertController(title: "Manuell Slutdos", message: alertMessage, preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     self.updateRegisteredAmount(khValue: khValue)
@@ -984,7 +987,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             
             alertMessage += "\n\(finalBolusValue) E insulin"
             
-            let alertController = UIAlertController(title: "Slutdos", message: alertMessage, preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -1238,7 +1241,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             if remainsValue < -0.5 {
                 remainsLabel.text = "ÖVERDOS!"
             } else {
-                remainsLabel.text = "KVAR ATT GE"
+                remainsLabel.text = "+ SLUTDOS"
             }
             
             switch remainsValue {
@@ -1256,7 +1259,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             totalRemainsBolusLabel?.text = String(format: "%.2fE", remainsBolus)
             
             remainsContainer?.backgroundColor = .systemGray
-            remainsLabel?.text = "KVAR ATT GE"
+            remainsLabel?.text = "+ SLUTDOS"
         }
         
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
@@ -1513,6 +1516,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
     
     private func updateScheduledValuesUI() {
+        guard let nowCRLabel = nowCRLabel,
+              let totalStartAmountLabel = totalStartAmountLabel,
+              let totalStartBolusLabel = totalStartBolusLabel else {
+            print("Labels are not initialized")
+            return
+        }
+        
         if scheduledCarbRatio.truncatingRemainder(dividingBy: 1) == 0 {
             nowCRLabel.text = String(format: "%.0f g/E", scheduledCarbRatio)
         } else {
@@ -1691,14 +1701,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         let lateBreakfastSwitch: UISwitch = {
             let toggle = UISwitch()
+            toggle.onTintColor = .systemBlue
             toggle.translatesAutoresizingMaskIntoConstraints = false
             return toggle
         }()
         
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
+            label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             label.text = "SEN FRUKOST"
-            label.font = UIFont.systemFont(ofSize: 12)
             label.translatesAutoresizingMaskIntoConstraints = false
             return label
         }()
@@ -1718,7 +1729,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             addSubview(lateBreakfastLabel)
             
             NSLayoutConstraint.activate([
-                addButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -85),
+                addButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -90),
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
                 addButton.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 4),
                 addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
@@ -1726,11 +1737,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 
                 //lateBreakfastSwitch.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 24),
-                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 40),
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
+                lateBreakfastLabel.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 34),
                 
-                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastSwitch.centerYAnchor),
-                lateBreakfastLabel.leadingAnchor.constraint(equalTo: lateBreakfastSwitch.trailingAnchor, constant: 8)
+                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
+                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastLabel.trailingAnchor, constant: 8)
             ])
             updateBorderColor() // Ensure border color is set correctly initially
         }

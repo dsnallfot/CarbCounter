@@ -1,4 +1,3 @@
-
 import UIKit
 
 class SettingsViewController: UITableViewController, UITextFieldDelegate {
@@ -23,7 +22,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2 // Reduced to 2
+        return 2
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -31,7 +30,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         case 0:
             return 4
         case 1:
-            return 5 // Increased to include lateBreakfastFactor
+            return 5
         default:
             return 0
         }
@@ -60,7 +59,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 let toggleSwitch = UISwitch()
                 if indexPath.row == 0 {
                     cell.textLabel?.text = "Manuellt läge"
-                    toggleSwitch.isOn = !UserDefaultsRepository.allowShortcuts // Set the switch to the inverse of allowShortcuts
+                    toggleSwitch.isOn = !UserDefaultsRepository.allowShortcuts
                     toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
                 } else {
                     cell.textLabel?.text = "Tillåt datarensning"
@@ -114,7 +113,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 case 4:
                     label.text = "Sen Frukost Faktor"
                     textField.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
-                    unitLabel.text = "" // No unit needed, change if necessary
+                    unitLabel.text = ""
                 default:
                     break
                 }
@@ -156,12 +155,14 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField == maxCarbsTextField, let text = textField.text, let value = Double(text) {
-            UserDefaultsRepository.maxCarbs = value
-        } else if textField == maxBolusTextField, let text = textField.text, let value = Double(text) {
-            UserDefaultsRepository.maxBolus = value
-        } else if let text = textField.text, let value = Double(text) {
-            UserDefaultsRepository.lateBreakfastFactor = value
+        if let text = textField.text?.replacingOccurrences(of: ",", with: "."), let value = Double(text) {
+            if textField == maxCarbsTextField {
+                UserDefaultsRepository.maxCarbs = value
+            } else if textField == maxBolusTextField {
+                UserDefaultsRepository.maxBolus = value
+            } else {
+                UserDefaultsRepository.lateBreakfastFactor = value
+            }
         }
     }
     

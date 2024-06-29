@@ -87,32 +87,33 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "allowDataClearing")
         }
     }
+    
     static var maxCarbs: Double {
-           get {
-               return UserDefaults.standard.double(forKey: "maxCarbs")
-           }
-           set {
-               UserDefaults.standard.set(newValue, forKey: "maxCarbs")
-           }
-       }
-       
-       static var maxBolus: Double {
-           get {
-               return UserDefaults.standard.double(forKey: "maxBolus")
-           }
-           set {
-               UserDefaults.standard.set(newValue, forKey: "maxBolus")
-           }
-       }
+        get {
+            return UserDefaults.standard.double(forKey: "maxCarbs")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "maxCarbs")
+        }
+    }
+    
+    static var maxBolus: Double {
+        get {
+            return UserDefaults.standard.double(forKey: "maxBolus")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "maxBolus")
+        }
+    }
     
     static var lateBreakfastFactor: Double {
-            get {
-                return UserDefaults.standard.double(forKey: "lateBreakfastFactor")
-            }
-            set {
-                UserDefaults.standard.set(newValue, forKey: "lateBreakfastFactor")
-            }
+        get {
+            return UserDefaults.standard.double(forKey: "lateBreakfastFactor")
         }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "lateBreakfastFactor")
+        }
+    }
     
     static var scheduledCarbRatio: Double {
         get {
@@ -120,6 +121,15 @@ class UserDefaultsRepository {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "scheduledCarbRatio")
+        }
+    }
+    
+    static var lateBreakfast: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "lateBreakfast")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "lateBreakfast")
         }
     }
 }

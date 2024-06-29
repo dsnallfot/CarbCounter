@@ -13,7 +13,7 @@ class DataSharingViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         setupNavigationBarButtons()
-        setupShareButtons()
+        //setupShareButtons()
         setupURLTextFieldAndButton()
     }
     
@@ -22,7 +22,7 @@ class DataSharingViewController: UIViewController {
         let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
-    
+    /*
     private func setupShareButtons() {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -51,7 +51,7 @@ class DataSharingViewController: UIViewController {
             button.addTarget(self, action: action, for: .touchUpInside)
             stackView.addArrangedSubview(button)
         }
-    }
+    }*/
     
     private func setupURLTextFieldAndButton() {
         shareURLTextField = UITextField(frame: .zero)
@@ -63,7 +63,7 @@ class DataSharingViewController: UIViewController {
         view.addSubview(shareURLTextField)
         
         let acceptButton = UIButton(type: .system)
-        acceptButton.setTitle("Acceptera datadelning", for: .normal)
+        acceptButton.setTitle("Acceptera iCloud datadelning", for: .normal)
         acceptButton.addTarget(self, action: #selector(acceptSharedData), for: .touchUpInside)
         acceptButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(acceptButton)
@@ -94,7 +94,7 @@ class DataSharingViewController: UIViewController {
     }
 
     // MARK: - Sharing Data
-
+/*
     @objc private func shareCarbRatioSchedule() {
         shareEntity(entityName: "CarbRatioSchedule")
     }
@@ -206,7 +206,7 @@ class DataSharingViewController: UIViewController {
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
     }
-       
+     */
     @objc private func exportData() {
         let alert = UIAlertController(title: "Export Data", message: "Choose which data to export", preferredStyle: .actionSheet)
         
