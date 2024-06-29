@@ -908,16 +908,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         let proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
         var bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
-        // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du ge även en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?", preferredStyle: .alert)
+        bolusAlertController.addTextField { textField in
+            textField.text = bolusValue
+            textField.keyboardType = .decimalPad
+            textField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
+        }
+        
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
             self.zeroBolus = true
-            self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+            self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: "0.0")
         }
+        
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
-            self.zeroBolus = false
-            self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+            if let textField = bolusAlertController.textFields?.first, let customBolusValue = Double(textField.text?.replacingOccurrences(of: ",", with: ".") ?? "0") {
+                self.zeroBolus = false
+                self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: String(customBolusValue))
+            }
         }
+        
         bolusAlertController.addAction(noAction)
         bolusAlertController.addAction(yesAction)
         present(bolusAlertController, animated: true, completion: nil)
