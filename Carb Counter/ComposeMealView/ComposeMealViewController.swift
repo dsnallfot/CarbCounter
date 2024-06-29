@@ -933,15 +933,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     }
 
     private func checkAndProceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        // Check if khValue exceeds maxCarbs
         var adjustedKhValue = khValue
         var adjustedBolusValue = self.zeroBolus ? "0.0" : bolusValue
-        if let maxCarbs = UserDefaultsRepository.maxCarbs as Double?, let khValueDouble = Double(khValue), khValueDouble > maxCarbs {
+        var showAlert = false
+        
+        if let maxCarbs = UserDefaultsRepository.maxCarbs as Double?,
+           let khValueDouble = Double(khValue),
+           khValueDouble > maxCarbs {
             adjustedKhValue = String(format: "%.0f", maxCarbs)
             if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0") {
                 adjustedBolusValue = self.zeroBolus ? "0.0" : String(format: "%.2f", maxCarbs / carbRatio)
             }
-            let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "Måltiden innehåller en större mängd kolhydrater, fett eller protein än den inställda maxgränsen \(Int(maxCarbs)) g. \n\nMåltidsregistreringen och bolusdosen justeras därför ner till maxgränsen i nästa steg.", preferredStyle: .alert)
+            showAlert = true
+        }
+        
+        if let maxBolus = UserDefaultsRepository.maxBolus as Double?,
+           let bolusValueDouble = Double(bolusValue),
+           bolusValueDouble > maxBolus {
+            adjustedBolusValue = String(format: "%.2f", maxBolus)
+            showAlert = true
+        }
+        
+        if showAlert {
+            let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "Måltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
             }
