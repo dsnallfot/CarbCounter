@@ -30,6 +30,17 @@
 			</array>
 		</dict>
 	</dict>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.dsnallfot.CarbsCounter</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>carbcounter</string>
+            </array>
+        </dict>
+    </array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
