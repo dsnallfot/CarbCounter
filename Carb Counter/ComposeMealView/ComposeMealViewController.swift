@@ -553,7 +553,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         scrollView.addSubview(contentView)
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: header.bottomAnchor),
+            scrollView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 8),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -594,7 +594,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         //print("setupSummaryView ran")
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        summaryView.backgroundColor = .systemBackground
+        summaryView.backgroundColor = .systemGray5//.systemBackground
         container.addSubview(summaryView)
         
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
@@ -697,7 +697,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func setupTreatmentView(in container: UIView) {
         let treatmentView = UIView()
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
-        treatmentView.backgroundColor = .systemBackground
+        treatmentView.backgroundColor = .systemGray5 //.systemBackground
         container.addSubview(treatmentView)
         
         let crContainer = createContainerView(backgroundColor: .systemCyan)
@@ -1355,8 +1355,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             headlineStackView.leadingAnchor.constraint(equalTo: headlineContainer.leadingAnchor, constant: 16),
             headlineStackView.trailingAnchor.constraint(equalTo: headlineContainer.trailingAnchor, constant: -16),
-            headlineStackView.topAnchor.constraint(equalTo: headlineContainer.topAnchor, constant: 8),
-            headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor, constant: -8)
+            headlineStackView.topAnchor.constraint(equalTo: headlineContainer.topAnchor, constant: 16),
+            headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor)//, constant: -8)
         ])
     }
     
@@ -1377,7 +1377,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         NSLayoutConstraint.activate([
             searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 112),
+            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
             //searchableDropdownView.heightAnchor.constraint(equalToConstant: 450) //275)
             searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
@@ -1758,7 +1758,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             
             NSLayoutConstraint.activate([
                 addButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -90),
-                addButton.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+                addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
                 addButton.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 4),
                 addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
                 addButton.heightAnchor.constraint(equalToConstant: 32),

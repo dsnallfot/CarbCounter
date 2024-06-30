@@ -18,7 +18,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         let searchBar = UISearchBar()
         searchBar.placeholder = "Sök & välj ett eller flera livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.barTintColor = .systemGray
+        searchBar.barTintColor = .systemGray2//.systemGray
         searchBar.backgroundImage = UIImage() // Removes the default background image
 
         // Customize the text field inside the search bar
