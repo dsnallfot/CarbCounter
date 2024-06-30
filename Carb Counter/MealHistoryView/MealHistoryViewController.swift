@@ -27,6 +27,10 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
     }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchMealHistories()
+    }
     
     @objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)

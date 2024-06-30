@@ -1,17 +1,13 @@
 import UIKit
 
-class SettingsViewController: UITableViewController, UITextFieldDelegate {
-    
-    private var maxCarbsTextField: UITextField!
-    private var maxBolusTextField: UITextField!
-    
+class SettingsViewController: UITableViewController {
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Inställningar"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "switchCell")
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "buttonCell")
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "textFieldCell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "valueCell")
         
         let cancelButton = UIBarButtonItem(title: "Stäng", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
@@ -54,94 +50,102 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             }
             return cell
         } else {
-            if indexPath.row < 2 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "switchCell", for: indexPath)
+            let cell = UITableViewCell(style: .value1, reuseIdentifier: "valueCell")
+                    switch indexPath.row {
+            case 0:
                 let toggleSwitch = UISwitch()
-                if indexPath.row == 0 {
-                    cell.textLabel?.text = "Manuellt läge"
-                    toggleSwitch.isOn = !UserDefaultsRepository.allowShortcuts
-                    toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
-                } else {
-                    cell.textLabel?.text = "Tillåt datarensning"
-                    toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
-                    toggleSwitch.addTarget(self, action: #selector(dataClearingSwitchChanged(_:)), for: .valueChanged)
-                }
+                cell.textLabel?.text = "Manuellt läge"
+                toggleSwitch.isOn = !UserDefaultsRepository.allowShortcuts
+                toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
-                return cell
-            } else {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "textFieldCell", for: indexPath)
-                let label = UILabel(frame: .zero)
-                label.translatesAutoresizingMaskIntoConstraints = false
-                cell.contentView.addSubview(label)
-                
-                let textField = UITextField(frame: .zero)
-                textField.keyboardType = .decimalPad
-                textField.delegate = self
-                textField.textAlignment = .right
-                textField.translatesAutoresizingMaskIntoConstraints = false
-                cell.contentView.addSubview(textField)
-                
-                let unitLabel = UILabel(frame: .zero)
-                unitLabel.translatesAutoresizingMaskIntoConstraints = false
-                cell.contentView.addSubview(unitLabel)
-                
-                NSLayoutConstraint.activate([
-                    label.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 15),
-                    label.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-                    
-                    unitLabel.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -15),
-                    unitLabel.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-                    
-                    textField.trailingAnchor.constraint(equalTo: unitLabel.leadingAnchor, constant: -5),
-                    textField.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-                    textField.widthAnchor.constraint(equalToConstant: 50),
-                    
-                    label.trailingAnchor.constraint(lessThanOrEqualTo: textField.leadingAnchor, constant: -8)
-                ])
-                
-                switch indexPath.row {
-                case 2:
-                    label.text = "Maxgräns Kolhydrater"
-                    maxCarbsTextField = textField
-                    maxCarbsTextField.text = formatValue(UserDefaultsRepository.maxCarbs)
-                    unitLabel.text = " g"
-                case 3:
-                    label.text = "Maxgräns Bolus"
-                    maxBolusTextField = textField
-                    maxBolusTextField.text = formatValue(UserDefaultsRepository.maxBolus)
-                    unitLabel.text = " E"
-                case 4:
-                    label.text = "Sen Frukost Faktor"
-                    textField.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
-                    unitLabel.text = ""
-                default:
-                    break
-                }
-                
-                return cell
+            case 1:
+                let toggleSwitch = UISwitch()
+                cell.textLabel?.text = "Tillåt datarensning"
+                toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
+                toggleSwitch.addTarget(self, action: #selector(dataClearingSwitchChanged(_:)), for: .valueChanged)
+                cell.accessoryView = toggleSwitch
+            case 2:
+                cell.textLabel?.text = "Maxgräns Kolhydrater"
+                cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxCarbs)) g"
+                //cell.accessoryType = .disclosureIndicator
+            case 3:
+                cell.textLabel?.text = "Maxgräns Bolus"
+                cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
+                //cell.accessoryType = .disclosureIndicator
+            case 4:
+                cell.textLabel?.text = "Sen Frukost-faktor"
+                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
+                //cell.accessoryType = .disclosureIndicator
+            default:
+                break
             }
+            return cell
         }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard indexPath.section == 0 else {
-            return
+        if indexPath.section == 0 {
+            let viewController: UIViewController
+            switch indexPath.row {
+            case 0:
+                viewController = CarbRatioViewController()
+            case 1:
+                viewController = StartDoseViewController()
+            case 2:
+                viewController = DataSharingViewController()
+            case 3:
+                viewController = RemoteSettingsViewController()
+            default:
+                return
+            }
+            navigationController?.pushViewController(viewController, animated: true)
+        } else if indexPath.section == 1, indexPath.row >= 2 {
+            var title = ""
+            var message = ""
+            var value: Double = 0.0
+            var userDefaultSetter: ((Double) -> Void)?
+            
+            switch indexPath.row {
+            case 2:
+                title = "Maxgräns Kolhydrater (g)"
+                message = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:"
+                value = UserDefaultsRepository.maxCarbs
+                userDefaultSetter = { UserDefaultsRepository.maxCarbs = $0 }
+            case 3:
+                title = "Maxgräns Bolus (E)"
+                message = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:"
+                value = UserDefaultsRepository.maxBolus
+                userDefaultSetter = { UserDefaultsRepository.maxBolus = $0 }
+            case 4:
+                title = "Sen Frukost-faktor"
+                message = "När frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Sen frukost' aktiveras i måltidsvyn:"
+                value = UserDefaultsRepository.lateBreakfastFactor
+                userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
+            default:
+                return
+            }
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addTextField { textField in
+                textField.keyboardType = .decimalPad
+                textField.text = self.formatValue(value)
+            }
+            
+            let saveAction = UIAlertAction(title: "Spara", style: .default) { _ in
+                if let text = alert.textFields?.first?.text?.replacingOccurrences(of: ",", with: "."),
+                   let newValue = Double(text) {
+                    userDefaultSetter?(newValue)
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                }
+            }
+            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+            
+            alert.addAction(saveAction)
+            alert.addAction(cancelAction)
+            
+            present(alert, animated: true, completion: nil)
         }
-        let viewController: UIViewController
-        switch indexPath.row {
-        case 0:
-            viewController = CarbRatioViewController()
-        case 1:
-            viewController = StartDoseViewController()
-        case 2:
-            viewController = DataSharingViewController()
-        case 3:
-            viewController = RemoteSettingsViewController()
-        default:
-            return
-        }
-        navigationController?.pushViewController(viewController, animated: true)
     }
     
     @objc private func shortcutsSwitchChanged(_ sender: UISwitch) {
@@ -154,19 +158,8 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         NotificationCenter.default.post(name: Notification.Name("AllowDataClearingChanged"), object: nil)
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if let text = textField.text?.replacingOccurrences(of: ",", with: "."), let value = Double(text) {
-            if textField == maxCarbsTextField {
-                UserDefaultsRepository.maxCarbs = value
-            } else if textField == maxBolusTextField {
-                UserDefaultsRepository.maxBolus = value
-            } else {
-                UserDefaultsRepository.lateBreakfastFactor = value
-            }
-        }
-    }
-    
     private func formatValue(_ value: Double) -> String {
         return value.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", value) : String(format: "%.1f", value)
     }
 }
+

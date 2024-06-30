@@ -45,6 +45,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         updateClearButtonVisibility()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchFoodItems()
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
