@@ -47,6 +47,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     var saveFavoriteButton: UIButton!
     var addFromSearchableDropdownButton: UIBarButtonItem!
     
+    var searchableDropdownBottomConstraint: NSLayoutConstraint!
+    
     var allowShortcuts: Bool = false
     var saveMealToHistory: Bool = false
     var zeroBolus: Bool = false
@@ -1375,12 +1377,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         view.addSubview(searchableDropdownView)
         
         NSLayoutConstraint.activate([
-            searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
-            //searchableDropdownView.heightAnchor.constraint(equalToConstant: 450) //275)
-            searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
+                    searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                    searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120)
+                ])
+                
+                // Store the bottom constraint
+                searchableDropdownBottomConstraint = searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+                searchableDropdownBottomConstraint.isActive = true
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
             self?.searchableDropdownView.isHidden = true
@@ -1399,6 +1403,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
             self?.hideSearchableDropdown()
         }
     }
+    
     
     func hideSearchableDropdown() {
         searchableDropdownView.isHidden = true
@@ -1520,7 +1525,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         searchableDropdownView.isHidden = true
         //navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
     }
-    
+    /*
     @objc private func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
@@ -1533,7 +1538,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     @objc private func keyboardWillHide(notification: NSNotification) {
         scrollView.contentInset = .zero
         scrollView.scrollIndicatorInsets = .zero
-    }
+    }*/
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+            guard let userInfo = notification.userInfo,
+                  let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            
+            let keyboardHeight = keyboardFrame.height
+            let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
+
+            UIView.animate(withDuration: duration) {
+                // Adjust the bottom constraint to the top of the keyboard
+                self.searchableDropdownBottomConstraint.constant = -keyboardHeight + 80
+                self.view.layoutIfNeeded()
+            }
+        }
+
+        @objc private func keyboardWillHide(notification: NSNotification) {
+            let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
+
+            UIView.animate(withDuration: duration) {
+                // Reset the bottom constraint
+                self.searchableDropdownBottomConstraint.constant = 0
+                self.view.layoutIfNeeded()
+            }
+        }
     
     private func updateClearAllButtonState() {
         guard let clearAllButton = clearAllButton else {
