@@ -1549,7 +1549,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
 
             UIView.animate(withDuration: duration) {
                 // Adjust the bottom constraint to the top of the keyboard
-                self.searchableDropdownBottomConstraint.constant = -keyboardHeight + 80
+                self.searchableDropdownBottomConstraint.constant = -keyboardHeight + 85
                 self.view.layoutIfNeeded()
             }
         }
