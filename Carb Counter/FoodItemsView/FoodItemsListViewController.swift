@@ -140,9 +140,21 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
+            
+            // Create a UIButton with an SF symbol
+            let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
+            let cancelButton = UIButton(type: .system)
+            cancelButton.setImage(symbolImage, for: .normal)
+            cancelButton.tintColor = .systemBlue // Change color if needed
+            cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24) // Adjust size if needed
+            cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+            let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
+            
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-            toolbar.setItems([flexSpace, doneButton], animated: false)
+            
+            toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
+            
             textField.inputAccessoryView = toolbar
         }
         
@@ -158,6 +170,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
     }
+    
+    @objc private func cancelButtonTapped() {
+        searchBar.resignFirstResponder()
+        }
     
     private func setupSortSegmentedControl() {
             let items = ["Namn A-Ö", "Per Styck", "Populära"]

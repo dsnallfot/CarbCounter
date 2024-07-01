@@ -35,14 +35,24 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             }
 
             // Create toolbar with done and cancel buttons
-                        let toolbar = UIToolbar()
-                        toolbar.sizeToFit()
-                        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-                        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-                        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-                        toolbar.setItems([cancelButton, flexSpace, doneButton], animated: false)
-                        
-                        textField.inputAccessoryView = toolbar
+            let toolbar = UIToolbar()
+                toolbar.sizeToFit()
+                
+                // Create a UIButton with an SF symbol
+                let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
+                let cancelButton = UIButton(type: .system)
+                cancelButton.setImage(symbolImage, for: .normal)
+                cancelButton.tintColor = .systemBlue // Change color if needed
+                cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24) // Adjust size if needed
+                cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+                let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
+                
+                let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+                let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+                
+                toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
+                
+                textField.inputAccessoryView = toolbar
                     }
                     
                     return searchBar
