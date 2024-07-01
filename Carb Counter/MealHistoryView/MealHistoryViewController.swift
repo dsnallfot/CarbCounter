@@ -28,9 +28,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         navigationItem.rightBarButtonItem = cancelButton
     }
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        fetchMealHistories()
-    }
+            super.viewWillAppear(animated)
+            fetchMealHistories()
+            
+            // Set the back button title for the next view controller
+            let backButton = UIBarButtonItem()
+            backButton.title = "Historik"
+            navigationItem.backBarButtonItem = backButton
+        }
     
     @objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)

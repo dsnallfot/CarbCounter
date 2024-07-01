@@ -13,6 +13,15 @@ class SettingsViewController: UITableViewController {
         navigationItem.rightBarButtonItem = cancelButton
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            
+            // Set the back button title for the next view controller
+            let backButton = UIBarButtonItem()
+            backButton.title = "Tillbaka"
+            navigationItem.backBarButtonItem = backButton
+        }
+    
     @objc private func cancelButtonTapped() {
         dismiss(animated: true, completion: nil)
     }

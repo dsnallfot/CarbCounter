@@ -7,7 +7,7 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Startdoser Schema"
+        title = "Startdoser"
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
         loadStartDoses()
         

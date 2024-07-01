@@ -7,7 +7,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Carb Ratio Schema"
+        title = "Carb Ratio"
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
         loadCarbRatios()
         
