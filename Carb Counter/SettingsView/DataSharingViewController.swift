@@ -94,119 +94,7 @@ class DataSharingViewController: UIViewController {
     }
     
     // MARK: - Sharing Data
-    /*
-     @objc private func shareCarbRatioSchedule() {
-     shareEntity(entityName: "CarbRatioSchedule")
-     }
-     
-     @objc private func shareFavoriteMeals() {
-     shareEntity(entityName: "FavoriteMeals")
-     }
-     
-     @objc private func shareFoodItems() {
-     shareEntity(entityName: "FoodItem")
-     }
-     
-     @objc private func shareMealHistory() {
-     shareEntity(entityName: "MealHistory")
-     }
-     
-     @objc private func shareStartDoseSchedule() {
-     shareEntity(entityName: "StartDoseSchedule")
-     }
-     
-     private func shareEntity(entityName: String) {
-     let alert = UIAlertController(title: "Share \(entityName)", message: "Enter the email of the person you want to share with", preferredStyle: .alert)
-     alert.addTextField { textField in
-     textField.placeholder = "Email"
-     textField.keyboardType = .emailAddress
-     }
-     alert.addAction(UIAlertAction(title: "Share", style: .default, handler: { [weak self] _ in
-     guard let email = alert.textFields?.first?.text, !email.isEmpty else { return }
-     self?.createShare(for: entityName, with: email)
-     }))
-     alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-     present(alert, animated: true)
-     }
-     
-     private func createShare(for entityName: String, with email: String) {
-     let context = CoreDataStack.shared.context
-     
-     // Fetch the objects you want to share
-     let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
-     
-     do {
-     let objectsToShare = try context.fetch(fetchRequest)
-     
-     guard let objectToShare = objectsToShare.first,
-     let idString = objectToShare.value(forKey: "id") as? String,
-     let id = UUID(uuidString: idString) else {
-     print("No objects found to share or invalid ID.")
-     return
-     }
-     
-     // Create a CKRecord from the managed object
-     let recordID = CKRecord.ID(recordName: id.uuidString, zoneID: CloudKitShareController.shared.customZone.zoneID)
-     let record = CKRecord(recordType: entityName, recordID: recordID)
-     record["id"] = id.uuidString as CKRecordValue
-     
-     // Create the share
-     let share = CKShare(rootRecord: record)
-     share[CKShare.SystemFieldKey.title] = "Shared \(entityName)" as CKRecordValue
-     
-     // Fetch the user identity for the email
-     let container = CKContainer.default()
-     
-     container.fetchShareParticipant(withEmailAddress: email) { participant, error in
-     guard error == nil else {
-     print("Failed to fetch participant: \(String(describing: error))")
-     return
-     }
-     
-     guard let participant = participant else {
-     print("No participant found for the provided email.")
-     return
-     }
-     
-     // Set the participant's role and permission
-     participant.role = .privateUser
-     participant.permission = .readWrite
-     
-     // Add the participant to the share
-     share.addParticipant(participant)
-     
-     // Save the share to the private database
-     let privateDatabase = container.privateCloudDatabase
-     let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [record, share], recordIDsToDelete: nil)
-     modifyRecordsOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, operationError in
-     if let error = operationError {
-     print("Failed to save share: \(error)")
-     } else {
-     print("Successfully shared the record!")
-     if let shareURL = share.url {
-     DispatchQueue.main.async {
-     self.showShareURL(shareURL, from: self)
-     }
-     }
-     }
-     }
-     privateDatabase.add(modifyRecordsOperation)
-     }
-     } catch {
-     print("Failed to fetch objects: \(error)")
-     }
-     }
-     
-     private func showShareURL(_ url: URL, from viewController: UIViewController) {
-     let alertController = UIAlertController(title: "Share URL", message: "Share this URL with your family: \(url.absoluteString)", preferredStyle: .alert)
-     let copyAction = UIAlertAction(title: "Copy", style: .default) { _ in
-     UIPasteboard.general.string = url.absoluteString
-     }
-     alertController.addAction(copyAction)
-     alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-     viewController.present(alertController, animated: true, completion: nil)
-     }
-     */
+    
     @objc private func exportData() {
         let alert = UIAlertController(title: "Export Data", message: "Choose which data to export", preferredStyle: .actionSheet)
         
@@ -435,12 +323,13 @@ class DataSharingViewController: UIViewController {
         
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         let existingFoodItems = try? context.fetch(fetchRequest)
-        let existingIDs = Set(existingFoodItems?.compactMap { $0.id} ?? [])
+        let existingFoodItemsDict = Dictionary(uniqueKeysWithValues: existingFoodItems?.compactMap { ($0.id, $0) } ?? [])
+
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 15 {
-                if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
-                    let foodItem = FoodItem(context: context)
+                if let id = UUID(uuidString: values[0]) {
+                    let foodItem = existingFoodItemsDict[id] ?? FoodItem(context: context)
                     foodItem.id = id
                     foodItem.name = values[1]
                     foodItem.carbohydrates = Double(values[2]) ?? 0.0
@@ -459,7 +348,47 @@ class DataSharingViewController: UIViewController {
                 }
             }
         }
+        
+        do {
+            try context.save()
+        } catch {
+            showAlert(title: "Save Failed", message: "Failed to save food items: \(error)")
+        }
     }
+        /*private func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) {
+            let columns = rows[0].components(separatedBy: ";")
+            guard columns.count == 15 else {
+                showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+                return
+            }
+            
+            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+            let existingFoodItems = try? context.fetch(fetchRequest)
+            let existingIDs = Set(existingFoodItems?.compactMap { $0.id} ?? [])
+            for row in rows[1...] {
+                let values = row.components(separatedBy: ";")
+                if values.count == 15 {
+                    if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
+                        let foodItem = FoodItem(context: context)
+                        foodItem.id = id
+                        foodItem.name = values[1]
+                        foodItem.carbohydrates = Double(values[2]) ?? 0.0
+                        foodItem.carbsPP = Double(values[3]) ?? 0.0
+                        foodItem.fat = Double(values[4]) ?? 0.0
+                        foodItem.fatPP = Double(values[5]) ?? 0.0
+                        foodItem.netCarbs = Double(values[6]) ?? 0.0
+                        foodItem.netFat = Double(values[7]) ?? 0.0
+                        foodItem.netProtein = Double(values[8]) ?? 0.0
+                        foodItem.perPiece = values[9] == "true"
+                        foodItem.protein = Double(values[10]) ?? 0.0
+                        foodItem.proteinPP = Double(values[11]) ?? 0.0
+                        foodItem.count = Int16(values[12]) ?? 0
+                        foodItem.notes = values[13]
+                        foodItem.emoji = values[14]
+                    }
+                }
+            }
+        }*/
     
     private func parseFavoriteMealsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")

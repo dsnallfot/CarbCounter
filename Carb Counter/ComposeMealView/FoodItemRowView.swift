@@ -177,11 +177,11 @@ class FoodItemRowView: UIView {
     @objc private func foodItemLabelTapped() {
         guard let selectedFoodItem = selectedFoodItem else { return }
         
-        let name = selectedFoodItem.name ?? "Unknown"
+        let title = "\(selectedFoodItem.emoji ?? "") \(selectedFoodItem.name ?? "")"
         var message = ""
         
         if let notes = selectedFoodItem.notes, !notes.isEmpty {
-            message += "Not: \(notes)\n\n"
+            message += "\nNot: \(notes)\n"
         }
         
         if selectedFoodItem.perPiece {
@@ -190,13 +190,13 @@ class FoodItemRowView: UIView {
             let proteinPP = selectedFoodItem.proteinPP
             
             if carbsPP > 0 {
-                message += "Kolhydrater: \(carbsPP) g/st\n"
+                message += "\nKolhydrater: \(carbsPP) g / st"
             }
             if fatPP > 0 {
-                message += "Fett: \(fatPP) g/st\n"
+                message += "\nFett: \(fatPP) g / st"
             }
             if proteinPP > 0 {
-                message += "Protein: \(proteinPP) g/st\n"
+                message += "\nProtein: \(proteinPP) g / st"
             }
         } else {
             let carbohydrates = selectedFoodItem.carbohydrates
@@ -204,13 +204,13 @@ class FoodItemRowView: UIView {
             let protein = selectedFoodItem.protein
             
             if carbohydrates > 0 {
-                message += "Kolhydrater: \(carbohydrates)/100 g\n"
+                message += "\nKolhydrater: \(carbohydrates) g / 100 g "
             }
             if fat > 0 {
-                message += "Fett: \(fat)/100 g\n"
+                message += "\nFett: \(fat) g / 100 g "
             }
             if protein > 0 {
-                message += "Protein: \(protein)/100 g\n"
+                message += "\nProtein: \(protein) g / 100 g "
             }
         }
         
@@ -225,7 +225,7 @@ class FoodItemRowView: UIView {
             message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
         }
         
-        let alertController = UIAlertController(title: name, message: message, preferredStyle: .alert)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alertController.addAction(okAction)
         if let viewController = self.getViewController() {

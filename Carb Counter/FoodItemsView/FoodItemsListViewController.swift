@@ -296,33 +296,33 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let title = "\(foodItem.emoji ?? "") \(foodItem.name ?? "")"
         var message = ""
         
+        if let notes = foodItem.notes, !notes.isEmpty {
+            message += "\nNot: \(notes)\n"
+        }
+        
         if foodItem.perPiece {
             if foodItem.carbsPP > 0 {
-                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbsPP))g/st"
+                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbsPP)) g / st"
             }
             if foodItem.fatPP > 0 {
-                message += "\nFett: \(String(format: "%.0f", foodItem.fatPP))g/st"
+                message += "\nFett: \(String(format: "%.0f", foodItem.fatPP)) g / st"
             }
             if foodItem.proteinPP > 0 {
-                message += "\nProtein: \(String(format: "%.0f", foodItem.proteinPP))g/st"
+                message += "\nProtein: \(String(format: "%.0f", foodItem.proteinPP)) g / st"
             }
         } else {
             if foodItem.carbohydrates > 0 {
-                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbohydrates))g/100g"
+                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbohydrates)) g / 100 g"
             }
             if foodItem.fat > 0 {
-                message += "\nFett: \(String(format: "%.0f", foodItem.fat))g/100g"
+                message += "\nFett: \(String(format: "%.0f", foodItem.fat)) g / 100 g"
             }
             if foodItem.protein > 0 {
-                message += "\nProtein: \(String(format: "%.0f", foodItem.protein))g/100g"
+                message += "\nProtein: \(String(format: "%.0f", foodItem.protein)) g / 100 g"
             }
         }
         
-        if let notes = foodItem.notes, !notes.isEmpty {
-            message += "\n\nNot: \(notes)"
-        }
-        
-        message += "\n\nServerats: \(foodItem.count) ggr"
+        message += "\n\n(Serverats: \(foodItem.count) ggr)"
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
