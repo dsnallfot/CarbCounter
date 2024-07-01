@@ -168,7 +168,7 @@ class SettingsViewController: UITableViewController {
     }
     
     private func formatValue(_ value: Double) -> String {
-        return value.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", value) : String(format: "%.1f", value)
+        return value.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", value) : String(format: "%.2f", value)
     }
 }
 
