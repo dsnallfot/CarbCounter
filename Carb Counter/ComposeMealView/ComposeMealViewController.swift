@@ -105,7 +105,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         setupScrollView(below: fixedHeaderContainer)
         
         // Initialize "Clear All" button
-        clearAllButton = UIBarButtonItem(title: "Rensa allt", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton = UIBarButtonItem(title: "Rensa menyn", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
@@ -437,7 +437,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     @objc private func clearAllButtonTapped() {
         view.endEditing(true)
         
-        let alertController = UIAlertController(title: "Rensa allt", message: "Vill du rensa allt?", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Rensa menyn", message: "Vill du rensa hela menyn?", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
             if self.saveMealToHistory {
@@ -1407,8 +1407,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     func hideSearchableDropdown() {
         searchableDropdownView.isHidden = true
-        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
-        clearAllButton.isHidden = false // Unhide the "Rensa allt" button
+        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa menyn" button again
+        clearAllButton.isHidden = false // Unhide the "Rensa menyn" button
     }
     
     @objc private func searchableDropdownViewDidDismiss() {
@@ -1483,7 +1483,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         
         searchableDropdownView.isHidden = false
         navigationItem.rightBarButtonItem = addFromSearchableDropdownButton // Show "Lägg till" button
-        clearAllButton.isHidden = true // Hide the "Rensa allt" button
+        clearAllButton.isHidden = true // Hide the "Rensa menyn" button
     }
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
@@ -1516,14 +1516,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     
     @objc private func doneButtonTapped() {
         totalRegisteredLabel?.resignFirstResponder()
-        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
-        clearAllButton.isHidden = false // Unhide the "Rensa allt" button
+        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa menyn" button again
+        clearAllButton.isHidden = false // Unhide the "Rensa menyn" button
     }
     
     @objc private func cancelButtonTapped() {
         totalRegisteredLabel?.resignFirstResponder()
         searchableDropdownView.isHidden = true
-        //navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa allt" button again
+        //navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa menyn" button again
     }
     /*
     @objc private func keyboardWillShow(notification: NSNotification) {

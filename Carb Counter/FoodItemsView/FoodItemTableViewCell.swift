@@ -59,13 +59,13 @@ class FoodItemTableViewCell: UITableViewCell {
             }
         } else {
             if foodItem.carbohydrates > 0 {
-                details.append("Kh \(String(format: "%.0f", foodItem.carbohydrates))/100g")
+                details.append("Kh \(String(format: "%.0f", foodItem.carbohydrates))g/100g")
             }
             if foodItem.fat > 0 {
-                details.append("Fett \(String(format: "%.0f", foodItem.fat))/100g")
+                details.append("Fett \(String(format: "%.0f", foodItem.fat))g/100g")
             }
             if foodItem.protein > 0 {
-                details.append("Protein \(String(format: "%.0f", foodItem.protein))/100g")
+                details.append("Protein \(String(format: "%.0f", foodItem.protein))g/100g")
             }
         }
         

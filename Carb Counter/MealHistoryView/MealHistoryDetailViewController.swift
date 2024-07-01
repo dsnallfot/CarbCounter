@@ -157,9 +157,9 @@ class MealHistoryDetailViewController: UIViewController {
 
         if foodEntry.entryNotEaten > 0 {
             if foodEntry.entryPerPiece {
-                detailText = "Åt \(eatenAmountFormatted) st   (Serverades \(portionServedFormatted) st • Lämnade \(notEatenFormatted) st)"
+                detailText = "Åt \(eatenAmountFormatted) st   (Serverades \(portionServedFormatted) st - Lämnade \(notEatenFormatted) st)"
             } else {
-                detailText = "Åt \(eatenAmountFormatted) g   (Serverades \(portionServedFormatted) g • Lämnade \(notEatenFormatted) g)"
+                detailText = "Åt \(eatenAmountFormatted) g   (Serverades \(portionServedFormatted) g - Lämnade \(notEatenFormatted) g)"
             }
         } else {
             if foodEntry.entryPerPiece {

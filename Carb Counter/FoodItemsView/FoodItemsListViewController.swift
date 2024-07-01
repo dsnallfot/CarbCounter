@@ -273,6 +273,47 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let foodItem = filteredFoodItems[indexPath.row]
+        
+        let title = "\(foodItem.emoji ?? "") \(foodItem.name ?? "")"
+        var message = ""
+        
+        if foodItem.perPiece {
+            if foodItem.carbsPP > 0 {
+                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbsPP))g/st"
+            }
+            if foodItem.fatPP > 0 {
+                message += "\nFett: \(String(format: "%.0f", foodItem.fatPP))g/st"
+            }
+            if foodItem.proteinPP > 0 {
+                message += "\nProtein: \(String(format: "%.0f", foodItem.proteinPP))g/st"
+            }
+        } else {
+            if foodItem.carbohydrates > 0 {
+                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbohydrates))g/100g"
+            }
+            if foodItem.fat > 0 {
+                message += "\nFett: \(String(format: "%.0f", foodItem.fat))g/100g"
+            }
+            if foodItem.protein > 0 {
+                message += "\nProtein: \(String(format: "%.0f", foodItem.protein))g/100g"
+            }
+        }
+        
+        if let notes = foodItem.notes, !notes.isEmpty {
+            message += "\n\nNot: \(notes)"
+        }
+        
+        message += "\n\nServerats: \(foodItem.count) ggr"
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             deleteFoodItem(at: indexPath)
