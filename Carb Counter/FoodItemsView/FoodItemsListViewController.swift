@@ -17,6 +17,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var segmentedControl: UISegmentedControl!
     var searchBar: UISearchBar!
     var clearButton: UIBarButtonItem!
+    var tableViewBottomConstraint: NSLayoutConstraint!
     
     enum SortOption {
         case name, perPiece, count
@@ -43,6 +44,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Update Clear button visibility based on the current setting
         updateClearButtonVisibility()
+        
+        // Add observers for keyboard notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -155,28 +160,29 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupSortSegmentedControl() {
-        let items = ["Namn A-Ö", "Per Styck", "Populära"]
-        segmentedControl = UISegmentedControl(items: items)
-        segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.addTarget(self, action: #selector(sortSegmentChanged(_:)), for: .valueChanged)
-        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(segmentedControl)
-        
-        NSLayoutConstraint.activate([
-            segmentedControl.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
-            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-        ])
-        
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-    }
+            let items = ["Namn A-Ö", "Per Styck", "Populära"]
+            segmentedControl = UISegmentedControl(items: items)
+            segmentedControl.selectedSegmentIndex = 0
+            segmentedControl.addTarget(self, action: #selector(sortSegmentChanged(_:)), for: .valueChanged)
+            segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+            
+            view.addSubview(segmentedControl)
+            
+            NSLayoutConstraint.activate([
+                segmentedControl.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
+                segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+                segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            ])
+            
+            tableView.translatesAutoresizingMaskIntoConstraints = false
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            NSLayoutConstraint.activate([
+                tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
+                tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                tableViewBottomConstraint
+            ])
+        }
     
     @objc private func sortSegmentChanged(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
@@ -310,5 +316,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         filteredFoodItems = foodItems
         sortFoodItems()
         searchBar.resignFirstResponder()
+    }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+        if let userInfo = notification.userInfo {
+            if let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                tableViewBottomConstraint.constant = -keyboardFrame.height + 2
+                view.layoutIfNeeded()
+            }
+        }
+    }
+
+    @objc func keyboardWillHide(notification: NSNotification) {
+        tableViewBottomConstraint.constant = 0
+        view.layoutIfNeeded()
     }
 }
