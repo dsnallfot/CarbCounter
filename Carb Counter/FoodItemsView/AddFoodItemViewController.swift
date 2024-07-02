@@ -41,6 +41,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     var initialFat: String?
     var initialProtein: String?
     
+    var prePopulatedData: (name: String, carbohydrates: Double, fat: Double, protein: Double)?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -116,6 +118,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Add tap gesture recognizers to labels
         addTapGestureRecognizers()
+        
+        if let data = prePopulatedData {
+            nameTextField.text = data.name
+            carbsTextField.text = formattedValue(data.carbohydrates)
+            fatTextField.text = formattedValue(data.fat)
+            proteinTextField.text = formattedValue(data.protein)
+        }
     }
     
     // Helper method to format the double values
@@ -300,42 +309,42 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func saveFoodItem() {
-            let context = CoreDataStack.shared.context
-            
-            // Helper method to replace commas with periods
-            func sanitize(_ text: String?) -> String {
-                return text?.replacingOccurrences(of: ",", with: ".") ?? ""
-            }
-            
-            if let foodItem = foodItem {
-                // Update existing food item
-                foodItem.name = nameTextField.text ?? ""
-                foodItem.notes = notesTextField.text ?? ""
-                foodItem.emoji = emojiTextField.text ?? ""
-                if isPerPiece {
-                    foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
-                    foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
-                    foodItem.proteinPP = Double(sanitize(proteinTextField.text)) ?? 0.0
-                    foodItem.perPiece = true
-                    foodItem.carbohydrates = 0.0
-                    foodItem.fat = 0.0
-                    foodItem.protein = 0.0
-                } else {
-                    foodItem.carbohydrates = Double(sanitize(carbsTextField.text)) ?? 0.0
-                    foodItem.fat = Double(sanitize(fatTextField.text)) ?? 0.0
-                    foodItem.protein = Double(sanitize(proteinTextField.text)) ?? 0.0
-                    foodItem.perPiece = false
-                    foodItem.carbsPP = 0.0
-                    foodItem.fatPP = 0.0
-                    foodItem.proteinPP = 0.0
-                }
+        let context = CoreDataStack.shared.context
+        
+        // Helper method to replace commas with periods
+        func sanitize(_ text: String?) -> String {
+            return text?.replacingOccurrences(of: ",", with: ".") ?? ""
+        }
+        
+        if let foodItem = foodItem {
+            // Update existing food item
+            foodItem.name = nameTextField.text ?? ""
+            foodItem.notes = notesTextField.text ?? ""
+            foodItem.emoji = emojiTextField.text ?? ""
+            if isPerPiece {
+                foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
+                foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
+                foodItem.proteinPP = Double(sanitize(proteinTextField.text)) ?? 0.0
+                foodItem.perPiece = true
+                foodItem.carbohydrates = 0.0
+                foodItem.fat = 0.0
+                foodItem.protein = 0.0
             } else {
-                // Create new food item
-                let newFoodItem = FoodItem(context: context)
-                newFoodItem.id = UUID()
-                newFoodItem.name = nameTextField.text ?? ""
-                newFoodItem.notes = notesTextField.text ?? ""
-                newFoodItem.emoji = emojiTextField.text ?? ""
+                foodItem.carbohydrates = Double(sanitize(carbsTextField.text)) ?? 0.0
+                foodItem.fat = Double(sanitize(fatTextField.text)) ?? 0.0
+                foodItem.protein = Double(sanitize(proteinTextField.text)) ?? 0.0
+                foodItem.perPiece = false
+                foodItem.carbsPP = 0.0
+                foodItem.fatPP = 0.0
+                foodItem.proteinPP = 0.0
+            }
+        } else {
+            // Create new food item
+            let newFoodItem = FoodItem(context: context)
+            newFoodItem.id = UUID()
+            newFoodItem.name = nameTextField.text ?? ""
+            newFoodItem.notes = notesTextField.text ?? ""
+            newFoodItem.emoji = emojiTextField.text ?? ""
             if isPerPiece {
                 newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -353,35 +362,35 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 newFoodItem.fatPP = 0.0
                 newFoodItem.proteinPP = 0.0
             }
-                        // Set the count attribute to 0
-                        newFoodItem.count = 0
-                        
-                        // Share the new food item
-                CloudKitShareController.shared.shareFoodItemRecord(foodItem: newFoodItem, from: self) { share, error in
-                            if let error = error {
-                                print("Error sharing food item: \(error)")
-                            } else if let share = share {
-                                // Provide share URL to the other users
-                                print("Share URL: \(share.url?.absoluteString ?? "No URL")")
-                                // Optionally, present the share URL to the user via UI
-                            }
-                        }
-                    }
-                    
-                    do {
-                        try context.save()
-                        delegate?.didAddFoodItem()
-                        NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
-                        if let navController = navigationController {
-                            print("Navigation Controller exists")
-                            navController.popViewController(animated: true) // Dismiss the view
-                        } else {
-                            print("Navigation Controller is nil")
-                        }
-                    } catch {
-                        print("Failed to save food item: \(error)")
-                    }
+            // Set the count attribute to 0
+            newFoodItem.count = 0
+            
+            // Share the new food item
+            CloudKitShareController.shared.shareFoodItemRecord(foodItem: newFoodItem, from: self) { share, error in
+                if let error = error {
+                    print("Error sharing food item: \(error)")
+                } else if let share = share {
+                    // Provide share URL to the other users
+                    print("Share URL: \(share.url?.absoluteString ?? "No URL")")
+                    // Optionally, present the share URL to the user via UI
                 }
+            }
+        }
+        
+        do {
+            try context.save()
+            delegate?.didAddFoodItem()
+            NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
+            if let navController = navigationController {
+                print("Navigation Controller exists")
+                navController.popViewController(animated: true) // Dismiss the view
+            } else {
+                print("Navigation Controller is nil")
+            }
+        } catch {
+            print("Failed to save food item: \(error)")
+        }
+    }
     
     private func fetchAllFoodItems() -> [FoodItem] {
             let context = CoreDataStack.shared.context

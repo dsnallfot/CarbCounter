@@ -134,11 +134,11 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     if let product = jsonResponse["product"] as? [String: Any],
                        let productName = product["product_name"] as? String,
-                       let nutriscoreData = product["nutriments"] as? [String: Any] {
+                       let nutriments = product["nutriments"] as? [String: Any] {
                         
-                        let carbohydrates = nutriscoreData["carbohydrates_100g"] as? Double ?? 0.0
-                        let fat = nutriscoreData["fat_100g"] as? Double ?? 0.0
-                        let proteins = nutriscoreData["proteins_100g"] as? Double ?? 0.0
+                        let carbohydrates = nutriments["carbohydrates_100g"] as? Double ?? 0.0
+                        let fat = nutriments["fat_100g"] as? Double ?? 0.0
+                        let proteins = nutriments["proteins_100g"] as? Double ?? 0.0
 
                         let message = """
                         Kolhydrater: \(carbohydrates) g / 100 g
@@ -147,7 +147,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         """
 
                         DispatchQueue.main.async {
-                            self.showProductAlert(title: productName, message: message)
+                            self.showProductAlert(title: productName, message: message, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                         }
                     } else {
                         DispatchQueue.main.async {
@@ -169,9 +169,12 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         task.resume()
     }
 
-    func showProductAlert(title: String, message: String) {
+    func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
+            self.navigateToAddFoodItem(productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+        }))
         present(alert, animated: true, completion: nil)
     }
 
@@ -179,6 +182,15 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+
+    func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
     }
 
     override var prefersStatusBarHidden: Bool {
