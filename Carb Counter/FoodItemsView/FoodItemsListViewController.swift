@@ -29,7 +29,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.delegate = self
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         fetchFoodItems()
-        setupAddButton()
+        setupNavigationBarButtons()
+        //setupAddButton()
         setupNavigationBarTitle()
         setupSearchBar()
         setupSortSegmentedControl()
@@ -103,9 +104,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
+    /*
     private func setupAddButton() {
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
         navigationItem.rightBarButtonItems = [addButton]
+    }*/
+    
+    private func setupNavigationBarButtons() {
+        let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
+        let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode"), style: .plain, target: self, action: #selector(navigateToScanner))
+        navigationItem.rightBarButtonItems = [addButton, barcodeButton]
     }
     
     private func setupNavigationBarTitle() {
@@ -223,6 +231,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         } else {
             print("Failed to instantiate AddFoodItemViewController")
         }
+    }
+    
+    @objc private func navigateToScanner() {
+        let scannerVC = ScannerViewController()
+        navigationController?.pushViewController(scannerVC, animated: true)
     }
     
     func didAddFoodItem() {
