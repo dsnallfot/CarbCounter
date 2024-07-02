@@ -338,7 +338,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         message += "\n\n(Serverats: \(foodItem.count) ggr)"
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Ät nu", style: .default, handler: { _ in
+            self.addToComposeMealViewController(foodItem: foodItem)
+        }))
         present(alert, animated: true, completion: nil)
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -347,6 +350,26 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if editingStyle == .delete {
             deleteFoodItem(at: indexPath)
         }
+    }
+    
+    private func addToComposeMealViewController(foodItem: FoodItem) {
+        guard let tabBarController = tabBarController else {
+            print("Tab bar controller not found")
+            return
+        }
+
+        for viewController in tabBarController.viewControllers ?? [] {
+            if let navController = viewController as? UINavigationController {
+                for vc in navController.viewControllers {
+                    if let composeMealVC = vc as? ComposeMealViewController {
+                        print("Adding food item to ComposeMealViewController: \(foodItem.name ?? "")")
+                        composeMealVC.addFoodItemRow(with: foodItem)
+                        return
+                    }
+                }
+            }
+        }
+        print("ComposeMealViewController not found in tab bar controller")
     }
     
     private func deleteFoodItem(at indexPath: IndexPath) {
