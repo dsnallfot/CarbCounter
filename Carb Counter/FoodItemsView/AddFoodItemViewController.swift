@@ -43,6 +43,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     var prePopulatedData: (name: String, carbohydrates: Double, fat: Double, protein: Double)?
     
+    var saveAndAddToMealButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -125,6 +127,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             fatTextField.text = formattedValue(data.fat)
             proteinTextField.text = formattedValue(data.protein)
         }
+        
+        setupSaveAndAddToMealButton()
     }
     
     // Helper method to format the double values
@@ -218,7 +222,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        
         view.addSubview(segmentedControl)
         
         NSLayoutConstraint.activate([
@@ -265,6 +268,26 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         updateSaveButtonTitle()
     }
     
+    private func setupSaveAndAddToMealButton() {
+        saveAndAddToMealButton = UIButton(type: .system)
+        saveAndAddToMealButton.setTitle("Spara och lägg till i måltid", for: .normal)
+        saveAndAddToMealButton.addTarget(self, action: #selector(saveAndAddToMealButtonTapped), for: .touchUpInside)
+        saveAndAddToMealButton.isEnabled = false // Initially disabled
+        
+        view.addSubview(saveAndAddToMealButton)
+        saveAndAddToMealButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            saveAndAddToMealButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            saveAndAddToMealButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            saveAndAddToMealButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 20)
+        ])
+    }
+    
+    @objc private func saveAndAddToMealButtonTapped() {
+        saveFoodItem(addToMeal: true)
+    }
+    
     private func updateSaveButtonTitle() {
         if let foodItem = foodItem {
             // Edit mode
@@ -278,6 +301,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             saveButton.setTitle("Spara", for: .normal)
         }
     }
+    
     private func setupUI() {
         if let foodItem = foodItem {
             title = "Ändra livsmedel"
@@ -308,7 +332,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         print("Save button tapped")
     }
     
-    private func saveFoodItem() {
+    private func saveFoodItem(addToMeal: Bool = false) {
         let context = CoreDataStack.shared.context
         
         // Helper method to replace commas with periods
@@ -338,6 +362,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 foodItem.fatPP = 0.0
                 foodItem.proteinPP = 0.0
             }
+            print("Updated existing food item: \(foodItem.name ?? "")")
         } else {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
@@ -362,51 +387,62 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 newFoodItem.fatPP = 0.0
                 newFoodItem.proteinPP = 0.0
             }
-            // Set the count attribute to 0
             newFoodItem.count = 0
-            
-            // Share the new food item
-            CloudKitShareController.shared.shareFoodItemRecord(foodItem: newFoodItem, from: self) { share, error in
-                if let error = error {
-                    print("Error sharing food item: \(error)")
-                } else if let share = share {
-                    // Provide share URL to the other users
-                    print("Share URL: \(share.url?.absoluteString ?? "No URL")")
-                    // Optionally, present the share URL to the user via UI
-                }
-            }
+            foodItem = newFoodItem // Assign the new food item to the foodItem variable for later use
+            print("Created new food item: \(newFoodItem.name ?? "")")
         }
         
         do {
             try context.save()
+            print("Saved food item successfully.")
             delegate?.didAddFoodItem()
             NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
-            if let navController = navigationController {
-                print("Navigation Controller exists")
-                navController.popViewController(animated: true) // Dismiss the view
-            } else {
-                print("Navigation Controller is nil")
+            
+            if addToMeal {
+                addToComposeMealViewController()
             }
         } catch {
             print("Failed to save food item: \(error)")
         }
+        navigationController?.popViewController(animated: true)
+    }
+    
+    private func addToComposeMealViewController() {
+        guard let tabBarController = tabBarController else {
+            print("Tab bar controller not found")
+            return
+        }
+        
+        for viewController in tabBarController.viewControllers ?? [] {
+            if let navController = viewController as? UINavigationController {
+                for vc in navController.viewControllers {
+                    if let composeMealVC = vc as? ComposeMealViewController {
+                        if let newFoodItem = foodItem {
+                            print("Adding food item to ComposeMealViewController: \(newFoodItem.name ?? "")")
+                            composeMealVC.addFoodItemRow(with: newFoodItem)
+                        }
+                        return
+                    }
+                }
+            }
+        }
+        print("ComposeMealViewController not found in tab bar controller")
     }
     
     private func fetchAllFoodItems() -> [FoodItem] {
-            let context = CoreDataStack.shared.context
-            let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
-            do {
-                return try context.fetch(fetchRequest)
-            } catch {
-                print("Failed to fetch food items: \(error)")
-                return []
-            }
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Failed to fetch food items: \(error)")
+            return []
         }
+    }
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         checkForChanges()
     }
-    
     private func checkForChanges() {
         let currentName = nameTextField.text
         let currentEmoji = emojiTextField.text
@@ -414,7 +450,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         let currentCarbs = carbsTextField.text
         let currentFat = fatTextField.text
         let currentProtein = proteinTextField.text
-        
         let nameChanged = currentName != initialName
         let emojiChanged = currentEmoji != initialEmoji
         let notesChanged = currentNotes != initialNotes
@@ -423,7 +458,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         let proteinChanged = currentProtein != initialProtein
         
         saveButton.isEnabled = nameChanged || emojiChanged || carbsChanged || fatChanged || proteinChanged || notesChanged
+        saveAndAddToMealButton.isEnabled = saveButton.isEnabled
         updateSaveButtonTitle()
     }
 }
-       
