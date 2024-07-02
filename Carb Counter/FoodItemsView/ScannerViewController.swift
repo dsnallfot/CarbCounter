@@ -102,9 +102,9 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     }
 
     func found(code: String) {
-        let urlString = "https://world.openfoodfacts.net/api/v2/product/\(code)?fields=product_name,nutriscore_data"
+        let urlString = "https://world.openfoodfacts.net/api/v2/product/\(code)?fields=product_name,nutriments"
         guard let url = URL(string: urlString) else {
-            print("Invalid URL")
+            showErrorAlert(message: "Invalid URL")
             isProcessingBarcode = false
             return
         }
@@ -117,37 +117,68 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             }
 
             if let error = error {
-                print("Error: \(error)")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Fel: \(error.localizedDescription)")
+                }
                 return
             }
 
             guard let data = data else {
-                print("No data received")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Ingen data levererades")
+                }
                 return
             }
 
             do {
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let product = jsonResponse["product"] as? [String: Any] {
-                        if let productName = product["product_name"] as? String,
-                           let nutriscoreData = product["nutriscore_data"] as? [String: Any] {
-                            print("Product Name: \(productName)")
-                            print("Nutriscore Data: \(nutriscoreData)")
-                        } else {
-                            print("Failed to parse product details")
+                    if let product = jsonResponse["product"] as? [String: Any],
+                       let productName = product["product_name"] as? String,
+                       let nutriscoreData = product["nutriments"] as? [String: Any] {
+                        
+                        let carbohydrates = nutriscoreData["carbohydrates_100g"] as? Double ?? 0.0
+                        let fat = nutriscoreData["fat_100g"] as? Double ?? 0.0
+                        let proteins = nutriscoreData["proteins_100g"] as? Double ?? 0.0
+
+                        let message = """
+                        Kolhydrater: \(carbohydrates) g / 100 g
+                        Fett: \(fat) g / 100 g
+                        Protein: \(proteins) g / 100 g
+                        """
+
+                        DispatchQueue.main.async {
+                            self.showProductAlert(title: productName, message: message)
                         }
                     } else {
-                        print("Failed to find product in response")
+                        DispatchQueue.main.async {
+                            self.showErrorAlert(message: "Kunde inte hämta livsmedelsdetaljer")
+                        }
                     }
                 } else {
-                    print("Failed to parse JSON response")
+                    DispatchQueue.main.async {
+                        self.showErrorAlert(message: "Kunde inte tolka JSON svar")
+                    }
                 }
             } catch {
-                print("Error parsing JSON: \(error)")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Fel vid tolkning JSON: \(error.localizedDescription)")
+                }
             }
         }
 
         task.resume()
+    }
+
+    func showProductAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+
+    func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
 
     override var prefersStatusBarHidden: Bool {
