@@ -14,6 +14,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var proteinTextField: UITextField!
     @IBOutlet weak var notesTextField: UITextField!
     @IBOutlet weak var saveButton: UIButton!
+    @IBOutlet weak var saveAndAddButton: UIButton!
     @IBOutlet weak var foodItemView: UIView!
     @IBOutlet weak var carbohydratesView: UIView!
     @IBOutlet weak var proteinView: UIView!
@@ -43,13 +44,12 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     var prePopulatedData: (name: String, carbohydrates: Double, fat: Double, protein: Double)?
     
-    var saveAndAddToMealButton: UIButton!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupSegmentedControl()
         setupSaveButton()
+        setupSaveAndAddButton()
         setupUI()
         
         foodItemView.layer.cornerRadius = 8
@@ -126,9 +126,12 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             carbsTextField.text = formattedValue(data.carbohydrates)
             fatTextField.text = formattedValue(data.fat)
             proteinTextField.text = formattedValue(data.protein)
+            
+            // Enable buttons if prePopulatedData is not nil
+            saveButton.isEnabled = true
+            saveAndAddButton.isEnabled = true
+            updateSaveButtonTitle()
         }
-        
-        setupSaveAndAddToMealButton()
     }
     
     // Helper method to format the double values
@@ -223,7 +226,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(segmentedControl)
-        
         NSLayoutConstraint.activate([
             segmentedControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -265,40 +267,34 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     private func setupSaveButton() {
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)
         saveButton.isEnabled = false // Initially disabled
+        saveButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline) // Set headline font
         updateSaveButtonTitle()
     }
     
-    private func setupSaveAndAddToMealButton() {
-        saveAndAddToMealButton = UIButton(type: .system)
-        saveAndAddToMealButton.setTitle("Spara och lägg till i måltid", for: .normal)
-        saveAndAddToMealButton.addTarget(self, action: #selector(saveAndAddToMealButtonTapped), for: .touchUpInside)
-        saveAndAddToMealButton.isEnabled = false // Initially disabled
-        
-        view.addSubview(saveAndAddToMealButton)
-        saveAndAddToMealButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            saveAndAddToMealButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            saveAndAddToMealButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            saveAndAddToMealButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 20)
-        ])
+    private func setupSaveAndAddButton() {
+        saveAndAddButton.addTarget(self, action: #selector(saveAndAddTap), for: .touchUpInside)
+        saveAndAddButton.isEnabled = false // Initially disabled
     }
     
-    @objc private func saveAndAddToMealButtonTapped() {
-        saveFoodItem(addToMeal: true)
+    private func updateButtonTitle(_ button: UIButton, withTitle title: String) {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.preferredFont(forTextStyle: .headline)
+        ]
+        let attributedTitle = NSAttributedString(string: title, attributes: attributes)
+        button.setAttributedTitle(attributedTitle, for: .normal)
     }
     
     private func updateSaveButtonTitle() {
         if let foodItem = foodItem {
             // Edit mode
             if saveButton.isEnabled {
-                saveButton.setTitle("Spara ändringar", for: .normal)
+                updateButtonTitle(saveButton, withTitle: "Spara ändringar")
             } else {
-                saveButton.setTitle("Inga ändringar", for: .normal)
+                updateButtonTitle(saveButton, withTitle: "Inga ändringar")
             }
         } else {
             // New mode
-            saveButton.setTitle("Spara", for: .normal)
+            updateButtonTitle(saveButton, withTitle: "Spara")
         }
     }
     
@@ -330,6 +326,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @IBAction func saveButtonTap(_ sender: UIButton) {
         saveFoodItem()
         print("Save button tapped")
+    }
+    @IBAction func saveAndAddTap(_ sender: UIButton) {
+        saveFoodItem(addToMeal: true)
+        print("Save & add button tapped")
     }
     
     private func saveFoodItem(addToMeal: Bool = false) {
@@ -443,6 +443,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @objc private func textFieldDidChange(_ textField: UITextField) {
         checkForChanges()
     }
+    
     private func checkForChanges() {
         let currentName = nameTextField.text
         let currentEmoji = emojiTextField.text
@@ -456,9 +457,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         let carbsChanged = currentCarbs != initialCarbs
         let fatChanged = currentFat != initialFat
         let proteinChanged = currentProtein != initialProtein
-        
         saveButton.isEnabled = nameChanged || emojiChanged || carbsChanged || fatChanged || proteinChanged || notesChanged
-        saveAndAddToMealButton.isEnabled = saveButton.isEnabled
+        saveAndAddButton.isEnabled = saveButton.isEnabled
         updateSaveButtonTitle()
     }
 }
