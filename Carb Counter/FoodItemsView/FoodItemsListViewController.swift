@@ -338,10 +338,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         message += "\n\n(Serverats: \(foodItem.count) ggr)"
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        
         alert.addAction(UIAlertAction(title: "Ät nu", style: .default, handler: { _ in
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
+        alert.addAction(UIAlertAction(title: "Ändra", style: .default, handler: { _ in
+            self.editFoodItem(at: indexPath)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+
         present(alert, animated: true, completion: nil)
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -394,6 +400,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
+    
+    
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {

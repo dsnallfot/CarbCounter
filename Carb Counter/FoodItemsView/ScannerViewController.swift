@@ -164,12 +164,12 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         }
                     } else {
                         DispatchQueue.main.async {
-                            self.showErrorAlert(message: "Kunde inte hämta livsmedelsdetaljer")
+                            self.showErrorAlert(message: "Livsmedel kunde inte hittas")
                         }
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self.showErrorAlert(message: "Kunde inte tolka JSON svar")
+                        self.showErrorAlert(message: "Kunde inte tolka svar från servern")
                     }
                 }
             } catch {
@@ -244,7 +244,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-
+/*
     func updateExistingFoodItem(_ foodItem: FoodItem, carbohydrates: Double, fat: Double, proteins: Double) {
         foodItem.carbohydrates = carbohydrates
         foodItem.fat = fat
@@ -256,10 +256,14 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         } catch {
             showErrorAlert(message: "Fel vid uppdatering av livsmedel")
         }
-    }
+    }*/
     func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+            DispatchQueue.global(qos: .background).async {
+                self.captureSession.startRunning()
+            }
+        }))
         present(alert, animated: true, completion: nil)
     }
 
