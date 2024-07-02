@@ -132,4 +132,13 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "lateBreakfast")
         }
     }
+    
+    static var dabasAPISecret: String {
+            get {
+                return UserDefaults.standard.string(forKey: "dabasAPISecret") ?? ""
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "dabasAPISecret")
+            }
+        }
 }
