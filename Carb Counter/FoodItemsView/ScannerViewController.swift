@@ -191,22 +191,29 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             let existingItems = try context.fetch(fetchRequest)
 
             if let existingItem = existingItems.first {
-                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan i livsmedelslistan. \n\nVill du visa eller uppdatera den befintliga posten?", preferredStyle: .alert)
-                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
-                    DispatchQueue.global(qos: .background).async {
-                        self.captureSession.startRunning()
-                    }
-                }))
-                duplicateAlert.addAction(UIAlertAction(title: "Visa", style: .default, handler: { _ in
+                let comparisonMessage = """
+                Befintlig data    ->    Ny data
+                Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
+                Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
+                Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
+                """
+
+                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
+                duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
                 }))
                 duplicateAlert.addAction(UIAlertAction(title: "Uppdatera", style: .default, handler: { _ in
                     self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                 }))
+                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .destructive, handler: { _ in
+                    DispatchQueue.global(qos: .background).async {
+                        self.captureSession.startRunning()
+                    }
+                }))
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+                alert.addAction(UIAlertAction(title: "Avbryt", style: .destructive, handler: { _ in
                     DispatchQueue.global(qos: .background).async {
                         self.captureSession.startRunning()
                     }
@@ -219,6 +226,14 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         } catch {
             showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
         }
+    }
+
+    func formattedValue(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
 
     func showExistingFoodItem(_ foodItem: FoodItem) {
