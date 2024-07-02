@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreData
 import UIKit
 
 class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
@@ -182,18 +183,78 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     }
 
     func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
-        alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
-            self.navigateToAddFoodItem(productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
-        }))
-        present(alert, animated: true, completion: nil)
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
+
+        do {
+            let existingItems = try context.fetch(fetchRequest)
+
+            if let existingItem = existingItems.first {
+                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan i livsmedelslistan. \n\nVill du visa eller uppdatera den befintliga posten?", preferredStyle: .alert)
+                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+                    DispatchQueue.global(qos: .background).async {
+                        self.captureSession.startRunning()
+                    }
+                }))
+                duplicateAlert.addAction(UIAlertAction(title: "Visa", style: .default, handler: { _ in
+                    self.navigateToAddFoodItem(foodItem: existingItem)
+                }))
+                duplicateAlert.addAction(UIAlertAction(title: "Uppdatera", style: .default, handler: { _ in
+                    self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                }))
+                present(duplicateAlert, animated: true, completion: nil)
+            } else {
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+                    DispatchQueue.global(qos: .background).async {
+                        self.captureSession.startRunning()
+                    }
+                }))
+                alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
+                    self.navigateToAddFoodItem(productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                }))
+                present(alert, animated: true, completion: nil)
+            }
+        } catch {
+            showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
+        }
     }
 
+    func showExistingFoodItem(_ foodItem: FoodItem) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.foodItem = foodItem
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
+    }
+
+    func updateExistingFoodItem(_ foodItem: FoodItem, carbohydrates: Double, fat: Double, proteins: Double) {
+        foodItem.carbohydrates = carbohydrates
+        foodItem.fat = fat
+        foodItem.protein = proteins
+
+        do {
+            try CoreDataStack.shared.context.save()
+            showErrorAlert(message: "Livsmedel uppdaterad")
+        } catch {
+            showErrorAlert(message: "Fel vid uppdatering av livsmedel")
+        }
+    }
     func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+
+    func navigateToAddFoodItem(foodItem: FoodItem) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.foodItem = foodItem
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
     }
 
     func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
@@ -201,6 +262,17 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
+    }
+
+    func navigateToAddFoodItemWithUpdate(existingItem: FoodItem, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.foodItem = existingItem
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            addFoodItemVC.isUpdateMode = true
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }

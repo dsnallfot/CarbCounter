@@ -43,6 +43,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     var initialProtein: String?
     
     var prePopulatedData: (name: String, carbohydrates: Double, fat: Double, protein: Double)?
+    var isUpdateMode: Bool = false // Add this flag to indicate update mode
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -317,8 +318,20 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 fatTextField.text = formattedValue(foodItem.fat)
                 proteinTextField.text = formattedValue(foodItem.protein)
             }
+            
+            if isUpdateMode, let data = prePopulatedData {
+                carbsTextField.text = formattedValue(data.carbohydrates)
+                fatTextField.text = formattedValue(data.fat)
+                proteinTextField.text = formattedValue(data.protein)
+            }
         } else {
             title = "Lägg till livsmedel"
+            if isUpdateMode, let data = prePopulatedData {
+                nameTextField.text = data.name
+                carbsTextField.text = formattedValue(data.carbohydrates)
+                fatTextField.text = formattedValue(data.fat)
+                proteinTextField.text = formattedValue(data.protein)
+            }
         }
         updateUnitsLabels() // Ensure labels are set correctly when the view is loaded
     }
