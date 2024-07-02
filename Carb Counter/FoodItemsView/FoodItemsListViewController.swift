@@ -112,7 +112,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     private func setupNavigationBarButtons() {
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
-        let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode"), style: .plain, target: self, action: #selector(navigateToScanner))
+        let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode.viewfinder"), style: .plain, target: self, action: #selector(navigateToScanner))
         navigationItem.rightBarButtonItems = [addButton, barcodeButton]
     }
     

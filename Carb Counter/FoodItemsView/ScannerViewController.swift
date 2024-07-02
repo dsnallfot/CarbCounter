@@ -48,7 +48,19 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         DispatchQueue.global(qos: .background).async {
             self.captureSession.startRunning()
         }
+        
+        // Add cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
     }
+
+    @objc private func cancelButtonTapped() {
+            if let navigationController = navigationController {
+                navigationController.popViewController(animated: true)
+            } else {
+                dismiss(animated: true, completion: nil)
+            }
+        }
 
     func failed() {
         let ac = UIAlertController(title: "Scanning stöds ej", message: "Din enhet stödjer inte scanning av streckkoder. Vänligen använd en enhet med kamera.", preferredStyle: .alert)

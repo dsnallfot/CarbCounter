@@ -18,7 +18,7 @@ class HomeViewController: UIViewController {
     private func setupUI() {
         // Create and setup the title label
         let titleLabel = UILabel()
-        titleLabel.text = "Carb Counter"
+        titleLabel.text = "Carbs Counter"
         titleLabel.textAlignment = .center
         titleLabel.font = UIFont.systemFont(ofSize: 48, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
