@@ -55,6 +55,15 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         navigationItem.rightBarButtonItem = cancelButton
     }
     
+    func resetBarcodeProcessingState() {
+        DispatchQueue.global(qos: .background).async {
+            self.isProcessingBarcode = false
+            if !self.captureSession.isRunning {
+                self.captureSession.startRunning()
+            }
+        }
+    }
+    
     @objc private func cancelButtonTapped() {
         if let navigationController = navigationController {
             navigationController.popViewController(animated: true)
@@ -301,7 +310,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 }))
                 duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
                     DispatchQueue.main.async {
-                        self.captureSession.startRunning()
+                        self.resetBarcodeProcessingState()
                     }
                 }))
                 present(duplicateAlert, animated: true, completion: nil)
@@ -309,7 +318,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
                     DispatchQueue.main.async {
-                        self.captureSession.startRunning()
+                        self.resetBarcodeProcessingState()
                     }
                 }))
                 alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
@@ -354,8 +363,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             DispatchQueue.main.async {
-                self.captureSession.startRunning()
-            }
+                self.resetBarcodeProcessingState()            }
         }))
         present(alert, animated: true, completion: nil)
     }
