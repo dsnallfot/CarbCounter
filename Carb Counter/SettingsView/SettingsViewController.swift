@@ -83,19 +83,23 @@ class SettingsViewController: UITableViewController {
                 cell.textLabel?.text = "Sen Frukost-faktor"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
             case 5:
-                cell.textLabel?.text = "Dabas API Secret"
-                cell.detailTextLabel?.text = UserDefaultsRepository.dabasAPISecret
-            case 6:
                 cell.textLabel?.text = "Nightscout URL"
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
-            case 7:
+            case 6:
                 cell.textLabel?.text = "Nightscout Token"
-                cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutToken
+                cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
+            case 7:
+                cell.textLabel?.text = "Dabas API Secret"
+                cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
             default:
                 break
             }
             return cell
         }
+    }
+
+    private func maskText(_ text: String?) -> String {
+        return text?.isEmpty == false ? String(repeating: "*", count: 20) : "" //text!.count) : ""
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -138,62 +142,33 @@ class SettingsViewController: UITableViewController {
                 value = UserDefaultsRepository.lateBreakfastFactor
                 userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
             case 5:
-                title = "Dabas API Secret"
-                message = "Ange din Dabas API Secret:"
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addTextField { textField in
-                    textField.text = UserDefaultsRepository.dabasAPISecret
-                }
-                let saveAction = UIAlertAction(title: "Spara", style: .default) { _ in
-                    if let text = alert.textFields?.first?.text {
-                        UserDefaultsRepository.dabasAPISecret = text
-                        self.tableView.reloadRows(at: [indexPath], with: .none)
-                    }
-                }
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                alert.addAction(saveAction)
-                alert.addAction(cancelAction)
-                present(alert, animated: true, completion: nil)
-                return
-            case 6:
                 title = "Nightscout URL"
                 message = "Ange din Nightscout URL:"
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addTextField { textField in
-                    textField.text = UserDefaultsRepository.nightscoutURL
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutURL ?? "") { newValue in
+                    UserDefaultsRepository.nightscoutURL = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
-                let saveAction = UIAlertAction(title: "Spara", style: .default) { _ in
-                    if let text = alert.textFields?.first?.text {
-                        UserDefaultsRepository.nightscoutURL = text
-                        self.tableView.reloadRows(at: [indexPath], with: .none)
-                    }
-                }
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                alert.addAction(saveAction)
-                alert.addAction(cancelAction)
-                present(alert, animated: true, completion: nil)
                 return
-            case 7:
+            case 6:
                 title = "Nightscout Token"
                 message = "Ange din Nightscout Token:"
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addTextField { textField in
-                    textField.text = UserDefaultsRepository.nightscoutToken
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutToken ?? "") { newValue in
+                    UserDefaultsRepository.nightscoutToken = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
-                let saveAction = UIAlertAction(title: "Spara", style: .default) { _ in
-                    if let text = alert.textFields?.first?.text {
-                        UserDefaultsRepository.nightscoutToken = text
-                        self.tableView.reloadRows(at: [indexPath], with: .none)
-                    }
+                return
+            case 7:
+                title = "Dabas API Secret"
+                message = "Ange din Dabas API Secret:"
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in
+                    UserDefaultsRepository.dabasAPISecret = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                alert.addAction(saveAction)
-                alert.addAction(cancelAction)
-                present(alert, animated: true, completion: nil)
                 return
             default:
                 return
             }
+            
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addTextField { textField in
                 textField.keyboardType = .decimalPad
@@ -214,6 +189,22 @@ class SettingsViewController: UITableViewController {
             
             present(alert, animated: true, completion: nil)
         }
+    }
+
+    private func showEditAlert(title: String, message: String, currentValue: String, completion: @escaping (String) -> Void) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.text = currentValue
+        }
+        let saveAction = UIAlertAction(title: "Spara", style: .default) { _ in
+            if let text = alert.textFields?.first?.text {
+                completion(text)
+            }
+        }
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        alert.addAction(saveAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true, completion: nil)
     }
     
     @objc private func shortcutsSwitchChanged(_ sender: UISwitch) {
