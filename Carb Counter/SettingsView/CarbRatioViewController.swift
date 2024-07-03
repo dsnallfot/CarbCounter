@@ -4,81 +4,120 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     var carbRatios: [Int: Double] = [:]
     var clearButton: UIBarButtonItem!
     var doneButton: UIBarButtonItem!
+    var downloadButton: UIBarButtonItem!
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-        title = "Carb Ratio"
-        tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
-        loadCarbRatios()
+            super.viewDidLoad()
+            title = "Carb Ratio"
+            tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
+            loadCarbRatios()
+            
+            // Add Done button to the navigation bar
+            doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+            navigationItem.rightBarButtonItem = doneButton
+            
+            // Setup Clear button
+            clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+            clearButton.tintColor = .red
+            
+        // Setup Download button with SF Symbol
+                let downloadImage = UIImage(systemName: "square.and.arrow.down")
+                downloadButton = UIBarButtonItem(image: downloadImage, style: .plain, target: self, action: #selector(downloadButtonTapped))
         
-        // Add Done button to the navigation bar
-        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = doneButton
-        
-        // Setup Clear button
-                clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
-                clearButton.tintColor = .red
-                navigationItem.rightBarButtonItem = clearButton
-                
-                // Listen for changes to allowDataClearing setting
-                NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
-                
-                // Update Clear button visibility based on the current setting
-                updateClearButtonVisibility()
-    }
+            // Listen for changes to allowDataClearing setting
+            NotificationCenter.default.addObserver(self, selector: #selector(updateButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+            
+            // Update button visibility based on the current setting
+            updateButtonVisibility()
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
-    @objc private func updateClearButtonVisibility() {
-        clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
-    }
-    
-    @objc private func updateDoneButtonVisibility() {
-        doneButton.isHidden = UserDefaultsRepository.allowDataClearing
-    }
+    @objc private func updateButtonVisibility() {
+            if UserDefaultsRepository.allowDataClearing {
+                navigationItem.rightBarButtonItems = [clearButton]
+            } else {
+                navigationItem.rightBarButtonItems = [doneButton, downloadButton]
+            }
+        }
     
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        loadCarbRatios()
-    }
-    
-    private func loadCarbRatios() {
-        carbRatios = CoreDataHelper.shared.fetchCarbRatios()
-        tableView.reloadData()
-    }
-    
-    @objc private func doneButtonTapped() {
-        navigationController?.popViewController(animated: true)
-    }
-    
-    @objc private func clearButtonTapped() {
-        let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .alert)
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
-            CoreDataHelper.shared.clearAllCarbRatios()
-            self.loadCarbRatios()
+            super.viewWillAppear(animated)
+            loadCarbRatios()
         }
-        let noAction = UIAlertAction(title: "Nej", style: .cancel, handler: nil)
         
-        alertController.addAction(yesAction)
-        alertController.addAction(noAction)
+        private func loadCarbRatios() {
+            carbRatios = CoreDataHelper.shared.fetchCarbRatios()
+            tableView.reloadData()
+        }
         
-        present(alertController, animated: true, completion: nil)
-    }
+        @objc private func doneButtonTapped() {
+            navigationController?.popViewController(animated: true)
+        }
+        
+        @objc private func clearButtonTapped() {
+            let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .alert)
+            let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+                CoreDataHelper.shared.clearAllCarbRatios()
+                self.loadCarbRatios()
+            }
+            let noAction = UIAlertAction(title: "Nej", style: .cancel, handler: nil)
+            
+            alertController.addAction(yesAction)
+            alertController.addAction(noAction)
+            
+            present(alertController, animated: true, completion: nil)
+        }
+    
+    @objc private func downloadButtonTapped() {
+           let alertController = UIAlertController(
+               title: "Nightscout import",
+               message: "Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över.",
+               preferredStyle: .alert
+           )
+           
+           let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+           let confirmAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+               self.downloadCarbRatiosFromNightscout()
+           }
+           
+           alertController.addAction(cancelAction)
+           alertController.addAction(confirmAction)
+           
+           present(alertController, animated: true, completion: nil)
+       }
+       
+       private func downloadCarbRatiosFromNightscout() {
+           NightscoutManager.shared.fetchAndMapCarbRatio { success in
+               DispatchQueue.main.async {
+                   if success {
+                       self.loadCarbRatios()
+                       let alert = UIAlertController(title: "Lyckades", message: "Carb ratios importerade och mappede från Nightscout.", preferredStyle: .alert)
+                       alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                       self.present(alert, animated: true, completion: nil)
+                   } else {
+                       let alert = UIAlertController(title: "Fel", message: "Kunde inte importera carb ratios från Nightscout.", preferredStyle: .alert)
+                       alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                       self.present(alert, animated: true, completion: nil)
+                   }
+               }
+           }
+       }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 24
-    }
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CarbRatioCell", for: indexPath) as! CarbRatioCell
-        let hour = String(format: "%02d:00", indexPath.row)
-        let ratio = carbRatios[indexPath.row] ?? 0.0
-        let formattedRatio = ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio)
-        cell.configure(hour: hour, ratio: formattedRatio, delegate: self)
-        return cell
-    }
+            return 24
+        }
+        
+        override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "CarbRatioCell", for: indexPath) as! CarbRatioCell
+            let hour = String(format: "%02d:00", indexPath.row)
+            let ratio = carbRatios[indexPath.row] ?? 0.0
+            let formattedRatio = ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio)
+            cell.configure(hour: hour, ratio: formattedRatio, delegate: self)
+            return cell
+        }
     
     // MARK: - UITextFieldDelegate
     

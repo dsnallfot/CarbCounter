@@ -141,4 +141,22 @@ class UserDefaultsRepository {
                 UserDefaults.standard.set(newValue, forKey: "dabasAPISecret")
             }
         }
+    
+    static var nightscoutURL: String? {
+            get {
+                return UserDefaults.standard.string(forKey: "nightscoutURL")
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "nightscoutURL")
+            }
+        }
+        
+        static var nightscoutToken: String? {
+            get {
+                return UserDefaults.standard.string(forKey: "nightscoutToken")
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "nightscoutToken")
+            }
+        }
 }

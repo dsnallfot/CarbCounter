@@ -124,6 +124,13 @@ class CoreDataHelper {
         }
     }
 
+    // Update Carb Ratios with hourly mapping
+    func updateCarbRatios(with hourlyCarbRatios: [Int: Double]) {
+        for (hour, ratio) in hourlyCarbRatios {
+            saveCarbRatio(hour: hour, ratio: ratio)
+        }
+    }
+
     // Clear all Carb Ratio entries
     func clearAllCarbRatios() {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CarbRatioSchedule.fetchRequest()
