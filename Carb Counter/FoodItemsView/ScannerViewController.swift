@@ -6,46 +6,46 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     var captureSession: AVCaptureSession!
     var previewLayer: AVCaptureVideoPreviewLayer!
     var isProcessingBarcode = false
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         view.backgroundColor = UIColor.black
         captureSession = AVCaptureSession()
-
+        
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
         let videoInput: AVCaptureDeviceInput
-
+        
         do {
             videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
         } catch {
             return
         }
-
+        
         if (captureSession.canAddInput(videoInput)) {
             captureSession.addInput(videoInput)
         } else {
             failed()
             return
         }
-
+        
         let metadataOutput = AVCaptureMetadataOutput()
-
+        
         if (captureSession.canAddOutput(metadataOutput)) {
             captureSession.addOutput(metadataOutput)
-
+            
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.ean8, .ean13, .pdf417]
         } else {
             failed()
             return
         }
-
+        
         previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         previewLayer.frame = view.layer.bounds
         previewLayer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(previewLayer)
-
+        
         DispatchQueue.global(qos: .background).async {
             self.captureSession.startRunning()
         }
@@ -54,52 +54,52 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
     }
-
+    
     @objc private func cancelButtonTapped() {
-            if let navigationController = navigationController {
-                navigationController.popViewController(animated: true)
-            } else {
-                dismiss(animated: true, completion: nil)
-            }
+        if let navigationController = navigationController {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true, completion: nil)
         }
-
+    }
+    
     func failed() {
         let ac = UIAlertController(title: "Scanning stöds ej", message: "Din enhet stödjer inte scanning av streckkoder. Vänligen använd en enhet med kamera.", preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default))
         present(ac, animated: true)
         captureSession = nil
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
+        
         DispatchQueue.global(qos: .background).async {
             if (self.captureSession?.isRunning == false) {
                 self.captureSession.startRunning()
             }
         }
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
+        
         DispatchQueue.global(qos: .background).async {
             if (self.captureSession?.isRunning == true) {
                 self.captureSession.stopRunning()
             }
         }
     }
-
+    
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if isProcessingBarcode {
             return
         }
-
+        
         isProcessingBarcode = true
         DispatchQueue.global(qos: .background).async {
             self.captureSession.stopRunning()
         }
-
+        
         if let metadataObject = metadataObjects.first {
             guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else {
                 isProcessingBarcode = false
@@ -113,13 +113,13 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             found(code: stringValue)
         }
     }
-
+    
     func found(code: String) {
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
-
+        
         // Ensure the code is padded to 14 digits with leading zeros
         let paddedCode = code.padLeft(toLength: 14, withPad: "0")
-
+        
         let dabasURLString = "https://api.dabas.com/DABASService/V2/article/gtin/\(paddedCode)/JSON?apikey=\(dabasAPISecret)"
         
         // Print the URL to ensure it's correct
@@ -130,26 +130,26 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             isProcessingBarcode = false
             return
         }
-
+        
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
                 print("Dabas API fel: \(error.localizedDescription)")
                 self.fetchFromOpenFoodFacts(code: code)
                 return
             }
-
+            
             guard let data = data else {
                 print("Dabas API fel: Ingen data ")
                 self.fetchFromOpenFoodFacts(code: code)
                 return
             }
-
+            
             do {
                 // Attempt to decode JSON response
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     // Print the entire JSON response
-                    //print("Dabas API Response: \(jsonResponse)")
-
+                    print("Dabas API Response: \(jsonResponse)")
+                    
                     // Extract product name and nutritional information
                     guard let artikelbenamning = jsonResponse["Artikelbenamning"] as? String,
                           let naringsinfoArray = jsonResponse["Naringsinfo"] as? [[String: Any]],
@@ -159,28 +159,28 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         self.fetchFromOpenFoodFacts(code: code)
                         return
                     }
-
+                    
                     // Initialize nutritional values
                     var carbohydrates = 0.0
                     var fat = 0.0
                     var proteins = 0.0
-
+                    
                     // Extract nutritional values
                     for nutrient in naringsvarden {
                         if let code = nutrient["Kod"] as? String, let amount = nutrient["Mangd"] as? Double {
                             switch code {
-                                case "CHOAVL":
-                                    carbohydrates = amount
-                                case "FAT":
-                                    fat = amount
-                                case "PRO-":
-                                    proteins = amount
-                                default:
-                                    break
+                            case "CHOAVL":
+                                carbohydrates = amount
+                            case "FAT":
+                                fat = amount
+                            case "PRO-":
+                                proteins = amount
+                            default:
+                                break
                             }
                         }
                     }
-
+                    
                     // Construct message to display
                     let message = """
                     Kolhydrater: \(carbohydrates) g / 100 g
@@ -188,7 +188,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     Protein: \(proteins) g / 100 g
                     (Källa: Dabas)
                     """
-
+                    
                     // Display product alert on the main thread
                     DispatchQueue.main.async {
                         self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
@@ -203,10 +203,10 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 self.fetchFromOpenFoodFacts(code: code)
             }
         }
-
+        
         dabasTask.resume()
     }
-
+    
     func fetchFromOpenFoodFacts(code: String) {
         let urlString = "https://world.openfoodfacts.net/api/v2/product/\(code)?fields=product_name,nutriments"
         guard let url = URL(string: urlString) else {
@@ -214,28 +214,28 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             isProcessingBarcode = false
             return
         }
-
+        
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             defer {
                 DispatchQueue.main.async {
                     self.isProcessingBarcode = false
                 }
             }
-
+            
             if let error = error {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Fel: \(error.localizedDescription)")
                 }
                 return
             }
-
+            
             guard let data = data else {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Ingen data levererades")
                 }
                 return
             }
-
+            
             do {
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     if let product = jsonResponse["product"] as? [String: Any],
@@ -245,18 +245,18 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         let carbohydrates = nutriments["carbohydrates_100g"] as? Double ?? 0.0
                         let fat = nutriments["fat_100g"] as? Double ?? 0.0
                         let proteins = nutriments["proteins_100g"] as? Double ?? 0.0
-
+                        
                         let message = """
                         Kolhydrater: \(carbohydrates) g / 100 g
                         Fett: \(fat) g / 100 g
                         Protein: \(proteins) g / 100 g
                         (Källa: Openfoodfacts)
                         """
-
+                        
                         DispatchQueue.main.async {
                             self.showProductAlert(title: productName, message: message, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                         }
-                        print("Openfoodfacts product match OK")
+                        print("Openfoodfacts produktmatchning OK")
                     } else {
                         DispatchQueue.main.async {
                             self.showErrorAlert(message: "Livsmedel kunde inte hittas")
@@ -269,30 +269,29 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Fel vid tolkning JSON: \(error.localizedDescription)")
+                    self.showErrorAlert(message: "Fel vid tolkning JSON: (error.localizedDescription)")
                 }
             }
         }
-
         task.resume()
     }
-
+    
     func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
-
+        
         do {
             let existingItems = try context.fetch(fetchRequest)
-
+            
             if let existingItem = existingItems.first {
                 let comparisonMessage = """
-                Befintlig data    ->    Ny data
-                Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
-                Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
-                Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
-                """
-
+            Befintlig data    ->    Ny data
+            Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
+            Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
+            Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
+            """
+                
                 let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
                 duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
@@ -301,7 +300,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                 }))
                 duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
-                    DispatchQueue.global(qos: .background).async {
+                    DispatchQueue.main.async {
                         self.captureSession.startRunning()
                     }
                 }))
@@ -309,7 +308,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             } else {
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
-                    DispatchQueue.global(qos: .background).async {
+                    DispatchQueue.main.async {
                         self.captureSession.startRunning()
                     }
                 }))
@@ -322,7 +321,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
         }
     }
-
+    
     func formattedValue(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0
@@ -330,7 +329,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
-
+    
     func showExistingFoodItem(_ foodItem: FoodItem) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -339,29 +338,28 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-/*
-    func updateExistingFoodItem(_ foodItem: FoodItem, carbohydrates: Double, fat: Double, proteins: Double) {
-        foodItem.carbohydrates = carbohydrates
-        foodItem.fat = fat
-        foodItem.protein = proteins
-
-        do {
-            try CoreDataStack.shared.context.save()
-            showErrorAlert(message: "Livsmedel uppdaterad")
-        } catch {
-            showErrorAlert(message: "Fel vid uppdatering av livsmedel")
-        }
-    }*/
+    /*
+     func updateExistingFoodItem(_ foodItem: FoodItem, carbohydrates: Double, fat: Double, proteins: Double) {
+     foodItem.carbohydrates = carbohydrates
+     foodItem.fat = fat
+     foodItem.protein = proteins
+     do {
+     try CoreDataStack.shared.context.save()
+     showErrorAlert(message: "Livsmedel uppdaterad")
+     } catch {
+     showErrorAlert(message: "Fel vid uppdatering av livsmedel")
+     }
+     }*/
     func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-            DispatchQueue.global(qos: .background).async {
+            DispatchQueue.main.async {
                 self.captureSession.startRunning()
             }
         }))
         present(alert, animated: true, completion: nil)
     }
-
+    
     func navigateToAddFoodItem(foodItem: FoodItem) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -370,7 +368,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-
+    
     func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -379,7 +377,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-
+    
     func navigateToAddFoodItemWithUpdate(existingItem: FoodItem, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -390,11 +388,11 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-
+    
     override var prefersStatusBarHidden: Bool {
         return true
     }
-
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
