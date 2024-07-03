@@ -595,7 +595,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         //print("setupSummaryView ran")
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        summaryView.backgroundColor = .systemGray5//.systemBackground
+        summaryView.backgroundColor = .systemGray6//.systemBackground
         container.addSubview(summaryView)
         
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
@@ -703,7 +703,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     private func setupTreatmentView(in container: UIView) {
         let treatmentView = UIView()
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
-        treatmentView.backgroundColor = .systemGray5 //.systemBackground
+        treatmentView.backgroundColor = .systemGray6 //.systemBackground
         container.addSubview(treatmentView)
         
         let crContainer = createContainerView(backgroundColor: .systemCyan)
@@ -2316,7 +2316,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
         //print("setupSummaryView ran")
         let summaryView = UIView()
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        summaryView.backgroundColor = .systemGray5//.systemBackground
+        summaryView.backgroundColor = .systemGray6//.systemBackground
         container.addSubview(summaryView)
         
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
@@ -2425,7 +2425,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, AddF
     private func setupTreatmentView(in container: UIView) {
         let treatmentView = UIView()
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
-        treatmentView.backgroundColor = .systemGray5 //.systemBackground
+        treatmentView.backgroundColor = .systemGray6 //.systemBackground
         container.addSubview(treatmentView)
         
         let crContainer = createContainerView(backgroundColor: .systemCyan)

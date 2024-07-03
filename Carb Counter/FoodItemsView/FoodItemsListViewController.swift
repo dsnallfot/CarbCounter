@@ -49,7 +49,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Set the back button title for the next view controller
         let backButton = UIBarButtonItem()
-        backButton.title = "Livsmedel"
+        backButton.title = "Tillbaka"
         navigationItem.backBarButtonItem = backButton
         
         // Add observers for keyboard notifications
@@ -73,7 +73,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func updateClearButtonVisibility() {
         let allowDataClearing = UserDefaultsRepository.allowDataClearing
         clearButton.isHidden = !allowDataClearing
-        searchButton.isHidden = allowDataClearing
+        //searchButton.isHidden = allowDataClearing
     }
     
     @objc private func clearButtonTapped() {
@@ -129,8 +129,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
 
-        navigationItem.rightBarButtonItems = [addButton, barcodeButton]
-        navigationItem.leftBarButtonItems = [clearButton, searchButton]
+        navigationItem.rightBarButtonItems = [barcodeButton, searchButton]
+        navigationItem.leftBarButtonItems = [clearButton, addButton]
         updateClearButtonVisibility()
     }
     
@@ -154,7 +154,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Sök livsmedel"
+        searchBar.placeholder = "Sök sparade livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {

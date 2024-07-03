@@ -3,22 +3,31 @@ import CoreData
 
 class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private let searchTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Sök efter livsmedel"
-        textField.borderStyle = .roundedRect
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        return textField
-    }()
+            let textField = UITextField()
+            textField.placeholder = "Sök efter livsmedel online"
+            textField.borderStyle = .roundedRect
+            textField.backgroundColor = .systemGray6
+            textField.translatesAutoresizingMaskIntoConstraints = false
+            
+            let placeholderText = "Sök efter livsmedel online"
+            let attributes: [NSAttributedString.Key: Any] = [
+                .foregroundColor: UIColor.systemGray
+            ]
+            textField.attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
+            
+            return textField
+        }()
     
     private let searchButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Sök", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 8
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
+            let button = UIButton(type: .system)
+            button.setTitle("Sök", for: .normal)
+            button.setTitleColor(.white, for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+            button.backgroundColor = .systemBlue
+            button.layer.cornerRadius = 10
+            button.translatesAutoresizingMaskIntoConstraints = false
+            return button
+        }()
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -45,6 +54,18 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(ArticleTableViewCell.self, forCellReuseIdentifier: "ArticleCell")
+        
+        // Add cancel button to the navigation bar
+        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton
+    }
+    
+    @objc private func cancelButtonTapped() {
+        if let navigationController = navigationController {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true, completion: nil)
+        }
     }
     
     private func setupConstraints() {
@@ -56,7 +77,7 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
             searchButton.centerYAnchor.constraint(equalTo: searchTextField.centerYAnchor),
             searchButton.leadingAnchor.constraint(equalTo: searchTextField.trailingAnchor, constant: 8),
             searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            searchButton.heightAnchor.constraint(equalToConstant: 40),
+            searchButton.heightAnchor.constraint(equalToConstant: 36),
             
             tableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 16),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
