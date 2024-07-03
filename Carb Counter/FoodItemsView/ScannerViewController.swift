@@ -198,7 +198,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
                 """
 
-                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .actionSheet)
+                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
                 duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
                 }))
@@ -212,7 +212,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 }))
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
                     DispatchQueue.global(qos: .background).async {
                         self.captureSession.startRunning()

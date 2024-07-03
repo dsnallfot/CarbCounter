@@ -337,7 +337,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         message += "\n\n(Serverats: \(foodItem.count) ggr)"
         
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Ät nu", style: .default, handler: { _ in
             self.addToComposeMealViewController(foodItem: foodItem)
