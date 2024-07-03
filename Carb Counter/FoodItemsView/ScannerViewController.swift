@@ -133,13 +133,13 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
-                print("Dabas API Error: \(error.localizedDescription)")
+                print("Dabas API fel: \(error.localizedDescription)")
                 self.fetchFromOpenFoodFacts(code: code)
                 return
             }
 
             guard let data = data else {
-                print("Dabas API Error: No data received")
+                print("Dabas API fel: Ingen data ")
                 self.fetchFromOpenFoodFacts(code: code)
                 return
             }
@@ -148,7 +148,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 // Attempt to decode JSON response
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     // Print the entire JSON response
-                    print("Dabas API Response: \(jsonResponse)")
+                    //print("Dabas API Response: \(jsonResponse)")
 
                     // Extract product name and nutritional information
                     guard let artikelbenamning = jsonResponse["Artikelbenamning"] as? String,
@@ -186,19 +186,20 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     Kolhydrater: \(carbohydrates) g / 100 g
                     Fett: \(fat) g / 100 g
                     Protein: \(proteins) g / 100 g
+                    (Källa: Dabas)
                     """
 
                     // Display product alert on the main thread
                     DispatchQueue.main.async {
                         self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                     }
-                    print("Dabas product match OK")
+                    print("Dabas produktmatchning OK")
                 } else {
-                    print("Dabas API Error: Failed to parse JSON response")
+                    print("Dabas API fel: Kunde inte tolka svar från servern")
                     self.fetchFromOpenFoodFacts(code: code)
                 }
             } catch {
-                print("Dabas API Error: \(error.localizedDescription)")
+                print("Dabas API fel: \(error.localizedDescription)")
                 self.fetchFromOpenFoodFacts(code: code)
             }
         }
@@ -249,6 +250,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         Kolhydrater: \(carbohydrates) g / 100 g
                         Fett: \(fat) g / 100 g
                         Protein: \(proteins) g / 100 g
+                        (Källa: Openfoodfacts)
                         """
 
                         DispatchQueue.main.async {
