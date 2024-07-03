@@ -115,6 +115,98 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     }
 
     func found(code: String) {
+        let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
+
+        // Ensure the code is padded to 14 digits with leading zeros
+        let paddedCode = code.padLeft(toLength: 14, withPad: "0")
+
+        let dabasURLString = "https://api.dabas.com/DABASService/V2/article/gtin/\(paddedCode)/JSON?apikey=\(dabasAPISecret)"
+        
+        // Print the URL to ensure it's correct
+        print("Dabas URL: \(dabasURLString)")
+        
+        guard let dabasURL = URL(string: dabasURLString) else {
+            showErrorAlert(message: "Invalid Dabas URL")
+            isProcessingBarcode = false
+            return
+        }
+
+        let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
+            if let error = error {
+                print("Dabas API Error: \(error.localizedDescription)")
+                self.fetchFromOpenFoodFacts(code: code)
+                return
+            }
+
+            guard let data = data else {
+                print("Dabas API Error: No data received")
+                self.fetchFromOpenFoodFacts(code: code)
+                return
+            }
+
+            do {
+                // Attempt to decode JSON response
+                if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    // Print the entire JSON response
+                    print("Dabas API Response: \(jsonResponse)")
+
+                    // Extract product name and nutritional information
+                    guard let artikelbenamning = jsonResponse["Artikelbenamning"] as? String,
+                          let naringsinfoArray = jsonResponse["Naringsinfo"] as? [[String: Any]],
+                          let naringsinfo = naringsinfoArray.first,
+                          let naringsvarden = naringsinfo["Naringsvarden"] as? [[String: Any]] else {
+                        print("Dabas API Error: Missing Artikelbenamning or Naringsinfo")
+                        self.fetchFromOpenFoodFacts(code: code)
+                        return
+                    }
+
+                    // Initialize nutritional values
+                    var carbohydrates = 0.0
+                    var fat = 0.0
+                    var proteins = 0.0
+
+                    // Extract nutritional values
+                    for nutrient in naringsvarden {
+                        if let code = nutrient["Kod"] as? String, let amount = nutrient["Mangd"] as? Double {
+                            switch code {
+                                case "CHOAVL":
+                                    carbohydrates = amount
+                                case "FAT":
+                                    fat = amount
+                                case "PRO-":
+                                    proteins = amount
+                                default:
+                                    break
+                            }
+                        }
+                    }
+
+                    // Construct message to display
+                    let message = """
+                    Kolhydrater: \(carbohydrates) g / 100 g
+                    Fett: \(fat) g / 100 g
+                    Protein: \(proteins) g / 100 g
+                    """
+
+                    // Display product alert on the main thread
+                    DispatchQueue.main.async {
+                        self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                    }
+                    print("Dabas product match OK")
+                } else {
+                    print("Dabas API Error: Failed to parse JSON response")
+                    self.fetchFromOpenFoodFacts(code: code)
+                }
+            } catch {
+                print("Dabas API Error: \(error.localizedDescription)")
+                self.fetchFromOpenFoodFacts(code: code)
+            }
+        }
+
+        dabasTask.resume()
+    }
+
+    func fetchFromOpenFoodFacts(code: String) {
         let urlString = "https://world.openfoodfacts.net/api/v2/product/\(code)?fields=product_name,nutriments"
         guard let url = URL(string: urlString) else {
             showErrorAlert(message: "Invalid URL")
@@ -162,6 +254,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         DispatchQueue.main.async {
                             self.showProductAlert(title: productName, message: message, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                         }
+                        print("Openfoodfacts product match OK")
                     } else {
                         DispatchQueue.main.async {
                             self.showErrorAlert(message: "Livsmedel kunde inte hittas")
@@ -302,5 +395,18 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
+    }
+}
+
+// Extension to pad the string to the left
+extension String {
+    func padLeft(toLength: Int, withPad: String) -> String {
+        let newLength = self.count
+        if newLength < toLength {
+            let pad = String(repeating: withPad, count: toLength - newLength)
+            return pad + self
+        } else {
+            return String(self.suffix(toLength))
+        }
     }
 }
