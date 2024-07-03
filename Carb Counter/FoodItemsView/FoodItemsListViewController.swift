@@ -17,6 +17,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var segmentedControl: UISegmentedControl!
     var searchBar: UISearchBar!
     var clearButton: UIBarButtonItem!
+    var searchButton: UIBarButtonItem!
     var tableViewBottomConstraint: NSLayoutConstraint!
     
     enum SortOption {
@@ -46,6 +47,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Update Clear button visibility based on the current setting
         updateClearButtonVisibility()
         
+        // Set the back button title for the next view controller
+        let backButton = UIBarButtonItem()
+        backButton.title = "Livsmedel"
+        navigationItem.backBarButtonItem = backButton
+        
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -54,6 +60,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchFoodItems()
+        updateClearButtonVisibility()
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
     }
     
     deinit {
@@ -61,7 +71,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     @objc private func updateClearButtonVisibility() {
-        clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
+        let allowDataClearing = UserDefaultsRepository.allowDataClearing
+        clearButton.isHidden = !allowDataClearing
+        searchButton.isHidden = allowDataClearing
     }
     
     @objc private func clearButtonTapped() {
@@ -113,7 +125,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func setupNavigationBarButtons() {
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItem))
         let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode.viewfinder"), style: .plain, target: self, action: #selector(navigateToScanner))
+        searchButton = UIBarButtonItem(image: UIImage(systemName: "plus.magnifyingglass"), style: .plain, target: self, action: #selector(navigateToSearchOnline))
+        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
+
         navigationItem.rightBarButtonItems = [addButton, barcodeButton]
+        navigationItem.leftBarButtonItems = [clearButton, searchButton]
+        updateClearButtonVisibility()
     }
     
     private func setupNavigationBarTitle() {
@@ -182,6 +200,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func cancelButtonTapped() {
         searchBar.resignFirstResponder()
         }
+    
+    @objc private func navigateToSearchOnline() {
+        let searchOnlineVC = SearchOnlineViewController()
+        navigationController?.pushViewController(searchOnlineVC, animated: true)
+    }
     
     private func setupSortSegmentedControl() {
             let items = ["Namn A-Ö", "Per Styck", "Populära"]
@@ -400,8 +423,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-    
-    
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
