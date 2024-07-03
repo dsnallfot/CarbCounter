@@ -1,4 +1,5 @@
 import UIKit
+import CoreData
 
 class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private let searchTextField: UITextField = {
@@ -130,6 +131,166 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         cell.configure(with: article)
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedArticle = articles[indexPath.row]
+        if let gtin = selectedArticle.gtin {
+            fetchNutritionalInfo(for: gtin)
+        }
+    }
+    
+    private func fetchNutritionalInfo(for gtin: String) {
+        let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
+        let dabasURLString = "https://api.dabas.com/DABASService/V2/article/gtin/\(gtin)/JSON?apikey=\(dabasAPISecret)"
+        
+        guard let dabasURL = URL(string: dabasURLString) else {
+            showErrorAlert(message: "Invalid Dabas URL")
+            return
+        }
+        
+        let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
+            if let error = error {
+                print("Dabas API error: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("Dabas API error: No data received")
+                return
+            }
+            
+            do {
+                if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    //print("Dabas API Response: \(jsonResponse)")
+                    
+                    guard let artikelbenamning = jsonResponse["Artikelbenamning"] as? String,
+                          let naringsinfoArray = jsonResponse["Naringsinfo"] as? [[String: Any]],
+                          let naringsinfo = naringsinfoArray.first,
+                          let naringsvarden = naringsinfo["Naringsvarden"] as? [[String: Any]] else {
+                        print("Dabas API Error: Missing Artikelbenamning or Naringsinfo")
+                        return
+                    }
+                    
+                    var carbohydrates = 0.0
+                    var fat = 0.0
+                    var proteins = 0.0
+                    
+                    for nutrient in naringsvarden {
+                        if let code = nutrient["Kod"] as? String, let amount = nutrient["Mangd"] as? Double {
+                            switch code {
+                            case "CHOAVL":
+                                carbohydrates = amount
+                            case "FAT":
+                                fat = amount
+                            case "PRO-":
+                                proteins = amount
+                            default:
+                                break
+                            }
+                        }
+                    }
+                    
+                    let message = """
+                    Kolhydrater: \(carbohydrates) g / 100 g
+                    Fett: \(fat) g / 100 g
+                    Protein: \(proteins) g / 100 g
+                    (Källa: Dabas)
+                    """
+                    
+                    DispatchQueue.main.async {
+                        self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                    }
+                    print("Dabas produktmatchning OK")
+                } else {
+                    print("Dabas API error: Could not parse response")
+                }
+            } catch {
+                print("Dabas API error: \(error.localizedDescription)")
+            }
+        }
+        
+        dabasTask.resume()
+    }
+    
+    private func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
+        
+        do {
+            let existingItems = try context.fetch(fetchRequest)
+            
+            if let existingItem = existingItems.first {
+                let comparisonMessage = """
+            Befintlig data    ->    Ny data
+            Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
+            Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
+            Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
+            """
+                
+                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n(comparisonMessage)", preferredStyle: .alert)
+                duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
+                    self.navigateToAddFoodItem(foodItem: existingItem)
+                }))
+                duplicateAlert.addAction(UIAlertAction(title: "Uppdatera", style: .default, handler: { _ in
+                    self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                }))
+                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+                present(duplicateAlert, animated: true, completion: nil)
+            } else {
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
+                    self.navigateToAddFoodItem(productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                }))
+                present(alert, animated: true, completion: nil)
+            }
+        } catch {
+            showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
+        }
+    }
+    private func formattedValue(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func navigateToAddFoodItem(foodItem: FoodItem) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.foodItem = foodItem
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
+    }
+    
+    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
+    }
+    
+    private func navigateToAddFoodItemWithUpdate(existingItem: FoodItem, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self as? AddFoodItemDelegate
+            addFoodItemVC.foodItem = existingItem
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            addFoodItemVC.isUpdateMode = true
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
+    }
 }
 
 struct Article: Codable {
@@ -137,7 +298,6 @@ struct Article: Codable {
     let varumarke: String?
     let forpackningsstorlek: String?
     let gtin: String?  // Add this line
-    
     enum CodingKeys: String, CodingKey {
         case artikelbenamning = "Artikelbenamning"
         case varumarke = "Varumarke"
@@ -153,7 +313,6 @@ class ArticleTableViewCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
     let detailsLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
