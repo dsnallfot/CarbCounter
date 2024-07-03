@@ -54,7 +54,7 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     }
     
     @objc private func clearButtonTapped() {
-        let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .actionSheet)
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
             CoreDataHelper.shared.clearAllStartDoses()
             self.loadStartDoses()

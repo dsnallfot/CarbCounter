@@ -96,27 +96,27 @@ class DataSharingViewController: UIViewController {
     // MARK: - Sharing Data
     
     @objc private func exportData() {
-        let alert = UIAlertController(title: "Export Data", message: "Choose which data to export", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Exportera data", message: "Välj vilken data du vill exportera", preferredStyle: .actionSheet)
         
-        alert.addAction(UIAlertAction(title: "Food Items", style: .default, handler: { _ in self.exportFoodItemsToCSV() }))
-        alert.addAction(UIAlertAction(title: "Favorite Meals", style: .default, handler: { _ in self.exportFavoriteMealsToCSV() }))
-        alert.addAction(UIAlertAction(title: "Carb Ratio Schedule", style: .default, handler: { _ in self.exportCarbRatioScheduleToCSV() }))
-        alert.addAction(UIAlertAction(title: "Start Dose Schedule", style: .default, handler: { _ in self.exportStartDoseScheduleToCSV() }))
-        alert.addAction(UIAlertAction(title: "Meal History", style: .default, handler: { _ in self.exportMealHistoryToCSV() }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in self.exportCarbRatioScheduleToCSV() }))
+        alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in self.exportFavoriteMealsToCSV() }))
+        alert.addAction(UIAlertAction(title: "Livsmedelslista", style: .default, handler: { _ in self.exportFoodItemsToCSV() }))
+        alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in self.exportMealHistoryToCSV() }))
+        alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in self.exportStartDoseScheduleToCSV() }))
+        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
         
         present(alert, animated: true, completion: nil)
     }
     
     @objc private func importData() {
-        let alert = UIAlertController(title: "Import Data", message: "Choose which data to import", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
         
-        alert.addAction(UIAlertAction(title: "Food Items", style: .default, handler: { _ in self.importCSV(for: "Food Items") }))
-        alert.addAction(UIAlertAction(title: "Favorite Meals", style: .default, handler: { _ in self.importCSV(for: "Favorite Meals") }))
-        alert.addAction(UIAlertAction(title: "Carb Ratio Schedule", style: .default, handler: { _ in self.importCSV(for: "Carb Ratio Schedule") }))
-        alert.addAction(UIAlertAction(title: "Start Dose Schedule", style: .default, handler: { _ in self.importCSV(for: "Start Dose Schedule") }))
-        alert.addAction(UIAlertAction(title: "Meal History", style: .default, handler: { _ in self.importCSV(for: "Meal History") }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in self.importCSV(for: "Carb Ratio Schedule") }))
+        alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in self.importCSV(for: "Favorite Meals") }))
+        alert.addAction(UIAlertAction(title: "Livsmedelslista", style: .default, handler: { _ in self.importCSV(for: "Food Items") }))
+        alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in self.importCSV(for: "Meal History") }))
+        alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in self.importCSV(for: "Start Dose Schedule") }))
+        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
         present(alert, animated: true, completion: nil)
     }
     

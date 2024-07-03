@@ -1,10 +1,3 @@
-//
-//  MealHistoryViewController.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-24.
-//
-
 import UIKit
 import CoreData
 
@@ -27,15 +20,16 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
     }
+
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            fetchMealHistories()
-            
-            // Set the back button title for the next view controller
-            let backButton = UIBarButtonItem()
-            backButton.title = "Historik"
-            navigationItem.backBarButtonItem = backButton
-        }
+        super.viewWillAppear(animated)
+        fetchMealHistories()
+        
+        // Set the back button title for the next view controller
+        let backButton = UIBarButtonItem()
+        backButton.title = "Historik"
+        navigationItem.backBarButtonItem = backButton
+    }
     
     @objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)
@@ -78,19 +72,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func fetchMealHistories() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
-            let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
-            fetchRequest.sortDescriptors = [sortDescriptor]
-            
-            do {
-                mealHistories = try context.fetch(fetchRequest)
-                filteredMealHistories = mealHistories
-                tableView.reloadData()
-            } catch {
-                print("Failed to fetch meal histories: \(error)")
-            }
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
+        let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        do {
+            mealHistories = try context.fetch(fetchRequest)
+            filteredMealHistories = mealHistories
+            tableView.reloadData()
+        } catch {
+            print("Failed to fetch meal histories: \(error)")
         }
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredMealHistories.count
@@ -137,21 +131,30 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         return true
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-            if editingStyle == .delete {
-                let mealHistory = filteredMealHistories[indexPath.row]
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (action, view, completionHandler) in
+            let alert = UIAlertController(title: "Radera måltidshistorik", message: "Vill du radera denna måltid från historiken?", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+                completionHandler(false) // Dismiss the swipe action
+            }))
+            alert.addAction(UIAlertAction(title: "Ja", style: .destructive, handler: { _ in
+                let mealHistory = self.filteredMealHistories[indexPath.row]
                 let context = CoreDataStack.shared.context
                 context.delete(mealHistory)
                 
                 do {
                     try context.save()
-                    mealHistories.removeAll { $0 == mealHistory }
-                    filteredMealHistories.remove(at: indexPath.row)
+                    self.mealHistories.removeAll { $0 == mealHistory }
+                    self.filteredMealHistories.remove(at: indexPath.row)
                     tableView.deleteRows(at: [indexPath], with: .fade)
                 } catch {
                     print("Failed to delete meal history: \(error)")
-            }
+                }
+                completionHandler(true) // Perform the delete action
+            }))
+            self.present(alert, animated: true, completion: nil)
         }
+        return UISwipeActionsConfiguration(actions: [deleteAction])
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

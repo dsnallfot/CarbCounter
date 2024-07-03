@@ -198,22 +198,22 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
                 """
 
-                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
+                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .actionSheet)
                 duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
                 }))
                 duplicateAlert.addAction(UIAlertAction(title: "Uppdatera", style: .default, handler: { _ in
                     self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                 }))
-                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .destructive, handler: { _ in
+                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
                     DispatchQueue.global(qos: .background).async {
                         self.captureSession.startRunning()
                     }
                 }))
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Avbryt", style: .destructive, handler: { _ in
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+                alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
                     DispatchQueue.global(qos: .background).async {
                         self.captureSession.startRunning()
                     }

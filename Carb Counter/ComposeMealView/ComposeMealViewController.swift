@@ -436,7 +436,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     @objc private func clearAllButtonTapped() {
         view.endEditing(true)
         
-        let alertController = UIAlertController(title: "Rensa menyn", message: "Vill du rensa hela menyn?", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Rensa menyn", message: "Vill du rensa hela menyn?", preferredStyle: .actionSheet)
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
             if self.saveMealToHistory {

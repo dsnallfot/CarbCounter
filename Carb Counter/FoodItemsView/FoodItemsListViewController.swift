@@ -65,7 +65,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     @objc private func clearButtonTapped() {
-        let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .alert)
+        let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .actionSheet)
         let continueAction = UIAlertAction(title: "Fortsätt", style: .destructive) { _ in
             self.showSecondClearAlert()
         }
@@ -78,7 +78,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func showSecondClearAlert() {
-        let secondAlertController = UIAlertController(title: "Rensa allt", message: "Är du helt säker? Åtgärden går inte att ångra.", preferredStyle: .alert)
+        let secondAlertController = UIAlertController(title: "Rensa allt", message: "Är du helt säker? Åtgärden går inte att ångra.", preferredStyle: .actionSheet)
         let clearAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
             self.clearAllFoodItems()
         }
@@ -282,7 +282,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (action, view, completionHandler) in
             let foodItem = self.filteredFoodItems[indexPath.row]
-            let alertController = UIAlertController(title: "Radera", message: "Vill du radera \(foodItem.name ?? "detta livsmedel")?", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Radera", message: "Vill du radera: \"\(foodItem.name ?? "detta livsmedel")\"?", preferredStyle: .actionSheet)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
                 completionHandler(false)
             }
@@ -337,7 +337,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         message += "\n\n(Serverats: \(foodItem.count) ggr)"
         
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
         
         alert.addAction(UIAlertAction(title: "Ät nu", style: .default, handler: { _ in
             self.addToComposeMealViewController(foodItem: foodItem)
