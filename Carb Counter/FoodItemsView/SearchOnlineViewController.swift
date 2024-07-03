@@ -1,8 +1,8 @@
 import UIKit
 import CoreData
 
-/*
- 
+
+ /*
  class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
  private let searchTextField: UITextField = {
  let textField = UITextField()
@@ -442,5 +442,5 @@ import CoreData
  detailsLabel.text = "\(article.varumarke ?? "") • \(article.forpackningsstorlek ?? "")"
  gtin = article.gtin // Store GTIN
  }
- }
- */
+ }*/
+ 

@@ -174,7 +174,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupSegmentedControl() {
-        let items = ["Lokalt", "Online"]
+        let items = ["Sök bland sparade", "Sök efter nya online"]
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(searchModeChanged(_:)), for: .valueChanged)
@@ -194,7 +194,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Initialize and add the searchBar
         searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Sök sparade livsmedel"
+        searchBar.placeholder = "Sök bland sparade livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
@@ -252,7 +252,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     private func updateSearchBarPlaceholder() {
-        searchBar.placeholder = searchMode == .local ? "Sök sparade livsmedel" : "Sök efter livsmedel online"
+        searchBar.placeholder = searchMode == .local ? "Sök bland sparade livsmedel" : "Sök efter nya livsmedel online"
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -278,6 +278,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
             }
             sortFoodItems()
+        } else {
+            if searchText.isEmpty {
+                articles = []
+                tableView.reloadData()
+            }
         }
     }
 
@@ -530,13 +535,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         navigationController?.pushViewController(scannerVC, animated: true)
     }
     
-    @objc private func navigateToSearchOnline() {
-        let searchOnlineVC = SearchOnlineViewController()
-        let navController = UINavigationController(rootViewController: searchOnlineVC)
-        navController.modalPresentationStyle = .fullScreen
-        present(navController, animated: true, completion: nil)
-    }
-    
     private func fetchNutritionalInfo(for gtin: String) {
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
         let dabasURLString = "https://api.dabas.com/DABASService/V2/article/gtin/\(gtin)/JSON?apikey=\(dabasAPISecret)"
@@ -701,4 +699,62 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func didAddFoodItem() {
         fetchFoodItems()
     }
+}
+
+struct Article: Codable {
+let artikelbenamning: String?
+let varumarke: String?
+let forpackningsstorlek: String?
+let gtin: String?  // Add this line
+
+enum CodingKeys: String, CodingKey {
+case artikelbenamning = "Artikelbenamning"
+case varumarke = "Varumarke"
+case forpackningsstorlek = "Forpackningsstorlek"
+case gtin = "GTIN"  // Add this line
+}
+}
+class ArticleTableViewCell: UITableViewCell {
+let nameLabel: UILabel = {
+let label = UILabel()
+label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+label.translatesAutoresizingMaskIntoConstraints = false
+return label
+}()
+let detailsLabel: UILabel = {
+let label = UILabel()
+label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+label.textColor = .gray
+label.translatesAutoresizingMaskIntoConstraints = false
+return label
+}()
+
+var gtin: String? // Add this property to store GTIN
+
+override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+super.init(style: style, reuseIdentifier: reuseIdentifier)
+contentView.addSubview(nameLabel)
+contentView.addSubview(detailsLabel)
+
+NSLayoutConstraint.activate([
+nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 16),
+
+detailsLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
+detailsLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
+detailsLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
+detailsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+])
+}
+
+required init?(coder: NSCoder) {
+fatalError("init(coder:) has not been implemented")
+}
+
+func configure(with article: Article) {
+nameLabel.text = article.artikelbenamning
+detailsLabel.text = "\(article.varumarke ?? "") • \(article.forpackningsstorlek ?? "")"
+gtin = article.gtin // Store GTIN
+}
 }
