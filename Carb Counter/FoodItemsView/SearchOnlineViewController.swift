@@ -86,18 +86,22 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(searchString)/JSON?apikey=\(dabasAPISecret)"
         
         guard let dabasURL = URL(string: dabasURLString) else {
-            print("Invalid Dabas URL")
+            showErrorAlert(message: "Felaktig Dabas URL")
             return
         }
         
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
-                print("Dabas API error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Dabas API fel: \(error.localizedDescription)")
+                }
                 return
             }
             
             guard let data = data else {
-                print("Dabas API error: No data received")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Dabas API fel: Ingen data togs emot")
+                }
                 return
             }
             
@@ -109,7 +113,9 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
                     self.updateTableView(with: filteredArticles)
                 }
             } catch {
-                print("Dabas API error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Dabas API fel: \(error.localizedDescription)")
+                }
             }
         }
         
@@ -144,18 +150,22 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         let dabasURLString = "https://api.dabas.com/DABASService/V2/article/gtin/\(gtin)/JSON?apikey=\(dabasAPISecret)"
         
         guard let dabasURL = URL(string: dabasURLString) else {
-            showErrorAlert(message: "Invalid Dabas URL")
+            showErrorAlert(message: "Felaktig Dabas URL")
             return
         }
         
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
-                print("Dabas API error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Dabas API fel: \(error.localizedDescription)")
+                }
                 return
             }
             
             guard let data = data else {
-                print("Dabas API error: No data received")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Dabas API fel: Ingen data togs emot")
+                }
                 return
             }
             
@@ -167,7 +177,9 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
                           let naringsinfoArray = jsonResponse["Naringsinfo"] as? [[String: Any]],
                           let naringsinfo = naringsinfoArray.first,
                           let naringsvarden = naringsinfo["Naringsvarden"] as? [[String: Any]] else {
-                        print("Dabas API Error: Missing Artikelbenamning or Naringsinfo")
+                        DispatchQueue.main.async {
+                            self.showErrorAlert(message: "Kunde inte hitta information om livsmedlet")
+                        }
                         return
                     }
                     
@@ -194,6 +206,7 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
                     Kolhydrater: \(carbohydrates) g / 100 g
                     Fett: \(fat) g / 100 g
                     Protein: \(proteins) g / 100 g
+                    
                     (Källa: Dabas)
                     """
                     
@@ -202,10 +215,14 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
                     }
                     print("Dabas produktmatchning OK")
                 } else {
-                    print("Dabas API error: Could not parse response")
+                    DispatchQueue.main.async {
+                        self.showErrorAlert(message: "Dabas API fel: Kunde inte tolka svar från servern")
+                    }
                 }
             } catch {
-                print("Dabas API error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "Dabas API error: \(error.localizedDescription)")
+                }
             }
         }
         
@@ -224,11 +241,11 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
                 let comparisonMessage = """
             Befintlig data    ->    Ny data
             Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
-            Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
-            Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
-            """
+        Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
+        Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
+        """
                 
-                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n(comparisonMessage)", preferredStyle: .alert)
+                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
                 duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
                 }))
@@ -249,6 +266,7 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
             showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
         }
     }
+    
     private func formattedValue(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0
@@ -298,6 +316,7 @@ struct Article: Codable {
     let varumarke: String?
     let forpackningsstorlek: String?
     let gtin: String?  // Add this line
+    
     enum CodingKeys: String, CodingKey {
         case artikelbenamning = "Artikelbenamning"
         case varumarke = "Varumarke"

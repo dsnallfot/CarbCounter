@@ -195,6 +195,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     Kolhydrater: \(carbohydrates) g / 100 g
                     Fett: \(fat) g / 100 g
                     Protein: \(proteins) g / 100 g
+                    
                     (Källa: Dabas)
                     """
                     
@@ -259,6 +260,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         Kolhydrater: \(carbohydrates) g / 100 g
                         Fett: \(fat) g / 100 g
                         Protein: \(proteins) g / 100 g
+                        
                         (Källa: Openfoodfacts)
                         """
                         
@@ -268,7 +270,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         print("Openfoodfacts produktmatchning OK")
                     } else {
                         DispatchQueue.main.async {
-                            self.showErrorAlert(message: "Livsmedel kunde inte hittas")
+                            self.showErrorAlert(message: "Kunde inte hitta information om livsmedlet")
                         }
                     }
                 } else {
