@@ -3,31 +3,31 @@ import CoreData
 
 class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private let searchTextField: UITextField = {
-            let textField = UITextField()
-            textField.placeholder = "Sök efter livsmedel online"
-            textField.borderStyle = .roundedRect
-            textField.backgroundColor = .systemGray6
-            textField.translatesAutoresizingMaskIntoConstraints = false
-            
-            let placeholderText = "Sök efter livsmedel online"
-            let attributes: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.systemGray
-            ]
-            textField.attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
-            
-            return textField
-        }()
+        let textField = UITextField()
+        textField.placeholder = "Sök efter livsmedel online"
+        textField.borderStyle = .roundedRect
+        textField.backgroundColor = .systemGray6
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        
+        let placeholderText = "Sök efter livsmedel online"
+        let attributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.systemGray
+        ]
+        textField.attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
+        
+        return textField
+    }()
     
     private let searchButton: UIButton = {
-            let button = UIButton(type: .system)
-            button.setTitle("Sök", for: .normal)
-            button.setTitleColor(.white, for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-            button.backgroundColor = .systemBlue
-            button.layer.cornerRadius = 10
-            button.translatesAutoresizingMaskIntoConstraints = false
-            return button
-        }()
+        let button = UIButton(type: .system)
+        button.setTitle("Sök", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 10
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -36,6 +36,7 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
     }()
     
     private var articles: [Article] = []
+    private var tableViewBottomConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,6 +49,7 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         
         setupConstraints()
         setupSearchTextField()
+        setupKeyboardToolbar()
         
         searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
         
@@ -58,9 +60,38 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         // Add cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
+        
+        // Add observers for keyboard notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    private func setupKeyboardToolbar() {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
+        let cancelButton = UIButton(type: .system)
+        cancelButton.setImage(symbolImage, for: .normal)
+        cancelButton.tintColor = .systemBlue
+        cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+        let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        
+        toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
+        
+        searchTextField.inputAccessoryView = toolbar
+    }
+    
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
     }
     
     @objc private func cancelButtonTapped() {
+        view.endEditing(true)
         if let navigationController = navigationController {
             navigationController.popViewController(animated: true)
         } else {
@@ -68,23 +99,39 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    private func setupConstraints() {
-        NSLayoutConstraint.activate([
-            searchTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -100),
-            
-            searchButton.centerYAnchor.constraint(equalTo: searchTextField.centerYAnchor),
-            searchButton.leadingAnchor.constraint(equalTo: searchTextField.trailingAnchor, constant: 8),
-            searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            searchButton.heightAnchor.constraint(equalToConstant: 36),
-            
-            tableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 16),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        if let userInfo = notification.userInfo {
+            if let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                tableViewBottomConstraint.constant = -keyboardFrame.height + 2
+                view.layoutIfNeeded()
+            }
+        }
     }
+
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        tableViewBottomConstraint.constant = 0
+        view.layoutIfNeeded()
+    }
+    
+    private func setupConstraints() {
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            
+            NSLayoutConstraint.activate([
+                searchTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+                searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+                searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -100),
+                
+                searchButton.centerYAnchor.constraint(equalTo: searchTextField.centerYAnchor),
+                searchButton.leadingAnchor.constraint(equalTo: searchTextField.trailingAnchor, constant: 8),
+                searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+                searchButton.heightAnchor.constraint(equalToConstant: 36),
+                
+                tableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 16),
+                tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                tableViewBottomConstraint
+            ])
+        }
     
     private func setupSearchTextField() {
         let clearButton = UIButton(type: .custom)
