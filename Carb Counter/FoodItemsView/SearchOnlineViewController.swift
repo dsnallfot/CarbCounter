@@ -138,7 +138,11 @@ class SearchOnlineViewController: UIViewController, UITableViewDelegate, UITable
         clearButton.setImage(UIImage(systemName: "xmark.circle"), for: .normal)
         clearButton.addTarget(self, action: #selector(clearButtonTapped), for: .touchUpInside)
         
-        searchTextField.rightView = clearButton
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 20)) // Adjust size if needed
+        clearButton.frame = CGRect(x: 0, y: 0, width: 20, height: 20) // Adjust size if needed
+        paddingView.addSubview(clearButton)
+        
+        searchTextField.rightView = paddingView
         searchTextField.rightViewMode = .whileEditing
     }
     
