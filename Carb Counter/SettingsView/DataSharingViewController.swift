@@ -21,36 +21,6 @@ class DataSharingViewController: UIViewController {
         let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
-    /*
-     private func setupShareButtons() {
-     let stackView = UIStackView()
-     stackView.axis = .vertical
-     stackView.spacing = 16
-     stackView.translatesAutoresizingMaskIntoConstraints = false
-     view.addSubview(stackView)
-     
-     NSLayoutConstraint.activate([
-     stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-     stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-     stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-     stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-     ])
-     
-     let shareEntities = [
-     ("Carb Ratio Schedule", #selector(shareCarbRatioSchedule)),
-     ("Favorite Meals", #selector(shareFavoriteMeals)),
-     ("Food Items", #selector(shareFoodItems)),
-     ("Meal History", #selector(shareMealHistory)),
-     ("Start Dose Schedule", #selector(shareStartDoseSchedule))
-     ]
-     
-     for (title, action) in shareEntities {
-     let button = UIButton(type: .system)
-     button.setTitle(title, for: .normal)
-     button.addTarget(self, action: action, for: .touchUpInside)
-     stackView.addArrangedSubview(button)
-     }
-     }*/
     
     private func setupURLTextFieldAndButton() {
         shareURLTextField = UITextField(frame: .zero)
@@ -120,12 +90,14 @@ class DataSharingViewController: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    private func exportAllCSVFiles() {
+    @objc private func exportAllCSVFiles() {
         exportCarbRatioScheduleToCSV()
         exportFavoriteMealsToCSV()
         exportFoodItemsToCSV()
         exportMealHistoryToCSV()
         exportStartDoseScheduleToCSV()
+        
+        showAlert(title: "Export Successful", message: "All data has been exported successfully.")
     }
     
     @objc private func exportFoodItemsToCSV() {
@@ -159,35 +131,39 @@ class DataSharingViewController: UIViewController {
         do {
             let entities = try context.fetch(fetchRequest)
             let csvData = createCSV(entities)
-            saveCSV(data: csvData, fileName: fileName)
+            
+            var caregiverName = UserDefaults.standard.string(forKey: "caregiverName") ?? ""
+            caregiverName = caregiverName.replacingOccurrences(of: " ", with: "_")
+            let prefixedFileName = "\(caregiverName)_\(fileName)"
+            
+            saveCSV(data: csvData, fileName: prefixedFileName)
         } catch {
             print("Failed to fetch data: \(error)")
         }
     }
     
     private func createCSV(from foodItems: [FoodItem]) -> String {
-            var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
-            
-            for item in foodItems {
-                let id = item.id?.uuidString ?? ""
-                let name = item.name ?? ""
-                let carbohydrates = item.carbohydrates
-                let carbsPP = item.carbsPP
-                let fat = item.fat
-                let fatPP = item.fatPP
-                let netCarbs = item.netCarbs
-                let netFat = item.netFat
-                let netProtein = item.netProtein
-                let perPiece = item.perPiece
-                let protein = item.protein
-                let proteinPP = item.proteinPP
-                let count = item.count
-                let notes = item.notes ?? ""
-                let emoji = item.emoji ?? ""
-                
-                csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji)\n"
-        }
+        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
         
+        for item in foodItems {
+            let id = item.id?.uuidString ?? ""
+            let name = item.name ?? ""
+            let carbohydrates = item.carbohydrates
+            let carbsPP = item.carbsPP
+            let fat = item.fat
+            let fatPP = item.fatPP
+            let netCarbs = item.netCarbs
+            let netFat = item.netFat
+            let netProtein = item.netProtein
+            let perPiece = item.perPiece
+            let protein = item.protein
+            let proteinPP = item.proteinPP
+            let count = item.count
+            let notes = item.notes ?? ""
+            let emoji = item.emoji ?? ""
+            
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);(netFat);(netProtein);(perPiece);(protein);(proteinPP);(count);(notes);(emoji)\n"
+        }
         return csvString
     }
     
@@ -212,7 +188,7 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-
+    
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
         var csvString = "id;hour;carbRatio\n"
         
@@ -225,7 +201,7 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-
+    
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
         var csvString = "id;hour;startDose\n"
         
@@ -238,7 +214,7 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-
+    
     private func createCSV(from mealHistories: [MealHistory]) -> String {
         var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;foodEntries\n"
         
@@ -273,32 +249,28 @@ class DataSharingViewController: UIViewController {
     }
     
     private func saveCSV(data: String, fileName: String) {
-        let tempDirectory = NSTemporaryDirectory()
-        let tempPath = (tempDirectory as NSString).appendingPathComponent(fileName)
-        let fileURL = URL(fileURLWithPath: tempPath)
+        let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
+        let tempFilePath = tempDirectory.appendingPathComponent(fileName)
         
         do {
-            try data.write(to: fileURL, atomically: true, encoding: .utf8)
-            moveToICloud(fileURL: fileURL, fileName: fileName)
-        } catch {
-            print("Failed to create file: \(error)")
-        }
-    }
-
-    private func moveToICloud(fileURL: URL, fileName: String) {
-        guard let iCloudDocumentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
-            print("Failed to get iCloud root URL.")
-            return
-        }
-        
-        let destinationURL = iCloudDocumentsURL.appendingPathComponent(fileName)
-        
-        do {
-            try FileManager.default.createDirectory(at: iCloudDocumentsURL, withIntermediateDirectories: true, attributes: nil)
-            try FileManager.default.setUbiquitous(true, itemAt: fileURL, destinationURL: destinationURL)
-            print("File moved to iCloud: \(destinationURL.path)")
+            try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
+            
+            let fileManager = FileManager.default
+            let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
+            let destinationURL = iCloudURL?.appendingPathComponent(fileName)
+            
+            if let destinationURL = destinationURL {
+                if fileManager.fileExists(atPath: destinationURL.path) {
+                    try fileManager.removeItem(at: destinationURL)
+                }
+                try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
+                showAlert(title: "Export Successful", message: "Data has been exported to iCloud successfully.")
+            } else {
+                showAlert(title: "Export Failed", message: "iCloud Drive URL is nil.")
+            }
         } catch {
             print("Failed to save file to iCloud: \(error)")
+            showAlert(title: "Export Failed", message: "Failed to save file to iCloud: \(error.localizedDescription)")
         }
     }
     
@@ -308,7 +280,7 @@ class DataSharingViewController: UIViewController {
         documentPicker.accessibilityHint = entityName
         present(documentPicker, animated: true, completion: nil)
     }
-
+    
     private func parseCSV(at url: URL, for entityName: String) {
         do {
             let csvData = try String(contentsOf: url, encoding: .utf8)
