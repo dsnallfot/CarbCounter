@@ -5,6 +5,8 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     var clearButton: UIBarButtonItem!
     var doneButton: UIBarButtonItem!
     var downloadButton: UIBarButtonItem!
+    
+    var dataSharingVC: DataSharingViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +31,9 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
 
         // Update button visibility based on the current setting
         updateButtonVisibility()
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
 
     deinit {
@@ -46,6 +51,15 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadCarbRatios()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportCarbRatioScheduleToCSV()
+        print("Carb ratios export triggered")
     }
 
     private func loadCarbRatios() {

@@ -42,6 +42,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     //var searchButton: UIBarButtonItem!
     var tableViewBottomConstraint: NSLayoutConstraint!
     
+    var dataSharingVC: DataSharingViewController?
+    
     enum SearchMode {
         case local, online
     }
@@ -97,12 +99,21 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         tableViewBottomConstraint.isActive = true
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchFoodItems()
         updateClearButtonVisibility()
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else { return }
+
+        // Call the desired function
+        dataSharingVC.importAllCSVFiles()
+        print("Data import triggered")
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -511,6 +522,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         } catch {
             print("Failed to delete food item: \(error)")
         }
+        
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportFoodItemsToCSV()
+        print("Food items export triggered")
     }
     
     private func editFoodItem(at indexPath: IndexPath) {

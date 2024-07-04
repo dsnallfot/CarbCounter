@@ -56,6 +56,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     var lateBreakfast: Bool = false
     var lateBreakfastFactor = Double(1.5)
     
+    var dataSharingVC: DataSharingViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -178,6 +180,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
+        
         //print("setupSummaryView ran")
         //print("setupScrollView ran")
         //print("setupStackView ran")
@@ -201,6 +206,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
+        
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else { return }
+
+        // Call the desired function
+        dataSharingVC.importAllCSVFiles()
+        print("Data import triggered")
         
         //print("viewWillAppear: totalNetCarbsLabel: \(totalNetCarbsLabel?.text ?? "nil")")
         //print("viewWillAppear: clearAllButton: \(clearAllButton != nil)")
@@ -293,16 +305,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             
             CoreDataStack.shared.saveContext()
             
-            // Share the favorite meals
-            CloudKitShareController.shared.shareFavoriteMealsRecord(favoriteMeals: favoriteMeals) { share, error in
-                if let error = error {
-                    print("Error sharing favorite meals: \(error)")
-                } else if let share = share {
-                    // Provide share URL to the other users
-                    print("Share URL: \(share.url?.absoluteString ?? "No URL")")
-                    // Optionally, present the share URL to the user via UI
-                }
-            }
+            // Ensure dataSharingVC is instantiated
+                    guard let dataSharingVC = dataSharingVC else { return }
+
+                    // Call the desired function
+                    dataSharingVC.exportFavoriteMealsToCSV()
+            print("Favorite meals export triggered")
             
             let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
             confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -504,6 +512,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         } catch {
             print("Failed to save MealHistory: \(error)")
         }
+        
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportMealHistoryToCSV()
+        print("Meal history export triggered")
         
         saveMealToHistory = false // Reset the flag after saving
     }

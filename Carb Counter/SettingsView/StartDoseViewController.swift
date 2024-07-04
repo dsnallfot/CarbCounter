@@ -5,6 +5,8 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     var clearButton: UIBarButtonItem!
     var doneButton: UIBarButtonItem!
     
+    var dataSharingVC: DataSharingViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Startdoser"
@@ -25,6 +27,9 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         
         // Update Clear button visibility based on the current setting
         updateClearButtonVisibility()
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
     
     deinit {
@@ -42,6 +47,15 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadStartDoses()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportStartDoseScheduleToCSV()
+        print("Startdoses export triggered")
     }
     
     private func loadStartDoses() {

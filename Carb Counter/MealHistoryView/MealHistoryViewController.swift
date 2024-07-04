@@ -8,6 +8,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var filteredMealHistories: [MealHistory] = []
     var datePicker: UIDatePicker!
     
+    var dataSharingVC: DataSharingViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Måltidshistorik"
@@ -19,6 +21,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Add Cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -141,6 +146,12 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 let mealHistory = self.filteredMealHistories[indexPath.row]
                 let context = CoreDataStack.shared.context
                 context.delete(mealHistory)
+                // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = self.dataSharingVC else { return }
+
+                        // Call the desired function
+                        dataSharingVC.exportMealHistoryToCSV()
+                print("Meal history export triggered")
                 
                 do {
                     try context.save()
@@ -152,9 +163,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 }
                 completionHandler(true) // Perform the delete action
             }))
+            
             self.present(alert, animated: true, completion: nil)
         }
         return UISwipeActionsConfiguration(actions: [deleteAction])
+        
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

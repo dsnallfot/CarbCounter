@@ -29,6 +29,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var proteinStack: UIStackView!
     @IBOutlet weak var notesStack: UIStackView!
     
+    var dataSharingVC: DataSharingViewController?
+    
     var delegate: AddFoodItemDelegate?
     var foodItem: FoodItem?
     var isPerPiece: Bool = false // To keep track of the selected segment
@@ -133,6 +135,9 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             saveAndAddButton.isEnabled = true
             updateSaveButtonTitle()
         }
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
     
     // Helper method to format the double values
@@ -417,7 +422,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         } catch {
             print("Failed to save food item: \(error)")
         }
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportFoodItemsToCSV()
+        print("Food items export triggered")
+        
         navigationController?.popViewController(animated: true)
+
     }
     
     private func addToComposeMealViewController() {

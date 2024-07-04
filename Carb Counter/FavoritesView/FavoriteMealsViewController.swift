@@ -7,6 +7,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     var searchBar: UISearchBar!
     var favoriteMeals: [FavoriteMeals] = []
     var filteredFavoriteMeals: [FavoriteMeals] = []
+    
+    var dataSharingVC: DataSharingViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +25,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         setupTableView()
         setupNavigationBar()
         fetchFavoriteMeals()
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -177,6 +182,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         favoriteMeals.removeAll { $0 == favoriteMeal }
         filteredFavoriteMeals.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
+        
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportFavoriteMealsToCSV()
+        print("Favorite meals export triggered")
+        
     }
     
     // MARK: - UISearchBarDelegate

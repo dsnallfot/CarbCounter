@@ -12,6 +12,8 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     var tableView: UITableView!
     var nameTextField: UITextField!
     
+    var dataSharingVC: DataSharingViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Ändra favoritmåltid"
@@ -21,6 +23,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         setupView()
         setupNavigationBar()
         tableView.reloadData()
+        
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
     }
     
     private func setupView() {
@@ -169,6 +174,13 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             self.favoriteMeal.items = self.updateItems(items: items)
             
             CoreDataStack.shared.saveContext()
+            // Ensure dataSharingVC is instantiated
+                    guard let dataSharingVC = dataSharingVC else { return }
+
+                    // Call the desired function
+                    dataSharingVC.exportFavoriteMealsToCSV()
+            print("Favorite meals export triggered")
+            
             self.tableView.reloadData()
         }
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
