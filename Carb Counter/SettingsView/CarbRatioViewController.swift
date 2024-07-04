@@ -143,16 +143,6 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
             CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
             carbRatios[indexPath.row] = value
             print("Saved CR \(value) for hour \(indexPath.row)")
-
-            if let carbRatioSchedule = CoreDataHelper.shared.fetchCarbRatioSchedule(hour: indexPath.row) {
-                CloudKitShareController.shared.shareCarbRatioScheduleRecord(carbRatioSchedule: carbRatioSchedule) { share, error in
-                    if let error = error {
-                        print("Error sharing carb ratio schedule: \(error)")
-                    } else if let share = share {
-                        print("Share URL: \(share.url?.absoluteString ?? "No URL")")
-                    }
-                }
-            }
         }
     }
 

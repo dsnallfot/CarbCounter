@@ -101,9 +101,6 @@ class CoreDataHelper {
             let carbRatio = results.first ?? CarbRatioSchedule(context: context)
             carbRatio.hour = Int16(hour)
             carbRatio.carbRatio = ratio
-            if carbRatio.id == nil {
-                carbRatio.id = UUID() // Set the id if it's not already set
-            }
             try context.save()
         } catch {
             print("Failed to save carb ratio: \(error)")
@@ -123,7 +120,6 @@ class CoreDataHelper {
                 }
             } else {
                 let startDose = results.first ?? StartDoseSchedule(context: context)
-                startDose.id = startDose.id ?? UUID() // Ensure id is set
                 startDose.hour = Int16(hour)
                 startDose.startDose = dose
                 try context.save()

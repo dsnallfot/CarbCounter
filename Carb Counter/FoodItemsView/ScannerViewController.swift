@@ -349,18 +349,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-    /*
-     func updateExistingFoodItem(_ foodItem: FoodItem, carbohydrates: Double, fat: Double, proteins: Double) {
-     foodItem.carbohydrates = carbohydrates
-     foodItem.fat = fat
-     foodItem.protein = proteins
-     do {
-     try CoreDataStack.shared.context.save()
-     showErrorAlert(message: "Livsmedel uppdaterad")
-     } catch {
-     showErrorAlert(message: "Fel vid uppdatering av livsmedel")
-     }
-     }*/
+
     func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in

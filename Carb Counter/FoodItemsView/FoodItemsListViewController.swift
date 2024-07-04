@@ -108,6 +108,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         super.viewWillAppear(animated)
         fetchFoodItems()
         updateClearButtonVisibility()
+        
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
 

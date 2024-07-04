@@ -111,15 +111,6 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
             tableView.reloadRows(at: [indexPath], with: .automatic)
             print("Saved start dose \(value) for hour \(indexPath.row)")
             
-            if let startDoseSchedule = CoreDataHelper.shared.fetchStartDoseSchedule(hour: indexPath.row) {
-                CloudKitShareController.shared.shareStartDoseScheduleRecord(startDoseSchedule: startDoseSchedule) { share, error in
-                    if let error = error {
-                        print("Error sharing start dose schedule: \(error)")
-                    } else if let share = share {
-                        print("Share URL: \(share.url?.absoluteString ?? "No URL")")
-                    }
-                }
-            }
         }
     }
     

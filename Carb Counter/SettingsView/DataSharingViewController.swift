@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 class DataSharingViewController: UIViewController {
     
-    private var shareURLTextField: UITextField!
+    //private var shareURLTextField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -13,7 +13,7 @@ class DataSharingViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         setupNavigationBarButtons()
-        setupURLTextFieldAndButton()
+        //setupURLTextFieldAndButton()
     }
     
     private func setupNavigationBarButtons() {
@@ -22,45 +22,6 @@ class DataSharingViewController: UIViewController {
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
     
-    private func setupURLTextFieldAndButton() {
-        shareURLTextField = UITextField(frame: .zero)
-        shareURLTextField.placeholder = "Ange URL för datadelning"
-        shareURLTextField.autocapitalizationType = .none
-        shareURLTextField.keyboardType = .URL
-        shareURLTextField.borderStyle = .roundedRect
-        shareURLTextField.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(shareURLTextField)
-        
-        let acceptButton = UIButton(type: .system)
-        acceptButton.setTitle("Acceptera iCloud datadelning", for: .normal)
-        acceptButton.addTarget(self, action: #selector(acceptSharedData), for: .touchUpInside)
-        acceptButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(acceptButton)
-        
-        NSLayoutConstraint.activate([
-            shareURLTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            shareURLTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            shareURLTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            acceptButton.topAnchor.constraint(equalTo: shareURLTextField.bottomAnchor, constant: 20),
-            acceptButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-    }
-    
-    @objc private func acceptSharedData() {
-        guard let shareURLString = shareURLTextField.text, !shareURLString.isEmpty, let shareURL = URL(string: shareURLString) else {
-            showAlert(title: "Felaktig URL", message: "Vänligen ange en giltig delnings-URL.")
-            return
-        }
-        CloudKitShareController.shared.acceptShare(from: shareURL) { error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self.showAlert(title: "Misslyckades att acceptera delning", message: "Error: \(error.localizedDescription)")
-                } else {
-                    self.showAlert(title: "Lyckades", message: "Delning av data accepterades.")
-                }
-            }
-        }
-    }
     
     // MARK: - Sharing Data
     
@@ -206,7 +167,15 @@ class DataSharingViewController: UIViewController {
         for meal in favoriteMeals {
             let id = meal.id?.uuidString ?? ""
             let name = meal.name ?? ""
-            let itemsData = (meal.items as? [[String: Any]]) ?? []
+            
+            // Deserialize the items JSON string
+            var itemsData: [[String: Any]] = []
+            if let itemsString = meal.items as? String,
+               let jsonData = itemsString.data(using: .utf8),
+               let itemsArray = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
+                itemsData = itemsArray
+            }
+            
             let items = itemsData.compactMap { item in
                 guard let name = item["name"] as? String,
                       let portionServed = item["portionServed"] as? String,
@@ -223,26 +192,24 @@ class DataSharingViewController: UIViewController {
     }
     
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
-        var csvString = "id;hour;carbRatio\n"
+        var csvString = "hour;carbRatio\n"
         
         for schedule in carbRatioSchedules {
-            let id = schedule.id?.uuidString ?? ""
             let hour = schedule.hour
             let carbRatio = schedule.carbRatio
-            csvString += "\(id);\(hour);\(carbRatio)\n"
+            csvString += "\(hour);\(carbRatio)\n"
         }
         
         return csvString
     }
     
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
-        var csvString = "id;hour;startDose\n"
+        var csvString = "hour;startDose\n"
         
         for schedule in startDoseSchedules {
-            let id = schedule.id?.uuidString ?? ""
             let hour = schedule.hour
             let startDose = schedule.startDose
-            csvString += "\(id);\(hour);\(startDose)\n"
+            csvString += "\(hour);\(startDose)\n"
         }
         
         return csvString
@@ -424,55 +391,75 @@ class DataSharingViewController: UIViewController {
     
     public func parseCarbRatioScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 3 else {  // id;hour;carbRatio
+        guard columns.count == 2 else {
             showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
+        // Delete existing schedules
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CarbRatioSchedule.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try context.execute(deleteRequest)
+        } catch {
+            print("Failed to delete existing CarbRatioSchedules: \(error)")
+        }
+        
+        // Import new schedules
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 3,
+            if values.count == 2,
                !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                let id = UUID(uuidString: values[0]) ?? UUID()
-                let hour = Int16(values[1]) ?? 0
-                let carbRatio = Double(values[2]) ?? 0.0
+                let hour = Int16(values[0]) ?? 0
+                let carbRatio = Double(values[1]) ?? 0.0
                 
-                let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
-                fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-                
-                let existingSchedules = try? context.fetch(fetchRequest)
-                let carbRatioSchedule = existingSchedules?.first ?? CarbRatioSchedule(context: context)
-                carbRatioSchedule.id = id
+                let carbRatioSchedule = CarbRatioSchedule(context: context)
                 carbRatioSchedule.hour = hour
                 carbRatioSchedule.carbRatio = carbRatio
             }
         }
+        
+        do {
+            try context.save()
+        } catch {
+            showAlert(title: "Save Failed", message: "Failed to save Carb Ratio Schedules: \(error)")
+        }
     }
-    
+
     public func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 3 else {  // id;hour;startDose
+        guard columns.count == 2 else {
             showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
             return
         }
         
+        // Delete existing schedules
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = StartDoseSchedule.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try context.execute(deleteRequest)
+        } catch {
+            print("Failed to delete existing StartDoseSchedules: \(error)")
+        }
+        
+        // Import new schedules
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 3,
+            if values.count == 2,
                !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                let id = UUID(uuidString: values[0]) ?? UUID()
-                let hour = Int16(values[1]) ?? 0
-                let startDose = Double(values[2]) ?? 0.0
+                let hour = Int16(values[0]) ?? 0
+                let startDose = Double(values[1]) ?? 0.0
                 
-                let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
-                fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-                
-                let existingSchedules = try? context.fetch(fetchRequest)
-                let startDoseSchedule = existingSchedules?.first ?? StartDoseSchedule(context: context)
-                startDoseSchedule.id = id
+                let startDoseSchedule = StartDoseSchedule(context: context)
                 startDoseSchedule.hour = hour
                 startDoseSchedule.startDose = startDose
             }
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            showAlert(title: "Save Failed", message: "Failed to save Start Dose Schedules: \(error)")
         }
     }
     

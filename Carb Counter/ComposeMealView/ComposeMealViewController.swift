@@ -37,7 +37,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     var registeredContainer: UIView!
     
     var scheduledStartDose = Double(20)
-    var scheduledCarbRatio = Double(30)
+    var scheduledCarbRatio = Double(25)
     
     var foodItemLabel: UILabel!
     var portionServedLabel: UILabel!
@@ -118,11 +118,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
         
-        // Fetch food items and add the add button row
+        /*// Fetch food items and add the add button row
         fetchFoodItems()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
-        updateHeadlineVisibility()
+        updateHeadlineVisibility()*/
         
         // Add observer for text changes in totalRegisteredLabel
         totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
@@ -206,6 +206,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
+        
         
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
@@ -304,7 +305,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             }
             
             CoreDataStack.shared.saveContext()
-            
+
             // Ensure dataSharingVC is instantiated
                     guard let dataSharingVC = dataSharingVC else { return }
 
@@ -497,18 +498,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         do {
             try context.save()
             print("MealHistory saved successfully!")
-            /*
-             // Share the MealHistory record
-             CloudKitShareController.shared.shareMealHistoryRecord(mealHistory: mealHistory, from: MealHistoryViewController) { share, error in
-             if let error = error {
-             print("Error sharing meal history: \(error)")
-             } else if let share = share {
-             // Provide share URL to the other users
-             print("Share URL: \(share.url?.absoluteString ?? "No URL")")
-             // Optionally, present the share URL to the user via UI
-             }
-             }
-             */
+
         } catch {
             print("Failed to save MealHistory: \(error)")
         }
@@ -1270,10 +1260,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     }
     
     private func updateRemainsBolus() {
-        /*guard let totalNetCarbsLabel = totalNetCarbsLabel else {
-         print("totalNetCarbsLabel is nil")
-         return
-         }*/
         
         let totalCarbsText = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let totalCarbsValue = Double(totalCarbsText) ?? 0.0
@@ -1443,12 +1429,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         searchableDropdownView.completeSelection()
     }
     
-    private func fetchFoodItems() {
+    public func fetchFoodItems() {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
             searchableDropdownView?.updateFoodItems(foodItems)
+            print("fetchfooditems ran")
         } catch {
             print("Failed to fetch food items: \(error)")
         }
@@ -1556,20 +1543,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         searchableDropdownView.isHidden = true
         //navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
     }
-    /*
-     @objc private func keyboardWillShow(notification: NSNotification) {
-     guard let userInfo = notification.userInfo,
-     let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-     
-     let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardFrame.height, right: 0)
-     scrollView.contentInset = contentInsets
-     scrollView.scrollIndicatorInsets = contentInsets
-     }
-     
-     @objc private func keyboardWillHide(notification: NSNotification) {
-     scrollView.contentInset = .zero
-     scrollView.scrollIndicatorInsets = .zero
-     }*/
     
     @objc private func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,

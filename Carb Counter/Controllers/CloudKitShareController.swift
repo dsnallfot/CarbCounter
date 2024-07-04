@@ -27,7 +27,7 @@ class CloudKitShareController {
         }
         privateDatabase.add(modifyZonesOperation)
     }
-
+/*
     func shareMealHistoryRecord(mealHistory: MealHistory, from viewController: UIViewController, completion: @escaping (CKShare?, URL?, Error?) -> Void) {
         let mealHistoryRecordID = CKRecord.ID(recordName: mealHistory.id!.uuidString, zoneID: customZone.zoneID)
         let mealHistoryRecord = CKRecord(recordType: "MealHistory", recordID: mealHistoryRecordID)
@@ -66,24 +66,9 @@ class CloudKitShareController {
         let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [mealHistoryRecord, share] + foodItemEntryRecords)
         modifyRecordsOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, error) in
             completion(share, share.url, error)
-            if let url = share.url {
-                DispatchQueue.main.async {
-                    self.showShareURL(url, from: viewController)
-                }
-            }
         }
 
         privateDatabase.add(modifyRecordsOperation)
-    }
-
-    private func showShareURL(_ url: URL, from viewController: UIViewController) {
-        let alertController = UIAlertController(title: "Share URL", message: "Share this URL with your family: \(url.absoluteString)", preferredStyle: .alert)
-        let copyAction = UIAlertAction(title: "Copy", style: .default) { _ in
-            UIPasteboard.general.string = url.absoluteString
-        }
-        alertController.addAction(copyAction)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
     }
     
     func shareFoodItemRecord(foodItem: FoodItem, from viewController: UIViewController, completion: @escaping (CKShare?, Error?) -> Void) {
@@ -107,12 +92,6 @@ class CloudKitShareController {
 
         let modifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [foodItemRecord, share])
         modifyRecordsOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, error) in
-            if let url = share.url {
-                DispatchQueue.main.async {
-                    self.showShareURL(url, from: viewController)
-                }
-            }
-            completion(share, error)
         }
 
         privateDatabase.add(modifyRecordsOperation)
@@ -201,5 +180,5 @@ class CloudKitShareController {
             }
             self.container.add(acceptShareOperation)
         }
-    }
+    }*/
 }
