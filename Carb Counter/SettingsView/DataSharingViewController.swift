@@ -13,7 +13,6 @@ class DataSharingViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         setupNavigationBarButtons()
-        //setupShareButtons()
         setupURLTextFieldAndButton()
     }
     
@@ -98,6 +97,7 @@ class DataSharingViewController: UIViewController {
     @objc private func exportData() {
         let alert = UIAlertController(title: "Exportera data", message: "Välj vilken data du vill exportera", preferredStyle: .actionSheet)
         
+        alert.addAction(UIAlertAction(title: "Exportera allt", style: .default, handler: { _ in self.exportAllCSVFiles() }))
         alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in self.exportCarbRatioScheduleToCSV() }))
         alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in self.exportFavoriteMealsToCSV() }))
         alert.addAction(UIAlertAction(title: "Livsmedelslista", style: .default, handler: { _ in self.exportFoodItemsToCSV() }))
@@ -118,6 +118,14 @@ class DataSharingViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in self.importCSV(for: "Start Dose Schedule") }))
         alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
         present(alert, animated: true, completion: nil)
+    }
+    
+    private func exportAllCSVFiles() {
+        exportCarbRatioScheduleToCSV()
+        exportFavoriteMealsToCSV()
+        exportFoodItemsToCSV()
+        exportMealHistoryToCSV()
+        exportStartDoseScheduleToCSV()
     }
     
     @objc private func exportFoodItemsToCSV() {
@@ -158,26 +166,26 @@ class DataSharingViewController: UIViewController {
     }
     
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
-        
-        for item in foodItems {
-            let id = item.id?.uuidString ?? ""
-            let name = item.name ?? ""
-            let carbohydrates = item.carbohydrates
-            let carbsPP = item.carbsPP
-            let fat = item.fat
-            let fatPP = item.fatPP
-            let netCarbs = item.netCarbs
-            let netFat = item.netFat
-            let netProtein = item.netProtein
-            let perPiece = item.perPiece
-            let protein = item.protein
-            let proteinPP = item.proteinPP
-            let count = item.count
-            let notes = item.notes ?? ""
-            let emoji = item.emoji ?? ""
+            var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
             
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji)\n"
+            for item in foodItems {
+                let id = item.id?.uuidString ?? ""
+                let name = item.name ?? ""
+                let carbohydrates = item.carbohydrates
+                let carbsPP = item.carbsPP
+                let fat = item.fat
+                let fatPP = item.fatPP
+                let netCarbs = item.netCarbs
+                let netFat = item.netFat
+                let netProtein = item.netProtein
+                let perPiece = item.perPiece
+                let protein = item.protein
+                let proteinPP = item.proteinPP
+                let count = item.count
+                let notes = item.notes ?? ""
+                let emoji = item.emoji ?? ""
+                
+                csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji)\n"
         }
         
         return csvString
@@ -204,7 +212,7 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-    
+
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
         var csvString = "id;hour;carbRatio\n"
         
@@ -217,7 +225,7 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-    
+
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
         var csvString = "id;hour;startDose\n"
         
@@ -230,7 +238,7 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-    
+
     private func createCSV(from mealHistories: [MealHistory]) -> String {
         var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;foodEntries\n"
         
@@ -265,13 +273,32 @@ class DataSharingViewController: UIViewController {
     }
     
     private func saveCSV(data: String, fileName: String) {
-        let path = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(fileName)
+        let tempDirectory = NSTemporaryDirectory()
+        let tempPath = (tempDirectory as NSString).appendingPathComponent(fileName)
+        let fileURL = URL(fileURLWithPath: tempPath)
+        
         do {
-            try data.write(to: path!, atomically: true, encoding: .utf8)
-            let activityViewController = UIActivityViewController(activityItems: [path!], applicationActivities: nil)
-            present(activityViewController, animated: true, completion: nil)
+            try data.write(to: fileURL, atomically: true, encoding: .utf8)
+            moveToICloud(fileURL: fileURL, fileName: fileName)
         } catch {
             print("Failed to create file: \(error)")
+        }
+    }
+
+    private func moveToICloud(fileURL: URL, fileName: String) {
+        guard let iCloudDocumentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+            print("Failed to get iCloud root URL.")
+            return
+        }
+        
+        let destinationURL = iCloudDocumentsURL.appendingPathComponent(fileName)
+        
+        do {
+            try FileManager.default.createDirectory(at: iCloudDocumentsURL, withIntermediateDirectories: true, attributes: nil)
+            try FileManager.default.setUbiquitous(true, itemAt: fileURL, destinationURL: destinationURL)
+            print("File moved to iCloud: \(destinationURL.path)")
+        } catch {
+            print("Failed to save file to iCloud: \(error)")
         }
     }
     
@@ -281,7 +308,7 @@ class DataSharingViewController: UIViewController {
         documentPicker.accessibilityHint = entityName
         present(documentPicker, animated: true, completion: nil)
     }
-    
+
     private func parseCSV(at url: URL, for entityName: String) {
         do {
             let csvData = try String(contentsOf: url, encoding: .utf8)
@@ -324,7 +351,7 @@ class DataSharingViewController: UIViewController {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         let existingFoodItems = try? context.fetch(fetchRequest)
         let existingFoodItemsDict = Dictionary(uniqueKeysWithValues: existingFoodItems?.compactMap { ($0.id, $0) } ?? [])
-
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 15 {
@@ -356,7 +383,6 @@ class DataSharingViewController: UIViewController {
             showAlert(title: "Save Failed", message: "Failed to save food items: \(error)")
         }
     }
-        
     
     private func parseFavoriteMealsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
@@ -508,15 +534,15 @@ class DataSharingViewController: UIViewController {
 }
 
 extension DataSharingViewController: UIDocumentPickerDelegate {
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let url = urls.first else { return }
-        url.startAccessingSecurityScopedResource()
-        defer { url.stopAccessingSecurityScopedResource() }
-        if let entityName = controller.accessibilityHint {
-            parseCSV(at: url, for: entityName)
-        }
-    }
-    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        controller.dismiss(animated: true, completion: nil)
-    }
+func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+guard let url = urls.first else { return }
+url.startAccessingSecurityScopedResource()
+defer { url.stopAccessingSecurityScopedResource() }
+if let entityName = controller.accessibilityHint {
+parseCSV(at: url, for: entityName)
+}
+}
+func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+controller.dismiss(animated: true, completion: nil)
+}
 }
