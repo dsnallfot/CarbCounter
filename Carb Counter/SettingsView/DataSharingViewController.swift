@@ -64,20 +64,6 @@ class DataSharingViewController: UIViewController {
     
     // MARK: - Sharing Data
     
-    /*
-    @objc private func exportData() {
-        let alert = UIAlertController(title: "Exportera data", message: "Välj vilken data du vill exportera", preferredStyle: .actionSheet)
-        
-        alert.addAction(UIAlertAction(title: "Exportera allt", style: .default, handler: { _ in self.exportAllCSVFiles() }))
-        alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in self.exportCarbRatioScheduleToCSV() }))
-        alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in self.exportFavoriteMealsToCSV() }))
-        alert.addAction(UIAlertAction(title: "Livsmedelslista", style: .default, handler: { _ in self.exportFoodItemsToCSV() }))
-        alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in self.exportMealHistoryToCSV() }))
-        alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in self.exportStartDoseScheduleToCSV() }))
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
-        
-        present(alert, animated: true, completion: nil)
-    }*/
     @objc private func exportData() {
         let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
         
@@ -86,9 +72,11 @@ class DataSharingViewController: UIViewController {
         
         present(alert, animated: true, completion: nil)
     }
+    
     @objc private func importData() {
         let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
         
+        alert.addAction(UIAlertAction(title: "Importera allt", style: .default, handler: { _ in self.importAllCSVFiles() }))
         alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in self.importCSV(for: "Food Items") }))
         alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in self.importCSV(for: "Favorite Meals") }))
         alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in self.importCSV(for: "Meal History") }))
@@ -106,6 +94,64 @@ class DataSharingViewController: UIViewController {
         exportStartDoseScheduleToCSV()
         
         showAlert(title: "Export Successful", message: "All data has been exported successfully.")
+    }
+    
+    @objc private func importAllCSVFiles() {
+        let fileManager = FileManager.default
+        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+            showAlert(title: "Import Failed", message: "iCloud Drive URL is nil.")
+            return
+        }
+        
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            
+            let foodItemFiles = fileURLs.filter { $0.lastPathComponent.hasSuffix("FoodItems.csv") }
+            let favoriteMealFiles = fileURLs.filter { $0.lastPathComponent.hasSuffix("FavoriteMeals.csv") }
+            let mealHistoryFiles = fileURLs.filter { $0.lastPathComponent.hasSuffix("MealHistory.csv") }
+            let carbRatioScheduleFiles = fileURLs.filter { $0.lastPathComponent.hasSuffix("CarbRatioSchedule.csv") }
+            let startDoseScheduleFiles = fileURLs.filter { $0.lastPathComponent.hasSuffix("StartDoseSchedule.csv") }
+            
+            let dispatchGroup = DispatchGroup()
+            
+            for file in foodItemFiles {
+                dispatchGroup.enter()
+                parseCSV(at: file, for: "Food Items")
+                dispatchGroup.leave()
+            }
+            
+            for file in favoriteMealFiles {
+                dispatchGroup.enter()
+                parseCSV(at: file, for: "Favorite Meals")
+                dispatchGroup.leave()
+            }
+            
+            for file in mealHistoryFiles {
+                dispatchGroup.enter()
+                parseCSV(at: file, for: "Meal History")
+                dispatchGroup.leave()
+            }
+            
+            for file in carbRatioScheduleFiles {
+                dispatchGroup.enter()
+                parseCSV(at: file, for: "Carb Ratio Schedule")
+                dispatchGroup.leave()
+            }
+            
+            for file in startDoseScheduleFiles {
+                dispatchGroup.enter()
+                parseCSV(at: file, for: "Start Dose Schedule")
+                dispatchGroup.leave()
+            }
+            
+            dispatchGroup.notify(queue: .main) {
+                self.showAlert(title: "Import Successful", message: "All data has been imported successfully.")
+            }
+            
+        } catch {
+            print("Failed to list directory: \(error)")
+            showAlert(title: "Import Failed", message: "Failed to list directory: \(error.localizedDescription)")
+        }
     }
     
     @objc private func exportFoodItemsToCSV() {
@@ -141,9 +187,8 @@ class DataSharingViewController: UIViewController {
             let csvData = createCSV(entities)
             
             var caregiverName = UserDefaults.standard.string(forKey: "caregiverName") ?? ""
-            caregiverName = caregiverName.replacingOccurrences(of: " ", with: "_")
-            let prefixedFileName = "\(caregiverName)_\(fileName)"
-            
+            caregiverName = caregiverName.replacingOccurrences(of: " ", with: "")
+            let prefixedFileName = "\(caregiverName)\(fileName)"
             saveCSV(data: csvData, fileName: prefixedFileName)
         } catch {
             print("Failed to fetch data: \(error)")
@@ -170,8 +215,9 @@ class DataSharingViewController: UIViewController {
             let notes = item.notes ?? ""
             let emoji = item.emoji ?? ""
             
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);(netFat);(netProtein);(perPiece);(protein);(proteinPP);(count);(notes);(emoji)\n"
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji)\n"
         }
+        
         return csvString
     }
     
@@ -356,7 +402,6 @@ class DataSharingViewController: UIViewController {
                 }
             }
         }
-        
         do {
             try context.save()
         } catch {

@@ -361,7 +361,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    func sortFoodItems() {
+    func sortFoodItems() { // Not used currently
         switch sortOption {
         case .name:
             filteredFoodItems.sort { $0.name ?? "" < $1.name ?? "" }
@@ -372,6 +372,29 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         tableView.reloadData()
     }
+    
+    // MARK: - UITableViewDelegate
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            if searchMode == .local {
+                let foodItem = filteredFoodItems[indexPath.row]
+                showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? "detta livsmedel")
+            }
+        }
+    }
+
+    private func showDeleteConfirmationAlert(at indexPath: IndexPath, foodItemName: String) {
+        let alert = UIAlertController(title: "Radera", message: "Vill du radera: '\(foodItemName)'?", preferredStyle: .actionSheet)
+        let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { _ in
+            self.deleteFoodItem(at: indexPath)
+        }
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true, completion: nil)
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch searchMode {
         case .local:
