@@ -16,15 +16,15 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         navigationItem.rightBarButtonItem = doneButton
         
         // Setup Clear button
-                clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
-                clearButton.tintColor = .red
-                navigationItem.rightBarButtonItem = clearButton
-                
-                // Listen for changes to allowDataClearing setting
-                NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
-                
-                // Update Clear button visibility based on the current setting
-                updateClearButtonVisibility()
+        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
+        navigationItem.rightBarButtonItem = clearButton
+        
+        // Listen for changes to allowDataClearing setting
+        NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+        
+        // Update Clear button visibility based on the current setting
+        updateClearButtonVisibility()
     }
     
     deinit {
@@ -87,8 +87,14 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         if let cell = textField.superview?.superview as? StartDoseCell,
            let indexPath = tableView.indexPath(for: cell),
            let text = textField.text, let value = Double(text) {
-            CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
-            startDoses[indexPath.row] = value
+            if value == 0.0 {
+                CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
+                startDoses[indexPath.row] = nil
+            } else {
+                CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
+                startDoses[indexPath.row] = value
+            }
+            tableView.reloadRows(at: [indexPath], with: .automatic)
             print("Saved start dose \(value) for hour \(indexPath.row)")
             
             if let startDoseSchedule = CoreDataHelper.shared.fetchStartDoseSchedule(hour: indexPath.row) {
@@ -117,7 +123,6 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
                 if let nextCell = tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
                     nextCell.doseTextField.becomeFirstResponder()
                 } else {
-                    // Scroll to make the next cell visible and then make the text field the first responder
                     tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         if let nextCell = self.tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {

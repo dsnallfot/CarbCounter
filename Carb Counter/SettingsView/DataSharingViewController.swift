@@ -328,7 +328,8 @@ class DataSharingViewController: UIViewController {
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 15 {
-                if let id = UUID(uuidString: values[0]) {
+                if let id = UUID(uuidString: values[0]),
+                   !values.dropFirst().allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                     let foodItem = existingFoodItemsDict[id] ?? FoodItem(context: context)
                     foodItem.id = id
                     foodItem.name = values[1]
@@ -370,7 +371,8 @@ class DataSharingViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 3 {
+            if values.count == 3,
+               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                 if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
                     let favoriteMeal = FavoriteMeals(context: context)
                     favoriteMeal.id = id
@@ -399,7 +401,8 @@ class DataSharingViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 3 {
+            if values.count == 3,
+               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                 let id = UUID(uuidString: values[0]) ?? UUID()
                 let hour = Int16(values[1]) ?? 0
                 let carbRatio = Double(values[2]) ?? 0.0
@@ -425,7 +428,8 @@ class DataSharingViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 3 {
+            if values.count == 3,
+               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                 let id = UUID(uuidString: values[0]) ?? UUID()
                 let hour = Int16(values[1]) ?? 0
                 let startDose = Double(values[2]) ?? 0.0
@@ -458,7 +462,8 @@ class DataSharingViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 6 {
+            if values.count == 6,
+               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                 if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
                     let mealHistory = MealHistory(context: context)
                     mealHistory.id = id
@@ -487,7 +492,6 @@ class DataSharingViewController: UIViewController {
                 }
             }
         }
-        
         do {
             try context.save()
         } catch {

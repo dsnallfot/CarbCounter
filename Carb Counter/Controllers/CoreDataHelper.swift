@@ -54,7 +54,9 @@ class CoreDataHelper {
             let results = try context.fetch(fetchRequest)
             var startDoses = [Int: Double]()
             for result in results {
-                startDoses[Int(result.hour)] = result.startDose
+                if result.startDose > 0 {
+                    startDoses[Int(result.hour)] = result.startDose
+                }
             }
             return startDoses
         } catch {
@@ -114,11 +116,18 @@ class CoreDataHelper {
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
         do {
             let results = try context.fetch(fetchRequest)
-            let startDose = results.first ?? StartDoseSchedule(context: context)
-            startDose.id = startDose.id ?? UUID() // Ensure id is set
-            startDose.hour = Int16(hour)
-            startDose.startDose = dose
-            try context.save()
+            if dose == 0 {
+                if let startDose = results.first {
+                    context.delete(startDose)
+                    try context.save()
+                }
+            } else {
+                let startDose = results.first ?? StartDoseSchedule(context: context)
+                startDose.id = startDose.id ?? UUID() // Ensure id is set
+                startDose.hour = Int16(hour)
+                startDose.startDose = dose
+                try context.save()
+            }
         } catch {
             print("Failed to save start dose: \(error)")
         }
@@ -140,6 +149,21 @@ class CoreDataHelper {
             try context.save()
         } catch {
             print("Failed to clear carb ratios: \(error)")
+        }
+    }
+    
+    // Delete Start Dose for a specific hour
+    func deleteStartDose(hour: Int) {
+        let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let startDose = results.first {
+                context.delete(startDose)
+                try context.save()
+            }
+        } catch {
+            print("Failed to delete start dose: \(error)")
         }
     }
 
