@@ -4,6 +4,7 @@ import CoreData
 protocol FavoriteMealDetailViewControllerDelegate: AnyObject {
     func favoriteMealDetailViewControllerDidSave(_ controller: FavoriteMealDetailViewController)
 }
+
 class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     weak var delegate: FavoriteMealDetailViewControllerDelegate?
     
@@ -15,15 +16,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         super.viewDidLoad()
         title = "Ändra favoritmåltid"
         
-        // Ensure the view's background color is set to the system background color
         view.backgroundColor = .systemBackground
         
         setupView()
         setupNavigationBar()
+        tableView.reloadData()
     }
     
     private func setupView() {
-        // Add text field for editing meal name
         nameTextField = UITextField()
         nameTextField.text = favoriteMeal.name
         nameTextField.font = UIFont.systemFont(ofSize: 20)
@@ -38,6 +38,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.backgroundColor = .systemBackground
         view.addSubview(tableView)
         
@@ -54,7 +55,6 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func setupNavigationBar() {
-        // Ensure the navigation bar is configured for both light and dark modes
         if #available(iOS 13.0, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
@@ -75,15 +75,12 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     @objc private func saveChanges() {
         favoriteMeal.name = nameTextField.text
         
-        // Save the context
         CoreDataStack.shared.saveContext()
         
         delegate?.favoriteMealDetailViewControllerDidSave(self)
         
         navigationController?.popViewController(animated: true)
     }
-    
-
     
     private func addDoneButtonOnKeyboard() {
         let doneToolbar: UIToolbar = UIToolbar()
@@ -106,43 +103,48 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     // MARK: - UITableViewDataSource
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return (favoriteMeal.items as? [[String: Any]])?.count ?? 0
+        return getItems().count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
-        if let items = favoriteMeal.items as? [[String: Any]] {
-            let item = items[indexPath.row]
-            cell.textLabel?.text = item["name"] as? String
-            
-            if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
-                let formattedPortion: String
-                if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
-                    formattedPortion = String(format: "%.0f", portionServedDouble)
-                } else {
-                    formattedPortion = String(format: "%.1f", portionServedDouble)
-                }
-                
-                if let perPiece = item["perPiece"] as? Bool, perPiece {
-                    cell.detailTextLabel?.text = "Mängd: \(formattedPortion) st"
-                } else {
-                    cell.detailTextLabel?.text = "Mängd: \(formattedPortion) g"
-                }
+        var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as UITableViewCell
+        cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        
+        let items = getItems()
+        let item = items[indexPath.row]
+        cell.textLabel?.text = item["name"] as? String
+        
+        if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
+            let formattedPortion: String
+            if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
+                formattedPortion = String(format: "%.0f", portionServedDouble)
             } else {
-                if let perPiece = item["perPiece"] as? Bool, perPiece {
-                    cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") st"
-                } else {
-                    cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") g"
-                }
+                formattedPortion = String(format: "%.1f", portionServedDouble)
+            }
+            
+            if let perPiece = item["perPiece"] as? Bool, perPiece {
+                cell.detailTextLabel?.text = "Mängd: \(formattedPortion) st"
+            } else {
+                cell.detailTextLabel?.text = "Mängd: \(formattedPortion) g"
+            }
+        } else {
+            if let perPiece = item["perPiece"] as? Bool, perPiece {
+                cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") st"
+            } else {
+                cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") g"
             }
         }
+        // Apply custom font to detailTextLabel
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+            cell.detailTextLabel?.textColor = .gray
+        
         return cell
     }
     
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let items = favoriteMeal.items as? [[String: Any]] else { return }
+        var items = getItems()
         let item = items[indexPath.row]
         
         let editAlert = UIAlertController(title: "Ändra mängd", message: "Ange en ny mängd för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
@@ -163,9 +165,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         }
         let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
             guard let self = self, let newPortion = editAlert.textFields?.first?.text else { return }
-            self.favoriteMeal.items = self.updatePortion(for: item["name"] as? String ?? "", with: newPortion)
+            items[indexPath.row]["portionServed"] = newPortion
+            self.favoriteMeal.items = self.updateItems(items: items)
             
-            // Save the context
             CoreDataStack.shared.saveContext()
             self.tableView.reloadData()
         }
@@ -177,17 +179,23 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         present(editAlert, animated: true, completion: nil)
     }
     
-    private func updatePortion(for itemName: String, with newPortion: String) -> NSObject {
-        guard var items = favoriteMeal.items as? [[String: Any]] else { return (favoriteMeal.items ?? "" as NSObject) as NSObject }
-        for i in 0..<items.count {
-            if items[i]["name"] as? String == itemName {
-                items[i]["portionServed"] = newPortion
-                break
-            }
+    private func getItems() -> [[String: Any]] {
+        if let jsonString = favoriteMeal.items as? String,
+           let jsonData = jsonString.data(using: .utf8),
+           let items = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
+            return items
+        }
+        return []
+    }
+    
+    private func updateItems(items: [[String: Any]]) -> NSObject {
+        if let jsonData = try? JSONSerialization.data(withJSONObject: items, options: []),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            return jsonString as NSObject
         }
         return items as NSObject
     }
-
+    
     private func addDoneButtonOnKeyboard(to textField: UITextField) {
         let doneToolbar: UIToolbar = UIToolbar()
         doneToolbar.sizeToFit()
@@ -198,7 +206,6 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         let items = [flexSpace, done]
         doneToolbar.items = items
         doneToolbar.barStyle = .default
-        
         textField.inputAccessoryView = doneToolbar
     }
     
