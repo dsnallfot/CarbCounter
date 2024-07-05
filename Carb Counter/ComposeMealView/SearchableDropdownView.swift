@@ -132,9 +132,9 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         case 1:
             filteredFoodItems.sort {
                 if let name1 = $0.name, let name2 = $1.name {
-                    if name1.hasPrefix("Skolmat") && !name2.hasPrefix("Skolmat") {
+                    if name1.hasPrefix("S: ") && !name2.hasPrefix("S: ") {
                         return true
-                    } else if !name1.hasPrefix("Skolmat") && name2.hasPrefix("Skolmat") {
+                    } else if !name1.hasPrefix("S: ") && name2.hasPrefix("S: ") {
                         return false
                     }
                 }

@@ -113,8 +113,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         guard let dataSharingVC = dataSharingVC else { return }
 
         // Call the desired function
-        dataSharingVC.importAllCSVFiles()
         print("Data import triggered")
+        dataSharingVC.importAllCSVFiles()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -387,17 +388,23 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: - UITableViewDelegate
 
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            if searchMode == .local {
-                let foodItem = filteredFoodItems[indexPath.row]
-                showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? "detta livsmedel")
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (_, _, completionHandler) in
+            if self.searchMode == .local {
+                let foodItem = self.filteredFoodItems[indexPath.row]
+                self.showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? "detta livsmedel")
             }
+            completionHandler(true)
         }
+        deleteAction.backgroundColor = .red // Optionally set the background color
+
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
+        return configuration
     }
 
     private func showDeleteConfirmationAlert(at indexPath: IndexPath, foodItemName: String) {
-        let alert = UIAlertController(title: "Radera", message: "Vill du radera: '\(foodItemName)'?", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Radera Livsmedel", message: "Bekräfta att du vill radera: '\(foodItemName)'?", preferredStyle: .actionSheet)
         let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { _ in
             self.deleteFoodItem(at: indexPath)
         }
@@ -478,11 +485,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "Ät nu", style: .default, handler: { _ in
-            self.addToComposeMealViewController(foodItem: foodItem)
-        }))
-        alert.addAction(UIAlertAction(title: "Ändra", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: "Ändra", style: .destructive, handler: { _ in
             self.editFoodItem(at: IndexPath(row: self.filteredFoodItems.firstIndex(of: foodItem) ?? 0, section: 0))
+        }))
+        
+        alert.addAction(UIAlertAction(title: "+ Lägg till i måltid", style: .default, handler: { _ in
+            self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
         alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))

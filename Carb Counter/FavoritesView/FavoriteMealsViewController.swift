@@ -162,8 +162,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func confirmDeleteFavoriteMeal(at indexPath: IndexPath) {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         
-        let deleteAlert = UIAlertController(title: "Radera favoritemåltid", message: "Vill du radera: '\"\(favoriteMeal.name ?? "")\"'?", preferredStyle: .actionSheet)
-        let deleteAction = UIAlertAction(title: "Ja", style: .destructive) { [weak self] _ in
+        let deleteAlert = UIAlertController(title: "Radera favoritmåltid", message: "Bekräfta att du vill radera: '\"\(favoriteMeal.name ?? "")\"'?", preferredStyle: .actionSheet)
+        let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { [weak self] _ in
             self?.deleteFavoriteMeal(at: indexPath)
         }
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)

@@ -118,11 +118,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
         
-        /*// Fetch food items and add the add button row
+        // Fetch food items and add the add button row
         fetchFoodItems()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
-        updateHeadlineVisibility()*/
+        updateHeadlineVisibility()
         
         // Add observer for text changes in totalRegisteredLabel
         totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
@@ -212,8 +212,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         guard let dataSharingVC = dataSharingVC else { return }
 
         // Call the desired function
-        dataSharingVC.importAllCSVFiles()
         print("Data import triggered")
+        dataSharingVC.importAllCSVFiles()
+        
         
         //print("viewWillAppear: totalNetCarbsLabel: \(totalNetCarbsLabel?.text ?? "nil")")
         //print("viewWillAppear: clearAllButton: \(clearAllButton != nil)")
@@ -445,9 +446,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     @objc private func clearAllButtonTapped() {
         view.endEditing(true)
         
-        let alertController = UIAlertController(title: "Rensa måltid", message: "Vill du rensa hela måltiden?", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Rensa Måltid", message: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", preferredStyle: .actionSheet)
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+        let yesAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
             if self.saveMealToHistory {
                 self.saveMealHistory() // Save MealHistory if the flag is true
             }
@@ -589,7 +590,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
         
-        fetchFoodItems()
+        //fetchFoodItems()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState() // Add this line
         updateHeadlineVisibility()

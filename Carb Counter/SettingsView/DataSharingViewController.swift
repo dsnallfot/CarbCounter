@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 class DataSharingViewController: UIViewController {
     
-    //private var shareURLTextField: UITextField!
+    private var lastImportTime: Date?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,43 +58,52 @@ class DataSharingViewController: UIViewController {
     }
     
     @objc public func importAllCSVFiles() {
-        let fileManager = FileManager.default
-        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
-            showAlert(title: "Import Failed", message: "iCloud Drive URL is nil.")
-            return
-        }
-        
-        do {
-            let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-            
-            let entityFileMapping: [String: String] = [
-                "FoodItems.csv": "Food Items",
-                "FavoriteMeals.csv": "Favorite Meals",
-                "MealHistory.csv": "Meal History",
-                "CarbRatioSchedule.csv": "Carb Ratio Schedule",
-                "StartDoseSchedule.csv": "Start Dose Schedule"
-            ]
-            
-            let dispatchGroup = DispatchGroup()
-            
-            for (fileName, entityName) in entityFileMapping {
-                if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
-                    dispatchGroup.enter()
-                    parseCSV(at: fileURL, for: entityName)
-                    dispatchGroup.leave()
+            // Check if the function was called less than 10 seconds ago
+            if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 10 {
+                print("Import blocked to prevent running more often than every 10 seconds")
+                return
+            }
+
+            // Update the last import time
+            lastImportTime = Date()
+
+            let fileManager = FileManager.default
+            guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+                print("Import Failed: iCloud Drive URL is nil.")
+                return
+            }
+
+            do {
+                let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+
+                let entityFileMapping: [String: String] = [
+                    "FoodItems.csv": "Food Items",
+                    "FavoriteMeals.csv": "Favorite Meals",
+                    "MealHistory.csv": "Meal History",
+                    "CarbRatioSchedule.csv": "Carb Ratio Schedule",
+                    "StartDoseSchedule.csv": "Start Dose Schedule"
+                ]
+
+                let dispatchGroup = DispatchGroup()
+
+                for (fileName, entityName) in entityFileMapping {
+                    if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
+                        dispatchGroup.enter()
+                        parseCSV(at: fileURL, for: entityName)
+                        dispatchGroup.leave()
+                    }
                 }
+
+                /*dispatchGroup.notify(queue: .main) {
+                    self.showAlert(title: "Import Successful", message: "All data has been imported successfully.")
+                }*/
+                print("Data import done!")
+
+            } catch {
+                print("Failed to list directory: \(error)")
+                //showAlert(title: "Import Failed", message: "Failed to list directory: \(error.localizedDescription)")
             }
-            
-            dispatchGroup.notify(queue: .main) {
-                self.showAlert(title: "Import Successful", message: "All data has been imported successfully.")
-            }
-            print("Data import done!")
-            
-        } catch {
-            print("Failed to list directory: \(error)")
-            showAlert(title: "Import Failed", message: "Failed to list directory: \(error.localizedDescription)")
         }
-    }
     
     @objc public func exportFoodItemsToCSV() {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
@@ -193,22 +202,30 @@ class DataSharingViewController: UIViewController {
     
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
         var csvString = "hour;carbRatio\n"
+        var scheduleDict = [Int16: Double]()
         
         for schedule in carbRatioSchedules {
-            let hour = schedule.hour
-            let carbRatio = schedule.carbRatio
+            scheduleDict[schedule.hour] = schedule.carbRatio
+        }
+        
+        for hour in 0..<24 {
+            let carbRatio = scheduleDict[Int16(hour)] ?? 0.0
             csvString += "\(hour);\(carbRatio)\n"
         }
         
         return csvString
     }
-    
+
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
         var csvString = "hour;startDose\n"
+        var scheduleDict = [Int16: Double]()
         
         for schedule in startDoseSchedules {
-            let hour = schedule.hour
-            let startDose = schedule.startDose
+            scheduleDict[schedule.hour] = schedule.startDose
+        }
+        
+        for hour in 0..<24 {
+            let startDose = scheduleDict[Int16(hour)] ?? 0.0
             csvString += "\(hour);\(startDose)\n"
         }
         
@@ -264,13 +281,13 @@ class DataSharingViewController: UIViewController {
                     try fileManager.removeItem(at: destinationURL)
                 }
                 try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
-                showAlert(title: "Export Successful", message: "Data has been exported to iCloud successfully.")
+                print("Export Successful: Data has been exported to iCloud successfully.")
             } else {
-                showAlert(title: "Export Failed", message: "iCloud Drive URL is nil.")
+                print("Export Failed: iCloud Drive URL is nil.")
             }
         } catch {
             print("Failed to save file to iCloud: \(error)")
-            showAlert(title: "Export Failed", message: "Failed to save file to iCloud: \(error.localizedDescription)")
+            //showAlert(title: "Export Failed", message: "Failed to save file to iCloud: \(error.localizedDescription)")
         }
     }
     
@@ -301,22 +318,22 @@ class DataSharingViewController: UIViewController {
                 parseMealHistoryCSV(rows, context: context)
             default:
                 print("Unknown entity name: \(entityName)")
-                showAlert(title: "Import Failed", message: "Unknown entity name: \(entityName)")
+                //showAlert(title: "Import Failed", message: "Unknown entity name: \(entityName)")
                 return
             }
             
             try context.save()
-            showAlert(title: "Import Successful", message: "\(entityName) has been imported")
+            print("Import Successful: \(entityName) has been imported")
         } catch {
             print("Failed to read CSV file: \(error)")
-            showAlert(title: "Import Failed", message: "Could not read CSV file: \(error)")
+            //showAlert(title: "Import Failed", message: "Could not read CSV file: \(error)")
         }
     }
     
     public func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 15 else {
-            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+            print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
@@ -351,14 +368,14 @@ class DataSharingViewController: UIViewController {
         do {
             try context.save()
         } catch {
-            showAlert(title: "Save Failed", message: "Failed to save food items: \(error)")
+            //showAlert(title: "Save Failed", message: "Failed to save food items: \(error)")
         }
     }
     
     public func parseFavoriteMealsCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 3 else {
-            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+            print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
@@ -392,7 +409,7 @@ class DataSharingViewController: UIViewController {
     public func parseCarbRatioScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 2 else {
-            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+            print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
@@ -406,30 +423,34 @@ class DataSharingViewController: UIViewController {
         }
         
         // Import new schedules
+        var scheduleDict = [Int16: Double]()
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 2,
-               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                let hour = Int16(values[0]) ?? 0
-                let carbRatio = Double(values[1]) ?? 0.0
-                
-                let carbRatioSchedule = CarbRatioSchedule(context: context)
-                carbRatioSchedule.hour = hour
-                carbRatioSchedule.carbRatio = carbRatio
+               let hour = Int16(values[0]),
+               let carbRatio = Double(values[1]),
+               hour >= 0, hour < 24 { // Ensure hour is between 0 and 23
+                scheduleDict[hour] = carbRatio
             }
+        }
+        
+        for (hour, carbRatio) in scheduleDict {
+            let carbRatioSchedule = CarbRatioSchedule(context: context)
+            carbRatioSchedule.hour = hour
+            carbRatioSchedule.carbRatio = carbRatio
         }
         
         do {
             try context.save()
         } catch {
-            showAlert(title: "Save Failed", message: "Failed to save Carb Ratio Schedules: \(error)")
+            print("Save Failed: Failed to save Carb Ratio Schedules: \(error)")
         }
     }
 
     public func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 2 else {
-            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+            print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
@@ -443,30 +464,33 @@ class DataSharingViewController: UIViewController {
         }
         
         // Import new schedules
+        var scheduleDict = [Int16: Double]()
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 2,
-               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                let hour = Int16(values[0]) ?? 0
-                let startDose = Double(values[1]) ?? 0.0
-                
-                let startDoseSchedule = StartDoseSchedule(context: context)
-                startDoseSchedule.hour = hour
-                startDoseSchedule.startDose = startDose
+               let hour = Int16(values[0]),
+               let startDose = Double(values[1]),
+               hour >= 0, hour < 24 { // Ensure hour is between 0 and 23
+                scheduleDict[hour] = startDose
             }
+        }
+        
+        for (hour, startDose) in scheduleDict {
+            let startDoseSchedule = StartDoseSchedule(context: context)
+            startDoseSchedule.hour = hour
+            startDoseSchedule.startDose = startDose
         }
         
         do {
             try context.save()
         } catch {
-            showAlert(title: "Save Failed", message: "Failed to save Start Dose Schedules: \(error)")
+            print("Save Failed: Failed to save Start Dose Schedules: \(error)")
         }
     }
-    
     public func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 6 else {
-            showAlert(title: "Import Failed", message: "CSV file was not correctly formatted")
+            print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
@@ -512,7 +536,7 @@ class DataSharingViewController: UIViewController {
         do {
             try context.save()
         } catch {
-            showAlert(title: "Import Failed", message: "Error saving data")
+            print("Import Failed: Error saving data")
         }
     }
     

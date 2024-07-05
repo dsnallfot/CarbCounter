@@ -138,11 +138,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (action, view, completionHandler) in
-            let alert = UIAlertController(title: "Radera måltidshistorik", message: "Vill du radera denna måltid från historiken?", preferredStyle: .actionSheet)
+            let alert = UIAlertController(title: "Radera måltidshistorik", message: "Bekräfta att du vill radera denna måltid från historiken?", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
                 completionHandler(false) // Dismiss the swipe action
             }))
-            alert.addAction(UIAlertAction(title: "Ja", style: .destructive, handler: { _ in
+            alert.addAction(UIAlertAction(title: "Radera", style: .destructive, handler: { _ in
                 let mealHistory = self.filteredMealHistories[indexPath.row]
                 let context = CoreDataStack.shared.context
                 context.delete(mealHistory)
