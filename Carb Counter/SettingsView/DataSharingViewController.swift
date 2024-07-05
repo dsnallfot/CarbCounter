@@ -400,9 +400,20 @@ class DataSharingViewController: UIViewController {
                             "perPiece": parts[2] == "true"
                         ]
                     }
-                    favoriteMeal.items = itemsData as NSObject
+                    
+                    // Serialize the items array to JSON and save to CoreData
+                    if let jsonData = try? JSONSerialization.data(withJSONObject: itemsData, options: []),
+                       let jsonString = String(data: jsonData, encoding: .utf8) {
+                        favoriteMeal.items = jsonString as NSObject
+                    }
                 }
             }
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Save Failed: Failed to save favorite meals: \(error)")
         }
     }
     
