@@ -108,21 +108,21 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
                 String(format: "%.0f", mealHistory.totalNetCarbs)
-            detailText += "Kh \(carbs)g"
+            detailText += "Kh \(carbs) g"
         }
         if mealHistory.totalNetFat > 0 {
             if !detailText.isEmpty { detailText += " • " }
             let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetFat) :
                 String(format: "%.0f", mealHistory.totalNetFat)
-            detailText += "Fett \(fat)g"
+            detailText += "Fett \(fat) g"
         }
         if mealHistory.totalNetProtein > 0 {
             if !detailText.isEmpty { detailText += " • " }
             let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetProtein) :
                 String(format: "%.0f", mealHistory.totalNetProtein)
-            detailText += "Protein \(protein)g"
+            detailText += "Protein \(protein) g"
         }
         
         // Collect food item names
@@ -130,8 +130,10 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let foodItemNamesStr = foodItemNames.joined(separator: " • ")
         
         // Update the cell text
-        cell.textLabel?.text = "\(mealDateStr) • \(detailText)"
-        cell.detailTextLabel?.text = foodItemNamesStr
+        //cell.textLabel?.text = "[\(mealDateStr)] \(detailText)"
+        //cell.detailTextLabel?.text = foodItemNamesStr
+        cell.textLabel?.text = foodItemNamesStr
+        cell.detailTextLabel?.text = "[\(mealDateStr)]  \(detailText)"
         cell.detailTextLabel?.textColor = .gray
         
         return cell

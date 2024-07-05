@@ -12,12 +12,15 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Favoritmåltider"
+        title = "Välj en favoritmåltid"
         
-        // Ensure the view's background color is set to the system background color
         view.backgroundColor = .systemBackground
         
-        // Add Cancel button to the navigation bar
+        // Set the back button title for the next view controller
+        let backButton = UIBarButtonItem()
+        backButton.title = "Tillbaka"
+        navigationItem.backBarButtonItem = backButton
+        
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
         
@@ -26,7 +29,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         setupNavigationBar()
         fetchFavoriteMeals()
         
-        // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
     
@@ -36,8 +38,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func favoriteMealDetailViewControllerDidSave(_ controller: FavoriteMealDetailViewController) {
-            fetchFavoriteMeals()
-        }
+        fetchFavoriteMeals()
+    }
     
     @objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)
@@ -48,8 +50,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         searchBar.delegate = self
         searchBar.placeholder = "Sök favoritmåltid"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.barTintColor = .systemBackground // Ensure the search bar background is correct
-        searchBar.backgroundColor = .systemBackground // Ensure the search bar background is correct
+        searchBar.barTintColor = .systemBackground
+        searchBar.backgroundColor = .systemBackground
         view.addSubview(searchBar)
         
         NSLayoutConstraint.activate([
@@ -64,7 +66,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = .systemBackground // Ensure the table view background is correct
+        tableView.backgroundColor = .systemBackground
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -76,7 +79,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func setupNavigationBar() {
-        // Ensure the navigation bar is configured for both light and dark modes
         if #available(iOS 13.0, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
@@ -111,10 +113,32 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .default, reuseIdentifier: "cell")
+        var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        cell.textLabel?.numberOfLines = 2
+        cell.textLabel?.lineBreakMode = .byWordWrapping
+        cell.detailTextLabel?.numberOfLines = 2
+        cell.detailTextLabel?.lineBreakMode = .byWordWrapping
+        
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         cell.textLabel?.text = favoriteMeal.name
+        
+        let items = getItems(from: favoriteMeal)
+        let itemNames = items.compactMap { $0["name"] as? String }
+        cell.detailTextLabel?.text = itemNames.joined(separator: " • ")
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        cell.detailTextLabel?.textColor = .gray
+        
         return cell
+    }
+    
+    private func getItems(from favoriteMeal: FavoriteMeals) -> [[String: Any]] {
+        if let jsonString = favoriteMeal.items as? String,
+           let jsonData = jsonString.data(using: .utf8),
+           let items = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
+            return items
+        }
+        return []
     }
     
     // MARK: - UITableViewDelegate
@@ -134,14 +158,12 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // Implement swipe actions
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // Edit action
         let editAction = UIContextualAction(style: .normal, title: "Ändra") { [weak self] (action, view, completionHandler) in
             self?.editFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
         editAction.backgroundColor = .systemBlue
         
-        // Delete action
         let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { [weak self] (action, view, completionHandler) in
             self?.confirmDeleteFavoriteMeal(at: indexPath)
             completionHandler(true)
@@ -183,13 +205,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         filteredFavoriteMeals.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
         
-        // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
-
-                // Call the desired function
-                dataSharingVC.exportFavoriteMealsToCSV()
+        guard let dataSharingVC = dataSharingVC else { return }
+        dataSharingVC.exportFavoriteMealsToCSV()
         print("Favorite meals export triggered")
-        
     }
     
     // MARK: - UISearchBarDelegate

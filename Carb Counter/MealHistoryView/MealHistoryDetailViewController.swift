@@ -98,7 +98,7 @@ class MealHistoryDetailViewController: UIViewController {
             view.addSubview(foodNameLabel)
             
             NSLayoutConstraint.activate([
-                foodNameLabel.topAnchor.constraint(equalTo: lastView.bottomAnchor, constant: 12),
+                foodNameLabel.topAnchor.constraint(equalTo: lastView.bottomAnchor, constant: 18),
                 foodNameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
                 foodNameLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
             ])
@@ -127,45 +127,45 @@ class MealHistoryDetailViewController: UIViewController {
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
-                String(format: "%.1f", mealHistory.totalNetCarbs)
+                String(format: "%.0f", mealHistory.totalNetCarbs)
             summaryText += "Kolhydrater \(carbs) g"
         }
         if mealHistory.totalNetFat > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
             let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetFat) :
-                String(format: "%.1f", mealHistory.totalNetFat)
+                String(format: "%.0f", mealHistory.totalNetFat)
             summaryText += "Fett \(fat) g"
         }
         if mealHistory.totalNetProtein > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
             let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetProtein) :
-                String(format: "%.1f", mealHistory.totalNetProtein)
+                String(format: "%.0f", mealHistory.totalNetProtein)
             summaryText += "Protein \(protein) g"
         }
         
-        return summaryText
+        return "★ \(summaryText)"
     }
     
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {
         var detailText = ""
-        let portionServedFormatted = foodEntry.entryPortionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryPortionServed) : String(format: "%.1f", foodEntry.entryPortionServed)
-        let notEatenFormatted = foodEntry.entryNotEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryNotEaten) : String(format: "%.1f", foodEntry.entryNotEaten)
+        let portionServedFormatted = foodEntry.entryPortionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryPortionServed) : String(format: "%.0f", foodEntry.entryPortionServed)
+        let notEatenFormatted = foodEntry.entryNotEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryNotEaten) : String(format: "%.0f", foodEntry.entryNotEaten)
         let eatenAmount = foodEntry.entryPortionServed - foodEntry.entryNotEaten
-        let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.1f", eatenAmount)
+        let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.0f", eatenAmount)
 
         if foodEntry.entryNotEaten > 0 {
             if foodEntry.entryPerPiece {
-                detailText = "Åt \(eatenAmountFormatted) st   (Serverades \(portionServedFormatted) st - Lämnade \(notEatenFormatted) st)"
+                detailText = "Åt upp \(eatenAmountFormatted) st  [Serverades \(portionServedFormatted) st - Lämnade \(notEatenFormatted) st]"
             } else {
-                detailText = "Åt \(eatenAmountFormatted) g   (Serverades \(portionServedFormatted) g - Lämnade \(notEatenFormatted) g)"
+                detailText = "Åt upp \(eatenAmountFormatted) g  [Serverades \(portionServedFormatted) g - Lämnade \(notEatenFormatted) g]"
             }
         } else {
             if foodEntry.entryPerPiece {
-                detailText = "Åt \(portionServedFormatted) st"
+                detailText = "Åt upp \(portionServedFormatted) st"
             } else {
-                detailText = "Åt \(portionServedFormatted) g"
+                detailText = "Åt upp \(portionServedFormatted) g"
             }
         }
         

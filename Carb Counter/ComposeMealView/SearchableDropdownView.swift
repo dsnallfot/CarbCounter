@@ -65,7 +65,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }()
     
     let segmentedControl: UISegmentedControl = {
-        let items = ["Namn A-Ö", "Skolmat", "Mest populära"]
+        let items = ["Namn A-Ö", "Skolmat", "Styck", "Populära"]
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -114,11 +114,11 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     @objc private func doneButtonTapped() {
         completeSelection()
     }
-    
+
     @objc private func cancelButtonTapped() {
-            // Dismiss the keyboard
-            searchBar.resignFirstResponder()
-        }
+        // Dismiss the keyboard
+        searchBar.resignFirstResponder()
+    }
 
     @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         sortFoodItems()
@@ -128,25 +128,54 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     private func sortFoodItems() {
         switch segmentedControl.selectedSegmentIndex {
         case 0:
-            filteredFoodItems.sort { ($0.name ?? "") < ($1.name ?? "") }
-        case 1:
-            filteredFoodItems.sort {
-                if let name1 = $0.name, let name2 = $1.name {
-                    if name1.hasPrefix("S: ") && !name2.hasPrefix("S: ") {
-                        return true
-                    } else if !name1.hasPrefix("S: ") && name2.hasPrefix("S: ") {
-                        return false
-                    }
+            // Case 0: Sort by name (A-Z) with items without "Ⓢ" prefix first
+            filteredFoodItems.sort { (item1, item2) in
+                let name1 = item1.name ?? ""
+                let name2 = item2.name ?? ""
+
+                let hasPrefix1 = name1.hasPrefix("Ⓢ")
+                let hasPrefix2 = name2.hasPrefix("Ⓢ")
+
+                if hasPrefix1 != hasPrefix2 {
+                    return !hasPrefix1 && hasPrefix2
                 }
-                return ($0.name ?? "") < ($1.name ?? "")
+                return name1 < name2
+            }
+        case 1:
+            // Case 1: Sort items with "Ⓢ" prefix on top, then by name
+            filteredFoodItems.sort { (item1, item2) in
+                let name1 = item1.name ?? ""
+                let name2 = item2.name ?? ""
+
+                let hasPrefix1 = name1.hasPrefix("Ⓢ")
+                let hasPrefix2 = name2.hasPrefix("Ⓢ")
+
+                if hasPrefix1 != hasPrefix2 {
+                    return hasPrefix1 && !hasPrefix2
+                }
+                return name1 < name2
             }
         case 2:
+            // Case 2: Sort by suffix "①" on top, then by name
+            filteredFoodItems.sort { (item1, item2) in
+                let name1 = item1.name ?? ""
+                let name2 = item2.name ?? ""
+
+                let hasSuffix1 = name1.hasSuffix("①")
+                let hasSuffix2 = name2.hasSuffix("①")
+
+                if hasSuffix1 != hasSuffix2 {
+                    return hasSuffix1 && !hasSuffix2
+                }
+                return name1 < name2
+            }
+        case 3:
+            // Case 3: Sort by count descending
             filteredFoodItems.sort { $0.count > $1.count }
         default:
             break
         }
     }
-
     private func clearSelection() {
         selectedFoodItems.removeAll()
     }
