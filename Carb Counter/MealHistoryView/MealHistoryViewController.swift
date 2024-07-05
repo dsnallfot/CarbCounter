@@ -100,33 +100,38 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let mealHistory = filteredMealHistories[indexPath.row]
         
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+        dateFormatter.dateFormat = "d MMM HH:mm"
         let mealDateStr = dateFormatter.string(from: mealHistory.mealDate ?? Date())
-        
-        cell.textLabel?.text = mealDateStr
         
         var detailText = ""
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
-                String(format: "%.1f", mealHistory.totalNetCarbs)
-            detailText += "Kolhydrater: \(carbs) g"
+                String(format: "%.0f", mealHistory.totalNetCarbs)
+            detailText += "Kh \(carbs)g"
         }
         if mealHistory.totalNetFat > 0 {
             if !detailText.isEmpty { detailText += " • " }
             let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetFat) :
-                String(format: "%.1f", mealHistory.totalNetFat)
-            detailText += "Fett: \(fat) g"
+                String(format: "%.0f", mealHistory.totalNetFat)
+            detailText += "Fett \(fat)g"
         }
         if mealHistory.totalNetProtein > 0 {
             if !detailText.isEmpty { detailText += " • " }
             let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetProtein) :
-                String(format: "%.1f", mealHistory.totalNetProtein)
-            detailText += "Protein: \(protein) g"
+                String(format: "%.0f", mealHistory.totalNetProtein)
+            detailText += "Protein \(protein)g"
         }
-        cell.detailTextLabel?.text = detailText
+        
+        // Collect food item names
+        let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName } ?? []
+        let foodItemNamesStr = foodItemNames.joined(separator: " • ")
+        
+        // Update the cell text
+        cell.textLabel?.text = "\(mealDateStr) • \(detailText)"
+        cell.detailTextLabel?.text = foodItemNamesStr
         cell.detailTextLabel?.textColor = .gray
         
         return cell
