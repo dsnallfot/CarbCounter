@@ -529,17 +529,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Reset the text of totalRegisteredLabel
         totalRegisteredLabel.text = ""
         // Reset the totalNetCarbsLabel and other total labels
-        totalNetCarbsLabel.text = "0.0 g"
-        totalNetFatLabel.text = "0.0 g"
-        totalNetProteinLabel.text = "0.0 g"
-        totalBolusAmountLabel.text = "0.00 E"
-        totalStartAmountLabel.text = "0.0 g"
+        totalNetCarbsLabel.text = "0 g"
+        totalNetFatLabel.text = "0 g"
+        totalNetProteinLabel.text = "0 g"
+        totalBolusAmountLabel.text = "0 E"
+        totalStartAmountLabel.text = "0 g"
         totalRemainsLabel.text = "0 g"
-        totalRemainsBolusLabel.text = "0.00 E"
+        totalRemainsBolusLabel.text = "0 E"
         //dold string med alla emoji?
         
         // Reset the startBolus amount
-        totalStartBolusLabel.text = "0.00 E"
+        totalStartBolusLabel.text = "0 E"
         
         // Reset the remainsContainer color and label
         remainsContainer.backgroundColor = .systemGray
@@ -742,7 +742,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         remainsLabel = createLabel(text: "GE RESTEN", fontSize: 9, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
-        totalRemainsBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
         
         let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
         remainsValuesStack.axis = .horizontal
@@ -762,7 +762,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         let startAmountLabel = createLabel(text: "+ STARTDOS", fontSize: 9, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
-        totalStartBolusLabel = createLabel(text: "0.00E", fontSize: 12, weight: .semibold, color: .white)
+        totalStartBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
         
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
@@ -1219,17 +1219,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         //print("updateTotalNutrients ran")
         
-        totalNetCarbsLabel.text = String(format: "%.1f g", totalNetCarbs)
+        totalNetCarbsLabel.text = String(format: "%.0f g", totalNetCarbs)
         
         let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
-        totalNetFatLabel.text = String(format: "%.1f g", totalNetFat)
+        totalNetFatLabel.text = String(format: "%.0f g", totalNetFat)
         
         let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
-        totalNetProteinLabel.text = String(format: "%.1f g", totalNetProtein)
+        totalNetProteinLabel.text = String(format: "%.0f g", totalNetProtein)
         
         let totalBolus = totalNetCarbs / scheduledCarbRatio
-        let roundedBolus = roundToNearest05(totalBolus)
-        totalBolusAmountLabel.text = String(format: "%.2f E", roundedBolus)
+        let roundedBolus = roundDownToNearest05(totalBolus)
+        totalBolusAmountLabel.text = formatNumber(roundedBolus) + " E"
         
         if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
             totalStartAmountLabel.text = String(format: "%.0fg", totalNetCarbs)
@@ -1238,14 +1238,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         
         let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
-        let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
-        totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
+        let startBolus = roundDownToNearest05(totalStartAmount / scheduledCarbRatio)
+        totalStartBolusLabel.text = formatNumber(startBolus) + "E"
         
         updateRemainsBolus()
         updateSaveFavoriteButtonState() // Add this line
     }
-    private func roundToNearest05(_ value: Double) -> Double {
-        return (value * 20.0).rounded() / 20.0
+
+    private func formatNumber(_ value: Double) -> String {
+        if value == floor(value) {
+            return String(format: "%.0f", value)
+        } else if value * 10 == floor(value * 10) {
+            return String(format: "%.1f", value)
+        } else {
+            return String(format: "%.2f", value)
+        }
+    }
+    private func roundDownToNearest05(_ value: Double) -> Double {
+        return (value * 20.0).rounded(.down) / 20.0
     }
     
     @objc private func registeredLabelDidChange() {
@@ -1261,15 +1271,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     }
     
     private func updateRemainsBolus() {
-        
-        let totalCarbsText = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
-        let totalCarbsValue = Double(totalCarbsText) ?? 0.0
+        let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+
+        let totalCarbsValue = Double(totalNetCarbs)
         
         if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
             
-            let remainsBolus = roundToNearest05(remainsValue / scheduledCarbRatio)
+            let remainsBolus = roundDownToNearest05(remainsValue / scheduledCarbRatio)
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
             if remainsValue < -0.5 {
                 remainsLabel.text = "ÖVERDOS!"
@@ -1288,8 +1298,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
             
-            let remainsBolus = roundToNearest05(totalCarbsValue / scheduledCarbRatio)
-            totalRemainsBolusLabel?.text = String(format: "%.2fE", remainsBolus)
+            let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio)
+            totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + "E"
             
             remainsContainer?.backgroundColor = .systemGray
             remainsLabel?.text = "+ SLUTDOS"
@@ -1594,7 +1604,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
         
         let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
-        let startBolus = roundToNearest05(totalStartAmount / scheduledCarbRatio)
+        let startBolus = roundDownToNearest05(totalStartAmount / scheduledCarbRatio)
         totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
         updateRemainsBolus()
     }
