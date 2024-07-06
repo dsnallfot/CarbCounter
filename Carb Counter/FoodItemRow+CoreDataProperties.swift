@@ -22,5 +22,7 @@ extension FoodItemRow {
     @NSManaged public var netCarbs: Double
     @NSManaged public var netFat: Double
     @NSManaged public var netProtein: Double
+    @NSManaged public var totalRegisteredValue: Double
+    
 
 }

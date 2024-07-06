@@ -127,6 +127,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Add observer for text changes in totalRegisteredLabel
         totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
+        // Add target to totalRegisteredLabel to handle changes
+        totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelChanged), for: .editingChanged)
+        
         // Set the delegate for the text field
         totalRegisteredLabel.delegate = self
         
@@ -232,20 +235,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
     
+    @objc private func totalRegisteredLabelChanged() {
+        saveToCoreData()
+    }
+    
     func saveToCoreData() {
         let context = CoreDataStack.shared.context
         
-        for rowView in foodItemRows {
-            if let foodItemRow = rowView.foodItemRow {
-                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
-                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
-                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-            } else {
-                let foodItemRow = FoodItemRow(context: context)
-                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
-                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
-                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                rowView.foodItemRow = foodItemRow
+        // Save the totalRegisteredLabel value
+        if let totalRegisteredText = totalRegisteredLabel.text,
+           let totalRegisteredValue = Double(totalRegisteredText.replacingOccurrences(of: "g", with: "")) {
+            
+            for rowView in foodItemRows {
+                if let foodItemRow = rowView.foodItemRow {
+                    foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                    foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                    foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                    foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
+                } else {
+                    let foodItemRow = FoodItemRow(context: context)
+                    foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                    foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                    foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                    foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
+                    rowView.foodItemRow = foodItemRow
+                }
             }
         }
         
@@ -280,8 +294,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                         
                         // Set the selected food item and the text fields
                         rowView.setSelectedFoodItem(foodItem)
-                        rowView.portionServedTextField.text = formatNumberWithoutTrailingZero(savedFoodItem.portionServed)
-                        rowView.notEatenTextField.text = formatNumberWithoutTrailingZero(savedFoodItem.notEaten)
+                        rowView.portionServedTextField.text = formatNumber(savedFoodItem.portionServed)
+                        rowView.notEatenTextField.text = formatNumber(savedFoodItem.notEaten)
                         
                         // Add the row view to your stack view
                         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
@@ -300,6 +314,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                     }
                 }
             }
+            
+            // Load totalRegisteredValue from CoreData and update the label
+            if let firstSavedItem = savedFoodItems.first {
+                totalRegisteredLabel.text = formatNumber(firstSavedItem.totalRegisteredValue)
+            }
+            
             updateTotalNutrients()
             updateClearAllButtonState()
             updateSaveFavoriteButtonState()
@@ -650,7 +670,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         totalStartAmountLabel.text = "0 g"
         totalRemainsLabel.text = "0 g"
         totalRemainsBolusLabel.text = "0 E"
-        //dold string med alla emoji?
         
         // Reset the startBolus amount
         totalStartBolusLabel.text = "0 E"
@@ -658,10 +677,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Reset the remainsContainer color and label
         remainsContainer.backgroundColor = .systemGray
         remainsLabel.text = "+ SLUTDOS"
-        
-        // Print debug information
-        //print("clearAllFoodItems called and all states reset.")
     }
+
     
     private func setupScrollView(below header: UIView) {
         //print("setupScrollView ran")
@@ -900,7 +917,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
         let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 9, weight: .bold, color: .white)
-        totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .label)
+        totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .white)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
 
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
