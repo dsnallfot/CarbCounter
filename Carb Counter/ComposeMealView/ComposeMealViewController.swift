@@ -280,8 +280,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                         
                         // Set the selected food item and the text fields
                         rowView.setSelectedFoodItem(foodItem)
-                        rowView.portionServedTextField.text = String(savedFoodItem.portionServed)
-                        rowView.notEatenTextField.text = String(savedFoodItem.notEaten)
+                        rowView.portionServedTextField.text = formatNumberWithoutTrailingZero(savedFoodItem.portionServed)
+                        rowView.notEatenTextField.text = formatNumberWithoutTrailingZero(savedFoodItem.notEaten)
                         
                         // Add the row view to your stack view
                         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
@@ -307,6 +307,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         } catch {
             print("Failed to fetch FoodItemRows: \(error)")
         }
+    }
+
+    private func formatNumberWithoutTrailingZero(_ number: Double) -> String {
+        let formattedNumber = String(format: "%.1f", number)
+        return formattedNumber.hasSuffix(".0") ? String(formattedNumber.dropLast(2)) : formattedNumber
     }
     
     private func getCombinedEmojis() -> String {
