@@ -77,8 +77,21 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
+        
         // Add observer for notifications
         NotificationCenter.default.addObserver(self, selector: #selector(foodItemsDidChange(_:)), name: .foodItemsDidChange, object: nil)
+        
+        // Load saved search text
+        if let savedSearchText = UserDefaults.standard.string(forKey: "dropdownSearchText") {
+            searchBar.text = savedSearchText
+            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
+            sortFoodItems()
+            tableView.reloadData()
+        } else {
+            filteredFoodItems = foodItems
+            sortFoodItems()
+            tableView.reloadData()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -116,6 +129,8 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     @objc private func cancelButtonTapped() {
+        // Clear saved search text
+        UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
     }
@@ -180,12 +195,12 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         selectedFoodItems.removeAll()
     }
 
-    private func clearSearch() {
+    /*private func clearSearch() {
         searchBar.text = ""
         filteredFoodItems = foodItems
         sortFoodItems()
         tableView.reloadData()
-    }
+    }*/
 
     @objc private func foodItemsDidChange(_ notification: Notification) {
         if let updatedItems = notification.userInfo?["foodItems"] as? [FoodItem] {
@@ -223,6 +238,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText") // Save search text
         if searchText.isEmpty {
             filteredFoodItems = foodItems
         } else {
@@ -265,7 +281,7 @@ extension SearchableDropdownView {
         
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
-        clearSearch()
+        //clearSearch()
         
         // Hide the dropdown view
         self.isHidden = true

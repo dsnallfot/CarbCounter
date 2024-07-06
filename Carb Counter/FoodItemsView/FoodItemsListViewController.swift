@@ -116,6 +116,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
         
+        // Load saved search text
+            if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText") {
+                searchBar.text = savedSearchText
+                if searchMode == .local {
+                    filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
+                    sortFoodItems()
+                } else {
+                    fetchOnlineArticles(for: savedSearchText)
+                }
+            }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -202,7 +213,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         ])
     }
     
-    
     private func setupSearchBar() {
         // Initialize and add the searchBar
         searchBar = UISearchBar()
@@ -275,6 +285,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             tableView.reloadData()
             return
         }
+        UserDefaults.standard.set(searchText, forKey: "savedSearchText") // Save search text
         if searchMode == .local {
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
             sortFoodItems()
@@ -284,6 +295,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        UserDefaults.standard.set(searchText, forKey: "savedSearchText") // Save search text
         if searchMode == .local {
             if searchText.isEmpty {
                 filteredFoodItems = foodItems
@@ -551,13 +563,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
+        UserDefaults.standard.removeObject(forKey: "savedSearchText") // Clear saved search text
         if searchMode == .local {
             filteredFoodItems = foodItems
             sortFoodItems()
         }
         searchBar.resignFirstResponder()
     }
-    
     @objc func keyboardWillShow(notification: NSNotification) {
         if let userInfo = notification.userInfo {
             if let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
