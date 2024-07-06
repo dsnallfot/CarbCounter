@@ -3,6 +3,8 @@ import CoreData
 import UniformTypeIdentifiers
 
 class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UISearchBarDelegate, AddFoodItemDelegate {
+    private var lastSearchTime: Date?
+    
     private let searchTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Sök efter livsmedel online"
@@ -341,6 +343,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     private func fetchOnlineArticles(for searchText: String) {
+        // Check if the search is within the allowed rate limit
+        if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 10 {
+            DispatchQueue.main.async {
+                self.showAlert(title: "Begränsning", message: "Vänta några sekunder innan nästa sökning")
+            }
+            return
+        }
+
+        lastSearchTime = Date() // Update the time of the last search
+
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
         let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(searchText)/JSON?apikey=\(dabasAPISecret)"
         
@@ -348,7 +360,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             showErrorAlert(message: "Felaktig Dabas URL")
             return
         }
-        
+
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -356,15 +368,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
                 return
             }
-            
+
             guard let data = data else {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Dabas API fel: Ingen data togs emot")
                 }
                 return
             }
-            
+
             do {
+                // Decode the JSON response
                 let articles = try JSONDecoder().decode([DabasArticle].self, from: data)
                 DispatchQueue.main.async {
                     self.articles = articles.map { Article(from: $0) }
@@ -376,9 +389,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
             }
         }
-        
-        dabasTask.resume()
-    }
+
+        dabasTask.resume()    }
     
     @objc private func searchButtonOnlineTapped() {
         guard let searchText = searchTextField.text, !searchText.isEmpty else {
@@ -398,12 +410,18 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    
-    
-    
     private func searchOpenfoodfacts(for searchText: String) {
-        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(searchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
+        // Check if the search is within the allowed rate limit
+        if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 10 {
+            DispatchQueue.main.async {
+                self.showAlert(title: "Begränsning", message: "Vänta några sekunder innan nästa sökning")
+            }
+            return
+        }
 
+        lastSearchTime = Date() // Update the time of the last search
+
+        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(searchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
         print(openfoodURLString)
 
         guard let openfoodURL = URL(string: openfoodURLString) else {
@@ -427,15 +445,15 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
 
             do {
-                // Debug print the entire response
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("OpenFoodFacts API response: \(jsonString)")
-                }
-
+                // Decode the JSON response
                 let jsonResponse = try JSONDecoder().decode(OpenFoodFactsResponse.self, from: data)
                 DispatchQueue.main.async {
-                    self.articles = jsonResponse.products.map { Article(from: $0) }
-                    self.tableView.reloadData()
+                    if jsonResponse.count == 0 {
+                        self.showAlert(title: "Inga sökträffar", message: "OK")
+                    } else {
+                        self.articles = jsonResponse.products.map { Article(from: $0) }
+                        self.tableView.reloadData()
+                    }
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -446,12 +464,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
         openfoodTask.resume()
     }
-    
-    
-    
-    
-    
-    
+
+    private func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alertController, animated: true, completion: nil)
+    }
     
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
@@ -862,6 +880,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 }
 
 struct OpenFoodFactsResponse: Codable {
+    let count: Int
     let products: [OpenFoodFactsProduct]
 }
 
@@ -874,7 +893,6 @@ struct OpenFoodFactsProduct: Codable {
     let fat_100g: Double?
     let proteins_100g: Double?
 }
-
 struct DabasArticle: Codable {
     let artikelbenamning: String?
     let varumarke: String?
