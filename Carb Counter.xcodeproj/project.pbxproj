@@ -69,6 +69,7 @@
 		6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitShareController.swift; sourceTree = "<group>"; };
 		6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataClass.swift"; path = "Carb Counter/FoodItemEntry+CoreDataClass.swift"; sourceTree = "<group>"; };
 		6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataProperties.swift"; path = "Carb Counter/FoodItemEntry+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemRow+CoreDataProperties.swift"; path = "Carb Counter/FoodItemRow+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		65231E842C283DA300D78667 /* CarbsCounter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CarbsCounter.entitlements; sourceTree = "<group>"; };
 		652891CA2C33FF2C008B8BCA /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
 		653DE79F2C27520700A639D1 /* DataSharingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSharingViewController.swift; sourceTree = "<group>"; };
@@ -209,6 +210,7 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
+				650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */,
 				6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */,
 				6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */,
 				6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */,

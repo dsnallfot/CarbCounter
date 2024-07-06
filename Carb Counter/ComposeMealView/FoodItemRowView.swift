@@ -5,9 +5,12 @@
 //  Created by Daniel Snällfot on 2024-06-19.
 //
 import UIKit
+import CoreData
 
 protocol FoodItemRowViewDelegate: AnyObject {
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField)
+    func saveToCoreData()
+    func deleteFoodItemRow(_ rowView: FoodItemRowView) // Add this method
 }
 
 class FoodItemRowView: UIView {
@@ -18,21 +21,27 @@ class FoodItemRowView: UIView {
     var netCarbs: Double = 0.0 {
         didSet {
             onValueChange?()
+            delegate?.saveToCoreData() // Call the delegate method
         }
     }
     var netFat: Double = 0.0 {
         didSet {
             onValueChange?()
+            delegate?.saveToCoreData() // Call the delegate method
         }
     }
     var netProtein: Double = 0.0 {
         didSet {
             onValueChange?()
+            delegate?.saveToCoreData() // Call the delegate method
         }
     }
     
     weak var delegate: FoodItemRowViewDelegate?
     var foodItems: [FoodItem] = []
+    
+    var selectedFoodItem: FoodItem?
+    var foodItemRow: FoodItemRow?
     
     let infoLabel: UILabel = {
         let label = UILabel()
@@ -118,7 +127,7 @@ class FoodItemRowView: UIView {
         return button
     }()
     
-    var selectedFoodItem: FoodItem?
+    //var selectedFoodItem: FoodItem?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -245,6 +254,7 @@ class FoodItemRowView: UIView {
     }
     @objc private func deleteButtonTapped() {
         onDelete?()
+        delegate?.deleteFoodItemRow(self)
     }
     @objc func calculateNutrients() {
         guard let selectedFoodItem = selectedFoodItem else { return }
@@ -267,6 +277,7 @@ class FoodItemRowView: UIView {
             netProtein = (proteinPer100g * portionServed / 100) - (proteinPer100g * notEaten / 100)
         }
         netCarbsLabel.text = String(format: "%.0f g", netCarbs)
+        delegate?.saveToCoreData() // Call the delegate method
     }
     
     @objc private func doneButtonTapped() {
@@ -285,6 +296,7 @@ class FoodItemRowView: UIView {
     func setSelectedFoodItem(_ item: FoodItem) {
         self.selectedFoodItem = item
         foodItemLabel.text = item.name
+        delegate?.saveToCoreData() // Call the delegate method
         
         if let notes = item.notes, !notes.isEmpty {
             infoLabel.isHidden = false
@@ -298,6 +310,19 @@ class FoodItemRowView: UIView {
         
         ppOr100g.text = item.perPiece ? "st" : "g"
         calculateNutrients()
+    }
+    
+    func deleteFromCoreData() {
+        let context = CoreDataStack.shared.context
+        guard let foodItemRow = foodItemRow else { return }
+        
+        context.delete(foodItemRow)
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to delete FoodItemRow: \(error)")
+        }
     }
 }
    

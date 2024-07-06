@@ -183,6 +183,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
+        loadFoodItemsFromCoreData()
+        
         //print("setupSummaryView ran")
         //print("setupScrollView ran")
         //print("setupStackView ran")
@@ -229,6 +231,84 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
+    
+    func saveToCoreData() {
+        let context = CoreDataStack.shared.context
+        
+        for rowView in foodItemRows {
+            if let foodItemRow = rowView.foodItemRow {
+                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+            } else {
+                let foodItemRow = FoodItemRow(context: context)
+                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                rowView.foodItemRow = foodItemRow
+            }
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save FoodItemRows: \(error)")
+        }
+    }
+
+    private func loadFoodItemsFromCoreData() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+
+        do {
+            let savedFoodItems = try context.fetch(fetchRequest)
+            
+            // Clear current food item rows to avoid duplicates
+            clearAllFoodItems()
+            
+            for savedFoodItem in savedFoodItems {
+                if let foodItemID = savedFoodItem.foodItemID, // Ensure the ID is not nil
+                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) { // Compare using UUID
+                    
+                    // Check if the item already exists
+                    if !foodItemRows.contains(where: { $0.foodItemRow?.foodItemID == foodItemID }) {
+                        let rowView = FoodItemRowView()
+                        rowView.foodItems = foodItems
+                        rowView.delegate = self
+                        rowView.translatesAutoresizingMaskIntoConstraints = false
+                        rowView.foodItemRow = savedFoodItem // Associate the Core Data object
+                        
+                        // Set the selected food item and the text fields
+                        rowView.setSelectedFoodItem(foodItem)
+                        rowView.portionServedTextField.text = String(savedFoodItem.portionServed)
+                        rowView.notEatenTextField.text = String(savedFoodItem.notEaten)
+                        
+                        // Add the row view to your stack view
+                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                        foodItemRows.append(rowView)
+                        
+                        rowView.onDelete = { [weak self] in
+                            self?.removeFoodItemRow(rowView)
+                        }
+                        
+                        rowView.onValueChange = { [weak self] in
+                            self?.updateTotalNutrients()
+                        }
+                        
+                        // Recalculate nutrients based on loaded data
+                        rowView.calculateNutrients()
+                    }
+                }
+            }
+            updateTotalNutrients()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
+        } catch {
+            print("Failed to fetch FoodItemRows: \(error)")
+        }
+    }
+    
     private func getCombinedEmojis() -> String {
         return searchableDropdownView?.combinedEmojis ?? "🍽️"
     }
@@ -456,11 +536,40 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             self.totalRegisteredLabel.text = ""
             self.updateTotalNutrients()
             self.clearAllButton.isEnabled = false // Disable the “Clear All” button
+            self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
+    
+    private func clearAllFoodItemRowsFromCoreData() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItemRow.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("Failed to delete FoodItemRows: \(error)")
+        }
+    }
+    
+    func deleteFoodItemRow(_ rowView: FoodItemRowView) {
+        let context = CoreDataStack.shared.context
+        if let foodItemRow = rowView.foodItemRow {
+            context.delete(foodItemRow)
+            
+            do {
+                try context.save()
+                removeFoodItemRow(rowView)
+            } catch {
+                print("Failed to delete FoodItemRow: \(error)")
+            }
+        }
+    }
+    
     private func saveMealHistory() {
         let context = CoreDataStack.shared.context
         
@@ -1725,4 +1834,5 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             updateHeadlineVisibility()
         }
     }
+
   

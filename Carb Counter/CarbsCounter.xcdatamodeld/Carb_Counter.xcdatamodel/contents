@@ -42,6 +42,14 @@
         <attribute name="entryProteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="mealHistory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MealHistory" inverseName="foodEntries" inverseEntity="MealHistory"/>
     </entity>
+    <entity name="FoodItemRow" representedClassName="FoodItemRow" syncable="YES" codeGenerationType="class">
+        <attribute name="foodItemID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="netCarbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="netFat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="netProtein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="notEaten" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="portionServed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
     <entity name="MealHistory" representedClassName="MealHistory" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="mealDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
