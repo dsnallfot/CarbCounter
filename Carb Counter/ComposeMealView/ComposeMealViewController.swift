@@ -871,7 +871,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS?", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n• \(khValue) g kolhydrat \n• \(bolusValue) E insulin", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -993,16 +993,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
+                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n\(fatValue) g fett"
+                    alertMessage += "\n• \(fatValue) g fett"
                 }
                 if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n\(proteinValue) g protein"
+                    alertMessage += "\n• \(proteinValue) g protein"
                 }
                 
-                alertMessage += "\n\(finalBolusValue) E insulin"
+                alertMessage += "\n• \(finalBolusValue) E insulin"
                 
                 let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
@@ -1233,13 +1233,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
             totalStartAmountLabel.text = String(format: "%.0fg", totalNetCarbs)
+            let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+            let startBolus = totalNetCarbs / scheduledCarbRatio
+            let roundedStartBolus = roundDownToNearest05(startBolus)
+            totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
         } else {
             totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
+            let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+            let startBolus = totalStartAmount / scheduledCarbRatio
+            let roundedStartBolus = roundDownToNearest05(startBolus)
+            totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
         }
-        
-        let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
-        let startBolus = roundDownToNearest05(totalStartAmount / scheduledCarbRatio)
-        totalStartBolusLabel.text = formatNumber(startBolus) + "E"
         
         updateRemainsBolus()
         updateSaveFavoriteButtonState() // Add this line
@@ -1678,7 +1682,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         
         required init?(coder: NSCoder) {
-            fatalError("init(coder😊 has not been implemented")
+            fatalError("init(coder:) has not been implemented")
         }
         
         private func setupView() {
