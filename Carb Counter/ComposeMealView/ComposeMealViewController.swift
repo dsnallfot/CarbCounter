@@ -132,7 +132,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         // Set the delegate for the text field
         totalRegisteredLabel.delegate = self
-        
+                
         // Observe changes to allowShortcuts
         NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
         
@@ -241,28 +241,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     func saveToCoreData() {
         let context = CoreDataStack.shared.context
-        
-        // Save the totalRegisteredLabel value
-        if let totalRegisteredText = totalRegisteredLabel.text,
-           let totalRegisteredValue = Double(totalRegisteredText.replacingOccurrences(of: "g", with: "")) {
-            
-            for rowView in foodItemRows {
-                if let foodItemRow = rowView.foodItemRow {
-                    foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
-                    foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
-                    foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                    foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
-                } else {
-                    let foodItemRow = FoodItemRow(context: context)
-                    foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
-                    foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
-                    foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                    foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
-                    rowView.foodItemRow = foodItemRow
-                }
+
+        // Extract the totalRegisteredLabel value, handling potential nil values
+        let totalRegisteredText = totalRegisteredLabel.text ?? "0"
+        let totalRegisteredValue = Double(totalRegisteredText.replacingOccurrences(of: "g", with: "")) ?? 0
+
+        for rowView in foodItemRows {
+            if let foodItemRow = rowView.foodItemRow {
+                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
+            } else {
+                let foodItemRow = FoodItemRow(context: context)
+                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
+                rowView.foodItemRow = foodItemRow
             }
         }
-        
+
         do {
             try context.save()
         } catch {

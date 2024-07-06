@@ -105,29 +105,32 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        fetchFoodItems()
-        updateClearButtonVisibility()
-        
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
+            super.viewWillAppear(animated)
+            fetchFoodItems()
+            updateClearButtonVisibility()
+            
+            // Ensure dataSharingVC is instantiated
+            guard let dataSharingVC = dataSharingVC else { return }
 
-        // Call the desired function
-        print("Data import triggered")
-        dataSharingVC.importAllCSVFiles()
-        
-        // Load saved search text
-            if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText") {
+            // Call the desired function
+            print("Data import triggered")
+            dataSharingVC.importAllCSVFiles()
+            
+            // Load saved search text
+            if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText"), !savedSearchText.isEmpty {
                 searchBar.text = savedSearchText
                 if searchMode == .local {
                     filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-                    sortFoodItems()
                 } else {
                     fetchOnlineArticles(for: savedSearchText)
                 }
+            } else {
+                // If no search text is saved, show the full list
+                filteredFoodItems = foodItems
             }
-        
-    }
+            sortFoodItems()
+            tableView.reloadData()
+        }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)

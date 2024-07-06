@@ -13,7 +13,7 @@ protocol FoodItemRowViewDelegate: AnyObject {
     func deleteFoodItemRow(_ rowView: FoodItemRowView) // Add this method
 }
 
-class FoodItemRowView: UIView {
+class FoodItemRowView: UIView, UITextFieldDelegate {
     
     var onDelete: (() -> Void)?
     var onValueChange: (() -> Void)?
@@ -141,28 +141,35 @@ class FoodItemRowView: UIView {
     }
     
     private func setupView() {
-        let stackView = UIStackView(arrangedSubviews: [infoLabel, foodItemLabel, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
-        stackView.axis = .horizontal
-        stackView.spacing = 2
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(stackView)
-        
-        foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 125)
-        foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 140)
-        foodItemLabelWidthConstraintWithoutInfo.isActive = true
-        
-        NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackView.topAnchor.constraint(equalTo: topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
-        
-        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
-        
-        portionServedTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
-        notEatenTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
-    }
+            let stackView = UIStackView(arrangedSubviews: [infoLabel, foodItemLabel, portionServedTextField, ppOr100g, notEatenTextField, netCarbsLabel, deleteButton])
+            stackView.axis = .horizontal
+            stackView.spacing = 2
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(stackView)
+            
+            foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 125)
+            foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 140)
+            foodItemLabelWidthConstraintWithoutInfo.isActive = true
+            
+            NSLayoutConstraint.activate([
+                stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                stackView.topAnchor.constraint(equalTo: topAnchor),
+                stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+            
+            deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+            
+            portionServedTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
+            portionServedTextField.delegate = self // Set delegate
+            
+            notEatenTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
+            notEatenTextField.delegate = self // Set delegate
+        }
+    
+        func textFieldDidEndEditing(_ textField: UITextField) {
+            delegate?.saveToCoreData()
+        }
     
     private func setupLabelTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped))
@@ -257,28 +264,28 @@ class FoodItemRowView: UIView {
         delegate?.deleteFoodItemRow(self)
     }
     @objc func calculateNutrients() {
-        guard let selectedFoodItem = selectedFoodItem else { return }
-        let portionServed = Double(portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
-        let notEaten = Double(notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
-        
-        if selectedFoodItem.perPiece {
-            let carbsPerPiece = selectedFoodItem.carbsPP
-            let fatPerPiece = selectedFoodItem.fatPP
-            let proteinPerPiece = selectedFoodItem.proteinPP
-            netCarbs = (carbsPerPiece * portionServed) - (carbsPerPiece * notEaten)
-            netFat = (fatPerPiece * portionServed) - (fatPerPiece * notEaten)
-            netProtein = (proteinPerPiece * portionServed) - (proteinPerPiece * notEaten)
-        } else {
-            let carbsPer100g = selectedFoodItem.carbohydrates
-            let fatPer100g = selectedFoodItem.fat
-            let proteinPer100g = selectedFoodItem.protein
-            netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
-            netFat = (fatPer100g * portionServed / 100) - (fatPer100g * notEaten / 100)
-            netProtein = (proteinPer100g * portionServed / 100) - (proteinPer100g * notEaten / 100)
+            guard let selectedFoodItem = selectedFoodItem else { return }
+            let portionServed = Double(portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
+            let notEaten = Double(notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
+            
+            if selectedFoodItem.perPiece {
+                let carbsPerPiece = selectedFoodItem.carbsPP
+                let fatPerPiece = selectedFoodItem.fatPP
+                let proteinPerPiece = selectedFoodItem.proteinPP
+                netCarbs = (carbsPerPiece * portionServed) - (carbsPerPiece * notEaten)
+                netFat = (fatPerPiece * portionServed) - (fatPerPiece * notEaten)
+                netProtein = (proteinPerPiece * portionServed) - (proteinPerPiece * notEaten)
+            } else {
+                let carbsPer100g = selectedFoodItem.carbohydrates
+                let fatPer100g = selectedFoodItem.fat
+                let proteinPer100g = selectedFoodItem.protein
+                netCarbs = (carbsPer100g * portionServed / 100) - (carbsPer100g * notEaten / 100)
+                netFat = (fatPer100g * portionServed / 100) - (fatPer100g * notEaten / 100)
+                netProtein = (proteinPer100g * portionServed / 100) - (proteinPer100g * notEaten / 100)
+            }
+            netCarbsLabel.text = String(format: "%.0f g", netCarbs)
+            delegate?.saveToCoreData() // Call the delegate method
         }
-        netCarbsLabel.text = String(format: "%.0f g", netCarbs)
-        delegate?.saveToCoreData() // Call the delegate method
-    }
     
     @objc private func doneButtonTapped() {
         portionServedTextField.resignFirstResponder()
