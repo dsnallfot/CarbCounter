@@ -877,7 +877,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n• \(khValue) g kolhydrat \n• \(bolusValue) E insulin", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -999,16 +999,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
+                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n• \(fatValue) g fett"
+                    alertMessage += "\n\(fatValue) g fett"
                 }
                 if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n• \(proteinValue) g protein"
+                    alertMessage += "\n\(proteinValue) g protein"
                 }
                 
-                alertMessage += "\n• \(finalBolusValue) E insulin"
+                alertMessage += "\n\(finalBolusValue) E insulin"
                 
                 let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
