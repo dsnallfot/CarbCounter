@@ -44,6 +44,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     var dataSharingVC: DataSharingViewController?
     
+    var useDabas: Bool = true
+    
     enum SearchMode {
         case local, online
     }
@@ -102,6 +104,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUseDabasChanged), name: Notification.Name("useDabasChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -116,13 +120,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             print("Data import triggered")
             dataSharingVC.importAllCSVFiles()
             
-            // Load saved search text
+        // Load saved search text
             if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText"), !savedSearchText.isEmpty {
                 searchBar.text = savedSearchText
                 if searchMode == .local {
                     filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
                 } else {
-                    fetchOnlineArticles(for: savedSearchText)
+                    if UserDefaultsRepository.useDabas {
+                        fetchOnlineArticles(for: savedSearchText)
+                    } else {
+                        searchOpenfoodfacts(for: savedSearchText)
+                    }
                 }
             } else {
                 // If no search text is saved, show the full list
@@ -130,6 +138,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
             sortFoodItems()
             tableView.reloadData()
+        
+        // Get the updated value for useDabas from UserDefaults
+            useDabas = UserDefaultsRepository.useDabas
         }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -138,6 +149,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleUseDabasChanged() {
+        // Reload or update as needed
+        if let searchText = searchBar.text, !searchText.isEmpty {
+            if useDabas {
+             fetchOnlineArticles(for: searchText)
+             } else {
+                 searchOpenfoodfacts(for: searchText)
+            }
+        }
     }
     
     @objc private func updateClearButtonVisibility() {
@@ -293,7 +315,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
             sortFoodItems()
         } else {
-            fetchOnlineArticles(for: searchText)
+            if useDabas {
+             fetchOnlineArticles(for: searchText)
+             } else {
+                 searchOpenfoodfacts(for: searchText)
+            }
         }
     }
 
@@ -339,10 +365,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
             
             do {
-                let articles = try JSONDecoder().decode([Article].self, from: data)
-                let filteredArticles = articles.filter { $0.artikelbenamning != nil }
+                let articles = try JSONDecoder().decode([DabasArticle].self, from: data)
                 DispatchQueue.main.async {
-                    self.articles = filteredArticles
+                    self.articles = articles.map { Article(from: $0) }
                     self.tableView.reloadData()
                 }
             } catch {
@@ -365,9 +390,68 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
             sortFoodItems()
         } else {
+           if useDabas {
             fetchOnlineArticles(for: searchText)
+            } else {
+                searchOpenfoodfacts(for: searchText)
+           }
         }
     }
+    
+    
+    
+    
+    private func searchOpenfoodfacts(for searchText: String) {
+        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(searchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
+
+        print(openfoodURLString)
+
+        guard let openfoodURL = URL(string: openfoodURLString) else {
+            showErrorAlert(message: "Felaktig OpenFoodFacts URL")
+            return
+        }
+
+        let openfoodTask = URLSession.shared.dataTask(with: openfoodURL) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "OpenFoodFacts API fel: \(error.localizedDescription)")
+                }
+                return
+            }
+
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "OpenFoodFacts API fel: Ingen data togs emot")
+                }
+                return
+            }
+
+            do {
+                // Debug print the entire response
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("OpenFoodFacts API response: \(jsonString)")
+                }
+
+                let jsonResponse = try JSONDecoder().decode(OpenFoodFactsResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.articles = jsonResponse.products.map { Article(from: $0) }
+                    self.tableView.reloadData()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.showErrorAlert(message: "OpenFoodFacts API fel: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        openfoodTask.resume()
+    }
+    
+    
+    
+    
+    
+    
     
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
@@ -460,8 +544,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             showLocalFoodItemDetails(foodItem)
         case .online:
             let article = articles[indexPath.row]
-            if let gtin = article.gtin {
-                fetchNutritionalInfo(for: gtin)
+            if useDabas{
+                if let gtin = article.gtin {
+                    fetchNutritionalInfo(for: gtin)
+                }
+            } else {
+                let message = """
+            Kolhydrater: \(formattedValue(article.carbohydrates_100g ?? 0)) g / 100 g
+            Fett: \(formattedValue(article.fat_100g ?? 0)) g / 100 g
+            Protein: \(formattedValue(article.proteins_100g ?? 0)) g / 100 g
+            
+            [Källa: OpenFoodFacts]
+            """
+                self.showProductAlert(title: article.artikelbenamning ?? "Produkt", message: message, productName: article.artikelbenamning ?? "Produkt", carbohydrates: article.carbohydrates_100g ?? 0, fat: article.fat_100g ?? 0, proteins: article.proteins_100g ?? 0)
             }
         }
     }
@@ -658,7 +753,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     Fett: \(fat) g / 100 g
                     Protein: \(proteins) g / 100 g
                     
-                    (Källa: Dabas)
+                    [Källa: Dabas]
                     """
                     
                     DispatchQueue.main.async {
@@ -720,7 +815,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func formattedValue(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
+        formatter.maximumFractionDigits = 1
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
@@ -766,19 +861,106 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 }
 
-struct Article: Codable {
-let artikelbenamning: String?
-let varumarke: String?
-let forpackningsstorlek: String?
-let gtin: String?  // Add this line
+struct OpenFoodFactsResponse: Codable {
+    let products: [OpenFoodFactsProduct]
+}
 
-enum CodingKeys: String, CodingKey {
-case artikelbenamning = "Artikelbenamning"
-case varumarke = "Varumarke"
-case forpackningsstorlek = "Forpackningsstorlek"
-case gtin = "GTIN"  // Add this line
+struct OpenFoodFactsProduct: Codable {
+    let product_name: String?
+    let brands: String?
+    let ingredients_text: String?
+    let code: String?
+    let carbohydrates_100g: Double?
+    let fat_100g: Double?
+    let proteins_100g: Double?
 }
+
+struct DabasArticle: Codable {
+    let artikelbenamning: String?
+    let varumarke: String?
+    let forpackningsstorlek: String?
+    let gtin: String?
+
+    enum CodingKeys: String, CodingKey {
+        case artikelbenamning = "Artikelbenamning"
+        case varumarke = "Varumarke"
+        case forpackningsstorlek = "Forpackningsstorlek"
+        case gtin = "GTIN"
+    }
 }
+
+struct OpenFoodFactsArticle: Codable {
+    let artikelbenamning: String?
+    let varumarke: String?
+    let forpackningsstorlek: String?
+    let gtin: String?
+    let carbohydrates_100g: Double?
+    let fat_100g: Double?
+    let proteins_100g: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case artikelbenamning = "product_name"
+        case varumarke = "brands"
+        case forpackningsstorlek = "ingredients_text"
+        case gtin = "code"
+        case carbohydrates_100g = "nutriments.carbohydrates_100g"
+        case fat_100g = "nutriments.fat_100g"
+        case proteins_100g = "nutriments.proteins_100g"
+    }
+}
+
+struct Article: Codable {
+    let artikelbenamning: String?
+    let varumarke: String?
+    let forpackningsstorlek: String?
+    let gtin: String?
+    let carbohydrates_100g: Double?
+    let fat_100g: Double?
+    let proteins_100g: Double?
+
+    init(
+        artikelbenamning: String?,
+        varumarke: String?,
+        forpackningsstorlek: String?,
+        gtin: String?,
+        carbohydrates_100g: Double?,
+        fat_100g: Double?,
+        proteins_100g: Double?
+    ) {
+        self.artikelbenamning = artikelbenamning
+        self.varumarke = varumarke
+        self.forpackningsstorlek = forpackningsstorlek
+        self.gtin = gtin
+        self.carbohydrates_100g = carbohydrates_100g
+        self.fat_100g = fat_100g
+        self.proteins_100g = proteins_100g
+    }
+
+    init(from product: OpenFoodFactsProduct) {
+        self.init(
+            artikelbenamning: product.product_name,
+            varumarke: product.brands,
+            forpackningsstorlek: nil,
+            gtin: product.code,
+            carbohydrates_100g: product.carbohydrates_100g,
+            fat_100g: product.fat_100g,
+            proteins_100g: product.proteins_100g
+        )
+    }
+
+    init(from article: DabasArticle) {
+        self.init(
+            artikelbenamning: article.artikelbenamning,
+            varumarke: article.varumarke,
+            forpackningsstorlek: nil,
+            gtin: article.gtin,
+            carbohydrates_100g: nil,
+            fat_100g: nil,
+            proteins_100g: nil
+        )
+    }
+}
+
 class ArticleTableViewCell: UITableViewCell {
 let nameLabel: UILabel = {
 let label = UILabel()
@@ -819,7 +1001,7 @@ fatalError("init(coder:) has not been implemented")
 
 func configure(with article: Article) {
 nameLabel.text = article.artikelbenamning
-detailsLabel.text = "\(article.varumarke ?? "") • \(article.forpackningsstorlek ?? "")"
+detailsLabel.text = "\(article.varumarke ?? "")"
 gtin = article.gtin // Store GTIN
 }
 }

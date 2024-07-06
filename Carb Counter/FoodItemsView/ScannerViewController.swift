@@ -196,7 +196,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     Fett: \(fat) g / 100 g
                     Protein: \(proteins) g / 100 g
                     
-                    (Källa: Dabas)
+                    [Källa: Dabas]
                     """
                     
                     // Display product alert on the main thread
@@ -261,7 +261,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         Fett: \(fat) g / 100 g
                         Protein: \(proteins) g / 100 g
                         
-                        (Källa: Openfoodfacts)
+                        [Källa: Openfoodfacts]
                         """
                         
                         DispatchQueue.main.async {

@@ -281,7 +281,7 @@ import CoreData
  Fett: \(fat) g / 100 g
  Protein: \(proteins) g / 100 g
  
- (Källa: Dabas)
+ [Källa: Dabas]
  """
  
  DispatchQueue.main.async {
