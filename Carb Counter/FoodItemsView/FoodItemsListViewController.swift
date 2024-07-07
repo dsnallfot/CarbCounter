@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UISearchBarDelegate, AddFoodItemDelegate {
     private var lastSearchTime: Date?
+    private var isUsingDabas: Bool = true
     
     private let searchTextField: UITextField = {
         let textField = UITextField()
@@ -45,8 +46,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var tableViewBottomConstraint: NSLayoutConstraint!
     
     var dataSharingVC: DataSharingViewController?
-    
-    var useDabas: Bool = true
     
     enum SearchMode {
         case local, online
@@ -107,7 +106,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleUseDabasChanged), name: Notification.Name("useDabasChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -128,11 +126,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 if searchMode == .local {
                     filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
                 } else {
-                    if UserDefaultsRepository.useDabas {
                         fetchOnlineArticles(for: savedSearchText)
-                    } else {
-                        searchOpenfoodfacts(for: savedSearchText)
-                    }
                 }
             } else {
                 // If no search text is saved, show the full list
@@ -140,9 +134,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
             sortFoodItems()
             tableView.reloadData()
-        
-        // Get the updated value for useDabas from UserDefaults
-            useDabas = UserDefaultsRepository.useDabas
         }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -151,17 +142,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-    }
-    
-    @objc private func handleUseDabasChanged() {
-        // Reload or update as needed
-        if let searchText = searchBar.text, !searchText.isEmpty {
-            if useDabas {
-             fetchOnlineArticles(for: searchText)
-             } else {
-                 searchOpenfoodfacts(for: searchText)
-            }
-        }
     }
     
     @objc private func updateClearButtonVisibility() {
@@ -317,11 +297,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
             sortFoodItems()
         } else {
-            if useDabas {
              fetchOnlineArticles(for: searchText)
-             } else {
-                 searchOpenfoodfacts(for: searchText)
-            }
         }
     }
 
@@ -343,26 +319,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     private func fetchOnlineArticles(for searchText: String) {
-        // Check if the search is within the allowed rate limit
-        if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 10 {
-            DispatchQueue.main.async {
-                self.showAlert(title: "Begränsning", message: "Vänta några sekunder innan nästa sökning")
-            }
-            return
-        }
-
-        lastSearchTime = Date() // Update the time of the last search
 
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
         let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(searchText)/JSON?apikey=\(dabasAPISecret)"
         
         guard let dabasURL = URL(string: dabasURLString) else {
+            self.searchOpenfoodfacts(for: searchText)
             showErrorAlert(message: "Felaktig Dabas URL")
             return
         }
 
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
+                self.searchOpenfoodfacts(for: searchText)
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Dabas API fel: \(error.localizedDescription)")
                 }
@@ -370,6 +339,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
 
             guard let data = data else {
+                self.searchOpenfoodfacts(for: searchText)
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Dabas API fel: Ingen data togs emot")
                 }
@@ -380,41 +350,31 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 // Decode the JSON response
                 let articles = try JSONDecoder().decode([DabasArticle].self, from: data)
                 DispatchQueue.main.async {
-                    self.articles = articles.map { Article(from: $0) }
-                    self.tableView.reloadData()
+                    if articles.isEmpty {
+                        // If no articles found in Dabas, fallback to OpenFoodFacts
+                        self.searchOpenfoodfacts(for: searchText)
+                    } else {
+                        self.isUsingDabas = true
+                        self.articles = articles.map { Article(from: $0) }
+                        self.tableView.reloadData()
+                    }
                 }
             } catch {
+                self.searchOpenfoodfacts(for: searchText)
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Dabas API fel: \(error.localizedDescription)")
+                    print("Dabas API fel: \(error.localizedDescription)")
                 }
             }
         }
 
-        dabasTask.resume()    }
-    
-    @objc private func searchButtonOnlineTapped() {
-        guard let searchText = searchTextField.text, !searchText.isEmpty else {
-            // Handle empty search text
-            return
-        }
-        
-        if searchMode == .local {
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
-            sortFoodItems()
-        } else {
-           if useDabas {
-            fetchOnlineArticles(for: searchText)
-            } else {
-                searchOpenfoodfacts(for: searchText)
-           }
-        }
+        dabasTask.resume()
     }
-    
+
     private func searchOpenfoodfacts(for searchText: String) {
         // Check if the search is within the allowed rate limit
-        if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 10 {
+        if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 8 {
             DispatchQueue.main.async {
-                self.showAlert(title: "Begränsning", message: "Vänta några sekunder innan nästa sökning")
+                self.showAlert(title: "API Begränsning", message: "Vänta några sekunder innan nästa sökning")
             }
             return
         }
@@ -451,6 +411,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     if jsonResponse.count == 0 {
                         self.showAlert(title: "Inga sökträffar", message: "OK")
                     } else {
+                        self.isUsingDabas = false
                         self.articles = jsonResponse.products.map { Article(from: $0) }
                         self.tableView.reloadData()
                     }
@@ -464,6 +425,21 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
         openfoodTask.resume()
     }
+    
+    @objc private func searchButtonOnlineTapped() {
+        guard let searchText = searchTextField.text, !searchText.isEmpty else {
+            // Handle empty search text
+            return
+        }
+        
+        if searchMode == .local {
+            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+            sortFoodItems()
+        } else {
+            fetchOnlineArticles(for: searchText)
+        }
+    }
+    
 
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -562,18 +538,18 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             showLocalFoodItemDetails(foodItem)
         case .online:
             let article = articles[indexPath.row]
-            if useDabas{
+            if isUsingDabas {
                 if let gtin = article.gtin {
                     fetchNutritionalInfo(for: gtin)
                 }
             } else {
                 let message = """
-            Kolhydrater: \(formattedValue(article.carbohydrates_100g ?? 0)) g / 100 g
-            Fett: \(formattedValue(article.fat_100g ?? 0)) g / 100 g
-            Protein: \(formattedValue(article.proteins_100g ?? 0)) g / 100 g
-            
-            [Källa: OpenFoodFacts]
-            """
+                Kolhydrater: \(formattedValue(article.carbohydrates_100g ?? 0)) g / 100 g
+                Fett: \(formattedValue(article.fat_100g ?? 0)) g / 100 g
+                Protein: \(formattedValue(article.proteins_100g ?? 0)) g / 100 g
+                
+                [Källa: OpenFoodFacts]
+                """
                 self.showProductAlert(title: article.artikelbenamning ?? "Produkt", message: message, productName: article.artikelbenamning ?? "Produkt", carbohydrates: article.carbohydrates_100g ?? 0, fat: article.fat_100g ?? 0, proteins: article.proteins_100g ?? 0)
             }
         }

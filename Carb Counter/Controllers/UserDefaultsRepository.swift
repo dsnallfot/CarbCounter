@@ -159,13 +159,4 @@ class UserDefaultsRepository {
                 UserDefaults.standard.set(newValue, forKey: "nightscoutToken")
             }
         }
-    
-    static var useDabas: Bool {
-        get {
-            return UserDefaults.standard.bool(forKey: "useDabas")
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "useDabas")
-        }
-    }
 }

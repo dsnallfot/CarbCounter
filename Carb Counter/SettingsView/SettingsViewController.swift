@@ -35,7 +35,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 9 // Increased to accommodate the new rows
+            return 8 // Increased to accommodate the new rows
         default:
             return 0
         }
@@ -91,12 +91,6 @@ class SettingsViewController: UITableViewController {
             case 7:
                 cell.textLabel?.text = "Dabas API Secret"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
-            case 8:
-                let toggleSwitch = UISwitch()
-                cell.textLabel?.text = "Använd Dabas sökdatabas"
-                toggleSwitch.isOn = UserDefaultsRepository.useDabas
-                toggleSwitch.addTarget(self, action: #selector(useDabasSwitchChanged(_:)), for: .valueChanged)
-                cell.accessoryView = toggleSwitch
             default:
                 break
             }
@@ -221,11 +215,6 @@ class SettingsViewController: UITableViewController {
     @objc private func dataClearingSwitchChanged(_ sender: UISwitch) {
         UserDefaultsRepository.allowDataClearing = sender.isOn
         NotificationCenter.default.post(name: Notification.Name("AllowDataClearingChanged"), object: nil)
-    }
-    
-    @objc private func useDabasSwitchChanged(_ sender: UISwitch) {
-        UserDefaultsRepository.useDabas = sender.isOn
-        NotificationCenter.default.post(name: Notification.Name("useDabasChanged"), object: nil)
     }
     
     private func formatValue(_ value: Double) -> String {
