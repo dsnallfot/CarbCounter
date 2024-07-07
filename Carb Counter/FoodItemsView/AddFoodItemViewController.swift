@@ -266,7 +266,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         isPerPiece = sender.selectedSegmentIndex == 1
         updateUnitsLabels()
-        clearOppositeFields()
         checkForChanges()
         updateSegmentedControlLabels() // Update labels based on the new selection
     }
@@ -377,10 +376,19 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         func sanitize(_ text: String?) -> String {
             return text?.replacingOccurrences(of: ",", with: ".") ?? ""
         }
-        
+
         if let foodItem = foodItem {
             // Update existing food item
-            foodItem.name = nameTextField.text ?? ""
+            foodItem.name = (nameTextField.text ?? "")
+                .replacingOccurrences(of: "S: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skolmat: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skola: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skola ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skolmat ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skolmat: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skola: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skola ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skolmat ", with: "Ⓢ ")
             foodItem.notes = notesTextField.text ?? ""
             foodItem.emoji = emojiTextField.text ?? ""
             if isPerPiece {
@@ -405,9 +413,19 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
-            newFoodItem.name = nameTextField.text ?? ""
+            newFoodItem.name = ((nameTextField.text ?? "")
+                .replacingOccurrences(of: "S: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skolmat: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skola: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skola ", with: "Ⓢ ")
+                .replacingOccurrences(of: "Skolmat ", with: "Ⓢ ")) + (isPerPiece ? " ①" : "")
+                .replacingOccurrences(of: "skolmat: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skola: ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skola ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skolmat ", with: "Ⓢ ")
             newFoodItem.notes = notesTextField.text ?? ""
             newFoodItem.emoji = emojiTextField.text ?? ""
+            
             if isPerPiece {
                 newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
                 newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
@@ -427,7 +445,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             }
             newFoodItem.count = 0
             foodItem = newFoodItem // Assign the new food item to the foodItem variable for later use
-            print("Created new food item: \(newFoodItem.name ?? "")")
+            print("Created new food item: \(newFoodItem.name)")
         }
         
         do {
@@ -443,14 +461,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             print("Failed to save food item: \(error)")
         }
         // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
+        guard let dataSharingVC = dataSharingVC else { return }
 
-                // Call the desired function
-                dataSharingVC.exportFoodItemsToCSV()
+        // Call the desired function
+        dataSharingVC.exportFoodItemsToCSV()
         print("Food items export triggered")
         
         navigationController?.popViewController(animated: true)
-
     }
     
     private func addToComposeMealViewController() {
