@@ -405,7 +405,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             return
         }
         
-        let openfoodTask = URLSession.shared.dataTask(with: openfoodURL) { data, response, error in
+        var request = URLRequest(url: openfoodURL)
+        request.addValue("CarbsCounterApp_iOS_Version0.1_daniel.snallfot@icloud.com", forHTTPHeaderField: "User-Agent")
+        
+        let openfoodTask = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "OpenFoodFacts API fel: \(error.localizedDescription)")
