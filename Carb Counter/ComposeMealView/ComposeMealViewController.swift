@@ -9,6 +9,8 @@ import CoreData
 import AudioToolbox
 import LocalAuthentication
 import CloudKit
+import QuartzCore
+
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*AddFoodItemDelegate,*/ UITextFieldDelegate, TwilioRequestable {
     
@@ -728,74 +730,75 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     }
     
     private func setupSummaryView(in container: UIView) {
-        //print("setupSummaryView ran")
-        let summaryView = UIView()
+        let colors: [CGColor] = [
+            UIColor.purple.withAlphaComponent(0.4).cgColor,
+            UIColor.blue.withAlphaComponent(0.25).cgColor,
+            UIColor.cyan.withAlphaComponent(0.2).cgColor
+        ]
+        let summaryView = GradientView(colors: colors)
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        summaryView.backgroundColor = .systemGray6//.systemBackground
+        //summaryView.backgroundColor = .systemGray6//.systemBackground
         container.addSubview(summaryView)
-        
+
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
-        
+
         let bolusLabel = createLabel(text: "BOLUS", fontSize: 9, weight: .bold, color: .white)
         totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
-        
-        // Add tap gesture for bolusContainer
+
         let bolusTapGesture = UITapGestureRecognizer(target: self, action: #selector(showBolusInfo))
         bolusContainer.isUserInteractionEnabled = true
         bolusContainer.addGestureRecognizer(bolusTapGesture)
-        
+
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
-        
+
         let summaryLabel = createLabel(text: "KOLHYDRATER", fontSize: 9, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
-        
-        // Add tap gesture for carbsContainer
+
         let carbsTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCarbsInfo))
         carbsContainer.isUserInteractionEnabled = true
         carbsContainer.addGestureRecognizer(carbsTapGesture)
-        
+
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
-        
+
         let netFatLabel = createLabel(text: "FETT", fontSize: 9, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
-        setupStackView(fatStack, in: fatContainer, padding:fatPadding)
-        // Add tap gesture for fatContainer
+        setupStackView(fatStack, in: fatContainer, padding: fatPadding)
+
         let fatTapGesture = UITapGestureRecognizer(target: self, action: #selector(showFatInfo))
         fatContainer.isUserInteractionEnabled = true
         fatContainer.addGestureRecognizer(fatTapGesture)
-        
+
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
-        
+
         let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 9, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
-        
-        // Add tap gesture for proteinContainer
+
         let proteinTapGesture = UITapGestureRecognizer(target: self, action: #selector(showProteinInfo))
         proteinContainer.isUserInteractionEnabled = true
         proteinContainer.addGestureRecognizer(proteinTapGesture)
-        
+
         let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         summaryView.addSubview(hStack)
-        
+
         NSLayoutConstraint.activate([
             summaryView.heightAnchor.constraint(equalToConstant: 60),
             summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -807,6 +810,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -5)
         ])
     }
+
     
     @objc private func showBolusInfo() {
         showAlert(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.")
@@ -847,70 +851,71 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     }
     
     private func setupTreatmentView(in container: UIView) {
-        let treatmentView = UIView()
+        let colors: [CGColor] = [
+            UIColor.purple.withAlphaComponent(0.4).cgColor,
+            UIColor.blue.withAlphaComponent(0.25).cgColor,
+            UIColor.cyan.withAlphaComponent(0.2).cgColor
+        ]
+        let treatmentView = GradientView(colors: colors)
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
-        treatmentView.backgroundColor = .systemGray6 //.systemBackground
         container.addSubview(treatmentView)
-
+        
         let crContainer = createContainerView(backgroundColor: .systemCyan)
         treatmentView.addSubview(crContainer)
-
+        
         crLabel = createLabel(text: "INSULINKVOT", fontSize: 9, weight: .bold, color: .white)
-
         nowCRLabel = createLabel(text: formatScheduledCarbRatio(scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
-
+        
         let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
         crStack.axis = .vertical
         crStack.spacing = 4
         let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(crStack, in: crContainer, padding: crPadding)
-
-        // Add tap gesture for crContainer
+        
         let crTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCRInfo))
         crContainer.isUserInteractionEnabled = true
         crContainer.addGestureRecognizer(crTapGesture)
-
+        
         remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 1.5)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
         remainsContainer.isUserInteractionEnabled = true
-
+        
         remainsLabel = createLabel(text: "GE RESTEN", fontSize: 9, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
         totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
-
+        
         let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
         remainsValuesStack.axis = .horizontal
         remainsValuesStack.spacing = 3
-
+        
         let remainsStack = UIStackView(arrangedSubviews: [remainsLabel, remainsValuesStack])
         remainsStack.axis = .vertical
         remainsStack.spacing = 7
         let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
-
-        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 1.5) // Properly initialize startAmountContainer
+        
+        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 1.5)
         treatmentView.addSubview(startAmountContainer)
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
-
+        
         let startAmountLabel = createLabel(text: "+ STARTDOS", fontSize: 9, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
         totalStartBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
-
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
         startAmountValuesStack.spacing = 3
-
+        
         let startAmountStack = UIStackView(arrangedSubviews: [startAmountLabel, startAmountValuesStack])
         startAmountStack.axis = .vertical
         startAmountStack.spacing = 7
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
-
-        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 1.5) // Properly initialize registeredContainer
+        
+        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 1.5)
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
@@ -918,7 +923,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 9, weight: .bold, color: .white)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .white)
         totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
-
+        
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
         registeredStack.spacing = 4
@@ -930,21 +935,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         treatmentView.addSubview(hStack)
-
+        
         NSLayoutConstraint.activate([
             treatmentView.heightAnchor.constraint(equalToConstant: 60),
             treatmentView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             treatmentView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             treatmentView.topAnchor.constraint(equalTo: container.topAnchor, constant: 60),
-
+            
             hStack.leadingAnchor.constraint(equalTo: treatmentView.leadingAnchor, constant: 16),
             hStack.trailingAnchor.constraint(equalTo: treatmentView.trailingAnchor, constant: -16),
             hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
             hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
-
+        
         addDoneButtonToKeyboard()
     }
+    
     
     @objc private func showCRInfo() {
         showAlert(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 1 E insulin till 25 g kolhydrater, eller 2 E insulin till 50 g kolhydrater.")
@@ -1855,5 +1861,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             updateHeadlineVisibility()
         }
     }
+
+class GradientView: UIView {
+
+    private let gradientLayer = CAGradientLayer()
+
+    init(colors: [CGColor]) {
+        super.init(frame: .zero)
+        gradientLayer.colors = colors
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
+        layer.insertSublayer(gradientLayer, at: 0)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = bounds
+    }
+}
 
   
