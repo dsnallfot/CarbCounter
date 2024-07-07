@@ -785,8 +785,33 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
         
+        var isPerPiece: Bool = false // New flag
+        
         do {
             let existingItems = try context.fetch(fetchRequest)
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            alert.addTextField { textField in
+                textField.placeholder = "Vikt per styck i gram (valfritt)"
+                textField.keyboardType = .decimalPad
+            }
+            
+            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+            
+            alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
+                var adjustedProductName = productName
+                if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
+                    let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
+                    let adjustedFat = (fat * weight / 100).roundToDecimal(1)
+                    let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
+                    isPerPiece = true // Update the flag
+                    adjustedProductName += " ①" // Add the per piece suffix
+                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
+                } else {
+                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
+                }
+            }))
             
             if let existingItem = existingItems.first {
                 let comparisonMessage = """
@@ -806,11 +831,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
-                alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
-                    self.navigateToAddFoodItem(productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
-                }))
                 present(alert, animated: true, completion: nil)
             }
         } catch {
@@ -849,11 +869,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            addFoodItemVC.isPerPiece = isPerPiece
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
@@ -1017,5 +1038,13 @@ class ArticleTableViewCell: UITableViewCell {
         nameLabel.text = article.artikelbenamning
         detailsLabel.text = "\(article.varumarke ?? "")"
         gtin = article.gtin // Store GTIN
+    }
+}
+
+// Extension to round Double to specified decimal places
+extension Double {
+    func roundToDecimal(_ fractionDigits: Int) -> Double {
+        let multiplier = pow(10.0, Double(fractionDigits))
+        return (self * multiplier).rounded() / multiplier
     }
 }

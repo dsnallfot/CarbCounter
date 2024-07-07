@@ -136,6 +136,12 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             updateSaveButtonTitle()
         }
         
+        if isPerPiece {
+                segmentedControl.selectedSegmentIndex = 1
+            } else {
+                segmentedControl.selectedSegmentIndex = 0
+            }
+        
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
@@ -322,12 +328,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 carbsTextField.text = formattedValue(foodItem.carbohydrates)
                 fatTextField.text = formattedValue(foodItem.fat)
                 proteinTextField.text = formattedValue(foodItem.protein)
-            }
-            
-            if isUpdateMode, let data = prePopulatedData {
-                carbsTextField.text = formattedValue(data.carbohydrates)
-                fatTextField.text = formattedValue(data.fat)
-                proteinTextField.text = formattedValue(data.protein)
             }
         } else {
             title = "Lägg till livsmedel"
