@@ -12,16 +12,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         textField.borderStyle = .roundedRect
         textField.backgroundColor = .systemGray6
         textField.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let placeholderText = "Sök efter livsmedel online"
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.systemGray
         ]
         textField.attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
-
+        
         return textField
     }()
-
+    
     private let searchButtonOnline: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Sök", for: .normal)
@@ -109,32 +109,32 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            fetchFoodItems()
-            updateClearButtonVisibility()
-            
-            // Ensure dataSharingVC is instantiated
-            guard let dataSharingVC = dataSharingVC else { return }
-
-            // Call the desired function
-            print("Data import triggered")
-            dataSharingVC.importAllCSVFiles()
-            
+        super.viewWillAppear(animated)
+        fetchFoodItems()
+        updateClearButtonVisibility()
+        
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else { return }
+        
+        // Call the desired function
+        print("Data import triggered")
+        dataSharingVC.importAllCSVFiles()
+        
         // Load saved search text
-            if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText"), !savedSearchText.isEmpty {
-                searchBar.text = savedSearchText
-                if searchMode == .local {
-                    filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-                } else {
-                        fetchOnlineArticles(for: savedSearchText)
-                }
+        if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText"), !savedSearchText.isEmpty {
+            searchBar.text = savedSearchText
+            if searchMode == .local {
+                filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
             } else {
-                // If no search text is saved, show the full list
-                filteredFoodItems = foodItems
+                fetchOnlineArticles(for: savedSearchText)
             }
-            sortFoodItems()
-            tableView.reloadData()
+        } else {
+            // If no search text is saved, show the full list
+            filteredFoodItems = foodItems
         }
+        sortFoodItems()
+        tableView.reloadData()
+    }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -274,17 +274,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Update placeholder based on initial search mode
         updateSearchBarPlaceholder()
     }
-
+    
     @objc private func searchModeChanged(_ sender: UISegmentedControl) {
         searchMode = sender.selectedSegmentIndex == 0 ? .local : .online
         updateSearchBarPlaceholder()
         tableView.reloadData()
     }
-
+    
     private func updateSearchBarPlaceholder() {
         searchBar.placeholder = searchMode == .local ? "Sök bland sparade livsmedel" : "Sök efter nya livsmedel online"
     }
-
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
         guard let searchText = searchBar.text, !searchText.isEmpty else {
@@ -297,10 +297,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
             sortFoodItems()
         } else {
-             fetchOnlineArticles(for: searchText)
+            fetchOnlineArticles(for: searchText)
         }
     }
-
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         UserDefaults.standard.set(searchText, forKey: "savedSearchText") // Save search text
         if searchMode == .local {
@@ -317,9 +317,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
     }
-
+    
+    
+    
     private func fetchOnlineArticles(for searchText: String) {
-
+        
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
         let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(searchText)/JSON?apikey=\(dabasAPISecret)"
         
@@ -328,7 +330,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             showErrorAlert(message: "Felaktig Dabas URL")
             return
         }
-
+        
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
                 self.searchOpenfoodfacts(for: searchText)
@@ -337,7 +339,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
                 return
             }
-
+            
             guard let data = data else {
                 self.searchOpenfoodfacts(for: searchText)
                 DispatchQueue.main.async {
@@ -345,7 +347,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
                 return
             }
-
+            
             do {
                 // Decode the JSON response
                 let articles = try JSONDecoder().decode([DabasArticle].self, from: data)
@@ -366,10 +368,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
             }
         }
-
+        
         dabasTask.resume()
     }
-
+    
     private func searchOpenfoodfacts(for searchText: String) {
         // Check if the search is within the allowed rate limit
         if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 8 {
@@ -378,17 +380,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
             return
         }
-
+        
         lastSearchTime = Date() // Update the time of the last search
-
+        
         let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(searchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
         print(openfoodURLString)
-
+        
         guard let openfoodURL = URL(string: openfoodURLString) else {
             showErrorAlert(message: "Felaktig OpenFoodFacts URL")
             return
         }
-
+        
         let openfoodTask = URLSession.shared.dataTask(with: openfoodURL) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -396,14 +398,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
                 return
             }
-
+            
             guard let data = data else {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "OpenFoodFacts API fel: Ingen data togs emot")
                 }
                 return
             }
-
+            
             do {
                 // Decode the JSON response
                 let jsonResponse = try JSONDecoder().decode(OpenFoodFactsResponse.self, from: data)
@@ -422,7 +424,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
             }
         }
-
+        
         openfoodTask.resume()
     }
     
@@ -440,7 +442,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-
+    
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
@@ -480,7 +482,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     // MARK: - UITableViewDelegate
-
+    
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (_, _, completionHandler) in
             if self.searchMode == .local {
@@ -490,12 +492,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             completionHandler(true)
         }
         deleteAction.backgroundColor = .red // Optionally set the background color
-
+        
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
         return configuration
     }
-
+    
     private func showDeleteConfirmationAlert(at indexPath: IndexPath, foodItemName: String) {
         let alert = UIAlertController(title: "Radera Livsmedel", message: "Bekräfta att du vill radera: '\(foodItemName)'?", preferredStyle: .actionSheet)
         let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { _ in
@@ -637,10 +639,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         
         // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
-
-                // Call the desired function
-                dataSharingVC.exportFoodItemsToCSV()
+        guard let dataSharingVC = dataSharingVC else { return }
+        
+        // Call the desired function
+        dataSharingVC.exportFoodItemsToCSV()
         print("Food items export triggered")
     }
     
@@ -874,7 +876,7 @@ struct DabasArticle: Codable {
     let varumarke: String?
     let forpackningsstorlek: String?
     let gtin: String?
-
+    
     enum CodingKeys: String, CodingKey {
         case artikelbenamning = "Artikelbenamning"
         case varumarke = "Varumarke"
@@ -891,7 +893,7 @@ struct OpenFoodFactsArticle: Codable {
     let carbohydrates_100g: Double?
     let fat_100g: Double?
     let proteins_100g: Double?
-
+    
     enum CodingKeys: String, CodingKey {
         case artikelbenamning = "product_name"
         case varumarke = "brands"
@@ -911,7 +913,7 @@ struct Article: Codable {
     let carbohydrates_100g: Double?
     let fat_100g: Double?
     let proteins_100g: Double?
-
+    
     init(
         artikelbenamning: String?,
         varumarke: String?,
@@ -929,7 +931,7 @@ struct Article: Codable {
         self.fat_100g = fat_100g
         self.proteins_100g = proteins_100g
     }
-
+    
     init(from product: OpenFoodFactsProduct) {
         self.init(
             artikelbenamning: product.product_name,
@@ -941,7 +943,7 @@ struct Article: Codable {
             proteins_100g: product.proteins_100g
         )
     }
-
+    
     init(from article: DabasArticle) {
         self.init(
             artikelbenamning: article.artikelbenamning,
@@ -956,46 +958,46 @@ struct Article: Codable {
 }
 
 class ArticleTableViewCell: UITableViewCell {
-let nameLabel: UILabel = {
-let label = UILabel()
-label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-label.translatesAutoresizingMaskIntoConstraints = false
-return label
-}()
-let detailsLabel: UILabel = {
-let label = UILabel()
-label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-label.textColor = .gray
-label.translatesAutoresizingMaskIntoConstraints = false
-return label
-}()
-
-var gtin: String? // Add this property to store GTIN
-
-override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-super.init(style: style, reuseIdentifier: reuseIdentifier)
-contentView.addSubview(nameLabel)
-contentView.addSubview(detailsLabel)
-
-NSLayoutConstraint.activate([
-nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 16),
-
-detailsLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
-detailsLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-detailsLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-detailsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
-])
-}
-
-required init?(coder: NSCoder) {
-fatalError("init(coder:) has not been implemented")
-}
-
-func configure(with article: Article) {
-nameLabel.text = article.artikelbenamning
-detailsLabel.text = "\(article.varumarke ?? "")"
-gtin = article.gtin // Store GTIN
-}
+    let nameLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    let detailsLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .gray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    var gtin: String? // Add this property to store GTIN
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        contentView.addSubview(nameLabel)
+        contentView.addSubview(detailsLabel)
+        
+        NSLayoutConstraint.activate([
+            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 16),
+            
+            detailsLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
+            detailsLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
+            detailsLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
+            detailsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+        ])
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(with article: Article) {
+        nameLabel.text = article.artikelbenamning
+        detailsLabel.text = "\(article.varumarke ?? "")"
+        gtin = article.gtin // Store GTIN
+    }
 }
