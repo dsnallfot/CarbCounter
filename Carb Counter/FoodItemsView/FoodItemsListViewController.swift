@@ -317,13 +317,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
     }
-    
-    
-    
     private func fetchOnlineArticles(for searchText: String) {
-        
+        // Replace all spaces with + signs and make the search text HTTP friendly
+        let formattedSearchText = searchText.replacingOccurrences(of: " ", with: "+").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? searchText
+
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
-        let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(searchText)/JSON?apikey=\(dabasAPISecret)"
+        let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(formattedSearchText)/JSON?apikey=\(dabasAPISecret)"
         
         guard let dabasURL = URL(string: dabasURLString) else {
             self.searchOpenfoodfacts(for: searchText)
@@ -357,7 +356,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                         self.searchOpenfoodfacts(for: searchText)
                     } else {
                         self.isUsingDabas = true
-                        self.articles = articles.map { Article(from: $0) }
+                        self.articles = articles.map { Article(from: $0) }.filter { $0.artikelbenamning != nil && !$0.artikelbenamning!.isEmpty }
                         self.tableView.reloadData()
                     }
                 }
@@ -373,6 +372,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func searchOpenfoodfacts(for searchText: String) {
+        // Replace all spaces with + signs and make the search text HTTP friendly
+        let formattedSearchText = searchText.replacingOccurrences(of: " ", with: "+").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? searchText
+
         // Check if the search is within the allowed rate limit
         if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 8 {
             DispatchQueue.main.async {
@@ -383,7 +385,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         lastSearchTime = Date() // Update the time of the last search
         
-        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(searchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
+        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(formattedSearchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
         print(openfoodURLString)
         
         guard let openfoodURL = URL(string: openfoodURLString) else {
