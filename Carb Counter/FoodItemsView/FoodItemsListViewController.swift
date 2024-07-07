@@ -278,6 +278,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func searchModeChanged(_ sender: UISegmentedControl) {
         searchMode = sender.selectedSegmentIndex == 0 ? .local : .online
         updateSearchBarPlaceholder()
+
+        if searchMode == .local && searchBar.text?.isEmpty == true {
+            filteredFoodItems = foodItems
+            sortFoodItems()
+        }
+        
+        if searchMode == .online && searchBar.text?.isEmpty == true {
+            articles = []
+        }
+
+        
         tableView.reloadData()
     }
     
@@ -306,10 +317,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if searchMode == .local {
             if searchText.isEmpty {
                 filteredFoodItems = foodItems
+                tableView.reloadData()
             } else {
                 filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+                sortFoodItems()
             }
-            sortFoodItems()
         } else {
             if searchText.isEmpty {
                 articles = []
