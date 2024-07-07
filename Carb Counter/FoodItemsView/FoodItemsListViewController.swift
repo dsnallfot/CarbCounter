@@ -205,7 +205,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupSegmentedControl() {
-        let items = ["Sök bland sparade", "Sök efter nya online"]
+        let items = ["Sök sparade", "Sök online"]
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(searchModeChanged(_:)), for: .valueChanged)
