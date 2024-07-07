@@ -793,7 +793,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
             alert.addTextField { textField in
-                textField.placeholder = "Vikt per styck i gram (valfritt)"
+                textField.placeholder = "Ange vikt per styck i gram (valfritt)"
                 textField.keyboardType = .decimalPad
             }
             
