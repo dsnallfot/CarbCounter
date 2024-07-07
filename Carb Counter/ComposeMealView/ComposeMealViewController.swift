@@ -870,7 +870,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         crContainer.isUserInteractionEnabled = true
         crContainer.addGestureRecognizer(crTapGesture)
 
-        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 2)
+        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 1.5)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
@@ -890,7 +890,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
 
-        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 2) // Properly initialize startAmountContainer
+        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 1.5) // Properly initialize startAmountContainer
         treatmentView.addSubview(startAmountContainer)
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
@@ -910,7 +910,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
 
-        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 2) // Properly initialize registeredContainer
+        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 1.5) // Properly initialize registeredContainer
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
@@ -1788,7 +1788,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.cornerRadius = 14
-            button.layer.borderWidth = 2
+            button.layer.borderWidth = 1.5
             button.layer.borderColor = UIColor.label.cgColor
             button.clipsToBounds = true
             return button
