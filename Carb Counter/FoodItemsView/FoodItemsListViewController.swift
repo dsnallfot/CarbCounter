@@ -694,14 +694,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableViewBottomConstraint.constant = 0
         view.layoutIfNeeded()
     }
-    
-    @objc private func navigateToAddFoodItemPlain() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
-            addFoodItemVC.delegate = self
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
-        }
-    }
+
     
     @objc private func navigateToScanner() {
         let scannerVC = ScannerViewController()
@@ -837,6 +830,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+    
+    @objc private func navigateToAddFoodItemPlain() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self
+            navigationController?.pushViewController(addFoodItemVC, animated: true)
+        }
     }
     
     private func navigateToAddFoodItem(foodItem: FoodItem) {
