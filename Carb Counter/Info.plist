@@ -69,7 +69,6 @@
     </array>
     <key>com.apple.developer.icloud-services</key>
     <array>
-        <string>CloudKit</string>
         <string>CloudDocuments</string>
     </array>
     <key>com.apple.developer.ubiquity-kvstore-identifier</key>
@@ -79,8 +78,6 @@
         <string>fetch</string>
         <string>remote-notification</string>
     </array>
-    <key>CKSharingSupported</key>
-    <true/>
     <key>NSCameraUsageDescription</key>
     <string>We need access to your camera to scan barcodes.</string>
 </dict>

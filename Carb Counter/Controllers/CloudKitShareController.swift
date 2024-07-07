@@ -1,6 +1,6 @@
 import CloudKit
 import UIKit
-
+/*
 class CloudKitShareController {
     static let shared = CloudKitShareController()
     private let container: CKContainer
@@ -26,7 +26,7 @@ class CloudKitShareController {
             }
         }
         privateDatabase.add(modifyZonesOperation)
-    }
+    }*/
 /*
     func shareMealHistoryRecord(mealHistory: MealHistory, from viewController: UIViewController, completion: @escaping (CKShare?, URL?, Error?) -> Void) {
         let mealHistoryRecordID = CKRecord.ID(recordName: mealHistory.id!.uuidString, zoneID: customZone.zoneID)
@@ -181,4 +181,4 @@ class CloudKitShareController {
             self.container.add(acceptShareOperation)
         }
     }*/
-}
+//}

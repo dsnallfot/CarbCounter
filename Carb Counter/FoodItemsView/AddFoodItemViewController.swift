@@ -233,8 +233,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func setupSegmentedControl() {
-        segmentedControl = UISegmentedControl(items: ["Per 100g", "Per Styck"])
-        segmentedControl.selectedSegmentIndex = 0
+        // Initialize with default labels
+        let initialItems = ["Per 100g", "Per Styck"]
+        segmentedControl = UISegmentedControl(items: initialItems)
+        segmentedControl.selectedSegmentIndex = isPerPiece ? 1 : 0
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(segmentedControl)
@@ -245,11 +247,28 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         ])
     }
     
+    private func updateSegmentedControlLabels() {
+        if foodItem != nil { // Check if we are in "Ändra livsmedel" mode
+            if isPerPiece {
+                segmentedControl.setTitle("  Ändra till per 100g   ←", forSegmentAt: 0)
+                segmentedControl.setTitle("Per Styck", forSegmentAt: 1)
+            } else {
+                segmentedControl.setTitle("Per 100g", forSegmentAt: 0)
+                segmentedControl.setTitle("→   Ändra till per st  ", forSegmentAt: 1)
+            }
+        } else {
+            // Default labels for "Lägg till livsmedel" mode
+            segmentedControl.setTitle("Per 100g", forSegmentAt: 0)
+            segmentedControl.setTitle("Per Styck", forSegmentAt: 1)
+        }
+    }
+    
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         isPerPiece = sender.selectedSegmentIndex == 1
         updateUnitsLabels()
         clearOppositeFields()
         checkForChanges()
+        updateSegmentedControlLabels() // Update labels based on the new selection
     }
     
     private func updateUnitsLabels() {
@@ -339,6 +358,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             }
         }
         updateUnitsLabels() // Ensure labels are set correctly when the view is loaded
+        updateSegmentedControlLabels() // Update segmented control labels
     }
     
     @IBAction func saveButtonTap(_ sender: UIButton) {

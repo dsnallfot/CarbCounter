@@ -122,8 +122,8 @@ class RemoteSettingsViewController: UITableViewController {
     }
 
     @objc private func limitTextFieldLength(_ textField: UITextField) {
-        if textField.text?.count ?? 0 > 10 {
-            textField.text = String(textField.text?.prefix(10) ?? "")
+        if textField.text?.count ?? 0 > 50 {
+            textField.text = String(textField.text?.prefix(50) ?? "")
         }
     }
 
