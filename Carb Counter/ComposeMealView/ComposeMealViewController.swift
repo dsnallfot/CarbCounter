@@ -731,9 +731,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     private func setupSummaryView(in container: UIView) {
         let colors: [CGColor] = [
-            UIColor.purple.withAlphaComponent(0.4).cgColor,
-            UIColor.blue.withAlphaComponent(0.25).cgColor,
-            UIColor.cyan.withAlphaComponent(0.2).cgColor
+            UIColor.systemGray.withAlphaComponent(0.1).cgColor,
+            UIColor.systemGray.withAlphaComponent(0.35).cgColor,
+            UIColor.systemGray.withAlphaComponent(0.1).cgColor
         ]
         let summaryView = GradientView(colors: colors)
         summaryView.translatesAutoresizingMaskIntoConstraints = false
@@ -852,9 +852,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     private func setupTreatmentView(in container: UIView) {
         let colors: [CGColor] = [
-            UIColor.purple.withAlphaComponent(0.4).cgColor,
-            UIColor.blue.withAlphaComponent(0.25).cgColor,
-            UIColor.cyan.withAlphaComponent(0.2).cgColor
+            UIColor.systemGray.withAlphaComponent(0.1).cgColor,
+            UIColor.systemGray.withAlphaComponent(0.35).cgColor,
+            UIColor.systemGray.withAlphaComponent(0.1).cgColor
         ]
         let treatmentView = GradientView(colors: colors)
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
