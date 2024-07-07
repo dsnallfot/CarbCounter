@@ -282,6 +282,7 @@ extension SearchableDropdownView {
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
         //clearSearch()
+        tableView.reloadData()
         
         // Hide the dropdown view
         self.isHidden = true

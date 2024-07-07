@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		6502A99D2C29681E00414DC0 /* MealHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */; };
 		6502A99F2C29754D00414DC0 /* MealHistoryDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */; };
-		6502A9CC2C2A22D100414DC0 /* CloudKitShareController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */; };
 		6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6518ACB92C2434E100C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6518ACBA2C2434E200C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
@@ -41,7 +40,6 @@
 		65C75D002C25967C00114BD3 /* StartDoseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */; };
 		65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */; };
 		65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */; };
-		65F2170B2C357F1C00AEC8CB /* SearchOnlineViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F2170A2C357F1C00AEC8CB /* SearchOnlineViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,7 +64,6 @@
 		6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealHistoryDetailViewController.swift; sourceTree = "<group>"; };
 		6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MealHistory+CoreDataClass.swift"; path = "Carb Counter/MealHistory+CoreDataClass.swift"; sourceTree = "<group>"; };
 		6502A9AB2C2980D800414DC0 /* MealHistory+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MealHistory+CoreDataProperties.swift"; path = "Carb Counter/MealHistory+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitShareController.swift; sourceTree = "<group>"; };
 		6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataClass.swift"; path = "Carb Counter/FoodItemEntry+CoreDataClass.swift"; sourceTree = "<group>"; };
 		6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataProperties.swift"; path = "Carb Counter/FoodItemEntry+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemRow+CoreDataProperties.swift"; path = "Carb Counter/FoodItemRow+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -104,7 +101,6 @@
 		65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartDoseViewController.swift; sourceTree = "<group>"; };
 		65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHelper.swift; sourceTree = "<group>"; };
 		65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NightscoutManager.swift; path = "Carb Counter/Controllers/NightscoutManager.swift"; sourceTree = SOURCE_ROOT; };
-		65F2170A2C357F1C00AEC8CB /* SearchOnlineViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchOnlineViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,7 +147,6 @@
 				6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */,
 				6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */,
 				652891CA2C33FF2C008B8BCA /* ScannerViewController.swift */,
-				65F2170A2C357F1C00AEC8CB /* SearchOnlineViewController.swift */,
 			);
 			path = FoodItemsView;
 			sourceTree = "<group>";
@@ -188,7 +183,6 @@
 			isa = PBXGroup;
 			children = (
 				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
-				6502A9CB2C2A22D100414DC0 /* CloudKitShareController.swift */,
 				65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */,
 				65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */,
 				65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */,
@@ -391,12 +385,10 @@
 			files = (
 				65C75D002C25967C00114BD3 /* StartDoseViewController.swift in Sources */,
 				6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */,
-				65F2170B2C357F1C00AEC8CB /* SearchOnlineViewController.swift in Sources */,
 				6553EE032C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
 				653DE7A42C278F7700A639D1 /* Twilio.swift in Sources */,
 				65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */,
-				6502A9CC2C2A22D100414DC0 /* CloudKitShareController.swift in Sources */,
 				65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */,
 				65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */,
 				653DE7A02C27520700A639D1 /* DataSharingViewController.swift in Sources */,

@@ -418,11 +418,11 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 .replacingOccurrences(of: "Skolmat: ", with: "Ⓢ ")
                 .replacingOccurrences(of: "Skola: ", with: "Ⓢ ")
                 .replacingOccurrences(of: "Skola ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skolmat ", with: "Ⓢ ")) + (isPerPiece ? " ①" : "")
+                .replacingOccurrences(of: "Skolmat ", with: "Ⓢ ")
                 .replacingOccurrences(of: "skolmat: ", with: "Ⓢ ")
                 .replacingOccurrences(of: "skola: ", with: "Ⓢ ")
                 .replacingOccurrences(of: "skola ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skolmat ", with: "Ⓢ ")
+                .replacingOccurrences(of: "skolmat ", with: "Ⓢ ")) + (isPerPiece ? " ①" : "")
             newFoodItem.notes = notesTextField.text ?? ""
             newFoodItem.emoji = emojiTextField.text ?? ""
             
