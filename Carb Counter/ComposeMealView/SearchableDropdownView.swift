@@ -11,7 +11,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
                 updateCombinedEmojis()
             }
         }
-    var combinedEmojis: String = "🍽️"
+    var combinedEmojis: String = "🍴"
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -297,7 +297,7 @@ extension SearchableDropdownView {
         let emojis = selectedFoodItems.compactMap { $0.emoji }
         
         if emojis.isEmpty {
-            combinedEmojis = "🍽️" // Default emoji if no emojis are available
+            combinedEmojis = "🍴" // Default emoji if no emojis are available
         } else {
             combinedEmojis = emojis.joined()
         }

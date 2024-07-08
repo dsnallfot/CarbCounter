@@ -250,28 +250,36 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
 
         // Extract the totalRegisteredLabel value, handling potential nil values
         let totalRegisteredText = totalRegisteredLabel.text ?? "0"
-        let totalRegisteredValue = Double(totalRegisteredText.replacingOccurrences(of: "g", with: "")) ?? 0
+        let totalRegisteredValue = Double(totalRegisteredText) ?? 0
+        
+        //print("Debug - Saving totalRegisteredValue: \(totalRegisteredValue)")
 
         for rowView in foodItemRows {
             if let foodItemRow = rowView.foodItemRow {
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
+                // Only update totalRegisteredValue if it's greater than the existing value
+                if totalRegisteredValue > foodItemRow.totalRegisteredValue {
+                    foodItemRow.totalRegisteredValue = totalRegisteredValue
+                    //print("Debug - Updating existing row with totalRegisteredValue: \(totalRegisteredValue)")
+                }
             } else {
                 let foodItemRow = FoodItemRow(context: context)
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                foodItemRow.totalRegisteredValue = totalRegisteredValue // Save total registered value
+                foodItemRow.totalRegisteredValue = totalRegisteredValue
                 rowView.foodItemRow = foodItemRow
+                //print("Debug - Creating new row with totalRegisteredValue: \(totalRegisteredValue)")
             }
         }
 
         do {
             try context.save()
+            //print("Debug - Successfully saved to Core Data with totalRegisteredValue: \(totalRegisteredValue)")
         } catch {
-            print("Failed to save FoodItemRows: \(error)")
+            print("Debug - Failed to save FoodItemRows: \(error)")
         }
     }
 
@@ -281,28 +289,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
 
         do {
             let savedFoodItems = try context.fetch(fetchRequest)
+            //print("Debug - Fetched \(savedFoodItems.count) FoodItemRows from Core Data")
             
             // Clear current food item rows to avoid duplicates
             clearAllFoodItems()
             
-            for savedFoodItem in savedFoodItems {
-                if let foodItemID = savedFoodItem.foodItemID, // Ensure the ID is not nil
-                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) { // Compare using UUID
+            var lastTotalRegisteredValue: Double?
+
+            for (index, savedFoodItem) in savedFoodItems.enumerated() {
+                //print("Debug - Processing savedFoodItem \(index + 1)")
+                //print("Debug - savedFoodItem.totalRegisteredValue: \(savedFoodItem.totalRegisteredValue)")
+                
+                if let foodItemID = savedFoodItem.foodItemID,
+                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
                     
-                    // Check if the item already exists
                     if !foodItemRows.contains(where: { $0.foodItemRow?.foodItemID == foodItemID }) {
                         let rowView = FoodItemRowView()
                         rowView.foodItems = foodItems
                         rowView.delegate = self
                         rowView.translatesAutoresizingMaskIntoConstraints = false
-                        rowView.foodItemRow = savedFoodItem // Associate the Core Data object
+                        rowView.foodItemRow = savedFoodItem
                         
-                        // Set the selected food item and the text fields
                         rowView.setSelectedFoodItem(foodItem)
                         rowView.portionServedTextField.text = formatNumber(savedFoodItem.portionServed)
                         rowView.notEatenTextField.text = formatNumber(savedFoodItem.notEaten)
                         
-                        // Add the row view to your stack view
                         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
                         foodItemRows.append(rowView)
                         
@@ -314,24 +325,57 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                             self?.updateTotalNutrients()
                         }
                         
-                        // Recalculate nutrients based on loaded data
                         rowView.calculateNutrients()
+                        //print("Debug - Added row for foodItem: \(foodItem.name ?? "Unknown")")
                     }
                 }
+
+                // Keep track of the last total registered value
+                lastTotalRegisteredValue = max(lastTotalRegisteredValue ?? 0, savedFoodItem.totalRegisteredValue)
             }
             
-            // Load totalRegisteredValue from CoreData and update the label
-            if let firstSavedItem = savedFoodItems.first {
-                totalRegisteredLabel.text = formatNumber(firstSavedItem.totalRegisteredValue)
+            // Update the totalRegisteredLabel with the last saved value
+            if let lastValue = lastTotalRegisteredValue {
+                totalRegisteredLabel.text = formatNumber(lastValue)
+                //print("Debug - Updated totalRegisteredLabel with value: \(lastValue)")
+                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
+            } else {
+                print("Debug - No lastTotalRegisteredValue found")
             }
+            
+            // Ensure UI elements are initialized
+            initializeUIElements()
             
             updateTotalNutrients()
             updateClearAllButtonState()
             updateSaveFavoriteButtonState()
             updateHeadlineVisibility()
         } catch {
-            print("Failed to fetch FoodItemRows: \(error)")
+            print("Debug - Failed to fetch FoodItemRows: \(error)")
         }
+    }
+
+    // Add this new function to initialize UI elements
+    private func initializeUIElements() {
+        if totalRegisteredLabel == nil {
+            totalRegisteredLabel = UITextField()
+            // Add any necessary setup for the label
+            print("Debug - Initialized totalRegisteredLabel")
+        }
+        
+        if clearAllButton == nil {
+            clearAllButton = UIBarButtonItem()
+            // Add any necessary setup for the button
+            print("Debug - Initialized clearAllButton")
+        }
+        
+        if saveFavoriteButton == nil {
+            saveFavoriteButton = UIButton()
+            // Add any necessary setup for the button
+            print("Debug - Initialized saveFavoriteButton")
+        }
+        
+        // Initialize any other necessary UI elements
     }
 
     private func formatNumberWithoutTrailingZero(_ number: Double) -> String {
