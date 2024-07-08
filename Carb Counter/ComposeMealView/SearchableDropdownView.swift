@@ -273,7 +273,7 @@ extension SearchableDropdownView {
         }
         
         // Save combined emojis before clearing selection
-        let emojis = combinedEmojis
+        let emojis = removeDuplicateEmojis(from: combinedEmojis)
         print("saved emojis: \(emojis)")
         
         // Resign the searchBar as first responder
@@ -281,7 +281,6 @@ extension SearchableDropdownView {
         
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
-        //clearSearch()
         tableView.reloadData()
         
         // Hide the dropdown view
@@ -311,5 +310,12 @@ extension SearchableDropdownView {
 
     func getCombinedEmojis() -> String {
         return combinedEmojis
+    }
+
+    // Helper function to remove duplicate emojis
+    private func removeDuplicateEmojis(from string: String) -> String {
+        var uniqueEmojis = Set<Character>()
+        let filteredEmojis = string.filter { uniqueEmojis.insert($0).inserted }
+        return String(filteredEmojis)
     }
 }

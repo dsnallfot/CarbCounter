@@ -317,6 +317,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if searchMode == .local {
             if searchText.isEmpty {
                 filteredFoodItems = foodItems
+                sortFoodItems()
                 tableView.reloadData()
             } else {
                 filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
