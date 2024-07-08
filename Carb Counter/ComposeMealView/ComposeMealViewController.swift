@@ -224,6 +224,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Call the desired function
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
+        fetchFoodItems()
         
         
         //print("viewWillAppear: totalNetCarbsLabel: \(totalNetCarbsLabel?.text ?? "nil")")

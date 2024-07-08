@@ -385,9 +385,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func searchOpenfoodfacts(for searchText: String) {
+        /*
         // Replace all spaces with + signs and make the search text HTTP friendly
         let formattedSearchText = searchText.replacingOccurrences(of: " ", with: "+").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? searchText
-
+         */
         // Check if the search is within the allowed rate limit
         if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 8 {
             DispatchQueue.main.async {
@@ -398,7 +399,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         lastSearchTime = Date() // Update the time of the last search
         
-        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(formattedSearchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
+        let openfoodURLString = "https://en.openfoodfacts.org/cgi/search.pl?&search_terms=\(searchText)&action=process&json=1&fields=product_name,brands,ingredients_text,carbohydrates_100g,fat_100g,proteins_100g&search_simple=1"
         print(openfoodURLString)
         
         guard let openfoodURL = URL(string: openfoodURLString) else {
@@ -807,7 +808,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     let adjustedFat = (fat * weight / 100).roundToDecimal(1)
                     let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
                     isPerPiece = true // Update the flag
-                    adjustedProductName += " ①" // Add the per piece suffix
                     self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
                 } else {
                     self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
