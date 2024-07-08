@@ -63,6 +63,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     var startDoseGiven: Bool = false
     var remainingDoseGiven: Bool = false
     
+    var favoriteOrHistoryMealEmojis: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -384,6 +386,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     }
     
     private func getCombinedEmojis() -> String {
+        if let favoriteOrHistoryMealEmojis = favoriteOrHistoryMealEmojis {
+            return favoriteOrHistoryMealEmojis
+        }
         return searchableDropdownView?.combinedEmojis ?? "🍽️"
     }
     
@@ -523,6 +528,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             return
         }
         
+        var emojis: [String] = []
+        
         do {
             guard let items = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
                 print("Error: Unable to cast deserialized JSON to [[String: Any]].")
@@ -555,6 +562,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                             self?.updateHeadlineVisibility()
                         }
                         rowView.calculateNutrients()
+                        
+                        if let emoji = foodItem.emoji, !emoji.isEmpty {
+                            emojis.append(emoji)
+                        }
                     } else {
                         print("Error: Food item with name \(name) not found in foodItems.")
                     }
@@ -566,6 +577,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             print("Error deserializing JSON: \(error)")
         }
         
+        favoriteOrHistoryMealEmojis = Set(emojis).joined() // Remove duplicates and join emojis into a single string
+        
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -575,6 +588,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
         clearAllFoodItems()
+        
+        var emojis: [String] = []
         
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
@@ -597,10 +612,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                     self?.updateHeadlineVisibility()
                 }
                 rowView.calculateNutrients()
+                
+                if let emoji = foodItem.emoji, !emoji.isEmpty {
+                    emojis.append(emoji)
+                }
             } else {
                 print("Food item not found for name: \(foodEntry.entryName ?? "")")
             }
         }
+        
+        favoriteOrHistoryMealEmojis = Set(emojis).joined() // Remove duplicates and join emojis into a single string
+        
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -723,6 +745,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             row.removeFromSuperview()
         }
         foodItemRows.removeAll()
+        favoriteOrHistoryMealEmojis = nil // Reset favorite meal emojis
         updateTotalNutrients()
         view.endEditing(true)
         updateClearAllButtonState()
