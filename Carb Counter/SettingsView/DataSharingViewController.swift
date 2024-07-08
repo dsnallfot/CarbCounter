@@ -177,24 +177,9 @@ class DataSharingViewController: UIViewController {
             let id = meal.id?.uuidString ?? ""
             let name = meal.name ?? ""
             
-            // Deserialize the items JSON string
-            var itemsData: [[String: Any]] = []
-            if let itemsString = meal.items as? String,
-               let jsonData = itemsString.data(using: .utf8),
-               let itemsArray = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
-                itemsData = itemsArray
-            }
+            let itemsString = meal.items as? String ?? ""
             
-            let items = itemsData.compactMap { item in
-                guard let name = item["name"] as? String,
-                      let portionServed = item["portionServed"] as? String,
-                      let perPiece = item["perPiece"] as? Bool else {
-                    return nil
-                }
-                return "\(name):\(portionServed):\(perPiece)"
-            }.joined(separator: "|")
-            
-            csvString += "\(id);\(name);\(items)\n"
+            csvString += "\(id);\(name);\(itemsString)\n"
         }
         
         return csvString
@@ -368,6 +353,7 @@ class DataSharingViewController: UIViewController {
         do {
             try context.save()
         } catch {
+            print("Failed to save food items: \(error)")
             //showAlert(title: "Save Failed", message: "Failed to save food items: \(error)")
         }
     }
@@ -391,21 +377,7 @@ class DataSharingViewController: UIViewController {
                     let favoriteMeal = FavoriteMeals(context: context)
                     favoriteMeal.id = id
                     favoriteMeal.name = values[1]
-                    
-                    let itemsData = values[2].components(separatedBy: "|").map { item -> [String: Any] in
-                        let parts = item.components(separatedBy: ":")
-                        return [
-                            "name": parts[0],
-                            "portionServed": parts[1],
-                            "perPiece": parts[2] == "true"
-                        ]
-                    }
-                    
-                    // Serialize the items array to JSON and save to CoreData
-                    if let jsonData = try? JSONSerialization.data(withJSONObject: itemsData, options: []),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        favoriteMeal.items = jsonString as NSObject
-                    }
+                    favoriteMeal.items = values[2] as NSObject
                 }
             }
         }

@@ -409,18 +409,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             }
             
             // Serialize the items array to JSON
-            if let jsonData = try? JSONSerialization.data(withJSONObject: items, options: []),
-               let jsonString = String(data: jsonData, encoding: .utf8) {
-                favoriteMeals.items = jsonString as NSObject
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: items, options: [])
+                let jsonString = String(data: jsonData, encoding: .utf8)
+                favoriteMeals.items = jsonString as? NSObject
+            } catch {
+                print("Failed to serialize items to JSON: \(error)")
             }
             
             CoreDataStack.shared.saveContext()
 
             // Ensure dataSharingVC is instantiated
-                    guard let dataSharingVC = dataSharingVC else { return }
+            guard let dataSharingVC = self.dataSharingVC else { return }
 
-                    // Call the desired function
-                    dataSharingVC.exportFavoriteMealsToCSV()
+            // Call the desired function
+            dataSharingVC.exportFavoriteMealsToCSV()
             print("Favorite meals export triggered")
             
             let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
@@ -462,47 +465,62 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems()
-        
-        guard let itemsString = favoriteMeal.items as? String,
-              let data = itemsString.data(using: .utf8),
-              let items = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
-            print("Error: Unable to cast favoriteMeal.items to [[String: Any]].")
+
+        guard let itemsString = favoriteMeal.items as? String else {
+            print("Error: Unable to cast favoriteMeal.items to String.")
             return
         }
         
-        for item in items {
-            if let name = item["name"] as? String,
-               let portionServedString = item["portionServed"] as? String,
-               let portionServed = Double(portionServedString) {
-                print("Item name: \(name), Portion Served: \(portionServed)")
-                if let foodItem = foodItems.first(where: { $0.name == name }) {
-                    print("Food Item Found: \(foodItem.name ?? "")")
-                    let rowView = FoodItemRowView()
-                    rowView.foodItems = foodItems
-                    rowView.delegate = self
-                    rowView.translatesAutoresizingMaskIntoConstraints = false
-                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
-                    foodItemRows.append(rowView)
-                    rowView.setSelectedFoodItem(foodItem)
-                    rowView.portionServedTextField.text = formattedValue(portionServed)
-                    rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-                    
-                    rowView.onDelete = { [weak self] in
-                        self?.removeFoodItemRow(rowView)
-                    }
-                    
-                    rowView.onValueChange = { [weak self] in
-                        self?.updateTotalNutrients()
-                        self?.updateHeadlineVisibility()
-                    }
-                    rowView.calculateNutrients()
-                } else {
-                    print("Error: Food item with name \(name) not found in foodItems.")
-                }
-            } else {
-                print("Error: Invalid item format. Name or Portion Served missing.")
-            }
+        print("Items String: \(itemsString)")
+        
+        guard let data = itemsString.data(using: .utf8) else {
+            print("Error: Unable to convert itemsString to Data.")
+            return
         }
+        
+        do {
+            guard let items = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
+                print("Error: Unable to cast deserialized JSON to [[String: Any]].")
+                return
+            }
+            
+            for item in items {
+                if let name = item["name"] as? String,
+                   let portionServedString = item["portionServed"] as? String,
+                   let portionServed = Double(portionServedString) {
+                    print("Item name: \(name), Portion Served: \(portionServed)")
+                    if let foodItem = foodItems.first(where: { $0.name == name }) {
+                        print("Food Item Found: \(foodItem.name ?? "")")
+                        let rowView = FoodItemRowView()
+                        rowView.foodItems = foodItems
+                        rowView.delegate = self
+                        rowView.translatesAutoresizingMaskIntoConstraints = false
+                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                        foodItemRows.append(rowView)
+                        rowView.setSelectedFoodItem(foodItem)
+                        rowView.portionServedTextField.text = formattedValue(portionServed)
+                        rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+
+                        rowView.onDelete = { [weak self] in
+                            self?.removeFoodItemRow(rowView)
+                        }
+
+                        rowView.onValueChange = { [weak self] in
+                            self?.updateTotalNutrients()
+                            self?.updateHeadlineVisibility()
+                        }
+                        rowView.calculateNutrients()
+                    } else {
+                        print("Error: Food item with name \(name) not found in foodItems.")
+                    }
+                } else {
+                    print("Error: Invalid item format. Name or Portion Served missing.")
+                }
+            }
+        } catch {
+            print("Error deserializing JSON: \(error)")
+        }
+        
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()

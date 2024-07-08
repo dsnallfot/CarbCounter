@@ -228,9 +228,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
-            textField.autocorrectionType = .yes
+            textField.autocorrectionType = .no
             textField.autocapitalizationType = .sentences
-            textField.spellCheckingType = .no
+            textField.spellCheckingType = .yes
             textField.inputAssistantItem.leadingBarButtonGroups = []
             textField.inputAssistantItem.trailingBarButtonGroups = []
             
