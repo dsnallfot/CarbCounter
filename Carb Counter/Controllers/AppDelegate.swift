@@ -31,13 +31,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func setupAppearance() {
         if #available(iOS 13.0, *) {
             let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .systemBackground
+            appearance.configureWithTransparentBackground()
+            appearance.backgroundColor = UIColor.clear
 
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
         } else {
-            UITabBar.appearance().barTintColor = .systemBackground
+            UITabBar.appearance().barTintColor = UIColor.clear
+            UITabBar.appearance().isTranslucent = true
         }
     }
 

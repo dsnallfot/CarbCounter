@@ -11,19 +11,41 @@ class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        
+        // Create the gradient view
+        let colors: [CGColor] = [
+            UIColor.systemPurple.withAlphaComponent(0.1).cgColor,
+            UIColor.systemPurple.withAlphaComponent(0.25).cgColor,
+            UIColor.systemPurple.withAlphaComponent(0.1).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
         setupUI()
+        
         // Get a reference to the ComposeMealViewController
-                if let tabBarController = self.tabBarController,
-                   let viewControllers = tabBarController.viewControllers {
-                    for viewController in viewControllers {
-                        if let navController = viewController as? UINavigationController,
-                           let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                            // Call the fetchFoodItems function
-                            composeMealVC.fetchFoodItems()
-                        }
-                    }
+        if let tabBarController = self.tabBarController,
+           let viewControllers = tabBarController.viewControllers {
+            for viewController in viewControllers {
+                if let navController = viewController as? UINavigationController,
+                   let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+                    // Call the fetchFoodItems function
+                    composeMealVC.fetchFoodItems()
                 }
+            }
+        }
     }
     
     private func setupUI() {
@@ -41,7 +63,7 @@ class HomeViewController: UIViewController {
         imageContainerView.layer.cornerRadius = 40 // Increase corner radius
         imageContainerView.layer.masksToBounds = true
         
-        // Add shadow/glow to the container view - Needs to check why this doesnt work
+        // Add shadow/glow to the container view - Needs to check why this doesn't work
         imageContainerView.layer.shadowColor = UIColor.white.cgColor
         imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 10)
         imageContainerView.layer.shadowRadius = 30
@@ -92,6 +114,7 @@ class HomeViewController: UIViewController {
             appIconImageView.bottomAnchor.constraint(equalTo: imageContainerView.bottomAnchor),
             appIconImageView.leadingAnchor.constraint(equalTo: imageContainerView.leadingAnchor),
             appIconImageView.trailingAnchor.constraint(equalTo: imageContainerView.trailingAnchor),
+            
             // Copyright label constraints
             copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),

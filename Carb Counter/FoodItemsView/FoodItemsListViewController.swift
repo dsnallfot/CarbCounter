@@ -21,17 +21,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         return textField
     }()
-    
-    private let searchButtonOnline: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Sök", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 10
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
+
     
     @IBOutlet weak var tableView: UITableView!
     var foodItems: [FoodItem] = []
@@ -57,10 +47,33 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Create the gradient view
+            let colors: [CGColor] = [
+                UIColor.systemCyan.withAlphaComponent(0.15).cgColor,
+                UIColor.systemCyan.withAlphaComponent(0.25).cgColor,
+                UIColor.systemCyan.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+            
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         tableView.register(ArticleTableViewCell.self, forCellReuseIdentifier: "ArticleCell")
+        tableView.backgroundColor = .clear
         fetchFoodItems()
         setupNavigationBarButtons()
         setupNavigationBarTitle()
@@ -100,7 +113,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         
-        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90)
         tableViewBottomConstraint.isActive = true
         
         // Instantiate DataSharingViewController programmatically
@@ -226,6 +239,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         searchBar.delegate = self
         searchBar.placeholder = "Sök bland sparade livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.backgroundImage = UIImage() // Make background clear
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
@@ -263,7 +277,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Set up the table view constraints
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -543,11 +557,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let cell = tableView.dequeueReusableCell(withIdentifier: "FoodItemCell", for: indexPath) as! FoodItemTableViewCell
             let foodItem = filteredFoodItems[indexPath.row]
             cell.configure(with: foodItem)
+            cell.backgroundColor = .clear // Set cell background to clear
             return cell
         case .online:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ArticleCell", for: indexPath) as! ArticleTableViewCell
             let article = articles[indexPath.row]
             cell.configure(with: article)
+            cell.backgroundColor = .clear // Set cell background to clear
             return cell
         }
     }
