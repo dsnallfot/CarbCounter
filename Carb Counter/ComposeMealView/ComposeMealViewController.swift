@@ -60,6 +60,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     var dataSharingVC: DataSharingViewController?
     
+    var startDoseGiven: Bool = false
+    var remainingDoseGiven: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -563,6 +566,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             self.updateTotalNutrients()
             self.clearAllButton.isEnabled = false // Disable the “Clear All” button
             self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
+            self.startDoseGiven = false
+            self.remainingDoseGiven = false
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
@@ -1007,6 +1012,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     self.updateRegisteredAmount(khValue: khValue)
+                    self.startDoseGiven = true
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(okAction)
@@ -1017,6 +1023,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
+                self.startDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
                 let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getCombinedEmojis() // Check if foodItemRows is empty and set emojis accordingly
@@ -1037,6 +1044,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        self.startDoseGiven = true
         updateTotalNutrients()
         clearAllButton.isEnabled = true
         let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"
@@ -1150,6 +1158,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     self.updateRegisteredAmount(khValue: khValue)
+                    self.remainingDoseGiven = true
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(okAction)
@@ -1171,9 +1180,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
+                self.remainingDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let emojis = "🍽️" //self.getCombinedEmojis() // Fetch the combined emojis
+                let emojis: String
+                if self.startDoseGiven == true {
+                        emojis = "🍽️"
+                    } else {
+                        emojis = "\(self.getCombinedEmojis())🍽️"
+                    }
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
@@ -1194,6 +1209,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let newRegisteredValue = currentRegisteredValue + remainsValue
         
         totalRegisteredLabel.text = String(format:"%.0f”", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        self.remainingDoseGiven = true
         updateTotalNutrients()
         clearAllButton.isEnabled = true
         let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_(khValue)bolus_(bolusValue)fat_(fatValue)protein_(proteinValue)"
@@ -1585,6 +1601,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     @objc private func addFromSearchableDropdownButtonTapped() {
         searchableDropdownView.completeSelection()
     }
+    
     
     public func fetchFoodItems() {
         let context = CoreDataStack.shared.context

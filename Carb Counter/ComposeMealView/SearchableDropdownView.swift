@@ -9,7 +9,6 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     var selectedFoodItems: [FoodItem] = [] {
             didSet {
                 updateCombinedEmojis()
-                print("combinedEmojis updated")
             }
         }
     var combinedEmojis: String = "🍽️"
@@ -305,7 +304,7 @@ extension SearchableDropdownView {
         
         // Notify if needed
         onSelectItems?(selectedFoodItems)
-        print(combinedEmojis)
+        print("combinedEmojis cleared and reset: \(combinedEmojis)")
     }
 
     func getCombinedEmojis() -> String {
