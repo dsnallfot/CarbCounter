@@ -119,7 +119,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -7)
+            tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
 

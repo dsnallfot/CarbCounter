@@ -234,9 +234,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         updateScheduledValuesUI() // Update labels
         
-        updateBorderColor() // Add this line to ensure the border color updates
+        /*updateBorderColor() // Add this line to ensure the border color updates
         addButtonRowView.updateBorderColor() // Add this line to update the border color of the AddButtonRowView
-        
+        */
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
         
@@ -807,13 +807,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             scrollView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 8),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -7),
             
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -7)
         ])
         
         setupStackView()
@@ -994,7 +994,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         crContainer.isUserInteractionEnabled = true
         crContainer.addGestureRecognizer(crTapGesture)
         
-        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .label, borderWidth: 2)
+        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .white, borderWidth: 2)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
@@ -1014,7 +1014,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
         
-        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .label, borderWidth: 2)
+        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .white, borderWidth: 2)
         treatmentView.addSubview(startAmountContainer)
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
@@ -1033,7 +1033,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
         
-        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .label, borderWidth: 2)
+        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 2)
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
@@ -1438,13 +1438,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         return containerView
     }
     
-    private func updateBorderColor() {
+    /*private func updateBorderColor() {
         let borderColor = UIColor.label.cgColor // Update border color based on the current theme
         remainsContainer?.layer.borderColor = borderColor
         startAmountContainer?.layer.borderColor = borderColor
         registeredContainer?.layer.borderColor = borderColor
         // Add any other container views that need the border color updated
-    }
+    }*/
     
     private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
         let label = UILabel()
@@ -1671,7 +1671,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         ])
         
         // Store the bottom constraint
-        searchableDropdownBottomConstraint = searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        searchableDropdownBottomConstraint = searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -7)
         searchableDropdownBottomConstraint.isActive = true
         
         searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
@@ -1773,7 +1773,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+                searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -7)
             ])
         }
         
@@ -1850,7 +1850,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         UIView.animate(withDuration: duration) {
             // Reset the bottom constraint
-            self.searchableDropdownBottomConstraint.constant = 0
+            self.searchableDropdownBottomConstraint.constant = -7
             self.view.layoutIfNeeded()
         }
     }
@@ -1925,7 +1925,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.cornerRadius = 14
             button.layer.borderWidth = 2
-            button.layer.borderColor = UIColor.label.cgColor
+            button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
             return button
         }()
@@ -1974,12 +1974,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
                 lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastLabel.trailingAnchor, constant: 8)
             ])
-            updateBorderColor() // Ensure border color is set correctly initially
+            //updateBorderColor() // Ensure border color is set correctly initially
         }
         
-        func updateBorderColor() {
+        /*func updateBorderColor() {
             addButton.layer.borderColor = UIColor.label.cgColor
-        }
+        }*/
     }
 }
     

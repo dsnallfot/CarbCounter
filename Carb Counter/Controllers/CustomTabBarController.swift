@@ -20,6 +20,6 @@ class CustomTabBarController: UITabBarController {
         
         // Customize the tab bar item appearance
         tabBar.tintColor = UIColor.label
-        tabBar.unselectedItemTintColor = UIColor.label.withAlphaComponent(0.5)
+        tabBar.unselectedItemTintColor = UIColor.label.withAlphaComponent(0.3)
     }
 }
