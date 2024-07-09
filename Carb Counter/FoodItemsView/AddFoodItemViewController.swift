@@ -466,7 +466,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             }
             newFoodItem.count = 0
             foodItem = newFoodItem // Assign the new food item to the foodItem variable for later use
-            print("Created new food item: \(newFoodItem.name)")
+            print("Created new food item: \(newFoodItem.name ?? "ospecifierat")")
         }
         
         do {
