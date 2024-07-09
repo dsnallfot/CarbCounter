@@ -783,12 +783,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             scrollView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 8),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -7),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
             
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -90),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -7)
         ])
         
