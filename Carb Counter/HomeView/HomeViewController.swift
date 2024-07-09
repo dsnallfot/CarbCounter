@@ -36,17 +36,19 @@ class HomeViewController: UIViewController {
         setupUI()
         
         // Get a reference to the ComposeMealViewController
-        if let tabBarController = self.tabBarController,
-           let viewControllers = tabBarController.viewControllers {
-            for viewController in viewControllers {
-                if let navController = viewController as? UINavigationController,
-                   let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                    // Call the fetchFoodItems function
-                    composeMealVC.fetchFoodItems()
+                if let tabBarController = self.tabBarController,
+                   let viewControllers = tabBarController.viewControllers {
+                    for viewController in viewControllers {
+                        if let navController = viewController as? UINavigationController,
+                           let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+                            // Call the fetchFoodItems function in the background
+                            DispatchQueue.global(qos: .background).async {
+                                composeMealVC.fetchFoodItems()
+                            }
+                        }
+                    }
                 }
             }
-        }
-    }
     
     private func setupUI() {
         // Create and setup the title label

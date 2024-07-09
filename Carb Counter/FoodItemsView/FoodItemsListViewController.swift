@@ -73,7 +73,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         tableView.register(ArticleTableViewCell.self, forCellReuseIdentifier: "ArticleCell")
         tableView.backgroundColor = .clear
-        fetchFoodItems()
+        // Fetch food items in the background
+            DispatchQueue.global(qos: .background).async {
+                self.fetchFoodItems()
+            }
         setupNavigationBarButtons()
         setupNavigationBarTitle()
         setupSegmentedControl()
@@ -122,7 +125,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        fetchFoodItems()
+        // Fetch food items in the background
+            DispatchQueue.global(qos: .background).async {
+                self.fetchFoodItems()
+            }
         updateClearButtonVisibility()
         
         // Ensure dataSharingVC is instantiated
@@ -487,11 +493,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     func fetchFoodItems() {
         let context = CoreDataStack.shared.context
-        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        
         do {
             foodItems = try context.fetch(fetchRequest)
             filteredFoodItems = foodItems
-            sortFoodItems()
+            
+            DispatchQueue.main.async {
+                self.sortFoodItems()
+                self.tableView.reloadData()
+            }
         } catch {
             print("Failed to fetch food items: \(error)")
         }
@@ -813,7 +824,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
             
             alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
-                var adjustedProductName = productName
+                let adjustedProductName = productName
                 if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
                     let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
                     let adjustedFat = (fat * weight / 100).roundToDecimal(1)

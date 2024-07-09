@@ -13,7 +13,6 @@ class DataSharingViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         setupNavigationBarButtons()
-        //setupURLTextFieldAndButton()
     }
     
     private func setupNavigationBarButtons() {
@@ -21,9 +20,6 @@ class DataSharingViewController: UIViewController {
         let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
-    
-    
-    // MARK: - Sharing Data
     
     @objc private func exportData() {
         let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
@@ -58,49 +54,57 @@ class DataSharingViewController: UIViewController {
     }
     
     @objc public func importAllCSVFiles() {
-            // Check if the function was called less than 10 seconds ago
-            if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 10 {
-                print("Import blocked to prevent running more often than every 10 seconds")
-                return
-            }
-
-            // Update the last import time
-            lastImportTime = Date()
-
-            let fileManager = FileManager.default
-            guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
-                print("Import Failed: iCloud Drive URL is nil.")
-                return
-            }
-
-            do {
-                let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-
-                let entityFileMapping: [String: String] = [
-                    "FoodItems.csv": "Food Items",
-                    "FavoriteMeals.csv": "Favorite Meals",
-                    "MealHistory.csv": "Meal History",
-                    "CarbRatioSchedule.csv": "Carb Ratio Schedule",
-                    "StartDoseSchedule.csv": "Start Dose Schedule"
-                ]
-
-                let dispatchGroup = DispatchGroup()
-
-                for (fileName, entityName) in entityFileMapping {
-                    if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
-                        dispatchGroup.enter()
-                        parseCSV(at: fileURL, for: entityName)
-                        dispatchGroup.leave()
-                    }
-                }
-
-                print("Data import done!")
-
-            } catch {
-                print("Failed to list directory: \(error)")
-                //showAlert(title: "Import Failed", message: "Failed to list directory: \(error.localizedDescription)")
-            }
+        // Run the import process on a background thread with low priority
+        DispatchQueue.global(qos: .background).async {
+            self.performImportAllCSVFiles()
         }
+    }
+    
+    private func performImportAllCSVFiles() {
+        // Check if the function was called less than 10 seconds ago
+        if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 10 {
+            print("Import blocked to prevent running more often than every 10 seconds")
+            return
+        }
+        
+        // Update the last import time
+        lastImportTime = Date()
+        
+        let fileManager = FileManager.default
+        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+            print("Import Failed: iCloud Drive URL is nil.")
+            return
+        }
+        
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            
+            let entityFileMapping: [String: String] = [
+                "FoodItems.csv": "Food Items",
+                "FavoriteMeals.csv": "Favorite Meals",
+                "MealHistory.csv": "Meal History",
+                "CarbRatioSchedule.csv": "Carb Ratio Schedule",
+                "StartDoseSchedule.csv": "Start Dose Schedule"
+            ]
+            
+            let dispatchGroup = DispatchGroup()
+            
+            for (fileName, entityName) in entityFileMapping {
+                if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
+                    dispatchGroup.enter()
+                    parseCSV(at: fileURL, for: entityName)
+                    dispatchGroup.leave()
+                }
+            }
+            
+            dispatchGroup.notify(queue: .main) {
+                print("Data import done!")
+            }
+            
+        } catch {
+            print("Failed to list directory: \(error)")
+        }
+    }
     
     @objc public func exportFoodItemsToCSV() {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
@@ -127,17 +131,23 @@ class DataSharingViewController: UIViewController {
         exportToCSV(fetchRequest: fetchRequest, fileName: "MealHistory.csv", createCSV: createCSV(from:))
     }
     
-    public func exportToCSV<T: NSFetchRequestResult>(fetchRequest: NSFetchRequest<T>, fileName: String, createCSV: ([T]) -> String) {
-        let context = CoreDataStack.shared.context
-        
-        do {
-            let entities = try context.fetch(fetchRequest)
-            let csvData = createCSV(entities)
+    public func exportToCSV<T: NSFetchRequestResult>(fetchRequest: NSFetchRequest<T>, fileName: String, createCSV: @escaping ([T]) -> String) {
+        DispatchQueue.global(qos: .background).async {
+            let context = CoreDataStack.shared.context
             
-            saveCSV(data: csvData, fileName: fileName)
-            print("\(fileName) export done")
-        } catch {
-            print("Failed to fetch data: \(error)")
+            do {
+                let entities = try context.fetch(fetchRequest)
+                let csvData = createCSV(entities)
+                
+                DispatchQueue.main.async {
+                    self.saveCSV(data: csvData, fileName: fileName)
+                    print("\(fileName) export done")
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    print("Failed to fetch data: \(error)")
+                }
+            }
         }
     }
     
@@ -194,10 +204,9 @@ class DataSharingViewController: UIViewController {
             let carbRatio = scheduleDict[Int16(hour)] ?? 0.0
             csvString += "\(hour);\(carbRatio)\n"
         }
-        
         return csvString
     }
-
+    
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
         var csvString = "hour;startDose\n"
         var scheduleDict = [Int16: Double]()
@@ -269,7 +278,6 @@ class DataSharingViewController: UIViewController {
             }
         } catch {
             print("Failed to save file to iCloud: \(error)")
-            //showAlert(title: "Export Failed", message: "Failed to save file to iCloud: \(error.localizedDescription)")
         }
     }
     
@@ -300,7 +308,6 @@ class DataSharingViewController: UIViewController {
                 parseMealHistoryCSV(rows, context: context)
             default:
                 print("Unknown entity name: \(entityName)")
-                //showAlert(title: "Import Failed", message: "Unknown entity name: \(entityName)")
                 return
             }
             
@@ -308,7 +315,6 @@ class DataSharingViewController: UIViewController {
             print("Import Successful: \(entityName) has been imported")
         } catch {
             print("Failed to read CSV file: \(error)")
-            //showAlert(title: "Import Failed", message: "Could not read CSV file: \(error)")
         }
     }
     
@@ -351,7 +357,6 @@ class DataSharingViewController: UIViewController {
             try context.save()
         } catch {
             print("Failed to save food items: \(error)")
-            //showAlert(title: "Save Failed", message: "Failed to save food items: \(error)")
         }
     }
     
@@ -423,10 +428,9 @@ class DataSharingViewController: UIViewController {
         do {
             try context.save()
         } catch {
-            print("Save Failed: Failed to save Carb Ratio Schedules: \(error)")
+            print("Save Failed: Failed to save Carb Ratio Schedules: (error)")
         }
     }
-
     public func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 2 else {
@@ -467,6 +471,7 @@ class DataSharingViewController: UIViewController {
             print("Save Failed: Failed to save Start Dose Schedules: \(error)")
         }
     }
+    
     public func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 6 else {
@@ -529,15 +534,15 @@ class DataSharingViewController: UIViewController {
 }
 
 extension DataSharingViewController: UIDocumentPickerDelegate {
-func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-guard let url = urls.first else { return }
-url.startAccessingSecurityScopedResource()
-defer { url.stopAccessingSecurityScopedResource() }
-if let entityName = controller.accessibilityHint {
-parseCSV(at: url, for: entityName)
-}
-}
-func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-controller.dismiss(animated: true, completion: nil)
-}
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        if let entityName = controller.accessibilityHint {
+            parseCSV(at: url, for: entityName)
+        }
+    }
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        controller.dismiss(animated: true, completion: nil)
+    }
 }

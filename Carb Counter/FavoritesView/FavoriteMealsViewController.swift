@@ -118,14 +118,21 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func fetchFavoriteMeals() {
-        let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
-        
-        do {
-            favoriteMeals = try CoreDataStack.shared.context.fetch(fetchRequest)
-            filteredFavoriteMeals = favoriteMeals
-            tableView.reloadData()
-        } catch {
-            print("Failed to fetch favorite meals: \(error)")
+        DispatchQueue.global(qos: .background).async {
+            let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
+            
+            do {
+                let favoriteMeals = try CoreDataStack.shared.context.fetch(fetchRequest)
+                DispatchQueue.main.async {
+                    self.favoriteMeals = favoriteMeals
+                    self.filteredFavoriteMeals = favoriteMeals
+                    self.tableView.reloadData()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    print("Failed to fetch favorite meals: \(error)")
+                }
+            }
         }
     }
     

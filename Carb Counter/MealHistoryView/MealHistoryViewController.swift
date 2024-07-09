@@ -99,17 +99,24 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func fetchMealHistories() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
-        let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        
-        do {
-            mealHistories = try context.fetch(fetchRequest)
-            filteredMealHistories = mealHistories
-            tableView.reloadData()
-        } catch {
-            print("Failed to fetch meal histories: \(error)")
+        DispatchQueue.global(qos: .background).async {
+            let context = CoreDataStack.shared.context
+            let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
+            let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
+            fetchRequest.sortDescriptors = [sortDescriptor]
+            
+            do {
+                let mealHistories = try context.fetch(fetchRequest)
+                DispatchQueue.main.async {
+                    self.mealHistories = mealHistories
+                    self.filteredMealHistories = mealHistories
+                    self.tableView.reloadData()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    print("Failed to fetch meal histories: \(error)")
+                }
+            }
         }
     }
     

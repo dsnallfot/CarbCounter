@@ -147,7 +147,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         setupSearchableDropdownView()
         
         // Fetch food items and add the add button row
-        fetchFoodItems()
+        DispatchQueue.global(qos: .background).async {
+            self.fetchFoodItems()
+        }
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
@@ -646,7 +648,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.clearAllFoodItems()
             self.totalRegisteredLabel.text = ""
             self.updateTotalNutrients()
-            self.clearAllButton.isEnabled = false // Disable the “Clear All” button
+            self.clearAllButton.isEnabled = false // Disable the "Clear All" button
             self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
             self.startDoseGiven = false
             self.remainingDoseGiven = false
@@ -1062,7 +1064,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func startAmountContainerTapped() {
-        var khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
+        let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
@@ -1082,7 +1084,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func proceedWithStartAmount(khValue: String, bolusValue: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS?", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
+                
+                //let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerStartAmountInIAPS(khValue: khValue, bolusValue: bolusValue)
@@ -1121,8 +1125,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func registerStartAmountInIAPS(khValue: String, bolusValue: String) {
-        var khValue = khValue.replacingOccurrences(of: ".", with: ",")
-        var bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+        let khValue = khValue.replacingOccurrences(of: ".", with: ",")
+        let bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
@@ -1163,7 +1167,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         let fatValue = formatValue(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
         let proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
-        var bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
+        let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?", preferredStyle: .alert)
         bolusAlertController.addTextField { textField in
@@ -1226,7 +1230,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
+                //let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
+                var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
+                
+                if let fat = Double(fatValue), fat > 0 {
+                    alertMessage += "\n\(fatValue) g fett"
+                }
+                if let protein = Double(proteinValue), protein > 0 {
+                    alertMessage += "\n\(proteinValue) g protein"
+                }
+                
+                alertMessage += "\n\(finalBolusValue) E insulin"
+                
+                let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
@@ -1292,15 +1308,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func registerRemainingAmountInIAPS(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        var khValue = khValue.replacingOccurrences(of: ".", with: ",")
-        var fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
-        var proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
-        var bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+        let khValue = khValue.replacingOccurrences(of: ".", with: ",")
+        let fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
+        let proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
+        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue.replacingOccurrences(of: ".", with: ",")
+        //var bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
         
-        totalRegisteredLabel.text = String(format:"%.0f”", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        totalRegisteredLabel.text = String(format:"%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
         self.remainingDoseGiven = true
         updateTotalNutrients()
         clearAllButton.isEnabled = true
@@ -1313,7 +1330,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 emojis = "\(self.getCombinedEmojis())🍽️"
             }
         let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
         /*let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_\(khValue)bolus_\(bolusValue)fat_\(fatValue)protein_\(proteinValue)"*/
         
         let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(combinedString)"
@@ -1701,14 +1718,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     
     public func fetchFoodItems() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
-        do {
-            foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-            searchableDropdownView?.updateFoodItems(foodItems)
-            print("fetchfooditems ran")
-        } catch {
-            print("Failed to fetch food items: \(error)")
+        DispatchQueue.global(qos: .background).async {
+            let context = CoreDataStack.shared.context
+            let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+            do {
+                let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
+                DispatchQueue.main.async {
+                    self.foodItems = foodItems
+                    self.searchableDropdownView?.updateFoodItems(foodItems)
+                    print("fetchfooditems ran")
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    print("Failed to fetch food items: \(error)")
+                }
+            }
         }
     }
     
