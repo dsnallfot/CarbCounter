@@ -13,6 +13,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Välj en favoritmåltid"
+        view.backgroundColor = .systemBackground
         
         // Create the gradient view
             let colors: [CGColor] = [
@@ -34,6 +35,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
+         
+        
         
         // Set the back button title for the next view controller
         let backButton = UIBarButtonItem()

@@ -13,7 +13,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Måltidshistorik"
-        
+        view.backgroundColor = .systemBackground
         // Create the gradient view
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

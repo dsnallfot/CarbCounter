@@ -17,7 +17,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Ändra favoritmåltid"
-        
+        view.backgroundColor = .systemBackground
         // Create the gradient view
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
