@@ -194,13 +194,6 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         selectedFoodItems.removeAll()
     }
 
-    /*private func clearSearch() {
-        searchBar.text = ""
-        filteredFoodItems = foodItems
-        sortFoodItems()
-        tableView.reloadData()
-    }*/
-
     @objc private func foodItemsDidChange(_ notification: Notification) {
         if let updatedItems = notification.userInfo?["foodItems"] as? [FoodItem] {
             updateFoodItems(updatedItems)

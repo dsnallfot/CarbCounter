@@ -32,7 +32,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var segmentedControl: UISegmentedControl!
     var searchBar: UISearchBar!
     var clearButton: UIBarButtonItem!
-    //var searchButton: UIBarButtonItem!
     var tableViewBottomConstraint: NSLayoutConstraint!
     
     var dataSharingVC: DataSharingViewController?
@@ -399,10 +398,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func searchOpenfoodfacts(for searchText: String) {
-        /*
-        // Replace all spaces with + signs and make the search text HTTP friendly
-        let formattedSearchText = searchText.replacingOccurrences(of: " ", with: "+").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? searchText
-         */
         // Check if the search is within the allowed rate limit
         if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 8 {
             DispatchQueue.main.async {

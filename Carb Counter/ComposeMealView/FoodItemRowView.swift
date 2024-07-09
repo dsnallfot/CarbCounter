@@ -127,8 +127,6 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         return button
     }()
     
-    //var selectedFoodItem: FoodItem?
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()

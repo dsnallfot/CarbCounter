@@ -94,9 +94,6 @@ class DataSharingViewController: UIViewController {
                     }
                 }
 
-                /*dispatchGroup.notify(queue: .main) {
-                    self.showAlert(title: "Import Successful", message: "All data has been imported successfully.")
-                }*/
                 print("Data import done!")
 
             } catch {

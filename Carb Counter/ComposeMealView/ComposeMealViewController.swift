@@ -12,7 +12,7 @@ import CloudKit
 import QuartzCore
 
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*AddFoodItemDelegate,*/ UITextFieldDelegate, TwilioRequestable {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable {
     
     var foodItemRows: [FoodItemRowView] = []
     var stackView: UIStackView!
@@ -215,10 +215,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         dataSharingVC = DataSharingViewController()
         
         loadFoodItemsFromCoreData()
-        
-        //print("setupSummaryView ran")
-        //print("setupScrollView ran")
-        //print("setupStackView ran")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -234,9 +230,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         updateScheduledValuesUI() // Update labels
         
-        /*updateBorderColor() // Add this line to ensure the border color updates
-        addButtonRowView.updateBorderColor() // Add this line to update the border color of the AddButtonRowView
-        */
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
         
@@ -248,11 +241,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
         fetchFoodItems()
-        
-        
-        //print("viewWillAppear: totalNetCarbsLabel: \(totalNetCarbsLabel?.text ?? "nil")")
-        //print("viewWillAppear: clearAllButton: \(clearAllButton != nil)")
-        //print("viewWillAppear: saveFavoriteButton: \(saveFavoriteButton != nil)")
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -274,8 +262,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         // Extract the totalRegisteredLabel value, handling potential nil values
         let totalRegisteredText = totalRegisteredLabel.text ?? "0"
         let totalRegisteredValue = Double(totalRegisteredText) ?? 0
-        
-        //print("Debug - Saving totalRegisteredValue: \(totalRegisteredValue)")
 
         for rowView in foodItemRows {
             if let foodItemRow = rowView.foodItemRow {
@@ -285,7 +271,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 // Only update totalRegisteredValue if it's greater than the existing value
                 if totalRegisteredValue > foodItemRow.totalRegisteredValue {
                     foodItemRow.totalRegisteredValue = totalRegisteredValue
-                    //print("Debug - Updating existing row with totalRegisteredValue: \(totalRegisteredValue)")
                 }
             } else {
                 let foodItemRow = FoodItemRow(context: context)
@@ -294,13 +279,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
                 foodItemRow.totalRegisteredValue = totalRegisteredValue
                 rowView.foodItemRow = foodItemRow
-                //print("Debug - Creating new row with totalRegisteredValue: \(totalRegisteredValue)")
             }
         }
 
         do {
             try context.save()
-            //print("Debug - Successfully saved to Core Data with totalRegisteredValue: \(totalRegisteredValue)")
         } catch {
             print("Debug - Failed to save FoodItemRows: \(error)")
         }
@@ -312,7 +295,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
 
         do {
             let savedFoodItems = try context.fetch(fetchRequest)
-            //print("Debug - Fetched \(savedFoodItems.count) FoodItemRows from Core Data")
             
             // Clear current food item rows to avoid duplicates
             clearAllFoodItems()
@@ -320,8 +302,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             var lastTotalRegisteredValue: Double?
 
             for (index, savedFoodItem) in savedFoodItems.enumerated() {
-                //print("Debug - Processing savedFoodItem \(index + 1)")
-                //print("Debug - savedFoodItem.totalRegisteredValue: \(savedFoodItem.totalRegisteredValue)")
                 
                 if let foodItemID = savedFoodItem.foodItemID,
                    let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
@@ -349,7 +329,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
                         }
                         
                         rowView.calculateNutrients()
-                        //print("Debug - Added row for foodItem: \(foodItem.name ?? "Unknown")")
                     }
                 }
 
@@ -360,7 +339,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             // Update the totalRegisteredLabel with the last saved value
             if let lastValue = lastTotalRegisteredValue {
                 totalRegisteredLabel.text = formatNumber(lastValue)
-                //print("Debug - Updated totalRegisteredLabel with value: \(lastValue)")
                 saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
             } else {
                 print("Debug - No lastTotalRegisteredValue found")
@@ -397,8 +375,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             // Add any necessary setup for the button
             print("Debug - Initialized saveFavoriteButton")
         }
-        
-        // Initialize any other necessary UI elements
     }
 
     private func formatNumberWithoutTrailingZero(_ number: Double) -> String {
@@ -843,9 +819,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     private func setupSummaryView(in container: UIView) {
         let colors: [CGColor] = [
-            /*UIColor.systemGray.withAlphaComponent(0.4).cgColor,
-            UIColor.systemGray.withAlphaComponent(0.4).cgColor,
-            UIColor.systemGray.withAlphaComponent(0.4).cgColor*/
             UIColor.clear.cgColor,
             UIColor.clear.cgColor,
             UIColor.clear.cgColor
@@ -967,9 +940,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
     
     private func setupTreatmentView(in container: UIView) {
         let colors: [CGColor] = [
-            /*UIColor.systemGray.withAlphaComponent(0.4).cgColor,
-            UIColor.systemGray.withAlphaComponent(0.4).cgColor,
-            UIColor.systemGray.withAlphaComponent(0.4).cgColor*/
             UIColor.clear.cgColor,
             UIColor.clear.cgColor,
             UIColor.clear.cgColor
@@ -1438,14 +1408,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         return containerView
     }
     
-    /*private func updateBorderColor() {
-        let borderColor = UIColor.label.cgColor // Update border color based on the current theme
-        remainsContainer?.layer.borderColor = borderColor
-        startAmountContainer?.layer.borderColor = borderColor
-        registeredContainer?.layer.borderColor = borderColor
-        // Add any other container views that need the border color updated
-    }*/
-    
     private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
         let label = UILabel()
         label.text = text
@@ -1895,10 +1857,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             }
         }
     }
-    /*
-     func didAddFoodItem() {
-     fetchFoodItems()
-     }*/
     
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
@@ -1976,10 +1934,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
             ])
             //updateBorderColor() // Ensure border color is set correctly initially
         }
-        
-        /*func updateBorderColor() {
-            addButton.layer.borderColor = UIColor.label.cgColor
-        }*/
     }
 }
     
