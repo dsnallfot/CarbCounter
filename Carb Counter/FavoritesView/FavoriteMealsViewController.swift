@@ -14,7 +14,26 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         super.viewDidLoad()
         title = "Välj en favoritmåltid"
         
-        view.backgroundColor = .systemBackground
+        // Create the gradient view
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+            
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
         
         // Set the back button title for the next view controller
         let backButton = UIBarButtonItem()
@@ -50,8 +69,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         searchBar.delegate = self
         searchBar.placeholder = "Sök favoritmåltid"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.barTintColor = .systemBackground
-        searchBar.backgroundColor = .systemBackground
+        searchBar.barTintColor = .clear//.systemBackground
+        searchBar.backgroundColor = .clear//.systemBackground
+        searchBar.backgroundImage = UIImage() // Make background clear
         view.addSubview(searchBar)
         
         NSLayoutConstraint.activate([
@@ -66,7 +86,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = .systemBackground
+        tableView.backgroundColor = .clear//.systemBackground
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
         
@@ -82,14 +102,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         if #available(iOS 13.0, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .systemBackground
+            appearance.backgroundColor = .clear//.systemBackground
             appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
             appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
             
             navigationController?.navigationBar.standardAppearance = appearance
             navigationController?.navigationBar.scrollEdgeAppearance = appearance
         } else {
-            navigationController?.navigationBar.barTintColor = .systemBackground
+            navigationController?.navigationBar.barTintColor = .clear//.systemBackground
             navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
         }
     }
@@ -115,6 +135,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        cell.backgroundColor = .clear // Set cell background to clear
         cell.textLabel?.numberOfLines = 2
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.detailTextLabel?.numberOfLines = 2

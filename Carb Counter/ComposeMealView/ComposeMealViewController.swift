@@ -70,9 +70,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         
         // Create the gradient view
             let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.1).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
                 UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.1).cgColor
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
             ]
             let gradientView = GradientView(colors: colors)
             gradientView.translatesAutoresizingMaskIntoConstraints = false
@@ -430,7 +430,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         }
         let isEnabled = !foodItemRows.isEmpty
         saveFavoriteButton.isEnabled = isEnabled
-        saveFavoriteButton.tintColor = isEnabled ? .systemBlue : .gray // Update appearance based on state
+        saveFavoriteButton.tintColor = isEnabled ? .label : .gray // Update appearance based on state
     }
     
     @objc private func registeredContainerTapped() {
@@ -1806,7 +1806,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, /*Ad
         let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
         let cancelButton = UIButton(type: .system)
         cancelButton.setImage(symbolImage, for: .normal)
-        cancelButton.tintColor = .systemBlue // Change color if needed
+        cancelButton.tintColor = .label // Change color if needed
         cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24) // Adjust size if needed
         cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
         let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)

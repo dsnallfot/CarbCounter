@@ -41,7 +41,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
                 let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
                 let cancelButton = UIButton(type: .system)
                 cancelButton.setImage(symbolImage, for: .normal)
-                cancelButton.tintColor = .systemBlue // Change color if needed
+                cancelButton.tintColor = .label // Change color if needed
                 cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24) // Adjust size if needed
                 cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
                 let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
@@ -69,7 +69,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         segmentedControl.backgroundColor = .systemBackground // Set background color
-        segmentedControl.tintColor = .systemBlue // Set tint color
+        segmentedControl.tintColor = .label // Set tint color
         return segmentedControl
     }()
 

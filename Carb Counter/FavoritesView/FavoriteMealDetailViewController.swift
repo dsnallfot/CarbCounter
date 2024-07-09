@@ -18,7 +18,26 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         super.viewDidLoad()
         title = "Ändra favoritmåltid"
         
-        view.backgroundColor = .systemBackground
+        // Create the gradient view
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+            
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
         
         setupView()
         setupNavigationBar()
@@ -36,6 +55,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         nameTextField.translatesAutoresizingMaskIntoConstraints = false
         nameTextField.autocorrectionType = .no
         nameTextField.spellCheckingType = .yes
+        nameTextField.backgroundColor = .systemGray6
         addDoneButtonOnKeyboard()
         view.addSubview(nameTextField)
         
@@ -44,7 +64,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.backgroundColor = .systemBackground
+        tableView.backgroundColor = .clear//.systemBackground
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -63,14 +83,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         if #available(iOS 13.0, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .systemBackground
+            appearance.backgroundColor = .clear//.systemBackground
             appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
             appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
             
             navigationController?.navigationBar.standardAppearance = appearance
             navigationController?.navigationBar.scrollEdgeAppearance = appearance
         } else {
-            navigationController?.navigationBar.barTintColor = .systemBackground
+            navigationController?.navigationBar.barTintColor = .clear//.systemBackground
             navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
         }
         
@@ -114,6 +134,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as UITableViewCell
         cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        cell.backgroundColor = .clear // Set cell background to clear
         
         let items = getItems()
         let item = items[indexPath.row]

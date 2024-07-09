@@ -14,9 +14,9 @@ class HomeViewController: UIViewController {
         
         // Create the gradient view
         let colors: [CGColor] = [
-            UIColor.systemPurple.withAlphaComponent(0.1).cgColor,
-            UIColor.systemPurple.withAlphaComponent(0.25).cgColor,
-            UIColor.systemPurple.withAlphaComponent(0.1).cgColor
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
         ]
         let gradientView = GradientView(colors: colors)
         gradientView.translatesAutoresizingMaskIntoConstraints = false

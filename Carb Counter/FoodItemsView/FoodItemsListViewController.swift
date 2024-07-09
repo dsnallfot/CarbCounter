@@ -50,9 +50,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Create the gradient view
             let colors: [CGColor] = [
-                UIColor.systemCyan.withAlphaComponent(0.15).cgColor,
-                UIColor.systemCyan.withAlphaComponent(0.25).cgColor,
-                UIColor.systemCyan.withAlphaComponent(0.15).cgColor
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
             ]
             let gradientView = GradientView(colors: colors)
             gradientView.translatesAutoresizingMaskIntoConstraints = false
@@ -254,7 +254,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
             let cancelButton = UIButton(type: .system)
             cancelButton.setImage(symbolImage, for: .normal)
-            cancelButton.tintColor = .systemBlue
+            cancelButton.tintColor = .label
             cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
             cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
             let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
