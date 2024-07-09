@@ -1130,7 +1130,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         self.startDoseGiven = true
         updateTotalNutrients()
         clearAllButton.isEnabled = true
-        let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"
+        let caregiverName = UserDefaultsRepository.caregiverName
+        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getCombinedEmojis() // Check if foodItemRows is empty and set emojis accordingly
+        let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
+        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        /*let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"*/
+        
+        let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=\(combinedString)"
+        
+        
         
         if let url = URL(string: urlString) {
             if UIApplication.shared.canOpenURL(url) {
@@ -1295,7 +1304,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         self.remainingDoseGiven = true
         updateTotalNutrients()
         clearAllButton.isEnabled = true
-        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_(khValue)bolus_(bolusValue)fat_(fatValue)protein_(proteinValue)"
+        let caregiverName = UserDefaultsRepository.caregiverName
+        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+        let emojis: String
+        if self.startDoseGiven == true {
+                emojis = "🍽️"
+            } else {
+                emojis = "\(self.getCombinedEmojis())🍽️"
+            }
+        let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
+        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        /*let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_\(khValue)bolus_\(bolusValue)fat_\(fatValue)protein_\(proteinValue)"*/
+        
+        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(combinedString)"
+        
         if let url = URL(string: urlString) {
             if UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
