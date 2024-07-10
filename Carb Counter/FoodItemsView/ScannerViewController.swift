@@ -6,55 +6,73 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     var captureSession: AVCaptureSession!
     var previewLayer: AVCaptureVideoPreviewLayer!
     var isProcessingBarcode = false
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
+        title = "Scanna streckkod"  // Add this line to set the title
+
         view.backgroundColor = UIColor.black
         captureSession = AVCaptureSession()
-        
+
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
         let videoInput: AVCaptureDeviceInput
-        
+
         do {
             videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
         } catch {
             return
         }
-        
+
         if (captureSession.canAddInput(videoInput)) {
             captureSession.addInput(videoInput)
         } else {
             failed()
             return
         }
-        
+
         let metadataOutput = AVCaptureMetadataOutput()
-        
+
         if (captureSession.canAddOutput(metadataOutput)) {
             captureSession.addOutput(metadataOutput)
-            
+
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-            metadataOutput.metadataObjectTypes = [.ean8, .ean13, .pdf417]
+            metadataOutput.metadataObjectTypes = [.ean8, .ean13, .pdf417, .upce]
+
+            // Calculate rectOfInterest
+            let overlayFrame = view.frame
+            let rectWidth = overlayFrame.width * 0.85
+            let rectHeight = rectWidth
+            let rectX = (overlayFrame.width - rectWidth) / 2
+            let rectY = (overlayFrame.height - rectHeight) / 2
+
+            // Convert overlay frame to a normalized rect for rectOfInterest
+            let overlayRect = CGRect(x: rectX / overlayFrame.width, y: rectY / overlayFrame.height, width: rectWidth / overlayFrame.width, height: rectHeight / overlayFrame.height)
+            metadataOutput.rectOfInterest = overlayRect
         } else {
             failed()
             return
         }
-        
+
         previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         previewLayer.frame = view.layer.bounds
         previewLayer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(previewLayer)
-        
+
         DispatchQueue.global(qos: .background).async {
             self.captureSession.startRunning()
         }
-        
+
+        // Add overlay view
+        let overlayView = ScannerOverlayView(frame: view.frame)
+        overlayView.backgroundColor = UIColor.clear
+        view.addSubview(overlayView)
+
         // Add cancel button to the navigation bar
         let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
         navigationItem.rightBarButtonItem = cancelButton
     }
-    
+
     func resetBarcodeProcessingState() {
         DispatchQueue.global(qos: .background).async {
             self.isProcessingBarcode = false
@@ -63,7 +81,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             }
         }
     }
-    
+
     @objc private func cancelButtonTapped() {
         if let navigationController = navigationController {
             navigationController.popViewController(animated: true)
@@ -71,44 +89,44 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             dismiss(animated: true, completion: nil)
         }
     }
-    
+
     func failed() {
         let ac = UIAlertController(title: "Scanning stöds ej", message: "Din enhet stödjer inte scanning av streckkoder. Vänligen använd en enhet med kamera.", preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default))
         present(ac, animated: true)
         captureSession = nil
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         DispatchQueue.global(qos: .background).async {
             if (self.captureSession?.isRunning == false) {
                 self.captureSession.startRunning()
             }
         }
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
+
         DispatchQueue.global(qos: .background).async {
             if (self.captureSession?.isRunning == true) {
                 self.captureSession.stopRunning()
             }
         }
     }
-    
+
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if isProcessingBarcode {
             return
         }
-        
+
         isProcessingBarcode = true
         DispatchQueue.global(qos: .background).async {
             self.captureSession.stopRunning()
         }
-        
+
         if let metadataObject = metadataObjects.first {
             guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else {
                 isProcessingBarcode = false
@@ -122,43 +140,43 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             found(code: stringValue)
         }
     }
-    
+
     func found(code: String) {
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
-        
+
         // Ensure the code is padded to 14 digits with leading zeros
         let paddedCode = code.padLeft(toLength: 14, withPad: "0")
-        
+
         let dabasURLString = "https://api.dabas.com/DABASService/V2/article/gtin/\(paddedCode)/JSON?apikey=\(dabasAPISecret)"
-        
+
         // Print the URL to ensure it's correct
         print("Dabas URL: \(dabasURLString)")
-        
+
         guard let dabasURL = URL(string: dabasURLString) else {
             showErrorAlert(message: "Invalid Dabas URL")
             isProcessingBarcode = false
             return
         }
-        
+
         let dabasTask = URLSession.shared.dataTask(with: dabasURL) { data, response, error in
             if let error = error {
                 print("Dabas API fel: \(error.localizedDescription)")
                 self.fetchFromOpenFoodFacts(code: code)
                 return
             }
-            
+
             guard let data = data else {
                 print("Dabas API fel: Ingen data ")
                 self.fetchFromOpenFoodFacts(code: code)
                 return
             }
-            
+
             do {
                 // Attempt to decode JSON response
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     // Print the entire JSON response
                     print("Dabas API Response: \(jsonResponse)")
-                    
+
                     // Extract product name and nutritional information
                     guard let artikelbenamning = jsonResponse["Artikelbenamning"] as? String,
                           let naringsinfoArray = jsonResponse["Naringsinfo"] as? [[String: Any]],
@@ -168,12 +186,12 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         self.fetchFromOpenFoodFacts(code: code)
                         return
                     }
-                    
+
                     // Initialize nutritional values
                     var carbohydrates = 0.0
                     var fat = 0.0
                     var proteins = 0.0
-                    
+
                     // Extract nutritional values
                     for nutrient in naringsvarden {
                         if let code = nutrient["Kod"] as? String, let amount = nutrient["Mangd"] as? Double {
@@ -189,16 +207,16 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                             }
                         }
                     }
-                    
+
                     // Construct message to display
                     let message = """
                     Kolhydrater: \(carbohydrates) g / 100 g
                     Fett: \(fat) g / 100 g
                     Protein: \(proteins) g / 100 g
-                    
+
                     [Källa: Dabas]
                     """
-                    
+
                     // Display product alert on the main thread
                     DispatchQueue.main.async {
                         self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
@@ -213,10 +231,10 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 self.fetchFromOpenFoodFacts(code: code)
             }
         }
-        
+
         dabasTask.resume()
     }
-    
+
     func fetchFromOpenFoodFacts(code: String) {
         let urlString = "https://world.openfoodfacts.net/api/v2/product/\(code)?fields=product_name,nutriments"
         guard let url = URL(string: urlString) else {
@@ -224,46 +242,44 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             isProcessingBarcode = false
             return
         }
-        
+
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             defer {
                 DispatchQueue.main.async {
                     self.isProcessingBarcode = false
                 }
             }
-            
+
             if let error = error {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Fel: \(error.localizedDescription)")
                 }
                 return
             }
-            
+
             guard let data = data else {
                 DispatchQueue.main.async {
                     self.showErrorAlert(message: "Ingen data levererades")
-                }
-                return
-            }
-            
+                                        }
+                                        return
+                                        }
             do {
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     if let product = jsonResponse["product"] as? [String: Any],
                        let productName = product["product_name"] as? String,
                        let nutriments = product["nutriments"] as? [String: Any] {
-                        
+
                         let carbohydrates = nutriments["carbohydrates_100g"] as? Double ?? 0.0
                         let fat = nutriments["fat_100g"] as? Double ?? 0.0
                         let proteins = nutriments["proteins_100g"] as? Double ?? 0.0
-                        
                         let message = """
                         Kolhydrater: \(carbohydrates) g / 100 g
                         Fett: \(fat) g / 100 g
                         Protein: \(proteins) g / 100 g
-                        
+
                         [Källa: Openfoodfacts]
                         """
-                        
+
                         DispatchQueue.main.async {
                             self.showProductAlert(title: productName, message: message, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                         }
@@ -286,15 +302,15 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         }
         task.resume()
     }
-    
+
     func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
-        
+
         do {
             let existingItems = try context.fetch(fetchRequest)
-            
+
             if let existingItem = existingItems.first {
                 let comparisonMessage = """
             Befintlig data    ->    Ny data
@@ -302,7 +318,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
             Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
             """
-                
+
                 let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
                 duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
@@ -332,7 +348,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
         }
     }
-    
+
     func formattedValue(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0
@@ -340,7 +356,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
-    
+
     func showExistingFoodItem(_ foodItem: FoodItem) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -358,7 +374,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         }))
         present(alert, animated: true, completion: nil)
     }
-    
+
     func navigateToAddFoodItem(foodItem: FoodItem) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -367,7 +383,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-    
+
     func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -376,7 +392,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-    
+
     func navigateToAddFoodItemWithUpdate(existingItem: FoodItem, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -387,11 +403,11 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }
-    
+
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
+
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
@@ -399,13 +415,94 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
 // Extension to pad the string to the left
 extension String {
-    func padLeft(toLength: Int, withPad: String) -> String {
-        let newLength = self.count
-        if newLength < toLength {
-            let pad = String(repeating: withPad, count: toLength - newLength)
-            return pad + self
-        } else {
-            return String(self.suffix(toLength))
-        }
+func padLeft(toLength: Int, withPad: String) -> String {
+let newLength = self.count
+if newLength < toLength {
+let pad = String(repeating: withPad, count: toLength - newLength)
+return pad + self
+} else {
+return String(self.suffix(toLength))
+}
+}
+}
+
+class ScannerOverlayView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupGradientBackground()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupGradientBackground()
+    }
+    
+    private func setupGradientBackground() {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        gradientLayer.locations = [0.0, 0.5, 1.0]
+        gradientLayer.frame = self.bounds
+        gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 1.0, y: 1.0)
+        self.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
+    override func draw(_ rect: CGRect) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        
+        // Calculate the width and height as a percentage of the screen width
+        let rectWidth = rect.width * 0.85 // 85% of screen width
+        let rectHeight = rectWidth // Make it a square
+        let rectX = (rect.width - rectWidth) / 2
+        let rectY = (rect.height - rectHeight) / 2
+        let cornerRadius: CGFloat = 30
+        
+        let rectPath = UIBezierPath(roundedRect: CGRect(x: rectX, y: rectY, width: rectWidth, height: rectHeight), cornerRadius: cornerRadius)
+        context.setFillColor(UIColor.systemBackground.withAlphaComponent(0.8).cgColor)
+        context.fill(bounds)
+        
+        context.setBlendMode(.clear)
+        context.addPath(rectPath.cgPath)
+        context.fillPath()
+        
+        // Draw focus corners inside the rectangle
+        context.setBlendMode(.normal)
+        context.setStrokeColor(UIColor.white.cgColor)
+        context.setLineWidth(4.0)
+        
+        let cornerLength: CGFloat = rectWidth * 0.20 // 20% of the rectangle width
+        let inset: CGFloat = 25 // Distance inside the rectangle
+        let cornerPath = UIBezierPath()
+        
+        // Top-left corner
+        cornerPath.move(to: CGPoint(x: rectX + inset, y: rectY + inset + cornerLength))
+        cornerPath.addLine(to: CGPoint(x: rectX + inset, y: rectY + inset + cornerRadius))
+        cornerPath.addArc(withCenter: CGPoint(x: rectX + inset + cornerRadius, y: rectY + inset + cornerRadius), radius: cornerRadius, startAngle: CGFloat.pi, endAngle: 3 * CGFloat.pi / 2, clockwise: true)
+        cornerPath.addLine(to: CGPoint(x: rectX + inset + cornerLength, y: rectY + inset))
+        
+        // Top-right corner
+        cornerPath.move(to: CGPoint(x: rectX + rectWidth - inset - cornerLength, y: rectY + inset))
+        cornerPath.addLine(to: CGPoint(x: rectX + rectWidth - inset - cornerRadius, y: rectY + inset))
+        cornerPath.addArc(withCenter: CGPoint(x: rectX + rectWidth - inset - cornerRadius, y: rectY + inset + cornerRadius), radius: cornerRadius, startAngle: 3 * CGFloat.pi / 2, endAngle: 0, clockwise: true)
+        cornerPath.addLine(to: CGPoint(x: rectX + rectWidth - inset, y: rectY + inset + cornerLength))
+        
+        // Bottom-right corner
+        cornerPath.move(to: CGPoint(x: rectX + rectWidth - inset, y: rectY + rectHeight - inset - cornerLength))
+        cornerPath.addLine(to: CGPoint(x: rectX + rectWidth - inset, y: rectY + rectHeight - inset - cornerRadius))
+        cornerPath.addArc(withCenter: CGPoint(x: rectX + rectWidth - inset - cornerRadius, y: rectY + rectHeight - inset - cornerRadius), radius: cornerRadius, startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: true)
+        cornerPath.addLine(to: CGPoint(x: rectX + rectWidth - inset - cornerLength, y: rectY + rectHeight - inset))
+        
+        // Bottom-left corner
+        cornerPath.move(to: CGPoint(x: rectX + inset + cornerLength, y: rectY + rectHeight - inset))
+        cornerPath.addLine(to: CGPoint(x: rectX + inset + cornerRadius, y: rectY + rectHeight - inset))
+        cornerPath.addArc(withCenter: CGPoint(x: rectX + inset + cornerRadius, y: rectY + rectHeight - inset - cornerRadius), radius: cornerRadius, startAngle: CGFloat.pi / 2, endAngle: CGFloat.pi, clockwise: true)
+        cornerPath.addLine(to: CGPoint(x: rectX + inset, y: rectY + rectHeight - inset - cornerLength))
+        
+        context.addPath(cornerPath.cgPath)
+        context.strokePath()
     }
 }
