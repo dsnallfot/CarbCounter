@@ -66,6 +66,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var remainingDoseGiven: Bool = false
     var favoriteOrHistoryMealEmojis: String?
     var dataSharingVC: DataSharingViewController?
+
+///Meal monitoring
+    var exportTimer: Timer?
+        var isEditingMeal = false {
+            didSet {
+                if isEditingMeal {
+                    startAutoSaveToCSV()
+                } else {
+                    stopAutoSaveToCSV()
+                }
+            }
+        }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -232,6 +244,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
         fetchFoodItems()
+        
+        checkIfEditing()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -485,6 +500,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
+        isEditingMeal = false
+        print("Clear button tapped and isEditingMeal set to false")
     }
     
   
@@ -816,6 +833,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
 
 /// Core data functions
+
+    func startAutoSaveToCSV() {
+            exportTimer?.invalidate()
+            exportTimer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
+            print("Auto-save to CSV started with a 30-second interval.")
+        }
+
+        func stopAutoSaveToCSV() {
+            exportTimer?.invalidate()
+            exportTimer = nil
+            print("Auto-save to CSV stopped.")
+        }
+
+        @objc func exportToCSV() {
+            DataSharingViewController().exportOngoingMealToCSV()
+        }
     
     private func loadFoodItemsFromCoreData() {
         let context = CoreDataStack.shared.context
@@ -1095,7 +1128,34 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Failed to delete FoodItemRow: \(error)")
             }
         }
+        checkIfEditing()
     }
+    
+    func startEditing() {
+            isEditingMeal = true
+            print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
+            startAutoSaveToCSV()
+        }
+
+        func stopEditing() {
+            print("Stop editing triggered. Checking if still editing...")
+            checkIfEditing()
+        }
+    
+    private func checkIfEditing() {
+            let context = CoreDataStack.shared.context
+            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+            do {
+                let foodItemRows = try context.fetch(fetchRequest)
+                isEditingMeal = !foodItemRows.isEmpty
+                print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
+                if !isEditingMeal {
+                    stopAutoSaveToCSV()
+                }
+            } catch {
+                print("Failed to fetch food item rows: \(error)")
+            }
+        }
 
     
     

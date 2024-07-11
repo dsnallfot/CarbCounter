@@ -234,43 +234,4 @@ class OngoingMealViewController: UIViewController {
         spacingView.heightAnchor.constraint(equalToConstant: 20).isActive = true
         stackView.addArrangedSubview(spacingView)
     }
-    
-    private func startAutoSaveToCSV() {
-        Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(saveToCSV), userInfo: nil, repeats: true)
-    }
-    
-    @objc private func saveToCSV() {
-        var csvText = "Name,Portion Served,Not Eaten,Net Carbs\n"
-        for row in foodItemRows {
-            if let foodItem = foodItems[row.foodItemID ?? UUID()] {
-                let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                let newRow = "\(foodItem.name ?? ""),\(row.portionServed),\(row.notEaten),\(netCarbs)\n"
-                csvText.append(newRow)
-            }
-        }
-        csvText.append("Registrerade kolhydrater,\(foodItemRows.reduce(0) { $0 + $1.totalRegisteredValue })\n")
-        
-        let fileName = "OngoingMeal.csv"
-        let path = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-        
-        do {
-            try csvText.write(to: path, atomically: true, encoding: .utf8)
-            print("CSV file saved at \(path)")
-            uploadFileToICloud(fileURL: path)
-        } catch {
-            print("Failed to save CSV: \(error)")
-        }
-    }
-    
-    private func uploadFileToICloud(fileURL: URL) {
-        let iCloudDirectory = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents")
-        let destinationURL = iCloudDirectory?.appendingPathComponent(fileURL.lastPathComponent)
-        
-        do {
-            try FileManager.default.setUbiquitous(true, itemAt: fileURL, destinationURL: destinationURL!)
-            print("File uploaded to iCloud: \(destinationURL!)")
-        } catch {
-            print("Failed to upload file to iCloud: \(error)")
-        }
-    }
 }

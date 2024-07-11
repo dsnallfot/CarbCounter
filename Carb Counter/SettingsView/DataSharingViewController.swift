@@ -535,3 +535,26 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
         controller.dismiss(animated: true, completion: nil)
     }
 }
+
+extension DataSharingViewController {
+    
+    func exportOngoingMealToCSV() {
+        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+        exportToCSV(fetchRequest: fetchRequest, fileName: "OngoingMeal.csv", createCSV: createOngoingMealCSV(from:))
+    }
+    
+    private func createOngoingMealCSV(from foodItemRows: [FoodItemRow]) -> String {
+        var csvString = "foodItemID;portionServed;notEaten;totalRegisteredValue\n"
+        
+        for row in foodItemRows {
+            let foodItemID = row.foodItemID?.uuidString ?? ""
+            let portionServed = row.portionServed
+            let notEaten = row.notEaten
+            let totalRegisteredValue = row.totalRegisteredValue
+            
+            csvString += "\(foodItemID);\(portionServed);\(notEaten);\(totalRegisteredValue)\n"
+        }
+        
+        return csvString
+    }
+}
