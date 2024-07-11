@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 class DataSharingViewController: UIViewController {
     
     private var lastImportTime: Date?
+    private var viewHasAppeared = false
+    private var pendingImportEntityName: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,26 +25,26 @@ class DataSharingViewController: UIViewController {
     }
     
     private func setupToggleForOngoingMealSharing() {
-            let toggleSwitch = UISwitch()
-            toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
-            toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
-            
-            let toggleLabel = UILabel()
-            toggleLabel.text = "Tillåt delning av pågående måltid"
-            toggleLabel.translatesAutoresizingMaskIntoConstraints = false
-            
-            let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
-            stackView.axis = .horizontal
-            stackView.spacing = 16
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            
-            view.addSubview(stackView)
-            
-            NSLayoutConstraint.activate([
-                stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16)
-            ])
-        }
+        let toggleSwitch = UISwitch()
+        toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
+        toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
+        
+        let toggleLabel = UILabel()
+        toggleLabel.text = "Tillåt delning av pågående måltid"
+        toggleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
+        stackView.axis = .horizontal
+        stackView.spacing = 16
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16)
+        ])
+    }
         
         @objc private func toggleOngoingMealSharing(_ sender: UISwitch) {
             UserDefaultsRepository.allowSharingOngoingMeals = sender.isOn
@@ -131,28 +133,38 @@ class DataSharingViewController: UIViewController {
 
 ///Ongoing meal import
     @objc public func importOngoingMealCSV() {
-            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
-            documentPicker.delegate = self
-            documentPicker.accessibilityHint = "Ongoing Meal"
-            present(documentPicker, animated: true, completion: nil)
+        let fileManager = FileManager.default
+        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
+            print("Import Failed: iCloud Drive URL is nil.")
+            return
         }
-    
+
+        do {
+            let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
+            let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
+            let importedRows = parseOngoingMealCSV(rows)
+            NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
+            print("Import Successful: OngoingMeal.csv has been imported")
+        } catch {
+            print("Failed to read CSV file: \(error)")
+        }
+    }
     ///Exporting
     @objc public func exportFoodItemsToCSV() {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "FoodItems.csv", createCSV: createCSV(from:))
     }
-    
+
     @objc public func exportFavoriteMealsToCSV() {
         let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "FavoriteMeals.csv", createCSV: createCSV(from:))
     }
-    
+
     @objc public func exportCarbRatioScheduleToCSV() {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "CarbRatioSchedule.csv", createCSV: createCSV(from:))
     }
-    
+
     @objc public func exportStartDoseScheduleToCSV() {
         let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "StartDoseSchedule.csv", createCSV: createCSV(from:))
@@ -309,13 +321,21 @@ class DataSharingViewController: UIViewController {
     
 ///Importing and parsing
     @objc public func importCSV(for entityName: String) {
-        DispatchQueue.main.async {
-            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
-            documentPicker.delegate = self
-            documentPicker.accessibilityHint = entityName
-            self.present(documentPicker, animated: true, completion: nil)
+            if viewHasAppeared {
+                presentDocumentPicker(for: entityName)
+            } else {
+                pendingImportEntityName = entityName
+            }
         }
-    }
+        
+        private func presentDocumentPicker(for entityName: String) {
+            DispatchQueue.main.async {
+                let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
+                documentPicker.delegate = self
+                documentPicker.accessibilityHint = entityName
+                self.present(documentPicker, animated: true, completion: nil)
+            }
+        }
     
     public func parseCSV(at url: URL, for entityName: String) {
         do {
@@ -336,7 +356,7 @@ class DataSharingViewController: UIViewController {
             case "Meal History":
                 parseMealHistoryCSV(rows, context: context)
             case "Ongoing Meal":
-                let importedRows = parseOngoingMealCSV(rows) // Parse and get the imported rows
+                let importedRows = parseOngoingMealCSV(rows)
                 NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
             default:
                 print("Unknown entity name: \(entityName)")
@@ -556,6 +576,31 @@ class DataSharingViewController: UIViewController {
         }
     }
     
+    private func parseOngoingMealCSV(_ rows: [String]) -> [FoodItemRow] {
+        var foodItemRows = [FoodItemRow]()
+        let context = CoreDataStack.shared.context
+        
+        let columns = rows[0].components(separatedBy: ";")
+        guard columns.count == 4 else {
+            print("Import Failed: CSV file was not correctly formatted")
+            return []
+        }
+        
+        for row in rows[1...] {
+            let values = row.components(separatedBy: ";")
+            if values.count == 4 {
+                let foodItemRow = FoodItemRow(context: context)
+                foodItemRow.foodItemID = UUID(uuidString: values[0])
+                foodItemRow.portionServed = Double(values[1]) ?? 0.0
+                foodItemRow.notEaten = Double(values[2]) ?? 0.0
+                foodItemRow.totalRegisteredValue = Double(values[3]) ?? 0.0
+                foodItemRows.append(foodItemRow)
+            }
+        }
+        
+        return foodItemRows
+    }
+    
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
@@ -571,27 +616,26 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
         url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         if let entityName = controller.accessibilityHint {
-            if entityName == "Ongoing Meal" {
-                let csvData = try? String(contentsOf: url, encoding: .utf8)
-                let rows = csvData?.components(separatedBy: "\n").filter { !$0.isEmpty } ?? []
-                let importedRows = parseOngoingMealCSV(rows)
-                NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
-            } else {
-                parseCSV(at: url, for: entityName)
-            }
+            parseCSV(at: url, for: entityName)
         }
     }
-    
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
     }
 }
 
 extension DataSharingViewController {
-    
     func exportOngoingMealToCSV() {
-        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-        exportToCSV(fetchRequest: fetchRequest, fileName: "OngoingMeal.csv", createCSV: createOngoingMealCSV(from:))
+        let ongoingMealVC = OngoingMealViewController()
+        ongoingMealVC.loadFoodItemRows()
+        let foodItemRows = ongoingMealVC.foodItemRows
+        exportToCSV(rows: foodItemRows, fileName: "OngoingMeal.csv", createCSV: createOngoingMealCSV(from:))
+    }
+
+    private func exportToCSV(rows: [FoodItemRow], fileName: String, createCSV: ([FoodItemRow]) -> String) {
+        let csvData = createCSV(rows)
+        saveCSV(data: csvData, fileName: fileName)
+        print("\(fileName) export done")
     }
 
     private func createOngoingMealCSV(from foodItemRows: [FoodItemRow]) -> String {
@@ -608,31 +652,8 @@ extension DataSharingViewController {
         
         return csvString
     }
-
-    private func parseOngoingMealCSV(_ rows: [String]) -> [FoodItemRow] {
-        var foodItemRows: [FoodItemRow] = []
-        let context = CoreDataStack.shared.context
-        
-        let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 4 else {
-            print("Import Failed: CSV file was not correctly formatted")
-            return foodItemRows
-        }
-        
-        for row in rows[1...] {
-            let values = row.components(separatedBy: ";")
-            if values.count == 4 {
-                let foodItemRow = FoodItemRow(context: context)
-                foodItemRow.foodItemID = UUID(uuidString: values[0])
-                foodItemRow.portionServed = Double(values[1]) ?? 0.0
-                foodItemRow.notEaten = Double(values[2]) ?? 0.0
-                foodItemRow.totalRegisteredValue = Double(values[3]) ?? 0.0
-                foodItemRows.append(foodItemRow)
-            }
-        }
-        return foodItemRows
-    }
 }
+
 
 // Extend Notification.Name
 extension Notification.Name {

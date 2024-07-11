@@ -6,6 +6,7 @@ class OngoingMealViewController: UIViewController {
     var foodItemRows: [FoodItemRow] = []
     var foodItems: [UUID: FoodItem] = [:] // Dictionary to store FoodItems by their ID
     private var importTimer: Timer?
+    private var originalAllowSharingOngoingMeals: Bool?
     
     let stackView: UIStackView = {
         let stackView = UIStackView()
@@ -24,33 +25,41 @@ class OngoingMealViewController: UIViewController {
         
         // Observe for imported ongoing meal data
         NotificationCenter.default.addObserver(self, selector: #selector(didImportOngoingMeal(_:)), name: .didImportOngoingMeal, object: nil)
-        }
+    }
     
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            startImportTimer()
-        }
-
-        override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            stopImportTimer()
-        }
-        
-        private func startImportTimer() {
-            stopImportTimer() // Stop any existing timer
-            importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
-        }
-        
-        private func stopImportTimer() {
-            importTimer?.invalidate()
-            importTimer = nil
-        }
-
-        @objc private func importOngoingMealCSV() {
-            // Call the import method from DataSharingViewController
-            let dataSharingVC = DataSharingViewController()
-            dataSharingVC.importOngoingMealCSV()
-        }
+        super.viewWillAppear(animated)
+        // Save the original state and set it to false
+            originalAllowSharingOngoingMeals = UserDefaultsRepository.allowSharingOngoingMeals
+            if UserDefaultsRepository.allowSharingOngoingMeals {
+                UserDefaultsRepository.allowSharingOngoingMeals = false
+            }
+        startImportTimer()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Restore the original state
+            if let originalState = originalAllowSharingOngoingMeals {
+                UserDefaultsRepository.allowSharingOngoingMeals = originalState
+            }
+        stopImportTimer()
+    }
+    
+    private func startImportTimer() {
+        stopImportTimer() // Stop any existing timer
+        importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
+    }
+    
+    private func stopImportTimer() {
+        importTimer?.invalidate()
+        importTimer = nil
+    }
+    @objc private func importOngoingMealCSV() {
+        // Automatically import ongoing meal CSV
+        let dataSharingVC = DataSharingViewController()
+        dataSharingVC.importOngoingMealCSV()
+    }
     
     private func setupView() {
         let containerView = UIView()
@@ -80,26 +89,51 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func loadFoodItems() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-        do {
-            let items = try context.fetch(fetchRequest)
-            for item in items {
-                if let id = item.id {
-                    foodItems[id] = item
+            let context = CoreDataStack.shared.context
+            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+            do {
+                let items = try context.fetch(fetchRequest)
+                for item in items {
+                    if let id = item.id {
+                        foodItems[id] = item
+                    }
                 }
+            } catch {
+                print("Failed to fetch food items: \(error)")
             }
-        } catch {
-            print("Failed to fetch food items: \(error)")
         }
-    }
     
-    private func loadFoodItemRows() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-        do {
-            foodItemRows = try context.fetch(fetchRequest)
-            addTotalRegisteredCarbsRow() // Add this line to add the registered carbs row at the top
+    public func loadFoodItemRows() {
+            let context = CoreDataStack.shared.context
+            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+            do {
+                foodItemRows = try context.fetch(fetchRequest)
+                addTotalRegisteredCarbsRow() // Add this line to add the registered carbs row at the top
+                addTotalCarbsRow()
+                addSpacingView()
+                addHeaderRow()
+                for row in foodItemRows {
+                    if let foodItem = foodItems[row.foodItemID ?? UUID()] {
+                        let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
+                        let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
+                        stackView.addArrangedSubview(rowView)
+                    }
+                }
+            } catch {
+                print("Failed to fetch food item rows: \(error)")
+            }
+        }
+        
+        @objc private func didImportOngoingMeal(_ notification: Notification) {
+            if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRow] {
+                foodItemRows = importedRows
+                reloadStackView()
+            }
+        }
+    
+    private func reloadStackView() {
+            stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            addTotalRegisteredCarbsRow()
             addTotalCarbsRow()
             addSpacingView()
             addHeaderRow()
@@ -110,31 +144,7 @@ class OngoingMealViewController: UIViewController {
                     stackView.addArrangedSubview(rowView)
                 }
             }
-        } catch {
-            print("Failed to fetch food item rows: \(error)")
         }
-    }
-    @objc private func didImportOngoingMeal(_ notification: Notification) {
-        if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRow] {
-            foodItemRows = importedRows
-            reloadStackView()
-        }
-    }
-    
-    private func reloadStackView() {
-        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        addTotalRegisteredCarbsRow()
-        addTotalCarbsRow()
-        addSpacingView()
-        addHeaderRow()
-        for row in foodItemRows {
-            if let foodItem = foodItems[row.foodItemID ?? UUID()] {
-                let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
-                stackView.addArrangedSubview(rowView)
-            }
-        }
-    }
     
     private func calculateNetCarbs(for foodItem: FoodItem, portionServed: Double, notEaten: Double) -> Double {
         let carbohydrates = foodItem.carbohydrates
@@ -170,7 +180,7 @@ class OngoingMealViewController: UIViewController {
         notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let carbsLabel = UILabel()
-        carbsLabel.text = String(format: "%.0f", netCarbs)
+        carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
         carbsLabel.textColor = .label
         carbsLabel.textAlignment = .right
         carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
@@ -240,10 +250,11 @@ class OngoingMealViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Registrerade kolhydrater:"
         titleLabel.textColor = .label
-        titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
+        //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
-        totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue)
+        totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue) + " g"
         totalCarbsLabel.textColor = .label
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
@@ -251,7 +262,6 @@ class OngoingMealViewController: UIViewController {
         rowView.addArrangedSubview(totalCarbsLabel)
         stackView.addArrangedSubview(rowView)
     }
-    
     
     private func addTotalCarbsRow() {
         let totalCarbs = foodItemRows.reduce(0) { total, row in
@@ -268,12 +278,13 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "Kolhydrater totalt:"
+        titleLabel.text = "Total mångd kh i måltiden:"
         titleLabel.textColor = .label
-        titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
+        //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
-        totalCarbsLabel.text = String(format: "%.0f", totalCarbs)
+        totalCarbsLabel.text = String(format: "%.0f", totalCarbs) + " g"
         totalCarbsLabel.textColor = .label
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
