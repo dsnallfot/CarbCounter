@@ -135,7 +135,7 @@ class HomeViewController: UIViewController {
         navigationItem.rightBarButtonItem = settingsButton
         
         // Add eye icon to the top left corner
-        let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye.circle"), style: .plain, target: self, action: #selector(showOngoingMeal))
+        let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
         navigationItem.leftBarButtonItem = eyeButton
     }
     
