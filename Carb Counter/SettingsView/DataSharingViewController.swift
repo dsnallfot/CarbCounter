@@ -56,10 +56,7 @@ class DataSharingViewController: UIViewController {
     
     ///Manual and automatic importing
     @objc public func importAllCSVFiles() {
-        // Run the import process on a background thread with low priority
-        DispatchQueue.global(qos: .background).async {
             self.performImportAllCSVFiles()
-        }
     }
     
     private func performImportAllCSVFiles() {
@@ -89,19 +86,14 @@ class DataSharingViewController: UIViewController {
                 "StartDoseSchedule.csv": "Start Dose Schedule"
             ]
             
-            let dispatchGroup = DispatchGroup()
             
             for (fileName, entityName) in entityFileMapping {
                 if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
-                    dispatchGroup.enter()
                     parseCSV(at: fileURL, for: entityName)
-                    dispatchGroup.leave()
+
                 }
             }
-            
-            dispatchGroup.notify(queue: .main) {
                 print("Data import done!")
-            }
             
         } catch {
             print("Failed to list directory: \(error)")
@@ -135,23 +127,16 @@ class DataSharingViewController: UIViewController {
     }
     
     public func exportToCSV<T: NSFetchRequestResult>(fetchRequest: NSFetchRequest<T>, fileName: String, createCSV: @escaping ([T]) -> String) {
-        DispatchQueue.global(qos: .background).async {
             let context = CoreDataStack.shared.context
             
             do {
                 let entities = try context.fetch(fetchRequest)
                 let csvData = createCSV(entities)
-                
-                DispatchQueue.main.async {
                     self.saveCSV(data: csvData, fileName: fileName)
                     print("\(fileName) export done")
-                }
             } catch {
-                DispatchQueue.main.async {
                     print("Failed to fetch data: \(error)")
-                }
             }
-        }
     }
     
     ///Creating csv files

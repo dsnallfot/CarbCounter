@@ -118,7 +118,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func fetchFavoriteMeals() {
-        DispatchQueue.global(qos: .background).async {
             let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
             
             do {
@@ -133,7 +132,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
                     print("Failed to fetch favorite meals: \(error)")
                 }
             }
-        }
     }
     
     // MARK: - UITableViewDataSource

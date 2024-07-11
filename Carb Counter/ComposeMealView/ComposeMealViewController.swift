@@ -876,7 +876,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     public func fetchFoodItems() {
-        DispatchQueue.global(qos: .background).async {
             let context = CoreDataStack.shared.context
             let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
             do {
@@ -891,7 +890,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     print("Failed to fetch food items: \(error)")
                 }
             }
-        }
     }
     
     private func updatePlaceholderValuesForCurrentHour() {

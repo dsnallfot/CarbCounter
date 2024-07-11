@@ -73,10 +73,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         tableView.register(ArticleTableViewCell.self, forCellReuseIdentifier: "ArticleCell")
         tableView.backgroundColor = .clear
-        // Fetch food items in the background
-            DispatchQueue.global(qos: .background).async {
-                self.fetchFoodItems()
-            }
+        self.fetchFoodItems()
         setupNavigationBarButtons()
         setupNavigationBarTitle()
         setupSegmentedControl()
@@ -125,10 +122,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Fetch food items in the background
-            DispatchQueue.global(qos: .background).async {
-                self.fetchFoodItems()
-            }
+        self.fetchFoodItems()
         updateClearButtonVisibility()
         
         // Ensure dataSharingVC is instantiated
