@@ -146,13 +146,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 ///Inital fetch
         self.fetchFoodItems()
 
-
-
-        // Add observer for text changes in totalRegisteredLabel
-        totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        
-        // Add target to totalRegisteredLabel to handle changes
-        totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelChanged), for: .editingChanged)
         
         // Set the delegate for the text field
         totalRegisteredLabel.delegate = self
@@ -207,6 +200,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         
+        totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelDidChange), for: .editingChanged)
+        
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
@@ -247,13 +242,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
-    
-    @objc private func totalRegisteredLabelChanged() {
-        saveToCoreData()
-    }
-    
 
-    // Add this new function to initialize UI elements
+///function to initialize UI elements
     private func initializeUIElements() {
         if totalRegisteredLabel == nil {
             totalRegisteredLabel = UITextField()
@@ -286,8 +276,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return searchableDropdownView?.combinedEmojis ?? "🍽️"
     }
     
-
-    
+    @objc private func totalRegisteredLabelDidChange(_ textField: UITextField) {
+        if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
+            textField.text = text.replacingOccurrences(of: ",", with: ".")
+        }
+        updateTotalNutrients()
+        updateHeadlineVisibility()
+        updateRemainsBolus()
+        updateClearAllButtonState()
+        if totalRegisteredLabel.text == "" {
+            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
+        } else {
+            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
+        }
+        saveToCoreData()
+    }
+        
     private func updateSaveFavoriteButtonState() {
         guard let saveFavoriteButton = saveFavoriteButton else {
             print("saveFavoriteButton is nil")
@@ -752,7 +756,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredContainer.isUserInteractionEnabled = true
         let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 9, weight: .bold, color: .white)
         totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .white)
-        totalRegisteredLabel.addTarget(self, action: #selector(registeredLabelDidChange), for: .editingChanged)
         
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
@@ -1560,18 +1563,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     private func roundDownToNearest05(_ value: Double) -> Double {
         return (value * 20.0).rounded(.down) / 20.0
-    }
-    
-    @objc private func registeredLabelDidChange() {
-        updateRemainsBolus()
-        updateClearAllButtonState()
-        if totalRegisteredLabel.text == "" {
-            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
-            //print ("saveMealToHistory = false")
-        } else {
-            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
-            //print ("saveMealToHistory = true")
-        }
     }
     
     private func updateRemainsBolus() {

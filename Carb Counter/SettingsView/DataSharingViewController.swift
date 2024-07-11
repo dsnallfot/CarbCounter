@@ -21,7 +21,7 @@ class DataSharingViewController: UIViewController {
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
     
-//Manual exporting and importing
+    //Manual exporting and importing
     @objc private func exportData() {
         let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
         
@@ -54,7 +54,7 @@ class DataSharingViewController: UIViewController {
         showAlert(title: "Export Successful", message: "All data has been exported successfully.")
     }
     
-///Manual and automatic importing
+    ///Manual and automatic importing
     @objc public func importAllCSVFiles() {
         // Run the import process on a background thread with low priority
         DispatchQueue.global(qos: .background).async {
@@ -64,8 +64,8 @@ class DataSharingViewController: UIViewController {
     
     private func performImportAllCSVFiles() {
         // Check if the function was called less than 10 seconds ago
-        if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 10 {
-            print("Import blocked to prevent running more often than every 10 seconds")
+        if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 15 {
+            print("Import blocked to prevent running more often than every 15 seconds")
             return
         }
         
@@ -107,8 +107,8 @@ class DataSharingViewController: UIViewController {
             print("Failed to list directory: \(error)")
         }
     }
-
-///Exporting
+    
+    ///Exporting
     @objc public func exportFoodItemsToCSV() {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "FoodItems.csv", createCSV: createCSV(from:))
@@ -154,7 +154,7 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-///Creating csv files
+    ///Creating csv files
     private func createCSV(from foodItems: [FoodItem]) -> String {
         var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
         
@@ -285,7 +285,7 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-///Importing and parsing
+    ///Importing and parsing
     @objc public func importCSV(for entityName: String) {
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
         documentPicker.delegate = self
@@ -485,48 +485,47 @@ class DataSharingViewController: UIViewController {
         }
         
         let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
-        let existingMealHistories = try? context.fetch(fetchRequest)
-        let existingIDs = Set(existingMealHistories?.compactMap { $0.id } ?? [])
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Use the same format for export and import
-        
-        for row in rows[1...] {
-            let values = row.components(separatedBy: ";")
-            if values.count == 6,
-               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
-                    let mealHistory = MealHistory(context: context)
-                    mealHistory.id = id
-                    mealHistory.mealDate = dateFormatter.date(from: values[1])
-                    mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
-                    mealHistory.totalNetFat = Double(values[3]) ?? 0.0
-                    mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
-                    
-                    let foodEntriesValues = values[5].components(separatedBy: "|")
-                    for foodEntryValue in foodEntriesValues {
-                        let foodEntryParts = foodEntryValue.components(separatedBy: ",")
-                        if foodEntryParts.count == 9 {
-                            let foodEntry = FoodItemEntry(context: context)
-                            foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
-                            foodEntry.entryName = foodEntryParts[1]
-                            foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
-                            foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
-                            foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
-                            foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
-                            foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
-                            foodEntry.entryPerPiece = foodEntryParts[7] == "1"
-                            foodEntry.entryEmoji = foodEntryParts[8]
-                            mealHistory.addToFoodEntries(foodEntry)
+        do {
+            let existingMealHistories = try context.fetch(fetchRequest)
+            let existingIDs = Set(existingMealHistories.compactMap { $0.id })
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Use the same format for export and import
+            
+            for row in rows[1...] {
+                let values = row.components(separatedBy: ";")
+                if values.count == 6, !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
+                    if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
+                        let mealHistory = MealHistory(context: context)
+                        mealHistory.id = id
+                        mealHistory.mealDate = dateFormatter.date(from: values[1])
+                        mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
+                        mealHistory.totalNetFat = Double(values[3]) ?? 0.0
+                        mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
+                        
+                        let foodEntriesValues = values[5].components(separatedBy: "|")
+                        for foodEntryValue in foodEntriesValues {
+                            let foodEntryParts = foodEntryValue.components(separatedBy: ",")
+                            if foodEntryParts.count == 9 {
+                                let foodEntry = FoodItemEntry(context: context)
+                                foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
+                                foodEntry.entryName = foodEntryParts[1]
+                                foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
+                                foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
+                                foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
+                                foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
+                                foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
+                                foodEntry.entryPerPiece = foodEntryParts[7] == "1"
+                                foodEntry.entryEmoji = foodEntryParts[8]
+                                mealHistory.addToFoodEntries(foodEntry)
+                            }
                         }
                     }
                 }
             }
-        }
-        do {
             try context.save()
         } catch {
-            print("Import Failed: Error saving data")
+            print("Import Failed: Error fetching or saving data: \(error)")
         }
     }
     
