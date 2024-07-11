@@ -1060,7 +1060,7 @@ class ArticleTableViewCell: UITableViewCell {
 
 // Extension to round Double to specified decimal places
 extension Double {
-    func roundToDecimal(_ fractionDigits: Int) -> Double {
+    public func roundToDecimal(_ fractionDigits: Int) -> Double {
         let multiplier = pow(10.0, Double(fractionDigits))
         return (self * multiplier).rounded() / multiplier
     }

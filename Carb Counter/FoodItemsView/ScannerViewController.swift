@@ -269,17 +269,23 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                        let productName = product["product_name"] as? String,
                        let nutriments = product["nutriments"] as? [String: Any] {
 
+                        // Extract nutritional values
                         let carbohydrates = nutriments["carbohydrates_100g"] as? Double ?? 0.0
                         let fat = nutriments["fat_100g"] as? Double ?? 0.0
                         let proteins = nutriments["proteins_100g"] as? Double ?? 0.0
+
+                        // Round nutritional values
+                        let adjustedCarbohydrates = carbohydrates.roundToDecimal(1)
+                        let adjustedFat = fat.roundToDecimal(1)
+                        let adjustedProteins = proteins.roundToDecimal(1)
+
                         let message = """
-                        Kolhydrater: \(carbohydrates) g / 100 g
-                        Fett: \(fat) g / 100 g
-                        Protein: \(proteins) g / 100 g
+                        Kolhydrater: \(adjustedCarbohydrates) g / 100 g
+                        Fett: \(adjustedFat) g / 100 g
+                        Protein: \(adjustedProteins) g / 100 g
 
                         [Källa: Openfoodfacts]
                         """
-
                         DispatchQueue.main.async {
                             self.showProductAlert(title: productName, message: message, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                         }
@@ -307,18 +313,46 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
-
+        
+        var isPerPiece: Bool = false // New flag
+        
         do {
             let existingItems = try context.fetch(fetchRequest)
-
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            alert.addTextField { textField in
+                textField.placeholder = "Ange vikt per styck i gram (valfritt)"
+                textField.keyboardType = .decimalPad
+            }
+            
+            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+                DispatchQueue.main.async {
+                    self.resetBarcodeProcessingState()
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
+                let adjustedProductName = productName
+                if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
+                    let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
+                    let adjustedFat = (fat * weight / 100).roundToDecimal(1)
+                    let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
+                    isPerPiece = true // Update the flag
+                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
+                } else {
+                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
+                }
+            }))
+            
             if let existingItem = existingItems.first {
                 let comparisonMessage = """
-            Befintlig data    ->    Ny data
-            Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
-            Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
-            Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
-            """
-
+                Befintlig data    ->    Ny data
+                Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
+                Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
+                Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
+                """
+                
                 let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
                 duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
@@ -333,15 +367,6 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 }))
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
-                    DispatchQueue.main.async {
-                        self.resetBarcodeProcessingState()
-                    }
-                }))
-                alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
-                    self.navigateToAddFoodItem(productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
-                }))
                 present(alert, animated: true, completion: nil)
             }
         } catch {
@@ -384,11 +409,12 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         }
     }
 
-    func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
+    func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool = false) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            addFoodItemVC.isPerPiece = isPerPiece // Pass the flag
             navigationController?.pushViewController(addFoodItemVC, animated: true)
         }
     }

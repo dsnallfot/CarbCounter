@@ -1,6 +1,9 @@
 import UIKit
 
 class HomeViewController: UIViewController {
+    
+    var dataSharingVC: DataSharingViewController?
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
@@ -45,6 +48,13 @@ class HomeViewController: UIViewController {
                         }
                     }
                 }
+        
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else { return }
+        
+        // Call the desired function
+        print("Data import triggered")
+        dataSharingVC.importAllCSVFiles()
             }
     
     private func setupUI() {
