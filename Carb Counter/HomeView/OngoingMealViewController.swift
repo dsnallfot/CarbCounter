@@ -48,7 +48,7 @@ class OngoingMealViewController: UIViewController {
     
     private func startImportTimer() {
         stopImportTimer() // Stop any existing timer
-        importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
+        importTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
     }
     
     private func stopImportTimer() {
@@ -278,14 +278,14 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "Total mångd kh i måltiden:"
-        titleLabel.textColor = .label
+        titleLabel.text = "Total mängd kolhydrater i måltiden:"
+        titleLabel.textColor = .systemOrange
         //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", totalCarbs) + " g"
-        totalCarbsLabel.textColor = .label
+        totalCarbsLabel.textColor = .systemOrange
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
         

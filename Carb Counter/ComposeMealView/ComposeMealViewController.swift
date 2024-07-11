@@ -837,8 +837,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     func startAutoSaveToCSV() {
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 exportTimer?.invalidate()
-                exportTimer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
-                print("Auto-save to CSV started with a 30-second interval.")
+                exportTimer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
+                print("Auto-save to CSV started with a 15-second interval.")
             }
         }
 
