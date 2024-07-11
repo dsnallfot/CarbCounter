@@ -40,6 +40,7 @@
 		65C75CFE2C25966200114BD3 /* CarbRatioViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */; };
 		65C75D002C25967C00114BD3 /* StartDoseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */; };
 		65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */; };
+		65D138A92C4017E400FAE6BF /* OngoingMealViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D138A82C4017E400FAE6BF /* OngoingMealViewController.swift */; };
 		65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -102,6 +103,7 @@
 		65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbRatioViewController.swift; sourceTree = "<group>"; };
 		65C75CFF2C25967C00114BD3 /* StartDoseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartDoseViewController.swift; sourceTree = "<group>"; };
 		65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHelper.swift; sourceTree = "<group>"; };
+		65D138A82C4017E400FAE6BF /* OngoingMealViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OngoingMealViewController.swift; sourceTree = "<group>"; };
 		65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NightscoutManager.swift; path = "Carb Counter/Controllers/NightscoutManager.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -200,6 +202,7 @@
 			isa = PBXGroup;
 			children = (
 				6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */,
+				65D138A82C4017E400FAE6BF /* OngoingMealViewController.swift */,
 			);
 			path = HomeView;
 			sourceTree = "<group>";
@@ -401,6 +404,7 @@
 				6502A99D2C29681E00414DC0 /* MealHistoryViewController.swift in Sources */,
 				65C75CFE2C25966200114BD3 /* CarbRatioViewController.swift in Sources */,
 				652891CB2C33FF2C008B8BCA /* ScannerViewController.swift in Sources */,
+				65D138A92C4017E400FAE6BF /* OngoingMealViewController.swift in Sources */,
 				6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */,
 				6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */,
 				653DE7A62C27930F00A639D1 /* RemoteSettingsViewController.swift in Sources */,

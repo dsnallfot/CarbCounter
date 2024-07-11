@@ -39,15 +39,15 @@ class HomeViewController: UIViewController {
         setupUI()
         
         // Get a reference to the ComposeMealViewController
-                if let tabBarController = self.tabBarController,
-                   let viewControllers = tabBarController.viewControllers {
-                    for viewController in viewControllers {
-                        if let navController = viewController as? UINavigationController,
-                           let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                                composeMealVC.fetchFoodItems()
-                        }
-                    }
+        if let tabBarController = self.tabBarController,
+           let viewControllers = tabBarController.viewControllers {
+            for viewController in viewControllers {
+                if let navController = viewController as? UINavigationController,
+                   let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+                        composeMealVC.fetchFoodItems()
                 }
+            }
+        }
         
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
@@ -55,7 +55,7 @@ class HomeViewController: UIViewController {
         // Call the desired function
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
-            }
+    }
     
     private func setupUI() {
         // Create and setup the title label
@@ -133,6 +133,17 @@ class HomeViewController: UIViewController {
         // Add cog wheel icon to the top right corner
         let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
         navigationItem.rightBarButtonItem = settingsButton
+        
+        // Add eye icon to the top left corner
+        let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
+        navigationItem.leftBarButtonItem = eyeButton
+    }
+    
+    @objc func showOngoingMeal() {
+        let ongoingMealVC = OngoingMealViewController()
+        let navController = UINavigationController(rootViewController: ongoingMealVC)
+        navController.modalPresentationStyle = .fullScreen
+        present(navController, animated: true, completion: nil)
     }
     
     @objc private func openSettings() {
