@@ -154,45 +154,106 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func createNonEditableRowView(for foodItem: FoodItem, portionServed: Double, notEaten: Double, netCarbs: Double) -> UIView {
-        let rowView = UIStackView()
-        rowView.axis = .horizontal
-        rowView.spacing = 8
-        rowView.translatesAutoresizingMaskIntoConstraints = false
-        
-        let nameLabel = UILabel()
-        nameLabel.text = foodItem.name
-        nameLabel.textColor = .label
-        nameLabel.textAlignment = .left
-        nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        
-        let portionLabel = UILabel()
-        portionLabel.text = String(format: "%.0f", portionServed)
-        portionLabel.textColor = .label
-        portionLabel.textAlignment = .right
-        portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        portionLabel.setContentHuggingPriority(.required, for: .horizontal)
-        
-        let notEatenLabel = UILabel()
-        notEatenLabel.text = String(format: "%.0f", notEaten)
-        notEatenLabel.textColor = .label
-        notEatenLabel.textAlignment = .right
-        notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
-        
-        let carbsLabel = UILabel()
-        carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
-        carbsLabel.textColor = .label
-        carbsLabel.textAlignment = .right
-        carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
-        
-        rowView.addArrangedSubview(nameLabel)
-        rowView.addArrangedSubview(portionLabel)
-        rowView.addArrangedSubview(notEatenLabel)
-        rowView.addArrangedSubview(carbsLabel)
-        
-        return rowView
-    }
+            let rowView = UIStackView()
+            rowView.axis = .horizontal
+            rowView.spacing = 8
+            rowView.translatesAutoresizingMaskIntoConstraints = false
+            
+            let nameLabel = UILabel()
+            nameLabel.text = foodItem.name
+            nameLabel.textColor = .label
+            nameLabel.textAlignment = .left
+            nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            nameLabel.isUserInteractionEnabled = true
+            nameLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped(_:))))
+            nameLabel.tag = foodItem.hashValue // Use the foodItem's hashValue to identify the label
+            
+            let portionLabel = UILabel()
+            portionLabel.text = String(format: "%.0f", portionServed)
+            portionLabel.textColor = .label
+            portionLabel.textAlignment = .right
+            portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+            portionLabel.setContentHuggingPriority(.required, for: .horizontal)
+            
+            let notEatenLabel = UILabel()
+            notEatenLabel.text = String(format: "%.0f", notEaten)
+            notEatenLabel.textColor = .label
+            notEatenLabel.textAlignment = .right
+            notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+            notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
+            
+            let carbsLabel = UILabel()
+            carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
+            carbsLabel.textColor = .label
+            carbsLabel.textAlignment = .right
+            carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+            carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
+            
+            rowView.addArrangedSubview(nameLabel)
+            rowView.addArrangedSubview(portionLabel)
+            rowView.addArrangedSubview(notEatenLabel)
+            rowView.addArrangedSubview(carbsLabel)
+            
+            return rowView
+        }
+    
+    @objc private func foodItemLabelTapped(_ sender: UITapGestureRecognizer) {
+            guard let label = sender.view as? UILabel,
+                  let selectedFoodItem = foodItems.values.first(where: { $0.hashValue == label.tag }) else { return }
+            
+            let title = 
+        "\(selectedFoodItem.emoji ?? "") \(selectedFoodItem.name ?? "")"
+        var message = ""
+        if let notes = selectedFoodItem.notes, !notes.isEmpty {
+                message += "\nNot: \(notes)\n"
+            }
+            
+            if selectedFoodItem.perPiece {
+                let carbsPP = selectedFoodItem.carbsPP
+                let fatPP = selectedFoodItem.fatPP
+                let proteinPP = selectedFoodItem.proteinPP
+                
+                if carbsPP > 0 {
+                    message += "\nKolhydrater: \(carbsPP) g / st "
+                }
+                if fatPP > 0 {
+                    message += "\nFett: \(fatPP) g / st "
+                }
+                if proteinPP > 0 {
+                    message += "\nProtein: \(proteinPP) g / st "
+                }
+            } else {
+                let carbohydrates = selectedFoodItem.carbohydrates
+                let fat = selectedFoodItem.fat
+                let protein = selectedFoodItem.protein
+                
+                if carbohydrates > 0 {
+                    message += "\nKolhydrater: \(carbohydrates) g / 100 g "
+                }
+                if fat > 0 {
+                    message += "\nFett: \(fat) g / 100 g "
+                }
+                if protein > 0 {
+                    message += "\nProtein: \(protein) g / 100 g "
+                }
+            }
+            
+            if message.isEmpty {
+                message = "Ingen näringsinformation tillgänglig."
+            } else {
+                // Remove the last newline character
+                message = String(message.dropLast())
+                
+                // Regex replacement for ".0"
+                let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
+                message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
+            }
+            
+            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertController.addAction(okAction)
+            self.present(alertController, animated: true, completion: nil)
+        }
     
     private func addHeaderRow() {
         let rowView = UIStackView()
@@ -201,34 +262,34 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let nameLabel = UILabel()
-        nameLabel.text = "Livsmedel"
+        nameLabel.text = "LIVSMEDEL"
         nameLabel.textColor = .gray
         nameLabel.textAlignment = .left
-        nameLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        nameLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let portionLabel = UILabel()
-        portionLabel.text = "Serv."
+        portionLabel.text = "PORTION"
         portionLabel.textColor = .gray
         portionLabel.textAlignment = .right
-        portionLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        portionLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        portionLabel.widthAnchor.constraint(equalToConstant: 55).isActive = true
         portionLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "Ej ätit"
+        notEatenLabel.text = "LÄMNAT"
         notEatenLabel.textColor = .gray
         notEatenLabel.textAlignment = .right
-        notEatenLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        notEatenLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        notEatenLabel.widthAnchor.constraint(equalToConstant: 55).isActive = true
         notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let carbsLabel = UILabel()
-        carbsLabel.text = "Kh"
+        carbsLabel.text = "KH"
         carbsLabel.textColor = .gray
         carbsLabel.textAlignment = .right
-        carbsLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        carbsLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        carbsLabel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         rowView.addArrangedSubview(nameLabel)
@@ -248,14 +309,16 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "Registrerade kolhydrater:"
+        titleLabel.text = "REGISTRERADE KOLHYDRATER:"
         titleLabel.textColor = .label
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue) + " g"
         totalCarbsLabel.textColor = .label
+        totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
         rowView.addArrangedSubview(titleLabel)
@@ -278,14 +341,16 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "Total mängd kolhydrater i måltiden:"
+        titleLabel.text = "TOT KOLHYDRATER I MÅLTIDEN:"
         titleLabel.textColor = .systemOrange
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", totalCarbs) + " g"
         totalCarbsLabel.textColor = .systemOrange
+        totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
         
