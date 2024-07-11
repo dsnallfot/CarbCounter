@@ -5,6 +5,7 @@ class OngoingMealViewController: UIViewController {
     
     var foodItemRows: [FoodItemRow] = []
     var foodItems: [UUID: FoodItem] = [:] // Dictionary to store FoodItems by their ID
+    private var importTimer: Timer?
     
     let stackView: UIStackView = {
         let stackView = UIStackView()
@@ -20,7 +21,36 @@ class OngoingMealViewController: UIViewController {
         setupView()
         loadFoodItems()
         loadFoodItemRows()
-    }
+        
+        // Observe for imported ongoing meal data
+        NotificationCenter.default.addObserver(self, selector: #selector(didImportOngoingMeal(_:)), name: .didImportOngoingMeal, object: nil)
+        }
+    
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            startImportTimer()
+        }
+
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            stopImportTimer()
+        }
+        
+        private func startImportTimer() {
+            stopImportTimer() // Stop any existing timer
+            importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
+        }
+        
+        private func stopImportTimer() {
+            importTimer?.invalidate()
+            importTimer = nil
+        }
+
+        @objc private func importOngoingMealCSV() {
+            // Call the import method from DataSharingViewController
+            let dataSharingVC = DataSharingViewController()
+            dataSharingVC.importOngoingMealCSV()
+        }
     
     private func setupView() {
         let containerView = UIView()
@@ -82,6 +112,27 @@ class OngoingMealViewController: UIViewController {
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
+        }
+    }
+    @objc private func didImportOngoingMeal(_ notification: Notification) {
+        if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRow] {
+            foodItemRows = importedRows
+            reloadStackView()
+        }
+    }
+    
+    private func reloadStackView() {
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        addTotalRegisteredCarbsRow()
+        addTotalCarbsRow()
+        addSpacingView()
+        addHeaderRow()
+        for row in foodItemRows {
+            if let foodItem = foodItems[row.foodItemID ?? UUID()] {
+                let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
+                let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
+                stackView.addArrangedSubview(rowView)
+            }
         }
     }
     

@@ -127,6 +127,14 @@ class DataSharingViewController: UIViewController {
             print("Failed to list directory: \(error)")
         }
     }
+
+///Ongoing meal import
+    @objc public func importOngoingMealCSV() {
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
+            documentPicker.delegate = self
+            documentPicker.accessibilityHint = "Ongoing Meal"
+            present(documentPicker, animated: true, completion: nil)
+        }
     
     ///Exporting
     @objc public func exportFoodItemsToCSV() {
@@ -298,7 +306,7 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-    ///Importing and parsing
+///Importing and parsing
     @objc public func importCSV(for entityName: String) {
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
         documentPicker.delegate = self
@@ -324,6 +332,9 @@ class DataSharingViewController: UIViewController {
                 parseStartDoseScheduleCSV(rows, context: context)
             case "Meal History":
                 parseMealHistoryCSV(rows, context: context)
+            case "Ongoing Meal":
+                let importedRows = parseOngoingMealCSV(rows) // Parse and get the imported rows
+                NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
             default:
                 print("Unknown entity name: \(entityName)")
                 return
@@ -550,15 +561,24 @@ class DataSharingViewController: UIViewController {
     }
 }
 
+// Document Picker Delegate Methods
 extension DataSharingViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         if let entityName = controller.accessibilityHint {
-            parseCSV(at: url, for: entityName)
+            if entityName == "Ongoing Meal" {
+                let csvData = try? String(contentsOf: url, encoding: .utf8)
+                let rows = csvData?.components(separatedBy: "\n").filter { !$0.isEmpty } ?? []
+                let importedRows = parseOngoingMealCSV(rows)
+                NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
+            } else {
+                parseCSV(at: url, for: entityName)
+            }
         }
     }
+    
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
     }
@@ -570,7 +590,7 @@ extension DataSharingViewController {
         let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "OngoingMeal.csv", createCSV: createOngoingMealCSV(from:))
     }
-    
+
     private func createOngoingMealCSV(from foodItemRows: [FoodItemRow]) -> String {
         var csvString = "foodItemID;portionServed;notEaten;totalRegisteredValue\n"
         
@@ -585,4 +605,33 @@ extension DataSharingViewController {
         
         return csvString
     }
+
+    private func parseOngoingMealCSV(_ rows: [String]) -> [FoodItemRow] {
+        var foodItemRows: [FoodItemRow] = []
+        let context = CoreDataStack.shared.context
+        
+        let columns = rows[0].components(separatedBy: ";")
+        guard columns.count == 4 else {
+            print("Import Failed: CSV file was not correctly formatted")
+            return foodItemRows
+        }
+        
+        for row in rows[1...] {
+            let values = row.components(separatedBy: ";")
+            if values.count == 4 {
+                let foodItemRow = FoodItemRow(context: context)
+                foodItemRow.foodItemID = UUID(uuidString: values[0])
+                foodItemRow.portionServed = Double(values[1]) ?? 0.0
+                foodItemRow.notEaten = Double(values[2]) ?? 0.0
+                foodItemRow.totalRegisteredValue = Double(values[3]) ?? 0.0
+                foodItemRows.append(foodItemRow)
+            }
+        }
+        return foodItemRows
+    }
+}
+
+// Extend Notification.Name
+extension Notification.Name {
+    static let didImportOngoingMeal = Notification.Name("didImportOngoingMeal")
 }
