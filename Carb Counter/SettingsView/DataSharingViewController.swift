@@ -21,6 +21,7 @@ class DataSharingViewController: UIViewController {
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
     
+//Manual exporting and importing
     @objc private func exportData() {
         let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
         
@@ -53,6 +54,7 @@ class DataSharingViewController: UIViewController {
         showAlert(title: "Export Successful", message: "All data has been exported successfully.")
     }
     
+///Manual and automatic importing
     @objc public func importAllCSVFiles() {
         // Run the import process on a background thread with low priority
         DispatchQueue.global(qos: .background).async {
@@ -105,7 +107,8 @@ class DataSharingViewController: UIViewController {
             print("Failed to list directory: \(error)")
         }
     }
-    
+
+///Exporting
     @objc public func exportFoodItemsToCSV() {
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         exportToCSV(fetchRequest: fetchRequest, fileName: "FoodItems.csv", createCSV: createCSV(from:))
@@ -151,6 +154,7 @@ class DataSharingViewController: UIViewController {
         }
     }
     
+///Creating csv files
     private func createCSV(from foodItems: [FoodItem]) -> String {
         var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
         
@@ -281,6 +285,7 @@ class DataSharingViewController: UIViewController {
         }
     }
     
+///Importing and parsing
     @objc public func importCSV(for entityName: String) {
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
         documentPicker.delegate = self

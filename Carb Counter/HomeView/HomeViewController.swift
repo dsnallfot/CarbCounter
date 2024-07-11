@@ -41,10 +41,7 @@ class HomeViewController: UIViewController {
                     for viewController in viewControllers {
                         if let navController = viewController as? UINavigationController,
                            let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                            // Call the fetchFoodItems function in the background
-                            DispatchQueue.global(qos: .background).async {
                                 composeMealVC.fetchFoodItems()
-                            }
                         }
                     }
                 }

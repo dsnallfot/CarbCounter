@@ -13,62 +13,64 @@ import QuartzCore
 
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable {
-    
+
+///Views
     var foodItemRows: [FoodItemRowView] = []
+    var searchableDropdownView: SearchableDropdownView!
+    var searchableDropdownBottomConstraint: NSLayoutConstraint!
     var stackView: UIStackView!
     var scrollView: UIScrollView!
     var contentView: UIView!
-    var foodItems: [FoodItem] = []
     var addButtonRowView: AddButtonRowView!
-    var totalNetCarbsLabel: UILabel!
-    var totalNetFatLabel: UILabel!
-    var totalNetProteinLabel: UILabel!
-    var searchableDropdownView: SearchableDropdownView!
-    
-    var nowCRLabel: UILabel!
-    var totalBolusAmountLabel: UILabel!
-    var totalStartAmountLabel: UILabel!
-    var totalRegisteredLabel: UITextField!
-    var totalRemainsLabel: UILabel!
-    var totalStartBolusLabel: UILabel!
-    var totalRemainsBolusLabel: UILabel!
-    var remainsLabel: UILabel!
-    var crLabel: UILabel!
-    var remainsContainer: UIView!
-    var startAmountContainer: UIView!
-    var registeredContainer: UIView!
-    
-    var scheduledStartDose = Double(20)
-    var scheduledCarbRatio = Double(25)
-    
-    var foodItemLabel: UILabel!
-    var portionServedLabel: UILabel!
-    var notEatenLabel: UILabel!
-    var netCarbsLabel: UILabel!
-    
+   
+///Buttons
     var clearAllButton: UIBarButtonItem!
     var saveFavoriteButton: UIButton!
     var addFromSearchableDropdownButton: UIBarButtonItem!
     
-    var searchableDropdownBottomConstraint: NSLayoutConstraint!
+///Summary labels
+    var totalBolusAmountLabel: UILabel!
+    var totalNetCarbsLabel: UILabel!
+    var totalNetFatLabel: UILabel!
+    var totalNetProteinLabel: UILabel!
+
+///Treatment labels
+    var crLabel: UILabel!
+    var nowCRLabel: UILabel!
+    var startAmountContainer: UIView!
+    var totalStartAmountLabel: UILabel!
+    var totalStartBolusLabel: UILabel!
+    var remainsContainer: UIView!
+    var remainsLabel: UILabel!
+    var totalRemainsLabel: UILabel!
+    var totalRemainsBolusLabel: UILabel!
+    var registeredContainer: UIView!
+    var totalRegisteredLabel: UITextField!
     
+///Meal food item rows  labels
+    var foodItemLabel: UILabel!
+    var portionServedLabel: UILabel!
+    var notEatenLabel: UILabel!
+    var netCarbsLabel: UILabel!
+
+///Data and states
+    var foodItems: [FoodItem] = []
+    var scheduledStartDose = Double(20)
+    var scheduledCarbRatio = Double(25)
     var allowShortcuts: Bool = false
     var saveMealToHistory: Bool = false
     var zeroBolus: Bool = false
     var lateBreakfast: Bool = false
     var lateBreakfastFactor = Double(1.5)
-    
-    var dataSharingVC: DataSharingViewController?
-    
     var startDoseGiven: Bool = false
     var remainingDoseGiven: Bool = false
-    
     var favoriteOrHistoryMealEmojis: String?
+    var dataSharingVC: DataSharingViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Create the gradient view
+///Create the gradient view
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
                 UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
@@ -91,7 +93,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         title = "Måltid"
         
-        // Setup the fixed header containing summary and headline
+///Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fixedHeaderContainer)
@@ -103,11 +105,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
         ])
         
-        // Reset lateBreakfast to false
+///Reset lateBreakfast to false
         UserDefaults.standard.set(false, forKey: "lateBreakfast")
         lateBreakfast = false
         
-        // Ensure addButtonRowView is initialized
+/// Ensure addButtonRowView is initialized
         addButtonRowView = AddButtonRowView()
         
         updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
@@ -123,37 +125,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         updateScheduledValuesUI() // Update labels
         
-        // Setup summary view
+///Setup Views
         setupSummaryView(in: fixedHeaderContainer)
-        
-        // Setup treatment view
         setupTreatmentView(in: fixedHeaderContainer)
-        
-        // Setup headline
         setupHeadline(in: fixedHeaderContainer)
-        
-        // Setup scroll view
         setupScrollView(below: fixedHeaderContainer)
         
-        // Initialize "Clear All" button
+/// Initializing
         clearAllButton = UIBarButtonItem(title: "Rensa måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
-        // Initialize "Add from SearchableDropdown" button
         addFromSearchableDropdownButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
         
-        // Ensure searchableDropdownView is properly initialized
         setupSearchableDropdownView()
-        
-        // Fetch food items and add the add button row
-        DispatchQueue.global(qos: .background).async {
-            self.fetchFoodItems()
-        }
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
         
+///Inital fetch
+        self.fetchFoodItems()
+
+
+
         // Add observer for text changes in totalRegisteredLabel
         totalRegisteredLabel.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
@@ -258,105 +252,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveToCoreData()
     }
     
-    func saveToCoreData() {
-        let context = CoreDataStack.shared.context
-
-        // Extract the totalRegisteredLabel value, handling potential nil values
-        let totalRegisteredText = totalRegisteredLabel.text ?? "0"
-        let totalRegisteredValue = Double(totalRegisteredText) ?? 0
-
-        for rowView in foodItemRows {
-            if let foodItemRow = rowView.foodItemRow {
-                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
-                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
-                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                // Only update totalRegisteredValue if it's greater than the existing value
-                if totalRegisteredValue > foodItemRow.totalRegisteredValue {
-                    foodItemRow.totalRegisteredValue = totalRegisteredValue
-                }
-            } else {
-                let foodItemRow = FoodItemRow(context: context)
-                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
-                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
-                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                foodItemRow.totalRegisteredValue = totalRegisteredValue
-                rowView.foodItemRow = foodItemRow
-            }
-        }
-
-        do {
-            try context.save()
-        } catch {
-            print("Debug - Failed to save FoodItemRows: \(error)")
-        }
-    }
-
-    private func loadFoodItemsFromCoreData() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-
-        do {
-            let savedFoodItems = try context.fetch(fetchRequest)
-            
-            // Clear current food item rows to avoid duplicates
-            clearAllFoodItems()
-            
-            var lastTotalRegisteredValue: Double?
-
-            for (index, savedFoodItem) in savedFoodItems.enumerated() {
-                
-                if let foodItemID = savedFoodItem.foodItemID,
-                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
-                    
-                    if !foodItemRows.contains(where: { $0.foodItemRow?.foodItemID == foodItemID }) {
-                        let rowView = FoodItemRowView()
-                        rowView.foodItems = foodItems
-                        rowView.delegate = self
-                        rowView.translatesAutoresizingMaskIntoConstraints = false
-                        rowView.foodItemRow = savedFoodItem
-                        
-                        rowView.setSelectedFoodItem(foodItem)
-                        rowView.portionServedTextField.text = formatNumber(savedFoodItem.portionServed)
-                        rowView.notEatenTextField.text = formatNumber(savedFoodItem.notEaten)
-                        
-                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
-                        foodItemRows.append(rowView)
-                        
-                        rowView.onDelete = { [weak self] in
-                            self?.removeFoodItemRow(rowView)
-                        }
-                        
-                        rowView.onValueChange = { [weak self] in
-                            self?.updateTotalNutrients()
-                        }
-                        
-                        rowView.calculateNutrients()
-                    }
-                }
-
-                // Keep track of the last total registered value
-                lastTotalRegisteredValue = max(lastTotalRegisteredValue ?? 0, savedFoodItem.totalRegisteredValue)
-            }
-            
-            // Update the totalRegisteredLabel with the last saved value
-            if let lastValue = lastTotalRegisteredValue {
-                totalRegisteredLabel.text = formatNumber(lastValue)
-                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
-            } else {
-                print("Debug - No lastTotalRegisteredValue found")
-            }
-            
-            // Ensure UI elements are initialized
-            initializeUIElements()
-            
-            updateTotalNutrients()
-            updateClearAllButtonState()
-            updateSaveFavoriteButtonState()
-            updateHeadlineVisibility()
-        } catch {
-            print("Debug - Failed to fetch FoodItemRows: \(error)")
-        }
-    }
 
     // Add this new function to initialize UI elements
     private func initializeUIElements() {
@@ -391,15 +286,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return searchableDropdownView?.combinedEmojis ?? "🍽️"
     }
     
-    private func updatePlaceholderValuesForCurrentHour() {
-        let currentHour = Calendar.current.component(.hour, from: Date())
-        if let carbRatio = CoreDataHelper.shared.fetchCarbRatio(for: currentHour) {
-            scheduledCarbRatio = carbRatio
-        }
-        if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
-            scheduledStartDose = startDose
-        }
-    }
+
     
     private func updateSaveFavoriteButtonState() {
         guard let saveFavoriteButton = saveFavoriteButton else {
@@ -415,78 +302,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRegisteredLabel.becomeFirstResponder()
     }
     
-    @objc private func saveFavoriteMeals() {
-        guard !foodItemRows.isEmpty else {
-            let alert = UIAlertController(title: "Inga livsmedel", message: "Välj minst ett livsmedel för att spara en favorit.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
-            return
-        }
-        
-        let nameAlert = UIAlertController(title: "Spara som favoritmåltid", message: "Ange ett namn på måltiden:", preferredStyle: .alert)
-        nameAlert.addTextField { textField in
-            textField.placeholder = "Namn"
-            textField.autocorrectionType = .no
-            textField.spellCheckingType = .no
-            textField.autocapitalizationType = .sentences
-            textField.textContentType = .none
-            
-            if #available(iOS 11.0, *) {
-                textField.inputAssistantItem.leadingBarButtonGroups = []
-                textField.inputAssistantItem.trailingBarButtonGroups = []
-            }
-        }
-        
-        let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            let mealName = nameAlert.textFields?.first?.text ?? "Min favoritmåltid"
-            
-            let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
-            favoriteMeals.name = mealName
-            favoriteMeals.id = UUID()
-            
-            var items: [[String: Any]] = []
-            for row in self.foodItemRows {
-                if let foodItem = row.selectedFoodItem {
-                    let item: [String: Any] = [
-                        "name": foodItem.name ?? "",
-                        "portionServed": row.portionServedTextField.text ?? "",
-                        "perPiece": foodItem.perPiece
-                    ]
-                    items.append(item)
-                }
-            }
-            
-            // Serialize the items array to JSON
-            do {
-                let jsonData = try JSONSerialization.data(withJSONObject: items, options: [])
-                let jsonString = String(data: jsonData, encoding: .utf8)
-                favoriteMeals.items = jsonString as? NSObject
-            } catch {
-                print("Failed to serialize items to JSON: \(error)")
-            }
-            
-            CoreDataStack.shared.saveContext()
 
-            // Ensure dataSharingVC is instantiated
-            guard let dataSharingVC = self.dataSharingVC else { return }
-
-            // Call the desired function
-            dataSharingVC.exportFavoriteMealsToCSV()
-            print("Favorite meals export triggered")
-            
-            let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
-            confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.present(confirmAlert, animated: true)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-        
-        nameAlert.addAction(saveAction)
-        nameAlert.addAction(cancelAction)
-        
-        present(nameAlert, animated: true)
-    }
     
     @objc private func showMealHistory() {
         let mealHistoryVC = MealHistoryViewController()
@@ -658,85 +474,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         present(alertController, animated: true, completion: nil)
     }
     
-    private func clearAllFoodItemRowsFromCoreData() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItemRow.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        
-        do {
-            try context.execute(deleteRequest)
-            try context.save()
-        } catch {
-            print("Failed to delete FoodItemRows: \(error)")
-        }
-    }
+  
     
-    func deleteFoodItemRow(_ rowView: FoodItemRowView) {
-        let context = CoreDataStack.shared.context
-        if let foodItemRow = rowView.foodItemRow {
-            context.delete(foodItemRow)
-            
-            do {
-                try context.save()
-                removeFoodItemRow(rowView)
-            } catch {
-                print("Failed to delete FoodItemRow: \(error)")
-            }
-        }
-    }
-    
-    private func saveMealHistory() {
-        let context = CoreDataStack.shared.context
-        
-        let mealHistory = MealHistory(context: context)
-        mealHistory.id = UUID() // Set the id attribute
-        mealHistory.mealDate = Date()
-        mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
-        mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
-        mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
-        
-        for row in foodItemRows {
-            if let foodItem = row.selectedFoodItem {
-                let foodEntry = FoodItemEntry(context: context)
-                foodEntry.entryId = UUID()
-                foodEntry.entryName = foodItem.name
-                foodEntry.entryCarbohydrates = foodItem.carbohydrates
-                foodEntry.entryFat = foodItem.fat
-                foodEntry.entryProtein = foodItem.protein
-                foodEntry.entryEmoji = foodItem.emoji
-                
-                // Replace commas with dots for EU decimal separators
-                let portionServedText = row.portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
-                let notEatenText = row.notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
-                
-                foodEntry.entryPortionServed = Double(portionServedText) ?? 0
-                foodEntry.entryNotEaten = Double(notEatenText) ?? 0
-                
-                foodEntry.entryCarbsPP = foodItem.carbsPP
-                foodEntry.entryFatPP = foodItem.fatPP
-                foodEntry.entryProteinPP = foodItem.proteinPP
-                foodEntry.entryPerPiece = foodItem.perPiece
-                mealHistory.addToFoodEntries(foodEntry)
-            }
-        }
-        
-        do {
-            try context.save()
-            print("MealHistory saved successfully!")
 
-        } catch {
-            print("Failed to save MealHistory: \(error)")
-        }
-        
-        // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
-
-                // Call the desired function
-                dataSharingVC.exportMealHistoryToCSV()
-        print("Meal history export triggered")
-        
-        saveMealToHistory = false // Reset the flag after saving
-    }
     
     private func clearAllFoodItems() {
         for row in foodItemRows {
@@ -1062,7 +802,295 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         return dateFormatter.string(from: Date())
     }
+
+/// Core data functions
     
+    private func loadFoodItemsFromCoreData() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+
+        do {
+            let savedFoodItems = try context.fetch(fetchRequest)
+            
+            // Clear current food item rows to avoid duplicates
+            clearAllFoodItems()
+            
+            var lastTotalRegisteredValue: Double?
+
+            for (index, savedFoodItem) in savedFoodItems.enumerated() {
+                
+                if let foodItemID = savedFoodItem.foodItemID,
+                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
+                    
+                    if !foodItemRows.contains(where: { $0.foodItemRow?.foodItemID == foodItemID }) {
+                        let rowView = FoodItemRowView()
+                        rowView.foodItems = foodItems
+                        rowView.delegate = self
+                        rowView.translatesAutoresizingMaskIntoConstraints = false
+                        rowView.foodItemRow = savedFoodItem
+                        
+                        rowView.setSelectedFoodItem(foodItem)
+                        rowView.portionServedTextField.text = formatNumber(savedFoodItem.portionServed)
+                        rowView.notEatenTextField.text = formatNumber(savedFoodItem.notEaten)
+                        
+                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                        foodItemRows.append(rowView)
+                        
+                        rowView.onDelete = { [weak self] in
+                            self?.removeFoodItemRow(rowView)
+                        }
+                        
+                        rowView.onValueChange = { [weak self] in
+                            self?.updateTotalNutrients()
+                        }
+                        
+                        rowView.calculateNutrients()
+                    }
+                }
+
+                // Keep track of the last total registered value
+                lastTotalRegisteredValue = max(lastTotalRegisteredValue ?? 0, savedFoodItem.totalRegisteredValue)
+            }
+            
+            // Update the totalRegisteredLabel with the last saved value
+            if let lastValue = lastTotalRegisteredValue {
+                totalRegisteredLabel.text = formatNumber(lastValue)
+                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
+            } else {
+                print("Debug - No lastTotalRegisteredValue found")
+            }
+            
+            // Ensure UI elements are initialized
+            initializeUIElements()
+            
+            updateTotalNutrients()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
+        } catch {
+            print("Debug - Failed to fetch FoodItemRows: \(error)")
+        }
+    }
+    
+    public func fetchFoodItems() {
+        DispatchQueue.global(qos: .background).async {
+            let context = CoreDataStack.shared.context
+            let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+            do {
+                let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
+                DispatchQueue.main.async {
+                    self.foodItems = foodItems
+                    self.searchableDropdownView?.updateFoodItems(foodItems)
+                    print("fetchfooditems ran")
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    print("Failed to fetch food items: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func updatePlaceholderValuesForCurrentHour() {
+        let currentHour = Calendar.current.component(.hour, from: Date())
+        if let carbRatio = CoreDataHelper.shared.fetchCarbRatio(for: currentHour) {
+            scheduledCarbRatio = carbRatio
+        }
+        if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
+            scheduledStartDose = startDose
+        }
+    }
+    
+    func saveToCoreData() {
+        let context = CoreDataStack.shared.context
+
+        // Extract the totalRegisteredLabel value, handling potential nil values
+        let totalRegisteredText = totalRegisteredLabel.text ?? "0"
+        let totalRegisteredValue = Double(totalRegisteredText) ?? 0
+
+        for rowView in foodItemRows {
+            if let foodItemRow = rowView.foodItemRow {
+                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                // Only update totalRegisteredValue if it's greater than the existing value
+                if totalRegisteredValue > foodItemRow.totalRegisteredValue {
+                    foodItemRow.totalRegisteredValue = totalRegisteredValue
+                }
+            } else {
+                let foodItemRow = FoodItemRow(context: context)
+                foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
+                foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
+                foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                foodItemRow.totalRegisteredValue = totalRegisteredValue
+                rowView.foodItemRow = foodItemRow
+            }
+        }
+
+        do {
+            try context.save()
+        } catch {
+            print("Debug - Failed to save FoodItemRows: \(error)")
+        }
+    }
+    
+    private func saveMealHistory() {
+        let context = CoreDataStack.shared.context
+        
+        let mealHistory = MealHistory(context: context)
+        mealHistory.id = UUID() // Set the id attribute
+        mealHistory.mealDate = Date()
+        mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+        mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
+        mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
+        
+        for row in foodItemRows {
+            if let foodItem = row.selectedFoodItem {
+                let foodEntry = FoodItemEntry(context: context)
+                foodEntry.entryId = UUID()
+                foodEntry.entryName = foodItem.name
+                foodEntry.entryCarbohydrates = foodItem.carbohydrates
+                foodEntry.entryFat = foodItem.fat
+                foodEntry.entryProtein = foodItem.protein
+                foodEntry.entryEmoji = foodItem.emoji
+                
+                // Replace commas with dots for EU decimal separators
+                let portionServedText = row.portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
+                let notEatenText = row.notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
+                
+                foodEntry.entryPortionServed = Double(portionServedText) ?? 0
+                foodEntry.entryNotEaten = Double(notEatenText) ?? 0
+                
+                foodEntry.entryCarbsPP = foodItem.carbsPP
+                foodEntry.entryFatPP = foodItem.fatPP
+                foodEntry.entryProteinPP = foodItem.proteinPP
+                foodEntry.entryPerPiece = foodItem.perPiece
+                mealHistory.addToFoodEntries(foodEntry)
+            }
+        }
+        
+        do {
+            try context.save()
+            print("MealHistory saved successfully!")
+
+        } catch {
+            print("Failed to save MealHistory: \(error)")
+        }
+        
+        // Ensure dataSharingVC is instantiated
+                guard let dataSharingVC = dataSharingVC else { return }
+
+                // Call the desired function
+                dataSharingVC.exportMealHistoryToCSV()
+        print("Meal history export triggered")
+        
+        saveMealToHistory = false // Reset the flag after saving
+    }
+    
+    @objc private func saveFavoriteMeals() {
+        guard !foodItemRows.isEmpty else {
+            let alert = UIAlertController(title: "Inga livsmedel", message: "Välj minst ett livsmedel för att spara en favorit.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
+        let nameAlert = UIAlertController(title: "Spara som favoritmåltid", message: "Ange ett namn på måltiden:", preferredStyle: .alert)
+        nameAlert.addTextField { textField in
+            textField.placeholder = "Namn"
+            textField.autocorrectionType = .no
+            textField.spellCheckingType = .no
+            textField.autocapitalizationType = .sentences
+            textField.textContentType = .none
+            
+            if #available(iOS 11.0, *) {
+                textField.inputAssistantItem.leadingBarButtonGroups = []
+                textField.inputAssistantItem.trailingBarButtonGroups = []
+            }
+        }
+        
+        let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            let mealName = nameAlert.textFields?.first?.text ?? "Min favoritmåltid"
+            
+            let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
+            favoriteMeals.name = mealName
+            favoriteMeals.id = UUID()
+            
+            var items: [[String: Any]] = []
+            for row in self.foodItemRows {
+                if let foodItem = row.selectedFoodItem {
+                    let item: [String: Any] = [
+                        "name": foodItem.name ?? "",
+                        "portionServed": row.portionServedTextField.text ?? "",
+                        "perPiece": foodItem.perPiece
+                    ]
+                    items.append(item)
+                }
+            }
+            
+            // Serialize the items array to JSON
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: items, options: [])
+                let jsonString = String(data: jsonData, encoding: .utf8)
+                favoriteMeals.items = jsonString as? NSObject
+            } catch {
+                print("Failed to serialize items to JSON: \(error)")
+            }
+            
+            CoreDataStack.shared.saveContext()
+
+            // Ensure dataSharingVC is instantiated
+            guard let dataSharingVC = self.dataSharingVC else { return }
+
+            // Call the desired function
+            dataSharingVC.exportFavoriteMealsToCSV()
+            print("Favorite meals export triggered")
+            
+            let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
+            confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(confirmAlert, animated: true)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        
+        nameAlert.addAction(saveAction)
+        nameAlert.addAction(cancelAction)
+        
+        present(nameAlert, animated: true)
+    }
+    
+    private func clearAllFoodItemRowsFromCoreData() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FoodItemRow.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("Failed to delete FoodItemRows: \(error)")
+        }
+    }
+    
+    func deleteFoodItemRow(_ rowView: FoodItemRowView) {
+        let context = CoreDataStack.shared.context
+        if let foodItemRow = rowView.foodItemRow {
+            context.delete(foodItemRow)
+            
+            do {
+                try context.save()
+                removeFoodItemRow(rowView)
+            } catch {
+                print("Failed to delete FoodItemRow: \(error)")
+            }
+        }
+    }
+
+    
+    
+/// Registration of meal and remote commands
+
     @objc private func startAmountContainerTapped() {
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
@@ -1717,24 +1745,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     
-    public func fetchFoodItems() {
-        DispatchQueue.global(qos: .background).async {
-            let context = CoreDataStack.shared.context
-            let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
-            do {
-                let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-                DispatchQueue.main.async {
-                    self.foodItems = foodItems
-                    self.searchableDropdownView?.updateFoodItems(foodItems)
-                    print("fetchfooditems ran")
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    print("Failed to fetch food items: \(error)")
-                }
-            }
-        }
-    }
+
     
     func addFoodItemRow(with foodItem: FoodItem? = nil) {
         guard let stackView = stackView else {
@@ -1982,15 +1993,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
 }
-    
-    extension ComposeMealViewController: AddFoodItemDelegate {
-        func didAddFoodItem() {
-            fetchFoodItems()
-            updateClearAllButtonState()
-            updateSaveFavoriteButtonState()
-            updateHeadlineVisibility()
-        }
+
+extension ComposeMealViewController: AddFoodItemDelegate {
+    func didAddFoodItem() {
+        fetchFoodItems()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
     }
+}
 
 class GradientView: UIView {
 
