@@ -272,8 +272,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func getCombinedEmojis() -> String {
         if let favoriteOrHistoryMealEmojis = favoriteOrHistoryMealEmojis {
             return favoriteOrHistoryMealEmojis
+                .replacingOccurrences(of: "\n", with: "")
+                .replacingOccurrences(of: " ", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return searchableDropdownView?.combinedEmojis ?? "🍽️"
+        
+        return (searchableDropdownView?.combinedEmojis ?? "🍽️")
+            .replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
     @objc private func totalRegisteredLabelDidChange(_ textField: UITextField) {
@@ -396,7 +403,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Error deserializing JSON: \(error)")
         }
         
-        favoriteOrHistoryMealEmojis = Set(emojis).joined() // Remove duplicates and join emojis into a single string
+        // Remove duplicates and join emojis into a single string without separators
+        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined()
         
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -440,7 +448,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
         
-        favoriteOrHistoryMealEmojis = Set(emojis).joined() // Remove duplicates and join emojis into a single string
+        // Remove duplicates and join emojis into a single string without separators
+        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined()
         
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -1322,12 +1331,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
                 let emojis: String
                 if self.startDoseGiven == true {
-                        emojis = "🍽️"
-                    } else {
-                        emojis = "\(self.getCombinedEmojis())🍽️"
-                    }
+                    emojis = "🍽️"
+                } else {
+                    emojis = "\(self.getCombinedEmojis())🍽️"
+                }
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                print("KH Value: \(khValue)")
+                print("Fat Value: \(fatValue)")
+                print("Protein Value: \(proteinValue)")
+                print("Emojis: \(emojis)")
+                print("Final Bolus Value: \(finalBolusValue)")
+                print("Caregiver Name: \(caregiverName)")
+                print("Remote Secret Code: \(remoteSecretCode)")
+                print("Current Date: \(currentDate)")
+                print("Combined String: \(combinedString)")
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
@@ -1341,7 +1359,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
         let proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
         let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue.replacingOccurrences(of: ".", with: ",")
-        //var bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+        
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
@@ -1352,15 +1370,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         clearAllButton.isEnabled = true
         let caregiverName = UserDefaultsRepository.caregiverName
         let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+        
         let emojis: String
         if self.startDoseGiven == true {
-                emojis = "🍽️"
-            } else {
-                emojis = "\(self.getCombinedEmojis())🍽️"
-            }
+            emojis = "🍽️"
+        } else {
+            emojis = "\(self.getCombinedEmojis())🍽️"
+        }
+        
         let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
         let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-        /*let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=kh_\(khValue)bolus_\(bolusValue)fat_\(fatValue)protein_\(proteinValue)"*/
         
         let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(combinedString)"
         

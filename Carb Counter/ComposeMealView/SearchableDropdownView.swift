@@ -289,18 +289,19 @@ extension SearchableDropdownView {
         if emojis.isEmpty {
             combinedEmojis = "🍴" // Default emoji if no emojis are available
         } else {
-            combinedEmojis = emojis.joined()
+            combinedEmojis = removeDuplicateEmojis(from: emojis.joined().replacingOccurrences(of: "\n", with: "").replacingOccurrences(of: " ", with: ""))
         }
         
         // Notify if needed
         onSelectItems?(selectedFoodItems)
         print("combinedEmojis cleared and reset: \(combinedEmojis)")
     }
-    
+
     func getCombinedEmojis() -> String {
-        return combinedEmojis
+        let combined = combinedEmojis.replacingOccurrences(of: "\n", with: "").replacingOccurrences(of: " ", with: "")
+        return combined.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
+
     // Helper function to remove duplicate emojis
     private func removeDuplicateEmojis(from string: String) -> String {
         var uniqueEmojis = Set<Character>()
