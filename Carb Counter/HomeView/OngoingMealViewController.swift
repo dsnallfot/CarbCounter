@@ -20,7 +20,6 @@ class OngoingMealViewController: UIViewController {
         setupView()
         loadFoodItems()
         loadFoodItemRows()
-        //startAutoSaveToCSV()
     }
     
     private func setupView() {

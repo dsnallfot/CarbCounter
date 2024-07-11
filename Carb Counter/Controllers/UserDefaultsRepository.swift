@@ -159,4 +159,13 @@ class UserDefaultsRepository {
                 UserDefaults.standard.set(newValue, forKey: "nightscoutToken")
             }
         }
+    
+    static var allowSharingOngoingMeals: Bool {
+            get {
+                return UserDefaults.standard.bool(forKey: "allowSharingOngoingMeals")
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "allowSharingOngoingMeals")
+            }
+        }
 }

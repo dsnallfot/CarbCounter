@@ -13,6 +13,7 @@ class DataSharingViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         setupNavigationBarButtons()
+        setupToggleForOngoingMealSharing()
     }
     
     private func setupNavigationBarButtons() {
@@ -20,6 +21,33 @@ class DataSharingViewController: UIViewController {
         let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
         navigationItem.rightBarButtonItems = [exportButton, importButton]
     }
+    
+    private func setupToggleForOngoingMealSharing() {
+            let toggleSwitch = UISwitch()
+            toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
+            toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
+            
+            let toggleLabel = UILabel()
+            toggleLabel.text = "Tillåt delning av pågående måltid"
+            toggleLabel.translatesAutoresizingMaskIntoConstraints = false
+            
+            let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
+            stackView.axis = .horizontal
+            stackView.spacing = 16
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+            
+            view.addSubview(stackView)
+            
+            NSLayoutConstraint.activate([
+                stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16)
+            ])
+        }
+        
+        @objc private func toggleOngoingMealSharing(_ sender: UISwitch) {
+            UserDefaultsRepository.allowSharingOngoingMeals = sender.isOn
+            print("allowSharingOngoingMeals set to \(sender.isOn)")
+        }
     
     //Manual exporting and importing
     @objc private func exportData() {
