@@ -69,6 +69,7 @@ class DataSharingViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in self.importCSV(for: "Carb Ratio Schedule") }))
         alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in self.importCSV(for: "Start Dose Schedule") }))
         alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+        
         present(alert, animated: true, completion: nil)
     }
     
@@ -308,10 +309,12 @@ class DataSharingViewController: UIViewController {
     
 ///Importing and parsing
     @objc public func importCSV(for entityName: String) {
-        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
-        documentPicker.delegate = self
-        documentPicker.accessibilityHint = entityName
-        present(documentPicker, animated: true, completion: nil)
+        DispatchQueue.main.async {
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
+            documentPicker.delegate = self
+            documentPicker.accessibilityHint = entityName
+            self.present(documentPicker, animated: true, completion: nil)
+        }
     }
     
     public func parseCSV(at url: URL, for entityName: String) {

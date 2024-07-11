@@ -153,25 +153,28 @@ class OngoingMealViewController: UIViewController {
         nameLabel.text = foodItem.name
         nameLabel.textColor = .label
         nameLabel.textAlignment = .left
-        nameLabel.widthAnchor.constraint(equalToConstant: 150).isActive = true
+        nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let portionLabel = UILabel()
         portionLabel.text = String(format: "%.0f", portionServed)
         portionLabel.textColor = .label
         portionLabel.textAlignment = .right
         portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        portionLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let notEatenLabel = UILabel()
         notEatenLabel.text = String(format: "%.0f", notEaten)
         notEatenLabel.textColor = .label
         notEatenLabel.textAlignment = .right
         notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let carbsLabel = UILabel()
         carbsLabel.text = String(format: "%.0f", netCarbs)
         carbsLabel.textColor = .label
         carbsLabel.textAlignment = .right
         carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         rowView.addArrangedSubview(nameLabel)
         rowView.addArrangedSubview(portionLabel)
@@ -192,7 +195,7 @@ class OngoingMealViewController: UIViewController {
         nameLabel.textColor = .gray
         nameLabel.textAlignment = .left
         nameLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        nameLabel.widthAnchor.constraint(equalToConstant: 150).isActive = true
+        nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let portionLabel = UILabel()
         portionLabel.text = "Serv."
@@ -200,6 +203,7 @@ class OngoingMealViewController: UIViewController {
         portionLabel.textAlignment = .right
         portionLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        portionLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let notEatenLabel = UILabel()
         notEatenLabel.text = "Ej ätit"
@@ -207,6 +211,7 @@ class OngoingMealViewController: UIViewController {
         notEatenLabel.textAlignment = .right
         notEatenLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let carbsLabel = UILabel()
         carbsLabel.text = "Kh"
@@ -214,6 +219,7 @@ class OngoingMealViewController: UIViewController {
         carbsLabel.textAlignment = .right
         carbsLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         rowView.addArrangedSubview(nameLabel)
         rowView.addArrangedSubview(portionLabel)
