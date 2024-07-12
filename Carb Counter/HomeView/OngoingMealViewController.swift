@@ -88,9 +88,40 @@ class OngoingMealViewController: UIViewController {
         ])
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
-        navigationItem.leftBarButtonItem = closeButton
-        navigationItem.title = "Pågående måltid"
-    }
+                navigationItem.leftBarButtonItem = closeButton
+                navigationItem.title = "Pågående måltid"
+                
+                // Add "Ta över registrering" button
+                let takeoverButton = UIButton(type: .system)
+                takeoverButton.setTitle("Ta över registrering", for: .normal)
+                takeoverButton.addTarget(self, action: #selector(takeoverRegistration), for: .touchUpInside)
+                takeoverButton.translatesAutoresizingMaskIntoConstraints = false
+                containerView.addSubview(takeoverButton)
+                
+                NSLayoutConstraint.activate([
+                    takeoverButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+                    takeoverButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+                    takeoverButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
+                    takeoverButton.heightAnchor.constraint(equalToConstant: 50)
+                ])
+            }
+    @objc private func takeoverRegistration() {
+            // Prepare the data to pass
+            let foodItemRowData = foodItemRows.map { row in
+                FoodItemRowData(
+                    foodItemID: row.foodItemID,
+                    portionServed: row.portionServed,
+                    notEaten: row.notEaten,
+                    totalRegisteredValue: row.totalRegisteredValue
+                )
+            }
+            
+            // Post a notification with the food item data
+            NotificationCenter.default.post(name: .didTakeoverRegistration, object: nil, userInfo: ["foodItemRows": foodItemRowData])
+            
+            // Dismiss the view controller
+            dismiss(animated: true, completion: nil)
+        }
     
     @objc private func closeView() {
         dismiss(animated: true, completion: nil)
@@ -372,4 +403,9 @@ extension OngoingMealViewController {
         
         return foodItemRows
     }
+}
+
+// Add a notification name extension
+extension Notification.Name {
+    static let didTakeoverRegistration = Notification.Name("didTakeoverRegistration")
 }

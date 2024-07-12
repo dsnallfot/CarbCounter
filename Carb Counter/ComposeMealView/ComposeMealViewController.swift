@@ -215,6 +215,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Observe changes to allowViewingOngoingMeals
         NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
         
+        // Observe for takeover registration notification
+        NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
+        
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         
         totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelDidChange), for: .editingChanged)
@@ -260,6 +263,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
+    
+    
 
 ///function to initialize UI elements
     private func initializeUIElements() {
@@ -1144,7 +1149,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         checkIfEditing()
     }
-    
+///OngoingMeal monitoring
     func startEditing() {
             isEditingMeal = true
             print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
@@ -1169,6 +1174,82 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } catch {
                 print("Failed to fetch food item rows: \(error)")
             }
+        }
+    
+    func exportFoodItemRows() -> [FoodItemRowData] {
+            var foodItemRowData: [FoodItemRowData] = []
+            
+            for rowView in foodItemRows {
+                if let foodItem = rowView.selectedFoodItem {
+                    let portionServed = Double(rowView.portionServedTextField.text ?? "") ?? 0.0
+                    let notEaten = Double(rowView.notEatenTextField.text ?? "") ?? 0.0
+                    let totalRegisteredValue = Double(totalRegisteredLabel.text ?? "") ?? 0.0
+                    
+                    let rowData = FoodItemRowData(
+                        foodItemID: foodItem.id,
+                        portionServed: portionServed,
+                        notEaten: notEaten,
+                        totalRegisteredValue: totalRegisteredValue
+                    )
+                    foodItemRowData.append(rowData)
+                }
+            }
+            
+            return foodItemRowData
+        }
+    
+    @objc private func didTakeoverRegistration(_ notification: Notification) {
+            if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
+                clearAllFoodItems()
+                for row in importedRows {
+                    if let foodItem = getFoodItemByID(row.foodItemID) {
+                        addFoodItemRow(with: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
+                    }
+                }
+                updateTotalNutrients()
+                updateClearAllButtonState()
+                updateSaveFavoriteButtonState()
+                updateHeadlineVisibility()
+            }
+        }
+        
+    private func getFoodItemByID(_ id: UUID?) -> FoodItem? {
+            guard let id = id else { return nil }
+
+            let context = CoreDataStack.shared.context
+            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            fetchRequest.fetchLimit = 1
+
+            do {
+                let items = try context.fetch(fetchRequest)
+                return items.first
+            } catch {
+                print("Failed to fetch FoodItem with id \(id): \(error)")
+                return nil
+            }
+        }
+        
+    private func clearCurrentRows() {
+            // Implement the method to clear current rows
+            for row in foodItemRows {
+                stackView.removeArrangedSubview(row)
+                row.removeFromSuperview()
+            }
+            foodItemRows.removeAll()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
+        }
+        
+    private func addRow(for foodItem: FoodItem, portionServed: Double, notEaten: Double) {
+            let rowView = FoodItemRowView()
+            rowView.selectedFoodItem = foodItem
+            rowView.portionServedTextField.text = "\(portionServed)"
+            rowView.notEatenTextField.text = "\(notEaten)"
+            
+            foodItemRows.append(rowView)
+            stackView.addArrangedSubview(rowView)
         }
 
     
@@ -1850,6 +1931,28 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
     }
+    
+    private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double, notEaten: Double) {
+            let rowView = FoodItemRowView()
+            rowView.foodItems = foodItems //Array(foodItems.values) // Provide all food items as an array
+            rowView.delegate = self
+            rowView.translatesAutoresizingMaskIntoConstraints = false
+            stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+            foodItemRows.append(rowView)
+            rowView.setSelectedFoodItem(foodItem) // Correctly setting the selected food item
+            rowView.portionServedTextField.text = formattedValue(portionServed)
+            rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+            
+            rowView.onDelete = { [weak self] in
+                self?.removeFoodItemRow(rowView)
+            }
+            
+            rowView.onValueChange = { [weak self] in
+                self?.updateTotalNutrients()
+                self?.updateHeadlineVisibility()
+            }
+            rowView.calculateNutrients()
+        }
     
     private func addAddButtonRow() {
         addButtonRowView = AddButtonRowView()
