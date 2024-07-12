@@ -88,40 +88,49 @@ class OngoingMealViewController: UIViewController {
         ])
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
-                navigationItem.leftBarButtonItem = closeButton
-                navigationItem.title = "Pågående måltid"
-                
-                // Add "Ta över registrering" button
-                let takeoverButton = UIButton(type: .system)
-                takeoverButton.setTitle("Ta över registrering", for: .normal)
-                takeoverButton.addTarget(self, action: #selector(takeoverRegistration), for: .touchUpInside)
-                takeoverButton.translatesAutoresizingMaskIntoConstraints = false
-                containerView.addSubview(takeoverButton)
-                
-                NSLayoutConstraint.activate([
-                    takeoverButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-                    takeoverButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-                    takeoverButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
-                    takeoverButton.heightAnchor.constraint(equalToConstant: 50)
-                ])
-            }
+        navigationItem.leftBarButtonItem = closeButton
+        navigationItem.title = "Pågående måltid"
+        
+        setupTakeoverButton()
+    }
+    
+    private func setupTakeoverButton() {
+        let takeoverButton = UIButton(type: .system)
+        takeoverButton.setTitle("Ta över registrering", for: .normal)
+        takeoverButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        takeoverButton.backgroundColor = .systemBlue
+        takeoverButton.setTitleColor(.white, for: .normal)
+        takeoverButton.layer.cornerRadius = 10
+        takeoverButton.translatesAutoresizingMaskIntoConstraints = false
+        takeoverButton.addTarget(self, action: #selector(takeoverRegistration), for: .touchUpInside)
+        
+        view.addSubview(takeoverButton)
+        
+        NSLayoutConstraint.activate([
+            takeoverButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            takeoverButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            takeoverButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            takeoverButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+    
     @objc private func takeoverRegistration() {
-            // Prepare the data to pass
-            let foodItemRowData = foodItemRows.map { row in
-                FoodItemRowData(
-                    foodItemID: row.foodItemID,
-                    portionServed: row.portionServed,
-                    notEaten: row.notEaten,
-                    totalRegisteredValue: row.totalRegisteredValue
-                )
-            }
-            
-            // Post a notification with the food item data
-            NotificationCenter.default.post(name: .didTakeoverRegistration, object: nil, userInfo: ["foodItemRows": foodItemRowData])
-            
-            // Dismiss the view controller
-            dismiss(animated: true, completion: nil)
+        // Prepare the data to pass
+        let foodItemRowData = foodItemRows.map { row in
+            FoodItemRowData(
+                foodItemID: row.foodItemID,
+                portionServed: row.portionServed,
+                notEaten: row.notEaten,
+                totalRegisteredValue: row.totalRegisteredValue
+            )
         }
+        
+        // Post a notification with the food item data
+        NotificationCenter.default.post(name: .didTakeoverRegistration, object: nil, userInfo: ["foodItemRows": foodItemRowData])
+        
+        // Dismiss the view controller
+        dismiss(animated: true, completion: nil)
+    }
     
     @objc private func closeView() {
         dismiss(animated: true, completion: nil)
@@ -200,7 +209,6 @@ class OngoingMealViewController: UIViewController {
         notEatenLabel.textAlignment = .right
         notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
         notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
-        
         let carbsLabel = UILabel()
         carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
         carbsLabel.textColor = .label
@@ -241,8 +249,7 @@ class OngoingMealViewController: UIViewController {
             if proteinPP > 0 {
                 message += "\nProtein: \(proteinPP) g / st "
             }
-        }
-        else {
+        } else {
             let carbohydrates = selectedFoodItem.carbohydrates
             let fat = selectedFoodItem.fat
             let protein = selectedFoodItem.protein
@@ -253,7 +260,7 @@ class OngoingMealViewController: UIViewController {
                 message += "\nFett: \(fat) g / 100 g "
             }
             if protein > 0 {
-                message += "\nProtein: (protein) g / 100 g "
+                message += "\nProtein: \(protein) g / 100 g "
             }
         }
         if message.isEmpty {
