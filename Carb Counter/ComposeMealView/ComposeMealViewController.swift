@@ -286,16 +286,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     private func getCombinedEmojis() -> String {
         if let favoriteOrHistoryMealEmojis = favoriteOrHistoryMealEmojis {
-            return favoriteOrHistoryMealEmojis
-                .replacingOccurrences(of: "\n", with: "")
-                .replacingOccurrences(of: " ", with: "")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return favoriteOrHistoryMealEmojis.filter { !$0.isWhitespaceOrNewline }
         }
-        
-        return (searchableDropdownView?.combinedEmojis ?? "🍽️")
-            .replacingOccurrences(of: "\n", with: "")
-            .replacingOccurrences(of: " ", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (searchableDropdownView?.combinedEmojis ?? "🍽️").filter { !$0.isWhitespaceOrNewline }
     }
     
     @objc private func totalRegisteredLabelDidChange(_ textField: UITextField) {
@@ -419,7 +412,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         // Remove duplicates and join emojis into a single string without separators
-        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined()
+        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined().filter { !$0.isWhitespaceOrNewline }
         
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -464,7 +457,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         // Remove duplicates and join emojis into a single string without separators
-        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined()
+        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined().filter { !$0.isWhitespaceOrNewline }
         
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -1399,15 +1392,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                print("KH Value: \(khValue)")
-                print("Fat Value: \(fatValue)")
-                print("Protein Value: \(proteinValue)")
-                print("Emojis: \(emojis)")
-                print("Final Bolus Value: \(finalBolusValue)")
-                print("Caregiver Name: \(caregiverName)")
-                print("Remote Secret Code: \(remoteSecretCode)")
-                print("Current Date: \(currentDate)")
-                print("Combined String: \(combinedString)")
                 self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)

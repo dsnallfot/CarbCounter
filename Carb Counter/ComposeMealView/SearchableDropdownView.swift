@@ -289,7 +289,7 @@ extension SearchableDropdownView {
         if emojis.isEmpty {
             combinedEmojis = "🍴" // Default emoji if no emojis are available
         } else {
-            combinedEmojis = removeDuplicateEmojis(from: emojis.joined().replacingOccurrences(of: "\n", with: "").replacingOccurrences(of: " ", with: ""))
+            combinedEmojis = removeDuplicateEmojis(from: emojis.joined().filter { !$0.isWhitespaceOrNewline })
         }
         
         // Notify if needed
@@ -298,8 +298,7 @@ extension SearchableDropdownView {
     }
 
     func getCombinedEmojis() -> String {
-        let combined = combinedEmojis.replacingOccurrences(of: "\n", with: "").replacingOccurrences(of: " ", with: "")
-        return combined.trimmingCharacters(in: .whitespacesAndNewlines)
+        return combinedEmojis.filter { !$0.isWhitespaceOrNewline }
     }
 
     // Helper function to remove duplicate emojis
@@ -310,3 +309,8 @@ extension SearchableDropdownView {
     }
 }
 
+public extension Character {
+    var isWhitespaceOrNewline: Bool {
+        return isWhitespace || isNewline
+    }
+}
