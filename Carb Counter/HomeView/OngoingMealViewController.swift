@@ -20,8 +20,7 @@ class OngoingMealViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupView()
-        loadFoodItems()
-        loadFoodItemRows()
+        loadFoodItems() // Load food items once for mapping purposes
         
         // Observe for imported ongoing meal data
         NotificationCenter.default.addObserver(self, selector: #selector(didImportOngoingMeal(_:)), name: .didImportOngoingMeal, object: nil)
@@ -30,19 +29,19 @@ class OngoingMealViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Save the original state and set it to false
-            originalAllowSharingOngoingMeals = UserDefaultsRepository.allowSharingOngoingMeals
-            if UserDefaultsRepository.allowSharingOngoingMeals {
-                UserDefaultsRepository.allowSharingOngoingMeals = false
-            }
+        originalAllowSharingOngoingMeals = UserDefaultsRepository.allowSharingOngoingMeals
+        if UserDefaultsRepository.allowSharingOngoingMeals {
+            UserDefaultsRepository.allowSharingOngoingMeals = false
+        }
         startImportTimer()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // Restore the original state
-            if let originalState = originalAllowSharingOngoingMeals {
-                UserDefaultsRepository.allowSharingOngoingMeals = originalState
-            }
+        if let originalState = originalAllowSharingOngoingMeals {
+            UserDefaultsRepository.allowSharingOngoingMeals = originalState
+        }
         stopImportTimer()
     }
     
@@ -55,6 +54,17 @@ class OngoingMealViewController: UIViewController {
         importTimer?.invalidate()
         importTimer = nil
     }
+    
+    func loadFoodItemRowsFromCSV() {
+            let context = CoreDataStack.shared.context
+            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+            do {
+                foodItemRows = try context.fetch(fetchRequest)
+            } catch {
+                print("Failed to fetch food item rows: \(error)")
+            }
+        }
+    
     @objc private func importOngoingMealCSV() {
         // Automatically import ongoing meal CSV
         let dataSharingVC = DataSharingViewController()
@@ -89,62 +99,42 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func loadFoodItems() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-            do {
-                let items = try context.fetch(fetchRequest)
-                for item in items {
-                    if let id = item.id {
-                        foodItems[id] = item
-                    }
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        do {
+            let items = try context.fetch(fetchRequest)
+            for item in items {
+                if let id = item.id {
+                    foodItems[id] = item
                 }
-            } catch {
-                print("Failed to fetch food items: \(error)")
             }
+        } catch {
+            print("Failed to fetch food items: \(error)")
         }
+    }
     
-    public func loadFoodItemRows() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-            do {
-                foodItemRows = try context.fetch(fetchRequest)
-                addTotalRegisteredCarbsRow() // Add this line to add the registered carbs row at the top
-                addTotalCarbsRow()
-                addSpacingView()
-                addHeaderRow()
-                for row in foodItemRows {
-                    if let foodItem = foodItems[row.foodItemID ?? UUID()] {
-                        let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                        let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
-                        stackView.addArrangedSubview(rowView)
-                    }
-                }
-            } catch {
-                print("Failed to fetch food item rows: \(error)")
-            }
+    @objc private func didImportOngoingMeal(_ notification: Notification) {
+        if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRow] {
+            // Clear existing rows and add imported rows
+            foodItemRows = importedRows
+            reloadStackView()
         }
-        
-        @objc private func didImportOngoingMeal(_ notification: Notification) {
-            if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRow] {
-                foodItemRows = importedRows
-                reloadStackView()
-            }
-        }
+    }
     
     private func reloadStackView() {
-            stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-            addTotalRegisteredCarbsRow()
-            addTotalCarbsRow()
-            addSpacingView()
-            addHeaderRow()
-            for row in foodItemRows {
-                if let foodItem = foodItems[row.foodItemID ?? UUID()] {
-                    let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                    let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
-                    stackView.addArrangedSubview(rowView)
-                }
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        addTotalCarbsRow()
+        addTotalRegisteredCarbsRow()
+        addSpacingView()
+        addHeaderRow()
+        for row in foodItemRows {
+            if let foodItem = foodItems[row.foodItemID ?? UUID()] {
+                let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
+                let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
+                stackView.addArrangedSubview(rowView)
             }
         }
+    }
     
     private func calculateNetCarbs(for foodItem: FoodItem, portionServed: Double, notEaten: Double) -> Double {
         let carbohydrates = foodItem.carbohydrates
@@ -154,106 +144,105 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func createNonEditableRowView(for foodItem: FoodItem, portionServed: Double, notEaten: Double, netCarbs: Double) -> UIView {
-            let rowView = UIStackView()
-            rowView.axis = .horizontal
-            rowView.spacing = 8
-            rowView.translatesAutoresizingMaskIntoConstraints = false
-            
-            let nameLabel = UILabel()
-            nameLabel.text = foodItem.name
-            nameLabel.textColor = .label
-            nameLabel.textAlignment = .left
-            nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-            nameLabel.isUserInteractionEnabled = true
-            nameLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped(_:))))
-            nameLabel.tag = foodItem.hashValue // Use the foodItem's hashValue to identify the label
-            
-            let portionLabel = UILabel()
-            portionLabel.text = String(format: "%.0f", portionServed)
-            portionLabel.textColor = .label
-            portionLabel.textAlignment = .right
-            portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-            portionLabel.setContentHuggingPriority(.required, for: .horizontal)
-            
-            let notEatenLabel = UILabel()
-            notEatenLabel.text = String(format: "%.0f", notEaten)
-            notEatenLabel.textColor = .label
-            notEatenLabel.textAlignment = .right
-            notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-            notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
-            
-            let carbsLabel = UILabel()
-            carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
-            carbsLabel.textColor = .label
-            carbsLabel.textAlignment = .right
-            carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-            carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
-            
-            rowView.addArrangedSubview(nameLabel)
-            rowView.addArrangedSubview(portionLabel)
-            rowView.addArrangedSubview(notEatenLabel)
-            rowView.addArrangedSubview(carbsLabel)
-            
-            return rowView
-        }
+        let rowView = UIStackView()
+        rowView.axis = .horizontal
+        rowView.spacing = 8
+        rowView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let nameLabel = UILabel()
+        nameLabel.text = foodItem.name
+        nameLabel.textColor = .label
+        nameLabel.textAlignment = .left
+        nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        nameLabel.isUserInteractionEnabled = true
+        nameLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped(_:))))
+        nameLabel.tag = foodItem.hashValue // Use the foodItem's hashValue to identify the label
+        
+        let portionLabel = UILabel()
+        portionLabel.text = String(format: "%.0f", portionServed)
+        portionLabel.textColor = .label
+        portionLabel.textAlignment = .right
+        portionLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        portionLabel.setContentHuggingPriority(.required, for: .horizontal)
+        
+        let notEatenLabel = UILabel()
+        notEatenLabel.text = String(format: "%.0f", notEaten)
+        notEatenLabel.textColor = .label
+        notEatenLabel.textAlignment = .right
+        notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
+        
+        let carbsLabel = UILabel()
+        carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
+        carbsLabel.textColor = .label
+        carbsLabel.textAlignment = .right
+        carbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        carbsLabel.setContentHuggingPriority(.required, for: .horizontal)
+        
+        rowView.addArrangedSubview(nameLabel)
+        rowView.addArrangedSubview(portionLabel)
+        rowView.addArrangedSubview(notEatenLabel)
+        rowView.addArrangedSubview(carbsLabel)
+        
+        return rowView
+    }
     
     @objc private func foodItemLabelTapped(_ sender: UITapGestureRecognizer) {
-            guard let label = sender.view as? UILabel,
-                  let selectedFoodItem = foodItems.values.first(where: { $0.hashValue == label.tag }) else { return }
-            
-            let title = 
-        "\(selectedFoodItem.emoji ?? "") \(selectedFoodItem.name ?? "")"
+        guard let label = sender.view as? UILabel,
+              let selectedFoodItem = foodItems.values.first(where: { $0.hashValue == label.tag }) else { return }
+        
+        let title = "\(selectedFoodItem.emoji ?? "") \(selectedFoodItem.name ?? "")"
         var message = ""
+        
         if let notes = selectedFoodItem.notes, !notes.isEmpty {
-                message += "\nNot: \(notes)\n"
-            }
-            
-            if selectedFoodItem.perPiece {
-                let carbsPP = selectedFoodItem.carbsPP
-                let fatPP = selectedFoodItem.fatPP
-                let proteinPP = selectedFoodItem.proteinPP
-                
-                if carbsPP > 0 {
-                    message += "\nKolhydrater: \(carbsPP) g / st "
-                }
-                if fatPP > 0 {
-                    message += "\nFett: \(fatPP) g / st "
-                }
-                if proteinPP > 0 {
-                    message += "\nProtein: \(proteinPP) g / st "
-                }
-            } else {
-                let carbohydrates = selectedFoodItem.carbohydrates
-                let fat = selectedFoodItem.fat
-                let protein = selectedFoodItem.protein
-                
-                if carbohydrates > 0 {
-                    message += "\nKolhydrater: \(carbohydrates) g / 100 g "
-                }
-                if fat > 0 {
-                    message += "\nFett: \(fat) g / 100 g "
-                }
-                if protein > 0 {
-                    message += "\nProtein: \(protein) g / 100 g "
-                }
-            }
-            
-            if message.isEmpty {
-                message = "Ingen näringsinformation tillgänglig."
-            } else {
-                // Remove the last newline character
-                message = String(message.dropLast())
-                
-                // Regex replacement for ".0"
-                let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
-                message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
-            }
-            
-            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alertController.addAction(okAction)
-            self.present(alertController, animated: true, completion: nil)
+            message += "\nNot: \(notes)\n"
         }
+        
+        if selectedFoodItem.perPiece {
+            let carbsPP = selectedFoodItem.carbsPP
+            let fatPP = selectedFoodItem.fatPP
+            let proteinPP = selectedFoodItem.proteinPP
+            
+            if carbsPP > 0 {
+                message += "\nKolhydrater: \(carbsPP) g / st "
+            }
+            if fatPP > 0 {
+                message += "\nFett: \(fatPP) g / st "
+            }
+            if proteinPP > 0 {
+                message += "\nProtein: \(proteinPP) g / st "
+            }
+        } else {
+            let carbohydrates = selectedFoodItem.carbohydrates
+            let fat = selectedFoodItem.fat
+            let protein = selectedFoodItem.protein
+            
+            if carbohydrates > 0 {
+                message += "\nKolhydrater: \(carbohydrates) g / 100 g "
+            }
+            if fat > 0 {
+                message += "\nFett: \(fat) g / 100 g "
+            }
+            if protein > 0 {
+                message += "\nProtein: (protein) g / 100 g "
+            }
+        }
+        if message.isEmpty {
+            message = "Ingen näringsinformation tillgänglig."
+        } else {
+            // Remove the last newline character
+            message = String(message.dropLast())
+            
+            // Regex replacement for ".0"
+            let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
+            message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
+        }
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        self.present(alertController, animated: true, completion: nil)
+    }
     
     private func addHeaderRow() {
         let rowView = UIStackView()
@@ -302,62 +291,67 @@ class OngoingMealViewController: UIViewController {
     
     private func addTotalRegisteredCarbsRow() {
         guard let latestTotalRegisteredValue = foodItemRows.last?.totalRegisteredValue else { return }
-        
+
         let rowView = UIStackView()
         rowView.axis = .horizontal
         rowView.spacing = 8
         rowView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         let titleLabel = UILabel()
         titleLabel.text = "REGISTRERADE KOLHYDRATER:"
         titleLabel.textColor = .label
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-        //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        
+
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue) + " g"
         totalCarbsLabel.textColor = .label
         totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+
         rowView.addArrangedSubview(titleLabel)
         rowView.addArrangedSubview(totalCarbsLabel)
         stackView.addArrangedSubview(rowView)
     }
-    
+
     private func addTotalCarbsRow() {
         let totalCarbs = foodItemRows.reduce(0) { total, row in
-            if let foodItem = foodItems[row.foodItemID ?? UUID()] {
-                let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                return total + netCarbs
-            }
-            return total
+            let netCarbs = calculateNetCarbs(for: row.foodItemID, portionServed: row.portionServed, notEaten: row.notEaten)
+            return total + netCarbs
         }
-        
+
         let rowView = UIStackView()
         rowView.axis = .horizontal
         rowView.spacing = 8
         rowView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         let titleLabel = UILabel()
         titleLabel.text = "TOT KOLHYDRATER I MÅLTIDEN:"
         titleLabel.textColor = .systemOrange
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-        //titleLabel.widthAnchor.constraint(equalToConstant: 250).isActive = true
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        
+
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", totalCarbs) + " g"
         totalCarbsLabel.textColor = .systemOrange
         totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        
+
         rowView.addArrangedSubview(titleLabel)
         rowView.addArrangedSubview(totalCarbsLabel)
-        
         stackView.addArrangedSubview(rowView)
+    }
+
+    private func calculateNetCarbs(for foodItemID: UUID?, portionServed: Double, notEaten: Double) -> Double {
+        guard let foodItemID = foodItemID, let foodItem = foodItems[foodItemID] else {
+            return 0.0
+        }
+        let carbohydrates = foodItem.carbohydrates
+        let carbsPP = foodItem.carbsPP
+        let netCarbs = ((carbohydrates / 100) + carbsPP) * (portionServed - notEaten)
+        return netCarbs
     }
     
     private func addSpacingView() {
