@@ -578,9 +578,8 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-    private func parseOngoingMealCSV(_ rows: [String]) -> [FoodItemRow] {
-        var foodItemRows = [FoodItemRow]()
-        let context = CoreDataStack.shared.context
+    private func parseOngoingMealCSV(_ rows: [String]) -> [FoodItemRowData] {
+        var foodItemRows = [FoodItemRowData]()
         
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 4 else {
@@ -591,11 +590,12 @@ class DataSharingViewController: UIViewController {
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 4 {
-                let foodItemRow = FoodItemRow(context: context)
-                foodItemRow.foodItemID = UUID(uuidString: values[0])
-                foodItemRow.portionServed = Double(values[1]) ?? 0.0
-                foodItemRow.notEaten = Double(values[2]) ?? 0.0
-                foodItemRow.totalRegisteredValue = Double(values[3]) ?? 0.0
+                let foodItemRow = FoodItemRowData(
+                    foodItemID: UUID(uuidString: values[0]),
+                    portionServed: Double(values[1]) ?? 0.0,
+                    notEaten: Double(values[2]) ?? 0.0,
+                    totalRegisteredValue: Double(values[3]) ?? 0.0
+                )
                 foodItemRows.append(foodItemRow)
             }
         }
@@ -629,8 +629,7 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
 extension DataSharingViewController {
     func exportOngoingMealToCSV() {
         let ongoingMealVC = OngoingMealViewController()
-        ongoingMealVC.loadFoodItemRowsFromCSV()  // Ensure foodItemRows is populated
-        let foodItemRows = ongoingMealVC.foodItemRows
+        let foodItemRows = ongoingMealVC.loadFoodItemRowsFromCSV()  // Ensure foodItemRows is populated
         exportToCSV(rows: foodItemRows, fileName: "OngoingMeal.csv", createCSV: createOngoingMealCSV(from:))
     }
 
@@ -655,7 +654,6 @@ extension DataSharingViewController {
         return csvString
     }
 }
-
 
 // Extend Notification.Name
 extension Notification.Name {

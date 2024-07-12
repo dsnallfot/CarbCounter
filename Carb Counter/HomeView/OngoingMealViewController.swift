@@ -1,9 +1,16 @@
 import UIKit
 import CoreData
 
+struct FoodItemRowData {
+    var foodItemID: UUID?
+    var portionServed: Double
+    var notEaten: Double
+    var totalRegisteredValue: Double
+}
+
 class OngoingMealViewController: UIViewController {
     
-    var foodItemRows: [FoodItemRow] = []
+    var foodItemRows: [FoodItemRowData] = []
     var foodItems: [UUID: FoodItem] = [:] // Dictionary to store FoodItems by their ID
     private var importTimer: Timer?
     private var originalAllowSharingOngoingMeals: Bool?
@@ -56,16 +63,6 @@ class OngoingMealViewController: UIViewController {
         importTimer = nil
     }
     
-    func loadFoodItemRowsFromCSV() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-            do {
-                foodItemRows = try context.fetch(fetchRequest)
-            } catch {
-                print("Failed to fetch food item rows: \(error)")
-            }
-        }
-    
     @objc private func importOngoingMealCSV() {
         // Automatically import ongoing meal CSV
         let dataSharingVC = DataSharingViewController()
@@ -115,7 +112,7 @@ class OngoingMealViewController: UIViewController {
     }
     
     @objc private func didImportOngoingMeal(_ notification: Notification) {
-        if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRow] {
+        if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             // Clear existing rows and add imported rows
             foodItemRows = importedRows
             reloadStackView()
@@ -213,11 +210,11 @@ class OngoingMealViewController: UIViewController {
             if proteinPP > 0 {
                 message += "\nProtein: \(proteinPP) g / st "
             }
-        } else {
+        }
+        else {
             let carbohydrates = selectedFoodItem.carbohydrates
             let fat = selectedFoodItem.fat
             let protein = selectedFoodItem.protein
-            
             if carbohydrates > 0 {
                 message += "\nKolhydrater: \(carbohydrates) g / 100 g "
             }
@@ -292,59 +289,59 @@ class OngoingMealViewController: UIViewController {
     
     private func addTotalRegisteredCarbsRow() {
         guard let latestTotalRegisteredValue = foodItemRows.last?.totalRegisteredValue else { return }
-
+        
         let rowView = UIStackView()
         rowView.axis = .horizontal
         rowView.spacing = 8
         rowView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let titleLabel = UILabel()
         titleLabel.text = "REGISTRERADE KOLHYDRATER:"
         titleLabel.textColor = .label
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
+        
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue) + " g"
         totalCarbsLabel.textColor = .label
         totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-
+        
         rowView.addArrangedSubview(titleLabel)
         rowView.addArrangedSubview(totalCarbsLabel)
         stackView.addArrangedSubview(rowView)
     }
-
+    
     private func addTotalCarbsRow() {
         let totalCarbs = foodItemRows.reduce(0) { total, row in
             let netCarbs = calculateNetCarbs(for: row.foodItemID, portionServed: row.portionServed, notEaten: row.notEaten)
             return total + netCarbs
         }
-
+        
         let rowView = UIStackView()
         rowView.axis = .horizontal
         rowView.spacing = 8
         rowView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let titleLabel = UILabel()
         titleLabel.text = "TOT KOLHYDRATER I MÅLTIDEN:"
         titleLabel.textColor = .systemOrange
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
+        
         let totalCarbsLabel = UILabel()
         totalCarbsLabel.text = String(format: "%.0f", totalCarbs) + " g"
         totalCarbsLabel.textColor = .systemOrange
         totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right
         totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-
+        
         rowView.addArrangedSubview(titleLabel)
         rowView.addArrangedSubview(totalCarbsLabel)
         stackView.addArrangedSubview(rowView)
     }
-
+    
     private func calculateNetCarbs(for foodItemID: UUID?, portionServed: Double, notEaten: Double) -> Double {
         guard let foodItemID = foodItemID, let foodItem = foodItems[foodItemID] else {
             return 0.0
@@ -360,5 +357,19 @@ class OngoingMealViewController: UIViewController {
         spacingView.translatesAutoresizingMaskIntoConstraints = false
         spacingView.heightAnchor.constraint(equalToConstant: 20).isActive = true
         stackView.addArrangedSubview(spacingView)
+    }
+}
+
+extension OngoingMealViewController {
+    func loadFoodItemRowsFromCSV() -> [FoodItemRow] {
+        // Implement the method to load food item rows from the CSV
+        // For example:
+        var foodItemRows = [FoodItemRow]()
+        
+        // Load the CSV data (this is an example, adapt it to your actual loading logic)
+        // let rows = ... (Load the CSV rows as strings)
+        // foodItemRows = parseOngoingMealCSV(rows)
+        
+        return foodItemRows
     }
 }

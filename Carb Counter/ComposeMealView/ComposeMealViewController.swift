@@ -848,8 +848,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     func startAutoSaveToCSV() {
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 exportTimer?.invalidate()
-                exportTimer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
-                print("Auto-save to CSV started with a 10-second interval.")
+                exportTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
+                print("Auto-save to CSV started with a 20-second interval.")
             }
         }
 
@@ -859,10 +859,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Auto-save to CSV stopped.")
         }
 
-        @objc func exportToCSV() {
+    @objc func exportToCSV() {
+        DispatchQueue.global(qos: .background).async {
             DataSharingViewController().exportOngoingMealToCSV()
         }
-    
+    }
     private func loadFoodItemsFromCoreData() {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()

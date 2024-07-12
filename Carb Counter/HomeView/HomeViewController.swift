@@ -158,9 +158,9 @@ class HomeViewController: UIViewController {
     
     @objc func showOngoingMeal() {
         let ongoingMealVC = OngoingMealViewController()
-        let navController = UINavigationController(rootViewController: ongoingMealVC)
-        navController.modalPresentationStyle = .fullScreen
-        present(navController, animated: true, completion: nil)
+        let navigationController = UINavigationController(rootViewController: ongoingMealVC)
+        navigationController.modalPresentationStyle = .automatic // or .pageSheet or .formSheet for iPad
+        present(navigationController, animated: true, completion: nil)
     }
     
     @objc private func openSettings() {
