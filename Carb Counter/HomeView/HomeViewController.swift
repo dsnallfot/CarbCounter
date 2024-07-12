@@ -55,13 +55,20 @@ class HomeViewController: UIViewController {
         // Call the desired function
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
+        
+        // Observe changes to allowViewingOngoingMeals
+        NotificationCenter.default.addObserver(self, selector: #selector(updateNavigationBarButtons), name: .allowViewingOngoingMealsChanged, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            
-            updateNavigationBarButtons()
-        }
+        super.viewWillAppear(animated)
+        
+        updateNavigationBarButtons()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
+    }
     
     private func setupUI() {
         // Create and setup the title label
@@ -141,18 +148,13 @@ class HomeViewController: UIViewController {
         navigationItem.rightBarButtonItem = settingsButton
         
         updateNavigationBarButtons()
-        
     }
         
-    private func updateNavigationBarButtons() {
-            // Add eye icon to the top left corner only if allowed
-            if UserDefaultsRepository.allowViewingOngoingMeals {
-                let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
-                navigationItem.leftBarButtonItem = eyeButton
-            } else {
-                navigationItem.leftBarButtonItem = nil
-            }
-        }
+    @objc private func updateNavigationBarButtons() {
+        let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
+        eyeButton.isEnabled = UserDefaultsRepository.allowViewingOngoingMeals
+        navigationItem.leftBarButtonItem = eyeButton
+    }
     
     @objc func showOngoingMeal() {
         let ongoingMealVC = OngoingMealViewController()

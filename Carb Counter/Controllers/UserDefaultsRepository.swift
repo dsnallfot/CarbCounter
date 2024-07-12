@@ -1,9 +1,3 @@
-//
-//  UserDefaultsRepository.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-23.
-//
 import Foundation
 
 class UserDefaultsRepository {
@@ -134,47 +128,52 @@ class UserDefaultsRepository {
     }
     
     static var dabasAPISecret: String {
-            get {
-                return UserDefaults.standard.string(forKey: "dabasAPISecret") ?? ""
-            }
-            set {
-                UserDefaults.standard.set(newValue, forKey: "dabasAPISecret")
-            }
+        get {
+            return UserDefaults.standard.string(forKey: "dabasAPISecret") ?? ""
         }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "dabasAPISecret")
+        }
+    }
     
     static var nightscoutURL: String? {
-            get {
-                return UserDefaults.standard.string(forKey: "nightscoutURL")
-            }
-            set {
-                UserDefaults.standard.set(newValue, forKey: "nightscoutURL")
-            }
+        get {
+            return UserDefaults.standard.string(forKey: "nightscoutURL")
         }
-        
-        static var nightscoutToken: String? {
-            get {
-                return UserDefaults.standard.string(forKey: "nightscoutToken")
-            }
-            set {
-                UserDefaults.standard.set(newValue, forKey: "nightscoutToken")
-            }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "nightscoutURL")
         }
+    }
+    
+    static var nightscoutToken: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "nightscoutToken")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "nightscoutToken")
+        }
+    }
     
     static var allowSharingOngoingMeals: Bool {
-            get {
-                return UserDefaults.standard.bool(forKey: "allowSharingOngoingMeals")
-            }
-            set {
-                UserDefaults.standard.set(newValue, forKey: "allowSharingOngoingMeals")
-            }
+        get {
+            return UserDefaults.standard.bool(forKey: "allowSharingOngoingMeals")
         }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "allowSharingOngoingMeals")
+        }
+    }
     
     static var allowViewingOngoingMeals: Bool {
-            get {
-                return UserDefaults.standard.bool(forKey: "allowViewingOngoingMeals")
-            }
-            set {
-                UserDefaults.standard.set(newValue, forKey: "allowViewingOngoingMeals")
-            }
+        get {
+            return UserDefaults.standard.object(forKey: "allowViewingOngoingMeals") as? Bool ?? true
         }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "allowViewingOngoingMeals")
+            NotificationCenter.default.post(name: .allowViewingOngoingMealsChanged, object: nil)
+        }
+    }
+}
+
+extension Notification.Name {
+    static let allowViewingOngoingMealsChanged = Notification.Name("allowViewingOngoingMealsChanged")
 }

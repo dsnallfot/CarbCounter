@@ -9,8 +9,12 @@ class SettingsViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "switchCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "valueCell")
         
-        let cancelButton = UIBarButtonItem(title: "Stäng", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+    
+    @objc private func closeView() {
+        dismiss(animated: true, completion: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {

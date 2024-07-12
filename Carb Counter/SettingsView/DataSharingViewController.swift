@@ -16,7 +16,6 @@ class DataSharingViewController: UIViewController {
         
         setupNavigationBarButtons()
         setupToggleForOngoingMealSharing()
-        setupToggleForViewingOngoingMealSharing()
     }
     
     private func setupNavigationBarButtons() {
@@ -52,35 +51,6 @@ class DataSharingViewController: UIViewController {
         @objc private func toggleOngoingMealSharing(_ sender: UISwitch) {
             UserDefaultsRepository.allowSharingOngoingMeals = sender.isOn
             print("allowSharingOngoingMeals set to \(sender.isOn)")
-        }
-        
-        private func setupToggleForViewingOngoingMealSharing() {
-            let toggleSwitch = UISwitch()
-            toggleSwitch.isOn = UserDefaultsRepository.allowViewingOngoingMeals
-            toggleSwitch.addTarget(self, action: #selector(toggleViewingOngoingMealSharing(_:)), for: .valueChanged)
-            
-            let toggleLabel = UILabel()
-            toggleLabel.text = "Tillåt vising av pågående måltid"
-            toggleLabel.translatesAutoresizingMaskIntoConstraints = false
-            
-            let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
-            stackView.axis = .horizontal
-            stackView.spacing = 16
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            stackView.distribution = .fill
-            
-            view.addSubview(stackView)
-            
-            NSLayoutConstraint.activate([
-                stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-                stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-                stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 56)
-            ])
-        }
-        
-        @objc private func toggleViewingOngoingMealSharing(_ sender: UISwitch) {
-            UserDefaultsRepository.allowViewingOngoingMeals = sender.isOn
-            print("allowViewingOngoingMeals set to \(sender.isOn)")
         }
     
     //Manual exporting and importing

@@ -69,31 +69,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
 ///Meal monitoring
     var exportTimer: Timer?
-        private var previousAllowViewingOngoingMeals: Bool?
-
-        var isEditingMeal = false {
-            didSet {
-                if isEditingMeal {
-                    // Only set previousAllowViewingOngoingMeals if it's nil
-                    if previousAllowViewingOngoingMeals == nil {
-                        previousAllowViewingOngoingMeals = UserDefaultsRepository.allowViewingOngoingMeals
-                        //print("isEditingMeal set to true. previousAllowViewingOngoingMeals: \(String(describing: previousAllowViewingOngoingMeals)), allowViewingOngoingMeals set to false.")
-                    }
-                    UserDefaultsRepository.allowViewingOngoingMeals = false
-                    startAutoSaveToCSV()
-                } else {
-                    if let previousState = previousAllowViewingOngoingMeals {
-                        UserDefaultsRepository.allowViewingOngoingMeals = previousState
-                        //print("isEditingMeal set to false. Restoring allowViewingOngoingMeals to \(previousState).")
-                        previousAllowViewingOngoingMeals = nil // Reset to nil after restoring
-                    } else {
-                        //print("isEditingMeal set to false. previousAllowViewingOngoingMeals was nil. Setting allowViewingOngoingMeals to true.")
-                        UserDefaultsRepository.allowViewingOngoingMeals = true
-                    }
-                    stopAutoSaveToCSV()
-                }
+    private var isEditingMeal = false {
+        didSet {
+            if isEditingMeal {
+                UserDefaultsRepository.allowViewingOngoingMeals = false
+                startAutoSaveToCSV()
+            } else {
+                UserDefaultsRepository.allowViewingOngoingMeals = true
+                stopAutoSaveToCSV()
             }
         }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -226,6 +212,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         
+        // Observe changes to allowViewingOngoingMeals
+        NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
+        
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         
         totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelDidChange), for: .editingChanged)
@@ -259,7 +248,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Data import triggered")
         dataSharingVC.importAllCSVFiles()
         fetchFoodItems()
-        
         checkIfEditing()
         
     }
@@ -336,7 +324,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRegisteredLabel.becomeFirstResponder()
     }
     
-
+    @objc private func allowViewingOngoingMealsChanged() {
+        print("allowViewingOngoingMeals changed to: \(UserDefaultsRepository.allowViewingOngoingMeals)")
+    }
     
     @objc private func showMealHistory() {
         let mealHistoryVC = MealHistoryViewController()
@@ -346,6 +336,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     deinit {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
     }
     
     @objc private func showFavoriteMeals() {
@@ -504,6 +495,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
             self.startDoseGiven = false
             self.remainingDoseGiven = false
+            self.isEditingMeal = false
+            print("Clear button tapped and isEditingMeal set to false")
+            self.stopAutoSaveToCSV()
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 self.exportBlankCSV() // Add this line to export a blank CSV
             }
@@ -511,8 +505,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
-        isEditingMeal = false
-        print("Clear button tapped and isEditingMeal set to false")
     }
     
     private func clearAllFoodItems() {
