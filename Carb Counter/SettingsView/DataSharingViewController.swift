@@ -628,18 +628,21 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
 
 extension DataSharingViewController {
     func exportOngoingMealToCSV() {
-        let ongoingMealVC = OngoingMealViewController()
-        let foodItemRows = ongoingMealVC.loadFoodItemRowsFromCSV()  // Ensure foodItemRows is populated
+        guard let composeMealVC = ComposeMealViewController.current else {
+            print("Error: ComposeMealViewController is not available")
+            return
+        }
+        let foodItemRows = composeMealVC.exportFoodItemRows()
         exportToCSV(rows: foodItemRows, fileName: "OngoingMeal.csv", createCSV: createOngoingMealCSV(from:))
     }
 
-    private func exportToCSV(rows: [FoodItemRow], fileName: String, createCSV: ([FoodItemRow]) -> String) {
+    private func exportToCSV(rows: [FoodItemRowData], fileName: String, createCSV: ([FoodItemRowData]) -> String) {
         let csvData = createCSV(rows)
         saveCSV(data: csvData, fileName: fileName)
         print("\(fileName) export done")
     }
 
-    private func createOngoingMealCSV(from foodItemRows: [FoodItemRow]) -> String {
+    private func createOngoingMealCSV(from foodItemRows: [FoodItemRowData]) -> String {
         var csvString = "foodItemID;portionServed;notEaten;totalRegisteredValue\n"
         
         for row in foodItemRows {

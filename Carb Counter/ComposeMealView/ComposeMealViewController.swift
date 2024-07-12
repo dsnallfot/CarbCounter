@@ -13,6 +13,7 @@ import QuartzCore
 
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable {
+    static weak var current: ComposeMealViewController?
 
 ///Views
     var foodItemRows: [FoodItemRowView] = []
@@ -83,6 +84,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        ComposeMealViewController.current = self
         
 ///Create the gradient view
             let colors: [CGColor] = [
@@ -342,6 +344,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
+        if ComposeMealViewController.current === self {
+                    ComposeMealViewController.current = nil
+                }
     }
     
     @objc private func showFavoriteMeals() {
@@ -865,9 +870,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
 
     @objc func exportToCSV() {
-        DispatchQueue.global(qos: .background).async {
             DataSharingViewController().exportOngoingMealToCSV()
-        }
     }
     private func loadFoodItemsFromCoreData() {
         let context = CoreDataStack.shared.context
@@ -1177,26 +1180,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     
     func exportFoodItemRows() -> [FoodItemRowData] {
-            var foodItemRowData: [FoodItemRowData] = []
-            
-            for rowView in foodItemRows {
-                if let foodItem = rowView.selectedFoodItem {
-                    let portionServed = Double(rowView.portionServedTextField.text ?? "") ?? 0.0
-                    let notEaten = Double(rowView.notEatenTextField.text ?? "") ?? 0.0
-                    let totalRegisteredValue = Double(totalRegisteredLabel.text ?? "") ?? 0.0
-                    
-                    let rowData = FoodItemRowData(
-                        foodItemID: foodItem.id,
-                        portionServed: portionServed,
-                        notEaten: notEaten,
-                        totalRegisteredValue: totalRegisteredValue
-                    )
-                    foodItemRowData.append(rowData)
-                }
+        var foodItemRowData: [FoodItemRowData] = []
+        
+        for rowView in foodItemRows {
+            if let foodItem = rowView.selectedFoodItem {
+                let portionServed = Double(rowView.portionServedTextField.text ?? "") ?? 0.0
+                let notEaten = Double(rowView.notEatenTextField.text ?? "") ?? 0.0
+                let totalRegisteredValue = Double(totalRegisteredLabel.text ?? "") ?? 0.0
+                
+                let rowData = FoodItemRowData(
+                    foodItemID: foodItem.id,
+                    portionServed: portionServed,
+                    notEaten: notEaten,
+                    totalRegisteredValue: totalRegisteredValue
+                )
+                foodItemRowData.append(rowData)
             }
-            
-            return foodItemRowData
         }
+        
+        return foodItemRowData
+    }
     
     @objc private func didTakeoverRegistration(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {

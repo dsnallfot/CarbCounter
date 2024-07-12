@@ -23,6 +23,30 @@ class OngoingMealViewController: UIViewController {
         return stackView
     }()
     
+    let takeoverButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Ta över registrering", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 10
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(takeoverRegistration), for: .touchUpInside)
+        button.isEnabled = false // Initially disabled
+        button.addTarget(self, action: #selector(buttonStateDidChange), for: .valueChanged)
+        return button
+    }()
+    
+    let noDataLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Ingen måltidregistrering pågår"
+        label.textColor = .gray
+        label.textAlignment = .center
+        label.font = UIFont.italicSystemFont(ofSize: 16)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -40,6 +64,7 @@ class OngoingMealViewController: UIViewController {
         if UserDefaultsRepository.allowSharingOngoingMeals {
             UserDefaultsRepository.allowSharingOngoingMeals = false
         }
+        updateButtonState()
         startImportTimer()
         importOngoingMealCSV()
     }
@@ -51,6 +76,16 @@ class OngoingMealViewController: UIViewController {
             UserDefaultsRepository.allowSharingOngoingMeals = originalState
         }
         stopImportTimer()
+    }
+    
+    @objc private func buttonStateDidChange(_ sender: UIButton) {
+        sender.backgroundColor = sender.isEnabled ? .systemBlue : .systemGray
+    }
+
+    // Call this function to update the button state
+    private func updateButtonState() {
+        takeoverButton.isEnabled = !foodItemRows.isEmpty
+        takeoverButton.backgroundColor = takeoverButton.isEnabled ? .systemBlue : .systemGray
     }
     
     private func startImportTimer() {
@@ -95,15 +130,6 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func setupTakeoverButton() {
-        let takeoverButton = UIButton(type: .system)
-        takeoverButton.setTitle("Ta över registrering", for: .normal)
-        takeoverButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
-        takeoverButton.backgroundColor = .systemBlue
-        takeoverButton.setTitleColor(.white, for: .normal)
-        takeoverButton.layer.cornerRadius = 10
-        takeoverButton.translatesAutoresizingMaskIntoConstraints = false
-        takeoverButton.addTarget(self, action: #selector(takeoverRegistration), for: .touchUpInside)
-        
         view.addSubview(takeoverButton)
         
         NSLayoutConstraint.activate([
@@ -112,6 +138,8 @@ class OngoingMealViewController: UIViewController {
             takeoverButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             takeoverButton.heightAnchor.constraint(equalToConstant: 50)
         ])
+        
+        takeoverButton.isEnabled = false // Initially disable the button
     }
     
     @objc private func takeoverRegistration() {
@@ -156,22 +184,34 @@ class OngoingMealViewController: UIViewController {
             // Clear existing rows and add imported rows
             foodItemRows = importedRows
             reloadStackView()
+            updateUIBasedOnData()
         }
     }
     
     private func reloadStackView() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        addTotalCarbsRow()
-        addTotalRegisteredCarbsRow()
-        addSpacingView()
-        addHeaderRow()
-        for row in foodItemRows {
-            if let foodItem = foodItems[row.foodItemID ?? UUID()] {
-                let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
-                stackView.addArrangedSubview(rowView)
+        if foodItemRows.isEmpty {
+            stackView.addArrangedSubview(noDataLabel)
+        } else {
+            addTotalCarbsRow()
+            addTotalRegisteredCarbsRow()
+            addSpacingView()
+            addHeaderRow()
+            for row in foodItemRows {
+                if let foodItem = foodItems[row.foodItemID ?? UUID()] {
+                    let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
+                    let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
+                    stackView.addArrangedSubview(rowView)
+                }
             }
         }
+        updateButtonState()
+    }
+    
+    private func updateUIBasedOnData() {
+        let hasData = !foodItemRows.isEmpty
+        takeoverButton.isEnabled = hasData
+        noDataLabel.isHidden = hasData
     }
     
     private func calculateNetCarbs(for foodItem: FoodItem, portionServed: Double, notEaten: Double) -> Double {
@@ -193,9 +233,8 @@ class OngoingMealViewController: UIViewController {
         nameLabel.textAlignment = .left
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         nameLabel.isUserInteractionEnabled = true
-        nameLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped(_:))))
-        nameLabel.tag = foodItem.hashValue // Use the foodItem's hashValue to identify the label
-        
+        nameLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action:#selector(foodItemLabelTapped(_:))))
+        nameLabel.tag = foodItem.hashValue // Use the foodItem’s hashValue to identify the label
         let portionLabel = UILabel()
         portionLabel.text = String(format: "%.0f", portionServed)
         portionLabel.textColor = .label
@@ -209,6 +248,7 @@ class OngoingMealViewController: UIViewController {
         notEatenLabel.textAlignment = .right
         notEatenLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
         notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
+        
         let carbsLabel = UILabel()
         carbsLabel.text = String(format: "%.0f", netCarbs) + " g"
         carbsLabel.textColor = .label
@@ -395,20 +435,6 @@ class OngoingMealViewController: UIViewController {
         spacingView.translatesAutoresizingMaskIntoConstraints = false
         spacingView.heightAnchor.constraint(equalToConstant: 20).isActive = true
         stackView.addArrangedSubview(spacingView)
-    }
-}
-
-extension OngoingMealViewController {
-    func loadFoodItemRowsFromCSV() -> [FoodItemRow] {
-        // Implement the method to load food item rows from the CSV
-        // For example:
-        var foodItemRows = [FoodItemRow]()
-        
-        // Load the CSV data (this is an example, adapt it to your actual loading logic)
-        // let rows = ... (Load the CSV rows as strings)
-        // foodItemRows = parseOngoingMealCSV(rows)
-        
-        return foodItemRows
     }
 }
 
