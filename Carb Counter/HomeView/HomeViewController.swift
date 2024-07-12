@@ -57,6 +57,12 @@ class HomeViewController: UIViewController {
         dataSharingVC.importAllCSVFiles()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            
+            updateNavigationBarButtons()
+        }
+    
     private func setupUI() {
         // Create and setup the title label
         let titleLabel = UILabel()
@@ -134,10 +140,19 @@ class HomeViewController: UIViewController {
         let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
         navigationItem.rightBarButtonItem = settingsButton
         
-        // Add eye icon to the top left corner
-        let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
-        navigationItem.leftBarButtonItem = eyeButton
+        updateNavigationBarButtons()
+        
     }
+        
+    private func updateNavigationBarButtons() {
+            // Add eye icon to the top left corner only if allowed
+            if UserDefaultsRepository.allowViewingOngoingMeals {
+                let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
+                navigationItem.leftBarButtonItem = eyeButton
+            } else {
+                navigationItem.leftBarButtonItem = nil
+            }
+        }
     
     @objc func showOngoingMeal() {
         let ongoingMealVC = OngoingMealViewController()

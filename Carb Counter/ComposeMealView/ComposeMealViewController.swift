@@ -69,11 +69,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
 ///Meal monitoring
     var exportTimer: Timer?
+        private var previousAllowViewingOngoingMeals: Bool?
+
         var isEditingMeal = false {
             didSet {
                 if isEditingMeal {
+                    // Only set previousAllowViewingOngoingMeals if it's nil
+                    if previousAllowViewingOngoingMeals == nil {
+                        previousAllowViewingOngoingMeals = UserDefaultsRepository.allowViewingOngoingMeals
+                        //print("isEditingMeal set to true. previousAllowViewingOngoingMeals: \(String(describing: previousAllowViewingOngoingMeals)), allowViewingOngoingMeals set to false.")
+                    }
+                    UserDefaultsRepository.allowViewingOngoingMeals = false
                     startAutoSaveToCSV()
                 } else {
+                    if let previousState = previousAllowViewingOngoingMeals {
+                        UserDefaultsRepository.allowViewingOngoingMeals = previousState
+                        //print("isEditingMeal set to false. Restoring allowViewingOngoingMeals to \(previousState).")
+                        previousAllowViewingOngoingMeals = nil // Reset to nil after restoring
+                    } else {
+                        //print("isEditingMeal set to false. previousAllowViewingOngoingMeals was nil. Setting allowViewingOngoingMeals to true.")
+                        UserDefaultsRepository.allowViewingOngoingMeals = true
+                    }
                     stopAutoSaveToCSV()
                 }
             }
@@ -235,7 +251,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
-        
         
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }

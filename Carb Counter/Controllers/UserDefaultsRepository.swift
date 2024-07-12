@@ -168,4 +168,13 @@ class UserDefaultsRepository {
                 UserDefaults.standard.set(newValue, forKey: "allowSharingOngoingMeals")
             }
         }
+    
+    static var allowViewingOngoingMeals: Bool {
+            get {
+                return UserDefaults.standard.bool(forKey: "allowViewingOngoingMeals")
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "allowViewingOngoingMeals")
+            }
+        }
 }
