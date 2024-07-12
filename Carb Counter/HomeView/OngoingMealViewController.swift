@@ -34,6 +34,7 @@ class OngoingMealViewController: UIViewController {
             UserDefaultsRepository.allowSharingOngoingMeals = false
         }
         startImportTimer()
+        importOngoingMealCSV()
     }
     
     override func viewWillDisappear(_ animated: Bool) {

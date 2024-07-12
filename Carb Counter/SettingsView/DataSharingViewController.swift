@@ -294,30 +294,30 @@ class DataSharingViewController: UIViewController {
         return csvString
     }
     
-    private func saveCSV(data: String, fileName: String) {
-        let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
-        let tempFilePath = tempDirectory.appendingPathComponent(fileName)
-        
-        do {
-            try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
+    public func saveCSV(data: String, fileName: String) {
+            let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
+            let tempFilePath = tempDirectory.appendingPathComponent(fileName)
             
-            let fileManager = FileManager.default
-            let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
-            let destinationURL = iCloudURL?.appendingPathComponent(fileName)
-            
-            if let destinationURL = destinationURL {
-                if fileManager.fileExists(atPath: destinationURL.path) {
-                    try fileManager.removeItem(at: destinationURL)
+            do {
+                try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
+                
+                let fileManager = FileManager.default
+                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
+                let destinationURL = iCloudURL?.appendingPathComponent(fileName)
+                
+                if let destinationURL = destinationURL {
+                    if fileManager.fileExists(atPath: destinationURL.path) {
+                        try fileManager.removeItem(at: destinationURL)
+                    }
+                    try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
+                    print("Export Successful: Data has been exported to iCloud successfully.")
+                } else {
+                    print("Export Failed: iCloud Drive URL is nil.")
                 }
-                try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
-                print("Export Successful: Data has been exported to iCloud successfully.")
-            } else {
-                print("Export Failed: iCloud Drive URL is nil.")
+            } catch {
+                print("Failed to save file to iCloud: \(error)")
             }
-        } catch {
-            print("Failed to save file to iCloud: \(error)")
         }
-    }
     
 ///Importing and parsing
     @objc public func importCSV(for entityName: String) {

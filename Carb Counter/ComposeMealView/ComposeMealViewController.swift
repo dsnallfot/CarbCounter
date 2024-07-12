@@ -489,6 +489,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
             self.startDoseGiven = false
             self.remainingDoseGiven = false
+            if UserDefaultsRepository.allowSharingOngoingMeals {
+                self.exportBlankCSV() // Add this line to export a blank CSV
+            }
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
@@ -496,10 +499,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         isEditingMeal = false
         print("Clear button tapped and isEditingMeal set to false")
     }
-    
-  
-    
-
     
     private func clearAllFoodItems() {
         for row in foodItemRows {
@@ -531,6 +530,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Reset the remainsContainer color and label
         remainsContainer.backgroundColor = .systemGray
         remainsLabel.text = "+ SLUTDOS"
+    }
+    
+    private func exportBlankCSV() {
+        let blankCSVString = "foodItemID;portionServed;notEaten;totalRegisteredValue\n"
+        // Save the CSV data
+        saveCSV(data: blankCSVString, fileName: "OngoingMeal.csv")
+        print("Blank CSV export done")
+    }
+
+    private func saveCSV(data: String, fileName: String) {
+        guard let dataSharingVC = dataSharingVC else { return }
+        dataSharingVC.saveCSV(data: data, fileName: fileName)
     }
 
     
@@ -1865,6 +1876,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateClearAllButtonState()
         updateSaveFavoriteButtonState() // Add this line
         updateHeadlineVisibility()
+        
+        // Check if foodItemRows is empty and allowSharingOngoingMeals is true before exporting blank CSV
+        if foodItemRows.isEmpty && UserDefaultsRepository.allowSharingOngoingMeals {
+            exportBlankCSV() // Export blank CSV if all rows are removed and sharing is allowed
+        }
     }
     
     private func moveAddButtonRowToEnd() {
