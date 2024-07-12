@@ -1199,19 +1199,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     
     @objc private func didTakeoverRegistration(_ notification: Notification) {
-            if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
-                clearAllFoodItems()
-                for row in importedRows {
-                    if let foodItem = getFoodItemByID(row.foodItemID) {
-                        addFoodItemRow(with: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
-                    }
+        if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
+            clearAllFoodItems()
+            
+            // Find the maximum totalRegisteredValue from the imported rows
+            let maxTotalRegisteredValue = importedRows.map { $0.totalRegisteredValue }.max() ?? 0.0
+            
+            for row in importedRows {
+                if let foodItem = getFoodItemByID(row.foodItemID) {
+                    addFoodItemRow(with: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
                 }
-                updateTotalNutrients()
-                updateClearAllButtonState()
-                updateSaveFavoriteButtonState()
-                updateHeadlineVisibility()
             }
+            
+            // Set the totalRegisteredLabel text to the maximum totalRegisteredValue
+            totalRegisteredLabel.text = String(format: "%.0f", maxTotalRegisteredValue)
+            
+            updateTotalNutrients()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
         }
+    }
         
     private func getFoodItemByID(_ id: UUID?) -> FoodItem? {
             guard let id = id else { return nil }
@@ -1875,7 +1883,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    
     func hideSearchableDropdown() {
         searchableDropdownView.isHidden = true
         navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
@@ -1897,10 +1904,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func addFromSearchableDropdownButtonTapped() {
         searchableDropdownView.completeSelection()
     }
-    
-    
 
-    
     func addFoodItemRow(with foodItem: FoodItem? = nil) {
         guard let stackView = stackView else {
             print("stackView is nil")
