@@ -65,8 +65,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var lateBreakfastFactor = Double(1.5)
     var startDoseGiven: Bool = false
     var remainingDoseGiven: Bool = false
-    var favoriteOrHistoryMealEmojis: String?
     var dataSharingVC: DataSharingViewController?
+    var mealEmojis: String? = "🍴"
 
 ///Meal monitoring
     var exportTimer: Timer?
@@ -294,11 +294,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return formattedNumber.hasSuffix(".0") ? String(formattedNumber.dropLast(2)) : formattedNumber
     }
     
-    private func getCombinedEmojis() -> String {
-        if let favoriteOrHistoryMealEmojis = favoriteOrHistoryMealEmojis {
-            return favoriteOrHistoryMealEmojis.filter { !$0.isWhitespaceOrNewline }
+    private func getMealEmojis() -> String {
+        return (mealEmojis ?? "🍽️").filter { !$0.isWhitespaceOrNewline }
+    }
+    
+    private func createEmojiString() {
+        let emojis = foodItemRows.compactMap { $0.selectedFoodItem?.emoji }
+        if emojis.isEmpty {
+            mealEmojis = "🍴" // Default emoji if no emojis are available
+        } else {
+            mealEmojis = removeDuplicateEmojis(from: emojis.joined().filter { !$0.isWhitespaceOrNewline })
         }
-        return (searchableDropdownView?.combinedEmojis ?? "🍽️").filter { !$0.isWhitespaceOrNewline }
+        print("mealEmojis updated: \(mealEmojis ?? "")")
+    }
+
+    private func removeDuplicateEmojis(from string: String) -> String {
+        var uniqueEmojis = Set<Character>()
+        return string.filter { uniqueEmojis.insert($0).inserted }
     }
     
     @objc private func totalRegisteredLabelDidChange(_ textField: UITextField) {
@@ -378,8 +390,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return
         }
         
-        var emojis: [String] = []
-        
         do {
             guard let items = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
                 print("Error: Unable to cast deserialized JSON to [[String: Any]].")
@@ -413,9 +423,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         }
                         rowView.calculateNutrients()
                         
-                        if let emoji = foodItem.emoji, !emoji.isEmpty {
-                            emojis.append(emoji)
-                        }
                     } else {
                         print("Error: Food item with name \(name) not found in foodItems.")
                     }
@@ -427,9 +434,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Error deserializing JSON: \(error)")
         }
         
-        // Remove duplicates and join emojis into a single string without separators
-        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined().filter { !$0.isWhitespaceOrNewline }
-        
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -439,8 +443,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
         clearAllFoodItems()
-        
-        var emojis: [String] = []
         
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
@@ -464,16 +466,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
                 rowView.calculateNutrients()
                 
-                if let emoji = foodItem.emoji, !emoji.isEmpty {
-                    emojis.append(emoji)
-                }
             } else {
                 print("Food item not found for name: \(foodEntry.entryName ?? "")")
             }
         }
-        
-        // Remove duplicates and join emojis into a single string without separators
-        favoriteOrHistoryMealEmojis = Array(Set(emojis)).joined().filter { !$0.isWhitespaceOrNewline }
         
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -523,7 +519,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             row.removeFromSuperview()
         }
         foodItemRows.removeAll()
-        favoriteOrHistoryMealEmojis = nil // Reset favorite meal emojis
         updateTotalNutrients()
         view.endEditing(true)
         updateClearAllButtonState()
@@ -1268,6 +1263,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 /// Registration of meal and remote commands
 
     @objc private func startAmountContainerTapped() {
+        createEmojiString()
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
@@ -1317,7 +1313,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 self.startDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getCombinedEmojis() // Check if foodItemRows is empty and set emojis accordingly
+                let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
                 self.sendMealRequest(combinedString: combinedString)
@@ -1340,7 +1336,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         clearAllButton.isEnabled = true
         let caregiverName = UserDefaultsRepository.caregiverName
         let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getCombinedEmojis() // Check if foodItemRows is empty and set emojis accordingly
+        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
         let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
         let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
         /*let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"*/
@@ -1357,6 +1353,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func remainContainerTapped() {
+        createEmojiString()
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
         if remainsValue < 0 {
@@ -1499,7 +1496,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 if self.startDoseGiven == true {
                     emojis = "🍽️"
                 } else {
-                    emojis = "\(self.getCombinedEmojis())🍽️"
+                    emojis = "\(self.getMealEmojis())🍽️"
                 }
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
@@ -1532,7 +1529,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if self.startDoseGiven == true {
             emojis = "🍽️"
         } else {
-            emojis = "\(self.getCombinedEmojis())🍽️"
+            emojis = "\(self.getMealEmojis())🍽️"
         }
         
         let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format

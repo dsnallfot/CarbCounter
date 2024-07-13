@@ -6,13 +6,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     var onDoneButtonTapped: (([FoodItem]) -> Void)?
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
-    var selectedFoodItems: [FoodItem] = [] {
-        didSet {
-            updateCombinedEmojis()
-        }
-    }
-    var combinedEmojis: String = "🍴"
-    
+    var selectedFoodItems: [FoodItem] = []
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = "Sök & välj ett eller flera livsmedel"
@@ -261,10 +255,6 @@ extension SearchableDropdownView {
             print("Failed to update food item count: \(error)")
         }
         
-        // Save combined emojis before clearing selection
-        let emojis = removeDuplicateEmojis(from: combinedEmojis)
-        print("saved emojis: \(emojis)")
-        
         // Resign the searchBar as first responder
         searchBar.resignFirstResponder()
         
@@ -277,35 +267,6 @@ extension SearchableDropdownView {
         
         // Notify delegate to update navigation bar
         (self.superview?.next as? ComposeMealViewController)?.hideSearchableDropdown()
-        
-        // Set combined emojis back to the previously saved value
-        combinedEmojis = emojis
-    }
-    
-    func updateCombinedEmojis() {
-        // Extract emojis from selected food items
-        let emojis = selectedFoodItems.compactMap { $0.emoji }
-        
-        if emojis.isEmpty {
-            combinedEmojis = "🍴" // Default emoji if no emojis are available
-        } else {
-            combinedEmojis = removeDuplicateEmojis(from: emojis.joined().filter { !$0.isWhitespaceOrNewline })
-        }
-        
-        // Notify if needed
-        onSelectItems?(selectedFoodItems)
-        print("combinedEmojis cleared and reset: \(combinedEmojis)")
-    }
-
-    func getCombinedEmojis() -> String {
-        return combinedEmojis.filter { !$0.isWhitespaceOrNewline }
-    }
-
-    // Helper function to remove duplicate emojis
-    private func removeDuplicateEmojis(from string: String) -> String {
-        var uniqueEmojis = Set<Character>()
-        let filteredEmojis = string.filter { uniqueEmojis.insert($0).inserted }
-        return String(filteredEmojis)
     }
 }
 
