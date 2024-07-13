@@ -1587,6 +1587,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
             //print ("saveMealToHistory = true")
         }
+        if UserDefaultsRepository.allowSharingOngoingMeals {
+            self.exportToCSV()
+        }
     }
     
     private func authenticateUser(completion: @escaping (Bool) -> Void) {

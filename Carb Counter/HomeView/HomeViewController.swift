@@ -125,7 +125,7 @@ class HomeViewController: UIViewController {
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // Image container view constraints
-            imageContainerView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: -10), // Adjusted to move higher
+            //imageContainerView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: -10), // Adjusted to move higher
             imageContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             imageContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             imageContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
