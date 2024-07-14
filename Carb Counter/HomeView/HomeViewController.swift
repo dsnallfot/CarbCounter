@@ -85,12 +85,13 @@ class HomeViewController: UIViewController {
         imageContainerView.layer.cornerRadius = 40 // Increase corner radius
         imageContainerView.layer.masksToBounds = true
         
+        /*
         // Add shadow/glow to the container view - Needs to check why this doesn't work
         imageContainerView.layer.shadowColor = UIColor.white.cgColor
         imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 10)
         imageContainerView.layer.shadowRadius = 30
         imageContainerView.layer.shadowOpacity = 0.5 // Increase shadow opacity
-        
+        */
         // Create and setup the app icon image view
         let appIconImageView = UIImageView()
         if let image = UIImage(named: "launch") {

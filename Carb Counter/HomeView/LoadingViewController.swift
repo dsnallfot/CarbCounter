@@ -42,6 +42,7 @@ class LoadingViewController: UIViewController {
         titleLabel.textAlignment = .center
         titleLabel.font = UIFont.systemFont(ofSize: 48, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.textColor = UIColor.label.withAlphaComponent(0.4) // Set the text color with 0.4 opacity
         
         // Create and setup the container view for the image
         let imageContainerView = UIView()
@@ -49,12 +50,6 @@ class LoadingViewController: UIViewController {
         imageContainerView.translatesAutoresizingMaskIntoConstraints = false
         imageContainerView.layer.cornerRadius = 40
         imageContainerView.layer.masksToBounds = true
-        
-        // Add shadow/glow to the container view
-        imageContainerView.layer.shadowColor = UIColor.white.cgColor
-        imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 10)
-        imageContainerView.layer.shadowRadius = 30
-        imageContainerView.layer.shadowOpacity = 0.5
         
         // Create and setup the app icon image view
         let appIconImageView = UIImageView()
@@ -66,6 +61,7 @@ class LoadingViewController: UIViewController {
         }
         appIconImageView.contentMode = .scaleAspectFit
         appIconImageView.translatesAutoresizingMaskIntoConstraints = false
+        appIconImageView.alpha = 0.3 // Set the image opacity to 30%
         
         // Add the image view to the container view
         imageContainerView.addSubview(appIconImageView)
@@ -80,13 +76,14 @@ class LoadingViewController: UIViewController {
         loadingLabel.text = "Uppdaterar data"
         loadingLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         loadingLabel.textAlignment = .center
+        loadingLabel.textColor = .white
         loadingLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Create and setup the copyright label
         let copyrightLabel = UILabel()
         copyrightLabel.text = "© 2024 Daniel Snällfot"
         copyrightLabel.textAlignment = .center
-        copyrightLabel.textColor = .gray
+        copyrightLabel.textColor = .clear
         copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
         copyrightLabel.translatesAutoresizingMaskIntoConstraints = false
         
@@ -122,7 +119,7 @@ class LoadingViewController: UIViewController {
             
             // Loading indicator constraints
             loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loadingIndicator.topAnchor.constraint(equalTo: copyrightLabel.bottomAnchor, constant: 20),
+            loadingIndicator.topAnchor.constraint(equalTo: copyrightLabel.bottomAnchor, constant: 10),
             
             // Loading label constraints
             loadingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),

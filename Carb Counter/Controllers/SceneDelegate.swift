@@ -24,6 +24,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func showMainViewController() {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let mainVC = storyboard.instantiateInitialViewController()
+            
+            // Add a transition animation
+            let transition = CATransition()
+            transition.type = .fade
+            transition.duration = 0.5
+            window?.layer.add(transition, forKey: kCATransition)
+            
             window?.rootViewController = mainVC
         }
     
