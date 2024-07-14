@@ -126,7 +126,16 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "lateBreakfast")
         }
     }
-    
+        
+    static var lateBreakfastOverrideName: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "lateBreakfastOverrideName")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "lateBreakfastOverrideName")
+        }
+    }
+        
     static var dabasAPISecret: String {
         get {
             return UserDefaults.standard.string(forKey: "dabasAPISecret") ?? ""

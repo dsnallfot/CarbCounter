@@ -22,7 +22,7 @@ class RemoteSettingsViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
         tableView.tableFooterView = UIView()
 
-        if UserDefaultsRepository.allowShortcuts {
+        if !UserDefaultsRepository.allowShortcuts {
                 method = "iOS Shortcuts"
             } else if method.isEmpty {
                 method = "iOS Shortcuts"
@@ -64,7 +64,7 @@ class RemoteSettingsViewController: UITableViewController {
             cell.selectionStyle = .none
 
             let segmentedControl = UISegmentedControl(items: ["Använd genvägar", "Använd SMS API"])
-            segmentedControl.selectedSegmentIndex = (!UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : 0
+            segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : 0
             segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
             segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 

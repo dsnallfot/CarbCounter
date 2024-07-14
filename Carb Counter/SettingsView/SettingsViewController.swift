@@ -39,7 +39,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 8 // Increased to accommodate the new rows
+            return 9 // Increased to accommodate the new rows
         default:
             return 0
         }
@@ -87,12 +87,15 @@ class SettingsViewController: UITableViewController {
                 cell.textLabel?.text = "Sen Frukost-faktor"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
             case 5:
+                cell.textLabel?.text = "Sen frukost override"
+                cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
+            case 6:
                 cell.textLabel?.text = "Nightscout URL"
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
-            case 6:
+            case 7:
                 cell.textLabel?.text = "Nightscout Token"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
-            case 7:
+            case 8:
                 cell.textLabel?.text = "Dabas API Secret"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
             default:
@@ -146,6 +149,14 @@ class SettingsViewController: UITableViewController {
                 value = UserDefaultsRepository.lateBreakfastFactor
                 userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
             case 5:
+                title = "Sen frukost Override namn"
+                message = "Ange exakt namn på den override du använder i iAPS under sen frukost"
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.lateBreakfastOverrideName ?? "") { newValue in
+                    UserDefaultsRepository.lateBreakfastOverrideName = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                }
+                return
+            case 6:
                 title = "Nightscout URL"
                 message = "Ange din Nightscout URL:"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutURL ?? "") { newValue in
@@ -153,7 +164,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 6:
+            case 7:
                 title = "Nightscout Token"
                 message = "Ange din Nightscout Token:"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutToken ?? "") { newValue in
@@ -161,7 +172,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 7:
+            case 8:
                 title = "Dabas API Secret"
                 message = "Ange din Dabas API Secret:"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in
@@ -212,7 +223,7 @@ class SettingsViewController: UITableViewController {
     }
     
     @objc private func shortcutsSwitchChanged(_ sender: UISwitch) {
-        UserDefaultsRepository.allowShortcuts = !sender.isOn
+        UserDefaultsRepository.allowShortcuts = sender.isOn
         NotificationCenter.default.post(name: Notification.Name("AllowShortcutsChanged"), object: nil)
     }
     

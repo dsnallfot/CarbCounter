@@ -1261,6 +1261,80 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     
 /// Registration of meal and remote commands
+    
+    @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
+        if sender.isOn {
+            handleLateBreakfastSwitchOn()
+        }
+    }
+
+    private func handleLateBreakfastSwitchOn() {
+        guard let overrideName = UserDefaultsRepository.lateBreakfastOverrideName else {
+            print("No override name available")
+            return
+        }
+        if UserDefaultsRepository.allowShortcuts {
+            let caregiverName = UserDefaultsRepository.caregiverName
+            let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+            let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+            
+            let alertTitle = "Aktivera override"
+            let alertMessage = "Vill du aktivera overriden \n'\(overrideName)' i iAPS?"
+            
+            let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+            let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
+                self.sendOverrideRequest(combinedString: combinedString)
+            }
+            alertController.addAction(cancelAction)
+            alertController.addAction(yesAction)
+            present(alertController, animated: true, completion: nil)
+        } else {
+            let alertController = UIAlertController(title: "Manuell aktivering", message: "Kom ihåg att aktivera overriden \n'\(overrideName)' i iAPS", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+            let okAction = UIAlertAction(title: "OK", style: .default) { _ in }
+            alertController.addAction(cancelAction)
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+        }
+    }
+
+    private func sendOverrideRequest(combinedString: String) {
+        if UserDefaultsRepository.method == "iOS Shortcuts" {
+            guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                print("Failed to encode URL string")
+                return
+            }
+            let urlString = "shortcuts://run-shortcut?name=Remote%20Override&input=text&text=\(encodedString)"
+            if let url = URL(string: urlString) {
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                }
+            }
+        } else {
+            authenticateUser { [weak self] authenticated in
+                guard let self = self else { return }
+                if authenticated {
+                    self.twilioRequest(combinedString: combinedString) { result in
+                        switch result {
+                        case .success:
+                            AudioServicesPlaySystemSound(SystemSoundID(1322))
+                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS", preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                                self.dismiss(animated: true, completion: nil)
+                            })
+                            self.present(alertController, animated: true, completion: nil)
+                        case .failure(let error):
+                            AudioServicesPlaySystemSound(SystemSoundID(1053))
+                            let alertController = UIAlertController(title: "Fel", message: error.localizedDescription, preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                            self.present(alertController, animated: true, completion: nil)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @objc private func startAmountContainerTapped() {
         createEmojiString()
@@ -1370,7 +1444,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
         let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
-        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?\n\nDosen är beräknad utifrån aktuell CR. Om du önskar kan du justera den:", preferredStyle: .alert)
         bolusAlertController.addTextField { textField in
             textField.text = bolusValue
             textField.keyboardType = .decimalPad
@@ -1432,7 +1506,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
                 //let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
-                var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
+                var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
                     alertMessage += "\n\(fatValue) g fett"
@@ -1474,7 +1548,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
+            var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
             
             if let fat = Double(fatValue), fat > 0 {
                 alertMessage += "\n\(fatValue) g fett"
@@ -2137,6 +2211,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let toggle = UISwitch()
             toggle.onTintColor = .systemBlue
             toggle.translatesAutoresizingMaskIntoConstraints = false
+            toggle.addTarget(self, action: #selector(lateBreakfastSwitchToggled(_:)), for: .valueChanged)
             return toggle
         }()
         
