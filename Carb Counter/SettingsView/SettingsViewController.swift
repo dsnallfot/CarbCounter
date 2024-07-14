@@ -57,7 +57,7 @@ class SettingsViewController: UITableViewController {
             case 2:
                 cell.textLabel?.text = "Dela data"
             case 3:
-                cell.textLabel?.text = "Remote inställningar"
+                cell.textLabel?.text = "Fjärrstyrning"
             default:
                 break
             }
@@ -67,8 +67,8 @@ class SettingsViewController: UITableViewController {
             switch indexPath.row {
             case 0:
                 let toggleSwitch = UISwitch()
-                cell.textLabel?.text = "Manuellt läge"
-                toggleSwitch.isOn = !UserDefaultsRepository.allowShortcuts
+                cell.textLabel?.text = "Tillåt fjärrstyrning"
+                toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
                 toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
             case 1:

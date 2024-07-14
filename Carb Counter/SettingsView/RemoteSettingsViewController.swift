@@ -17,14 +17,16 @@ class RemoteSettingsViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Remote"
+        title = "Fjärrstyrning"
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
         tableView.tableFooterView = UIView()
 
-        if method.isEmpty {
-            method = "iOS Shortcuts"
-        }
+        if UserDefaultsRepository.allowShortcuts {
+                method = "iOS Shortcuts"
+            } else if method.isEmpty {
+                method = "iOS Shortcuts"
+            }
     
         // Add Done button to the navigation bar
         let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
@@ -61,8 +63,8 @@ class RemoteSettingsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SegmentedControlCell", for: indexPath)
             cell.selectionStyle = .none
 
-            let segmentedControl = UISegmentedControl(items: ["iOS Shortcuts", "SMS API"])
-            segmentedControl.selectedSegmentIndex = method == "SMS API" ? 1 : 0
+            let segmentedControl = UISegmentedControl(items: ["Använd genvägar", "Använd SMS API"])
+            segmentedControl.selectedSegmentIndex = (!UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : 0
             segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
             segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 

@@ -6,14 +6,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private var backgroundEnterTime: Date?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        guard let windowScene = (scene as? UIWindowScene) else { return }
+            guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = storyboard.instantiateInitialViewController()
-        window?.makeKeyAndVisible()
-    }
-
+            window = UIWindow(windowScene: windowScene)
+            
+            // Set the LoadingViewController as the initial view controller
+            let loadingVC = LoadingViewController()
+            window?.rootViewController = loadingVC
+            window?.makeKeyAndVisible()
+            
+            // Simulate some delay to show the loading screen
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.showMainViewController()
+            }
+        }
+    
+    private func showMainViewController() {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let mainVC = storyboard.instantiateInitialViewController()
+            window?.rootViewController = mainVC
+        }
+    
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
         // This occurs shortly after the scene enters the background, or when its session is discarded.
