@@ -1305,7 +1305,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Failed to encode URL string")
                 return
             }
-            let urlString = "shortcuts://run-shortcut?name=Remote%20Override&input=text&text=\(encodedString)"
+            let urlString = "shortcuts://run-shortcut?name=CC%20Override&input=text&text=\(encodedString)"
             if let url = URL(string: urlString) {
                 if UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
@@ -1406,6 +1406,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let newRegisteredValue = currentRegisteredValue + remainsValue
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
         self.startDoseGiven = true
+        if totalRegisteredLabel.text == "" {
+            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
+            //print ("saveMealToHistory = false")
+        } else {
+            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
+            //print ("saveMealToHistory = true")
+        }
         updateTotalNutrients()
         clearAllButton.isEnabled = true
         let caregiverName = UserDefaultsRepository.caregiverName
@@ -1594,6 +1601,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         totalRegisteredLabel.text = String(format:"%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
         self.remainingDoseGiven = true
+        if totalRegisteredLabel.text == "" {
+            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
+            //print ("saveMealToHistory = false")
+        } else {
+            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
+            //print ("saveMealToHistory = true")
+        }
         updateTotalNutrients()
         clearAllButton.isEnabled = true
         let caregiverName = UserDefaultsRepository.caregiverName
