@@ -11,12 +11,12 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         let searchBar = UISearchBar()
         searchBar.placeholder = "Sök & välj ett eller flera livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.barTintColor = .systemBackground
+        //searchBar.barTintColor = .systemBackground
         searchBar.backgroundImage = UIImage() // Removes the default background image
         
         // Customize the text field inside the search bar
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
-            textField.backgroundColor = .systemBackground
+            //textField.backgroundColor = .systemBackground
             textField.tintColor = .label // Set the cursor color
             textField.autocorrectionType = .no // Disable autocorrection
             textField.spellCheckingType = .no // Disable spell checking
@@ -54,6 +54,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     let tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = .clear
         return tableView
     }()
     
@@ -62,7 +63,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        segmentedControl.backgroundColor = .systemBackground // Set background color
+        //segmentedControl.backgroundColor = .systemBackground // Set background color
         segmentedControl.tintColor = .label // Set tint color
         return segmentedControl
     }()
@@ -92,8 +93,31 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
     
     private func setupView() {
-        addSubview(segmentedControl)
+        backgroundColor = .systemBackground // Set the solid background color here
+        
+        // Create the gradient view
+                let colors: [CGColor] = [
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+                ]
+                let gradientView = GradientView(colors: colors)
+                gradientView.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Add the gradient view to the main view
+                addSubview(gradientView)
+                sendSubviewToBack(gradientView)
+                
+                // Set up constraints for the gradient view
+                NSLayoutConstraint.activate([
+                    gradientView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                    gradientView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                    gradientView.topAnchor.constraint(equalTo: topAnchor),
+                    gradientView.bottomAnchor.constraint(equalTo: bottomAnchor)
+                ])
+        
         addSubview(searchBar)
+        addSubview(segmentedControl)
         addSubview(tableView)
         
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
@@ -102,17 +126,17 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         tableView.dataSource = self
         
         NSLayoutConstraint.activate([
-            searchBar.topAnchor.constraint(equalTo: topAnchor),
-            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor),
-            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor),
+            segmentedControl.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            segmentedControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            segmentedControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             
-            segmentedControl.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
-            segmentedControl.leadingAnchor.constraint(equalTo: leadingAnchor),
-            segmentedControl.trailingAnchor.constraint(equalTo: trailingAnchor),
+            searchBar.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
+            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             
-            tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
@@ -210,6 +234,8 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         let foodItem = filteredFoodItems[indexPath.row]
         cell.textLabel?.text = foodItem.name
         cell.accessoryType = selectedFoodItems.contains(foodItem) ? .checkmark : .none
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .clear
         return cell
     }
     
@@ -223,7 +249,7 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText") // Save search text
+        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText") //Save search text
         if searchText.isEmpty {
             filteredFoodItems = foodItems
         } else {
@@ -248,7 +274,6 @@ extension SearchableDropdownView {
         for item in selectedFoodItems {
             item.count += 1
         }
-        
         do {
             try context.save()
         } catch {

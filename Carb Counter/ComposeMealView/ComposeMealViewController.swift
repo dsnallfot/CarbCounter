@@ -118,7 +118,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 155) // Adjust height as needed
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 150) // Adjust height as needed
         ])
         
 ///Reset lateBreakfast to false
@@ -570,7 +570,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         scrollView.addSubview(contentView)
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 8),
+            scrollView.topAnchor.constraint(equalTo: header.bottomAnchor), //constant: 8),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
