@@ -323,6 +323,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateClearAllButtonState()
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
+            startDoseGiven = false
+            remainingDoseGiven = false
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
         }
@@ -541,7 +543,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Reset the remainsContainer color and label
         remainsContainer.backgroundColor = .systemGray
-        remainsLabel.text = "+ SLUTDOS"
+        remainsLabel.text = "+ RESTERANDE"
     }
     
     private func exportBlankCSV() {
@@ -758,7 +760,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         remainsContainer.addGestureRecognizer(remainsTapGesture)
         remainsContainer.isUserInteractionEnabled = true
         
-        remainsLabel = createLabel(text: "GE RESTEN", fontSize: 9, weight: .bold, color: .white)
+        remainsLabel = createLabel(text: "HELA DOSEN", fontSize: 9, weight: .bold, color: .white)
         totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
         totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
         
@@ -995,6 +997,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func saveMealHistory() {
+        // Check if foodItemRows is empty and exit the function if it is
+        guard !foodItemRows.isEmpty else {
+            print("No food items to save.")
+            return
+        }
+
         let context = CoreDataStack.shared.context
         
         let mealHistory = MealHistory(context: context)
@@ -1038,10 +1046,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
+        guard let dataSharingVC = dataSharingVC else { return }
 
-                // Call the desired function
-                dataSharingVC.exportMealHistoryToCSV()
+        // Call the desired function
+        dataSharingVC.exportMealHistoryToCSV()
         print("Meal history export triggered")
         
         saveMealToHistory = false // Reset the flag after saving
@@ -1358,7 +1366,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func proceedWithStartAmount(khValue: String, bolusValue: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
                 
                 //let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
@@ -1380,7 +1388,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -1409,6 +1417,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
             //print ("saveMealToHistory = false")
+            startDoseGiven = false
+            remainingDoseGiven = false
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
             //print ("saveMealToHistory = true")
@@ -1439,7 +1449,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: "Varning", message: "Du har registrerat en större startdos än vad som slutligen åts! \n\nSe till att komplettera med minst \(khValue) kolhydrater för att undvika hypoglykemi!", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Varning", message: "Du har registrerat en större startdos än vad som slutligen åts! \n\nSe till att komplettera med minst \(khValue) kolhydrater för att undvika lågt blodsocker!", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
@@ -1510,6 +1520,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     private func proceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
+        let alertTitle: String
+        if self.startDoseGiven == true {
+            alertTitle = "Registrera resten av måltiden"
+        } else {
+            alertTitle = "Registrera hela måltiden"
+        }
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
                 //let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
@@ -1523,8 +1539,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
                 
                 alertMessage += "\n\(finalBolusValue) E insulin"
-                
-                let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: alertMessage, preferredStyle: .alert)
+                            
+                let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
@@ -1566,7 +1582,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             alertMessage += "\n\(finalBolusValue) E insulin"
             
-            let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: alertMessage, preferredStyle: .alert)
+            let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -1832,6 +1848,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         let totalCarbsValue = Double(totalNetCarbs)
         
+        let remainsTextString: String
+        
+        if self.startDoseGiven == true {
+            remainsTextString = "+ KVAR ATT GE"
+        } else {
+            remainsTextString = "+ HELA DOSEN"
+        }
+        
         if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
@@ -1841,7 +1865,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if remainsValue < -0.5 {
                 remainsLabel.text = "ÖVERDOS!"
             } else {
-                remainsLabel.text = "+ SLUTDOS"
+                remainsLabel.text = remainsTextString
             }
             
             switch remainsValue {
@@ -1859,7 +1883,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + "E"
             
             remainsContainer?.backgroundColor = .systemGray
-            remainsLabel?.text = "+ SLUTDOS"
+            remainsLabel?.text = remainsTextString
         }
         
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
@@ -2084,8 +2108,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateHeadlineVisibility()
         
         // Check if foodItemRows is empty and allowSharingOngoingMeals is true before exporting blank CSV
-        if foodItemRows.isEmpty && UserDefaultsRepository.allowSharingOngoingMeals {
-            exportBlankCSV() // Export blank CSV if all rows are removed and sharing is allowed
+        if foodItemRows.isEmpty {
+            startDoseGiven = false
+            remainingDoseGiven = false
+            if UserDefaultsRepository.allowSharingOngoingMeals {
+                exportBlankCSV() // Export blank CSV if all rows are removed and sharing is allowed
+            }
         }
     }
     
