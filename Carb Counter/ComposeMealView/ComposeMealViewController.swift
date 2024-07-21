@@ -1995,6 +1995,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             // Hide the dropdown and update the navigation bar
             self?.hideSearchableDropdown()
+
+            // Enable manual text input in totalRegisteredLabel
+            self?.totalRegisteredLabel.isUserInteractionEnabled = true
         }
     }
     
@@ -2002,6 +2005,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         searchableDropdownView.isHidden = true
         navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
         clearAllButton.isHidden = false // Unhide the "Rensa måltid" button
+
+        // Enable manual text input in totalRegisteredLabel
+        totalRegisteredLabel.isUserInteractionEnabled = true
     }
     
     @objc private func searchableDropdownViewDidDismiss() {
@@ -2094,6 +2100,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         searchableDropdownView.isHidden = false
         navigationItem.rightBarButtonItem = addFromSearchableDropdownButton // Show "Lägg till" button
         clearAllButton.isHidden = true // Hide the "Rensa måltid" button
+        
+        // Disable manual text input in totalRegisteredLabel
+        totalRegisteredLabel.isUserInteractionEnabled = false
     }
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
