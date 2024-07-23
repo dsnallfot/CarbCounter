@@ -292,17 +292,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         searchMode = sender.selectedSegmentIndex == 0 ? .local : .online
         updateSearchBarPlaceholder()
 
-        if searchMode == .local && searchBar.text?.isEmpty == true {
-            filteredFoodItems = foodItems
-            sortFoodItems()
+        // Perform the search with the current search text
+        if let searchText = searchBar.text, !searchText.isEmpty {
+            searchBarSearchButtonClicked(searchBar)
+        } else {
+            if searchMode == .local {
+                filteredFoodItems = foodItems
+                sortFoodItems()
+                tableView.reloadData()
+            } else {
+                articles = []
+                tableView.reloadData()
+            }
         }
-        
-        if searchMode == .online && searchBar.text?.isEmpty == true {
-            articles = []
-        }
-
-        
-        tableView.reloadData()
     }
     
     private func updateSearchBarPlaceholder() {

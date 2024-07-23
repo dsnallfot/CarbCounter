@@ -2151,7 +2151,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRegisteredLabel?.inputAccessoryView = toolbar
     }
     
-    @objc private func doneButtonTapped() {
+    @objc private func doneButtonTapped() { 
         totalRegisteredLabel?.resignFirstResponder()
         navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
         clearAllButton.isHidden = false // Unhide the "Rensa måltid" button

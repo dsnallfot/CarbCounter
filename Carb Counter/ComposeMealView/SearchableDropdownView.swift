@@ -142,6 +142,17 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
     
     @objc private func doneButtonTapped() {
+        // Clear the search bar text
+        searchBar.text = ""
+        // Clear saved search text
+        UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
+        
+        // Reset the filtered food items to the original list
+        filteredFoodItems = foodItems
+        // Apply the segmented control filtering
+        sortFoodItems()
+        tableView.reloadData()
+        
         completeSelection()
     }
     
