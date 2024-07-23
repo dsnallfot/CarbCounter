@@ -174,7 +174,7 @@ class SettingsViewController: UITableViewController {
                 return
             case 8:
                 title = "Dabas API Secret"
-                message = "Ange din Dabas API Secret:"
+                message = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in
                     UserDefaultsRepository.dabasAPISecret = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)

@@ -19,7 +19,7 @@ extension TwilioRequestable {
         let toNumber = UserDefaultsRepository.twilioToNumberString
         let message = combinedString
 
-        // Debug logging
+        //Debug logging
         //print("Twilio SID: \(twilioSID)")
         //print("Twilio Secret: \(twilioSecret)")
         //print("From Number: \(fromNumber)")

@@ -110,7 +110,7 @@ class HomeViewController: UIViewController {
         
         // Create and setup the copyright label
         let copyrightLabel = UILabel()
-        copyrightLabel.text = "© 2024 dsnallfot"
+        copyrightLabel.text = "© 2024 Daniel Snällfot"
         copyrightLabel.textAlignment = .center
         copyrightLabel.textColor = .clear
         copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)

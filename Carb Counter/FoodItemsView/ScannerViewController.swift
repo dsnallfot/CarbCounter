@@ -144,6 +144,12 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     func found(code: String) {
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
 
+        // Check if the Dabas API secret is empty
+        if dabasAPISecret.isEmpty {
+            self.fetchFromOpenFoodFacts(code: code)
+            return
+        }
+
         // Ensure the code is padded to 14 digits with leading zeros
         let paddedCode = code.padLeft(toLength: 14, withPad: "0")
 

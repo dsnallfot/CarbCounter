@@ -348,6 +348,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let formattedSearchText = searchText.replacingOccurrences(of: " ", with: "+").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? searchText
 
         let dabasAPISecret = UserDefaultsRepository.dabasAPISecret
+        
+        // Check if the Dabas API secret is empty
+        if dabasAPISecret.isEmpty {
+            self.searchOpenfoodfacts(for: searchText)
+            return
+        }
+
         let dabasURLString = "https://api.dabas.com/DABASService/V2/articles/searchparameter/\(formattedSearchText)/JSON?apikey=\(dabasAPISecret)"
         
         guard let dabasURL = URL(string: dabasURLString) else {
@@ -417,7 +424,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         
         var request = URLRequest(url: openfoodURL)
-        request.addValue("CarbsCounterApp_iOS_Version0.1_daniel.snallfot@icloud.com", forHTTPHeaderField: "User-Agent")
+        request.addValue("CarbsCounterApp_iOS_Version_0.1", forHTTPHeaderField: "User-Agent")
         
         let openfoodTask = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
