@@ -15,6 +15,8 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        view.backgroundColor = .systemBackground
+        
         // Create the gradient view
         let colors: [CGColor] = [
             UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -73,9 +75,9 @@ class HomeViewController: UIViewController {
     private func setupUI() {
         // Create and setup the title label
         let titleLabel = UILabel()
-        titleLabel.text = "Carbs Counter"
+        titleLabel.text = "Räkna Kolhydrater"
         titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.systemFont(ofSize: 48, weight: .semibold)
+        titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Create and setup the container view for the image
@@ -108,9 +110,9 @@ class HomeViewController: UIViewController {
         
         // Create and setup the copyright label
         let copyrightLabel = UILabel()
-        copyrightLabel.text = "© 2024 Daniel Snällfot"
+        copyrightLabel.text = "© 2024 dsnallfot"
         copyrightLabel.textAlignment = .center
-        copyrightLabel.textColor = .gray
+        copyrightLabel.textColor = .clear
         copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
         copyrightLabel.translatesAutoresizingMaskIntoConstraints = false
         
@@ -169,7 +171,7 @@ class HomeViewController: UIViewController {
         let navController = UINavigationController(rootViewController: settingsVC)
         present(navController, animated: true, completion: nil)
     }
-    
+    /*
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
@@ -179,5 +181,5 @@ class HomeViewController: UIViewController {
             imageContainerView.layer.shadowColor = isDarkMode ? UIColor.white.cgColor : UIColor.black.cgColor
             imageContainerView.layer.shadowOpacity = isDarkMode ? 0.5 : 0.25 // Adjust based on mode
         }
-    }
+    }*/
 }

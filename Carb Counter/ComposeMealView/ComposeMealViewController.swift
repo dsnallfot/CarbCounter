@@ -1287,7 +1287,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
             
             let alertTitle = "Aktivera override"
-            let alertMessage = "Vill du aktivera overriden \n'\(overrideName)' i iAPS?"
+            let alertMessage = "Vill du aktivera overriden \n'\(overrideName)' i iAPS/Trio?"
             
             let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
@@ -1298,7 +1298,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(yesAction)
             present(alertController, animated: true, completion: nil)
         } else {
-            let alertController = UIAlertController(title: "Manuell aktivering", message: "Kom ihåg att aktivera overriden \n'\(overrideName)' i iAPS", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Manuell aktivering", message: "Kom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in }
             alertController.addAction(cancelAction)
@@ -1327,7 +1327,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         switch result {
                         case .success:
                             AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS", preferredStyle: .alert)
+                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS/Trio", preferredStyle: .alert)
                             alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                                 self.dismiss(animated: true, completion: nil)
                             })
@@ -1366,18 +1366,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func proceedWithStartAmount(khValue: String, bolusValue: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
                 
-                //let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS?", preferredStyle: .alert)
+                //let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS/Trio?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerStartAmountInIAPS(khValue: khValue, bolusValue: bolusValue)
+                    self.registerStartAmountInLoopingApp(khValue: khValue, bolusValue: bolusValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                let alertController = UIAlertController(title: "Manuell registrering", message: "Registrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Manuell registrering", message: "Registrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                     self.updateRegisteredAmount(khValue: khValue)
@@ -1388,7 +1388,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue)
@@ -1406,7 +1406,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    private func registerStartAmountInIAPS(khValue: String, bolusValue: String) {
+    private func registerStartAmountInLoopingApp(khValue: String, bolusValue: String) {
         let khValue = khValue.replacingOccurrences(of: ".", with: ",")
         let bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
@@ -1528,8 +1528,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                //let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS, och ge en bolus?", preferredStyle: .alert)
-                var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
+                //let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS/Trio, och ge en bolus?", preferredStyle: .alert)
+                var alertMessage = "Vill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
                     alertMessage += "\n\(fatValue) g fett"
@@ -1543,13 +1543,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerRemainingAmountInIAPS(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
+                    self.registerRemainingAmountInLoopingApp(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
+                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
                     alertMessage += "\n\(fatValue) g fett"
@@ -1571,7 +1571,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            var alertMessage = "Vill du registrera måltiden i iAPS, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
+            var alertMessage = "Vill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
             
             if let fat = Double(fatValue), fat > 0 {
                 alertMessage += "\n\(fatValue) g fett"
@@ -1605,7 +1605,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    func registerRemainingAmountInIAPS(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+    func registerRemainingAmountInLoopingApp(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         let khValue = khValue.replacingOccurrences(of: ".", with: ",")
         let fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
         let proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
@@ -1660,7 +1660,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         switch result {
                         case .success:
                             AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS", preferredStyle: .alert)
+                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS/Trio", preferredStyle: .alert)
                             alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                                 self.dismiss(animated: true, completion: nil)
                             })
@@ -2246,7 +2246,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   + VÄLJ LIVSMEDEL   ", for: .normal)
+            button.setTitle("    + VÄLJ LIVSMEDEL    ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
@@ -2269,7 +2269,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
             label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-            label.text = "SEN FRUKOST"
+            label.text = "OVERRIDE"
             label.translatesAutoresizingMaskIntoConstraints = false
             return label
         }()
@@ -2289,19 +2289,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             addSubview(lateBreakfastLabel)
             
             NSLayoutConstraint.activate([
-                addButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -90),
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-                addButton.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 4),
-                addButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
                 addButton.heightAnchor.constraint(equalToConstant: 32),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 
-                //lateBreakfastSwitch.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 24),
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                lateBreakfastLabel.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 34),
+                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -8),
                 
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
-                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastLabel.trailingAnchor, constant: 8)
+                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
             ])
             //updateBorderColor() // Ensure border color is set correctly initially
         }

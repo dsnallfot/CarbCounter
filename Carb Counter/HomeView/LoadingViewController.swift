@@ -10,6 +10,8 @@ class LoadingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        view.backgroundColor = .systemBackground
+        
         // Create the gradient view
         let colors: [CGColor] = [
             UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -38,9 +40,9 @@ class LoadingViewController: UIViewController {
     private func setupUI() {
         // Create and setup the title label
         let titleLabel = UILabel()
-        titleLabel.text = "Carbs Counter"
+        titleLabel.text = "Räkna Kolhydrater"
         titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.systemFont(ofSize: 48, weight: .semibold)
+        titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textColor = UIColor.label.withAlphaComponent(0.4) // Set the text color with 0.4 opacity
         
@@ -76,12 +78,12 @@ class LoadingViewController: UIViewController {
         loadingLabel.text = "Uppdaterar data"
         loadingLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         loadingLabel.textAlignment = .center
-        loadingLabel.textColor = .white
+        loadingLabel.textColor = .label
         loadingLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Create and setup the copyright label
         let copyrightLabel = UILabel()
-        copyrightLabel.text = "© 2024 Daniel Snällfot"
+        copyrightLabel.text = "© 2024 dsnallfot"
         copyrightLabel.textAlignment = .center
         copyrightLabel.textColor = .clear
         copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)

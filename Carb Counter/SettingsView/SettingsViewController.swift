@@ -84,10 +84,10 @@ class SettingsViewController: UITableViewController {
                 cell.textLabel?.text = "Maxgräns Bolus"
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
             case 4:
-                cell.textLabel?.text = "Sen Frukost-faktor"
+                cell.textLabel?.text = "Override-faktor"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
             case 5:
-                cell.textLabel?.text = "Sen frukost override"
+                cell.textLabel?.text = "Override"
                 cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
             case 6:
                 cell.textLabel?.text = "Nightscout URL"
@@ -144,13 +144,13 @@ class SettingsViewController: UITableViewController {
                 value = UserDefaultsRepository.maxBolus
                 userDefaultSetter = { UserDefaultsRepository.maxBolus = $0 }
             case 4:
-                title = "Sen Frukost-faktor"
-                message = "När frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Sen frukost' aktiveras i måltidsvyn:"
+                title = "Override-faktor"
+                message = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:"
                 value = UserDefaultsRepository.lateBreakfastFactor
                 userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
             case 5:
-                title = "Sen frukost Override namn"
-                message = "Ange exakt namn på den override du använder i iAPS under sen frukost"
+                title = "Override namn"
+                message = "Ange exakt namn på den override du vill aktivera i iAPS/Trio"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.lateBreakfastOverrideName ?? "") { newValue in
                     UserDefaultsRepository.lateBreakfastOverrideName = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
