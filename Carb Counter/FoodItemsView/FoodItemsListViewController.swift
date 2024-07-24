@@ -130,7 +130,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Call the desired function
         print("Data import triggered")
-        dataSharingVC.importAllCSVFiles()
+        Task {
+            await dataSharingVC.importAllCSVFiles()
+        }
         
         // Load saved search text
         if let savedSearchText = UserDefaults.standard.string(forKey: "savedSearchText"), !savedSearchText.isEmpty {
@@ -686,8 +688,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         guard let dataSharingVC = dataSharingVC else { return }
         
         // Call the desired function
-        dataSharingVC.exportFoodItemsToCSV()
-        print("Food items export triggered")
+        Task {
+            await dataSharingVC.exportFoodItemsToCSV()
+            print("Food items export triggered")
+        }
     }
     
     private func editFoodItem(at indexPath: IndexPath) {

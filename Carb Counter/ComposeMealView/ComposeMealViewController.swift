@@ -251,7 +251,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         // Call the desired function
         print("Data import triggered")
-        dataSharingVC.importAllCSVFiles()
+        Task {
+            await
+            dataSharingVC.importAllCSVFiles()
+        }
         fetchFoodItems()
         checkIfEditing()
         
@@ -555,7 +558,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
     private func saveCSV(data: String, fileName: String) {
         guard let dataSharingVC = dataSharingVC else { return }
-        dataSharingVC.saveCSV(data: data, fileName: fileName)
+        Task {
+            await
+            dataSharingVC.saveCSV(data: data, fileName: fileName)
+        }
     }
 
     
@@ -867,7 +873,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
 
     @objc func exportToCSV() {
-            DataSharingViewController().exportOngoingMealToCSV()
+        Task {
+            await DataSharingViewController().exportOngoingMealToCSV()
+        }
     }
     private func loadFoodItemsFromCoreData() {
         let context = CoreDataStack.shared.context
@@ -1049,8 +1057,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         guard let dataSharingVC = dataSharingVC else { return }
 
         // Call the desired function
-        dataSharingVC.exportMealHistoryToCSV()
-        print("Meal history export triggered")
+        Task {
+            await dataSharingVC.exportMealHistoryToCSV()
+            print("Meal history export triggered")
+        }
         
         saveMealToHistory = false // Reset the flag after saving
     }
@@ -1112,8 +1122,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             guard let dataSharingVC = self.dataSharingVC else { return }
 
             // Call the desired function
-            dataSharingVC.exportFavoriteMealsToCSV()
-            print("Favorite meals export triggered")
+            Task {
+                await dataSharingVC.exportFavoriteMealsToCSV()
+                print("Favorite meals export triggered")
+            }
             
             let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
             confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))

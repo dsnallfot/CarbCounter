@@ -481,12 +481,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         } catch {
             print("Failed to save food item: \(error)")
         }
+        
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
 
         // Call the desired function
-        dataSharingVC.exportFoodItemsToCSV()
-        print("Food items export triggered")
+        Task {
+            await dataSharingVC.exportFoodItemsToCSV()
+            print("Food items export triggered")
+        }
         
         navigationController?.popViewController(animated: true)
     }

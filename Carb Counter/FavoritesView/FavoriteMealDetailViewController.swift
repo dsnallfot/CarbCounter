@@ -195,11 +195,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             self.favoriteMeal.items = self.updateItems(items: items)
             
             CoreDataStack.shared.saveContext()
-            // Ensure dataSharingVC is instantiated
-                    guard let dataSharingVC = dataSharingVC else { return }
 
-                    // Call the desired function
-                    dataSharingVC.exportFavoriteMealsToCSV()
+            // Ensure dataSharingVC is instantiated
+            guard let dataSharingVC = self.dataSharingVC else { return }
+
+            // Call the desired function
+            Task {
+                await dataSharingVC.exportFavoriteMealsToCSV()
+            }
             print("Favorite meals export triggered")
             
             self.tableView.reloadData()

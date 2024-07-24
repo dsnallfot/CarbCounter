@@ -181,11 +181,15 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 let mealHistory = self.filteredMealHistories[indexPath.row]
                 let context = CoreDataStack.shared.context
                 context.delete(mealHistory)
+                
                 // Ensure dataSharingVC is instantiated
                 guard let dataSharingVC = self.dataSharingVC else { return }
-
-                        // Call the desired function
-                        dataSharingVC.exportMealHistoryToCSV()
+                
+                // Call the desired function
+                Task {
+                    await dataSharingVC.exportMealHistoryToCSV()
+                }
+                
                 print("Meal history export triggered")
                 
                 do {
@@ -202,7 +206,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             self.present(alert, animated: true, completion: nil)
         }
         return UISwipeActionsConfiguration(actions: [deleteAction])
-        
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

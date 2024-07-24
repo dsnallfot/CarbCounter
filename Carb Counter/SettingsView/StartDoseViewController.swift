@@ -50,12 +50,16 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
         // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
-
-                // Call the desired function
-                dataSharingVC.exportStartDoseScheduleToCSV()
-        print("Startdoses export triggered")
+        guard let dataSharingVC = dataSharingVC else { return }
+        
+        // Call the desired function
+        Task {
+            await dataSharingVC.exportStartDoseScheduleToCSV()
+            print("Startdoses export triggered")
+        }
     }
     
     private func loadStartDoses() {

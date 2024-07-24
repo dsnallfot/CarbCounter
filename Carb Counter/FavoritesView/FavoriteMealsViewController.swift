@@ -215,7 +215,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         let deleteAlert = UIAlertController(title: "Radera favoritmåltid", message: "Bekräfta att du vill radera: '\"\(favoriteMeal.name ?? "")\"'?", preferredStyle: .actionSheet)
         let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { [weak self] _ in
-            self?.deleteFavoriteMeal(at: indexPath)
+            Task {
+                await self?.deleteFavoriteMeal(at: indexPath)
+            }
         }
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         
@@ -225,7 +227,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         present(deleteAlert, animated: true, completion: nil)
     }
     
-    private func deleteFavoriteMeal(at indexPath: IndexPath) {
+    private func deleteFavoriteMeal(at indexPath: IndexPath) async {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         CoreDataStack.shared.context.delete(favoriteMeal)
         CoreDataStack.shared.saveContext()
@@ -235,7 +237,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.deleteRows(at: [indexPath], with: .automatic)
         
         guard let dataSharingVC = dataSharingVC else { return }
-        dataSharingVC.exportFavoriteMealsToCSV()
+        await dataSharingVC.exportFavoriteMealsToCSV()
         print("Favorite meals export triggered")
     }
     

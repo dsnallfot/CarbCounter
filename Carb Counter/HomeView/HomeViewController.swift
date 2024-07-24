@@ -46,7 +46,7 @@ class HomeViewController: UIViewController {
             for viewController in viewControllers {
                 if let navController = viewController as? UINavigationController,
                    let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                        composeMealVC.fetchFoodItems()
+                    composeMealVC.fetchFoodItems()
                 }
             }
         }
@@ -56,7 +56,9 @@ class HomeViewController: UIViewController {
         
         // Call the desired function
         print("Data import triggered")
-        dataSharingVC.importAllCSVFiles()
+        Task {
+            await dataSharingVC.importAllCSVFiles()
+        }
         
         // Observe changes to allowViewingOngoingMeals
         NotificationCenter.default.addObserver(self, selector: #selector(updateNavigationBarButtons), name: .allowViewingOngoingMealsChanged, object: nil)

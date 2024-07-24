@@ -55,11 +55,13 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = dataSharingVC else { return }
-
-                // Call the desired function
-                dataSharingVC.exportCarbRatioScheduleToCSV()
-        print("Carb ratios export triggered")
+        guard let dataSharingVC = dataSharingVC else { return }
+        
+        // Call the desired function
+        Task {
+            await dataSharingVC.exportCarbRatioScheduleToCSV()
+            print("Carb ratios export triggered")
+        }
     }
 
     private func loadCarbRatios() {
