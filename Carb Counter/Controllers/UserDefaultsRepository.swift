@@ -82,6 +82,24 @@ class UserDefaultsRepository {
         }
     }
     
+    static var useStartDosePercentage: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "useStartDosePercentage")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "useStartDosePercentage")
+        }
+    }
+    
+    static var startDoseFactor: Double {
+        get {
+            return UserDefaults.standard.double(forKey: "startDoseFactor")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "startDoseFactor")
+        }
+    }
+    
     static var maxCarbs: Double {
         get {
             return UserDefaults.standard.double(forKey: "maxCarbs")

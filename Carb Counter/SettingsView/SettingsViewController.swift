@@ -30,6 +30,12 @@ class SettingsViewController: UITableViewController {
         dismiss(animated: true, completion: nil)
     }
     
+    @objc private func useStartDosePercentageSegmentChanged(_ sender: UISegmentedControl) {
+        let isOn = sender.selectedSegmentIndex == 1
+        UserDefaultsRepository.useStartDosePercentage = isOn
+        // Add any additional handling needed when the value changes
+    }
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
@@ -39,7 +45,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 9 // Increased to accommodate the new rows
+            return 11 // Increased to accommodate the new rows
         default:
             return 0
         }
@@ -78,24 +84,42 @@ class SettingsViewController: UITableViewController {
                 toggleSwitch.addTarget(self, action: #selector(dataClearingSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
             case 2:
+                // Define the segmented control and set its properties
+                let segmentedControl = UISegmentedControl(items: ["Schema", "Fraktion"])
+                segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
+                segmentedControl.addTarget(self, action: #selector(useStartDosePercentageSegmentChanged(_:)), for: .valueChanged)
+
+                // Configure the cell
+                cell.textLabel?.text = "Startdoser"
+                cell.accessoryView = segmentedControl
+
+                /*let toggleSwitch = UISwitch()
+                cell.textLabel?.text = "Use Start dose % of meal"
+                toggleSwitch.isOn = UserDefaultsRepository.useStartDosePercentage
+                toggleSwitch.addTarget(self, action: #selector(useStartDosePercentageSwitchChanged(_:)), for: .valueChanged)
+                cell.accessoryView = toggleSwitch*/
+            case 3:
+                cell.textLabel?.text = "Startdos Fraktion"
+                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.startDoseFactor)
+            case 4:
                 cell.textLabel?.text = "Maxgräns Kolhydrater"
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxCarbs)) g"
-            case 3:
+            case 5:
                 cell.textLabel?.text = "Maxgräns Bolus"
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
-            case 4:
+            case 6:
                 cell.textLabel?.text = "Override-faktor"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
-            case 5:
+            case 7:
                 cell.textLabel?.text = "Override"
                 cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
-            case 6:
+            case 8:
                 cell.textLabel?.text = "Nightscout URL"
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
-            case 7:
+            case 9:
                 cell.textLabel?.text = "Nightscout Token"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
-            case 8:
+            case 10:
                 cell.textLabel?.text = "Dabas API Secret"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
             default:
@@ -133,22 +157,27 @@ class SettingsViewController: UITableViewController {
             var userDefaultSetter: ((Double) -> Void)?
             
             switch indexPath.row {
-            case 2:
+            case 3:
+                title = "Startdos Fraktion"
+                message = "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater."
+                value = UserDefaultsRepository.startDoseFactor
+                userDefaultSetter = { UserDefaultsRepository.startDoseFactor = $0 }
+            case 4:
                 title = "Maxgräns Kolhydrater (g)"
                 message = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:"
                 value = UserDefaultsRepository.maxCarbs
                 userDefaultSetter = { UserDefaultsRepository.maxCarbs = $0 }
-            case 3:
+            case 5:
                 title = "Maxgräns Bolus (E)"
                 message = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:"
                 value = UserDefaultsRepository.maxBolus
                 userDefaultSetter = { UserDefaultsRepository.maxBolus = $0 }
-            case 4:
+            case 6:
                 title = "Override-faktor"
                 message = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:"
                 value = UserDefaultsRepository.lateBreakfastFactor
                 userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
-            case 5:
+            case 7:
                 title = "Override namn"
                 message = "Ange exakt namn på den override du vill aktivera i iAPS/Trio"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.lateBreakfastOverrideName ?? "") { newValue in
@@ -156,7 +185,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 6:
+            case 8:
                 title = "Nightscout URL"
                 message = "Ange din Nightscout URL:"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutURL ?? "") { newValue in
@@ -164,7 +193,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 7:
+            case 9:
                 title = "Nightscout Token"
                 message = "Ange din Nightscout Token:"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutToken ?? "") { newValue in
@@ -172,7 +201,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 8:
+            case 10:
                 title = "Dabas API Secret"
                 message = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in

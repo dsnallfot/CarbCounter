@@ -213,13 +213,6 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
-				650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */,
-				6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */,
-				6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */,
-				6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */,
-				6502A9AB2C2980D800414DC0 /* MealHistory+CoreDataProperties.swift */,
-				653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */,
-				653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EDF62C20DA9200B0FDF5 /* Products */,
 			);
@@ -239,6 +232,7 @@
 			isa = PBXGroup;
 			children = (
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
+				65599D632C50F9CE00EFE7C4 /* CoreData */,
 				6502A9D72C2B1BCB00414DC0 /* HomeView */,
 				6502A9D12C2B1A5300414DC0 /* SettingsView */,
 				6502A9D22C2B1A7C00414DC0 /* FoodItemsView */,
@@ -246,7 +240,6 @@
 				6502A9D42C2B1AAB00414DC0 /* FavoritesView */,
 				6502A9D52C2B1AB600414DC0 /* MealHistoryView */,
 				6502A9D62C2B1AF800414DC0 /* Controllers */,
-				6553EE012C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld */,
 				65231E842C283DA300D78667 /* CarbsCounter.entitlements */,
 				6553EE092C20DA9400B0FDF5 /* Info.plist */,
 				6553EE062C20DA9400B0FDF5 /* LaunchScreen.storyboard */,
@@ -254,6 +247,22 @@
 				659632842C2436470098DF69 /* launch.png */,
 			);
 			path = "Carb Counter";
+			sourceTree = "<group>";
+		};
+		65599D632C50F9CE00EFE7C4 /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				6553EE012C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld */,
+				650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */,
+				6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */,
+				6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */,
+				6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */,
+				6502A9AB2C2980D800414DC0 /* MealHistory+CoreDataProperties.swift */,
+				653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */,
+				653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */,
+			);
+			name = CoreData;
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -1812,18 +1812,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let roundedBolus = roundDownToNearest05(totalBolus)
         totalBolusAmountLabel.text = formatNumber(roundedBolus) + " E"
         
-        if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
-            totalStartAmountLabel.text = String(format: "%.0fg", totalNetCarbs)
-            let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
-            let startBolus = totalNetCarbs / scheduledCarbRatio
-            let roundedStartBolus = roundDownToNearest05(startBolus)
-            totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
-        } else {
-            totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
-            let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+        if UserDefaults.standard.bool(forKey: "useStartDosePercentage") {
+            let startDoseFactor = UserDefaults.standard.double(forKey: "startDoseFactor")
+            let totalStartAmount = totalNetCarbs * startDoseFactor
+            totalStartAmountLabel.text = String(format: "%.0fg", totalStartAmount)
             let startBolus = totalStartAmount / scheduledCarbRatio
             let roundedStartBolus = roundDownToNearest05(startBolus)
             totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
+        } else {
+            if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
+                totalStartAmountLabel.text = String(format: "%.0fg", totalNetCarbs)
+                let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+                let startBolus = totalNetCarbs / scheduledCarbRatio
+                let roundedStartBolus = roundDownToNearest05(startBolus)
+                totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
+            } else {
+                totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
+                let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+                let startBolus = totalStartAmount / scheduledCarbRatio
+                let roundedStartBolus = roundDownToNearest05(startBolus)
+                totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
+            }
         }
         
         updateRemainsBolus()
