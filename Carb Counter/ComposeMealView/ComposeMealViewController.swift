@@ -67,6 +67,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var remainingDoseGiven: Bool = false
     var dataSharingVC: DataSharingViewController?
     var mealEmojis: String? = "🍴"
+    var mealDate: Date?
 
 ///Meal monitoring
     var exportTimer: Timer?
@@ -148,7 +149,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         setupScrollView(below: fixedHeaderContainer)
         
 /// Initializing
-        clearAllButton = UIBarButtonItem(title: "Rensa måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton = UIBarButtonItem(title: "Avsluta måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
@@ -493,7 +494,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func clearAllButtonTapped() {
         view.endEditing(true)
         
-        let alertController = UIAlertController(title: "Rensa Måltid", message: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Avsluta Måltid", message: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", preferredStyle: .actionSheet)
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
         let yesAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
             if self.saveMealToHistory {
@@ -1015,7 +1016,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let mealHistory = MealHistory(context: context)
         mealHistory.id = UUID() // Set the id attribute
-        mealHistory.mealDate = Date()
+        mealHistory.mealDate = mealDate ?? Date()
         mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
         mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
@@ -1063,6 +1064,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         saveMealToHistory = false // Reset the flag after saving
+        mealDate = nil // Reset mealDate to nil after saving
     }
     
     @objc private func saveFavoriteMeals() {
@@ -1357,6 +1359,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
 
     @objc private func startAmountContainerTapped() {
+        // Check if mealDate is nil and set it to the current date if it is
+            if mealDate == nil {
+                mealDate = Date()
+            }
+        
         createEmojiString()
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
@@ -1456,6 +1463,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func remainContainerTapped() {
+        // Check if mealDate is nil and set it to the current date if it is
+            if mealDate == nil {
+                mealDate = Date()
+            }
         createEmojiString()
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
@@ -1505,8 +1516,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
            let khValueDouble = Double(khValue),
            khValueDouble > maxCarbs {
             adjustedKhValue = String(format: "%.0f", maxCarbs)
-            if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0") {
-                adjustedBolusValue = self.zeroBolus ? "0.0" : String(format: "%.2f", maxCarbs / carbRatio)
+            if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"),
+               let currentBolusValue = Double(bolusValue) {
+                let calculatedBolusValue = maxCarbs / carbRatio
+                adjustedBolusValue = self.zeroBolus ? "0.0" : String(format: "%.2f", min(calculatedBolusValue, currentBolusValue))
             }
             showAlert = true
         }
@@ -2024,8 +2037,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     func hideSearchableDropdown() {
         searchableDropdownView.isHidden = true
-        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
-        clearAllButton.isHidden = false // Unhide the "Rensa måltid" button
+        navigationItem.rightBarButtonItem = clearAllButton // Show "Avsluta måltid" button again
+        clearAllButton.isHidden = false // Unhide the "Avsluta måltid" button
 
         // Enable manual text input in totalRegisteredLabel
         totalRegisteredLabel.isUserInteractionEnabled = true
@@ -2120,7 +2133,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         searchableDropdownView.isHidden = false
         navigationItem.rightBarButtonItem = addFromSearchableDropdownButton // Show "Lägg till" button
-        clearAllButton.isHidden = true // Hide the "Rensa måltid" button
+        clearAllButton.isHidden = true // Hide the "Avsluta måltid" button
         
         // Disable manual text input in totalRegisteredLabel
         totalRegisteredLabel.isUserInteractionEnabled = false
@@ -2174,14 +2187,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func doneButtonTapped() { 
         totalRegisteredLabel?.resignFirstResponder()
-        navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
-        clearAllButton.isHidden = false // Unhide the "Rensa måltid" button
+        navigationItem.rightBarButtonItem = clearAllButton // Show "Avsluta måltid" button again
+        clearAllButton.isHidden = false // Unhide the "Avsluta måltid" button
     }
     
     @objc private func cancelButtonTapped() {
         totalRegisteredLabel?.resignFirstResponder()
         searchableDropdownView.isHidden = true
-        //navigationItem.rightBarButtonItem = clearAllButton // Show "Rensa måltid" button again
+        //navigationItem.rightBarButtonItem = clearAllButton // Show "Avsluta måltid" button again
     }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
