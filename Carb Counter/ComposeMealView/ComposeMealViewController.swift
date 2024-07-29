@@ -2358,7 +2358,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             NSLayoutConstraint.activate([
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor),// constant: 10),
                 addButton.heightAnchor.constraint(equalToConstant: 32),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
                 //addButton.trailingAnchor.constraint(equalTo: addNewButton.leadingAnchor, constant: -15),
@@ -2367,14 +2367,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 addNewButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
                 addNewButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
                 //addNewButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 3.5),
-                addNewButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 10),
+                addNewButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 15),
                 
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
                 //lateBreakfastLabel.leadingAnchor.constraint(equalTo: addNewButton.trailingAnchor, constant: 20),
                 lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -6),
                 
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
-                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -1)
+                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 3)
             ])
             //updateBorderColor() // Ensure border color is set correctly initially
         }
