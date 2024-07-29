@@ -239,7 +239,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func cancelButtonTapped() {
-        navigationController?.popViewController(animated: true)
+        if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
+            // Pushed onto a navigation stack
+            navigationController.popViewController(animated: true)
+        } else {
+            // Presented modally
+            dismiss(animated: true, completion: nil)
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -278,7 +284,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 segmentedControl.setTitle("→   Ändra till per st  ", forSegmentAt: 1)
             }
         } else {
-            // Default labels for "Lägg till livsmedel" mode
+            // Default labels for "Lägg till nytt livsmedel" mode
             segmentedControl.setTitle("Per 100g", forSegmentAt: 0)
             segmentedControl.setTitle("Per Styck", forSegmentAt: 1)
         }
@@ -369,7 +375,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 proteinTextField.text = formattedValue(foodItem.protein)
             }
         } else {
-            title = "Lägg till livsmedel"
+            title = "Lägg till nytt livsmedel"
             if isUpdateMode, let data = prePopulatedData {
                 nameTextField.text = data.name
                 carbsTextField.text = formattedValue(data.carbohydrates)
@@ -491,22 +497,60 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             print("Food items export triggered")
         }
         
-        navigationController?.popViewController(animated: true)
+        if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
+            // Pushed onto a navigation stack
+            navigationController.popViewController(animated: true)
+        } else {
+            // Presented modally
+            dismiss(animated: true, completion: nil)
+        }
     }
     
     private func addToComposeMealViewController() {
-        guard let tabBarController = tabBarController else {
+        guard let window = UIApplication.shared.windows.first else {
+            print("No window found")
+            return
+        }
+
+        guard let rootViewController = window.rootViewController else {
+            print("No root view controller found")
+            return
+        }
+
+        var tabBarController: UITabBarController? = nil
+
+        // Traverse the view controller hierarchy to find the tab bar controller
+        func findTabBarController(from viewController: UIViewController) -> UITabBarController? {
+            if let tabController = viewController as? UITabBarController {
+                return tabController
+            }
+            if let navController = viewController as? UINavigationController, let visibleController = navController.visibleViewController {
+                return findTabBarController(from: visibleController)
+            }
+            if let presentedController = viewController.presentedViewController {
+                return findTabBarController(from: presentedController)
+            }
+            return nil
+        }
+
+        tabBarController = findTabBarController(from: rootViewController)
+
+        guard let tabBarVC = tabBarController else {
             print("Tab bar controller not found")
             return
         }
-        
-        for viewController in tabBarController.viewControllers ?? [] {
+
+        for viewController in tabBarVC.viewControllers ?? [] {
             if let navController = viewController as? UINavigationController {
                 for vc in navController.viewControllers {
                     if let composeMealVC = vc as? ComposeMealViewController {
                         if let newFoodItem = foodItem {
                             print("Adding food item to ComposeMealViewController: \(newFoodItem.name ?? "")")
                             composeMealVC.addFoodItemRow(with: newFoodItem)
+                            composeMealVC.updateTotalNutrients() // Ensure UI update
+                            composeMealVC.updateClearAllButtonState() // Ensure button state update
+                            composeMealVC.updateSaveFavoriteButtonState() // Ensure button state update
+                            composeMealVC.updateHeadlineVisibility() // Ensure headline visibility
                         }
                         return
                     }

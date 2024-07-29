@@ -335,7 +335,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveToCoreData()
     }
         
-    private func updateSaveFavoriteButtonState() {
+    public func updateSaveFavoriteButtonState() {
         guard let saveFavoriteButton = saveFavoriteButton else {
             print("saveFavoriteButton is nil")
             return
@@ -1171,10 +1171,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
 ///OngoingMeal monitoring
     func startEditing() {
-            isEditingMeal = true
-            print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
-            startAutoSaveToCSV()
+        guard !isEditingMeal else {
+            return
         }
+        isEditingMeal = true
+        print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
+        startAutoSaveToCSV()
+    }
 
         func stopEditing() {
             print("Stop editing triggered. Checking if still editing...")
@@ -1816,7 +1819,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ])
     }
     
-    private func updateTotalNutrients() {
+    public func updateTotalNutrients() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         
         guard let totalNetCarbsLabel = totalNetCarbsLabel else {
@@ -1990,7 +1993,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ])
     }
     
-    private func updateHeadlineVisibility() {
+    public func updateHeadlineVisibility() {
         let isHidden = foodItemRows.isEmpty
         foodItemLabel.isHidden = isHidden
         portionServedLabel.isHidden = isHidden
@@ -2065,30 +2068,35 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("stackView is nil")
             return
         }
-        
+
         let rowView = FoodItemRowView()
         rowView.foodItems = foodItems
         rowView.delegate = self
         rowView.translatesAutoresizingMaskIntoConstraints = false
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
-        
+
         if let foodItem = foodItem {
             rowView.setSelectedFoodItem(foodItem)
         }
-        
+
         rowView.onDelete = { [weak self] in
             self?.removeFoodItemRow(rowView)
         }
-        
+
         rowView.onValueChange = { [weak self] in
             self?.updateTotalNutrients()
         }
-        
+
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
+        
+        // Ensure startEditing is only called if not already editing
+        if !isEditingMeal {
+            startEditing()
+        }
     }
     
     private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double, notEaten: Double) {
@@ -2117,6 +2125,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         addButtonRowView = AddButtonRowView()
         addButtonRowView.translatesAutoresizingMaskIntoConstraints = false
         addButtonRowView.addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
+        addButtonRowView.addNewButton.addTarget(self, action: #selector(addNewButtonTapped), for: .touchUpInside)
         stackView.addArrangedSubview(addButtonRowView)
     }
     
@@ -2138,6 +2147,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Disable manual text input in totalRegisteredLabel
         totalRegisteredLabel.isUserInteractionEnabled = false
     }
+    
+    @objc private func addNewButtonTapped() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self
+            let navigationController = UINavigationController(rootViewController: addFoodItemVC)
+            present(navigationController, animated: true, completion: nil)
+        }
+    }
+    
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
         rowView.removeFromSuperview()
@@ -2221,7 +2240,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    private func updateClearAllButtonState() {
+    public func updateClearAllButtonState() {
         guard let clearAllButton = clearAllButton else {
             print("clearAllButton is nil")
             return
@@ -2280,10 +2299,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("    + VÄLJ LIVSMEDEL    ", for: .normal)
+            button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.layer.cornerRadius = 14
+            button.layer.borderWidth = 2
+            button.layer.borderColor = UIColor.white.cgColor
+            button.clipsToBounds = true
+            return button
+        }()
+        
+        let addNewButton: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitle("   + NYTT   ", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            button.setTitleColor(.white, for: .normal)
+            button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.cornerRadius = 14
             button.layer.borderWidth = 2
@@ -2319,20 +2352,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         private func setupView() {
             addSubview(addButton)
-            addSubview(lateBreakfastSwitch)
+            addSubview(addNewButton)
             addSubview(lateBreakfastLabel)
+            addSubview(lateBreakfastSwitch)
             
             NSLayoutConstraint.activate([
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
                 addButton.heightAnchor.constraint(equalToConstant: 32),
-                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+                //addButton.trailingAnchor.constraint(equalTo: addNewButton.leadingAnchor, constant: -15),
+                
+                addNewButton.topAnchor.constraint(equalTo: addButton.topAnchor),
+                addNewButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
+                addNewButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
+                //addNewButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 3.5),
+                addNewButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 10),
                 
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -8),
+                //lateBreakfastLabel.leadingAnchor.constraint(equalTo: addNewButton.trailingAnchor, constant: 20),
+                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -6),
                 
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
-                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
+                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -1)
             ])
             //updateBorderColor() // Ensure border color is set correctly initially
         }
