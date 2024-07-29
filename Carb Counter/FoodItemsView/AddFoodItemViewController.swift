@@ -507,7 +507,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func addToComposeMealViewController() {
-        guard let window = UIApplication.shared.windows.first else {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
             print("No window found")
             return
         }
