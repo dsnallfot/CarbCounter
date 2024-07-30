@@ -2075,7 +2075,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         addButtonRowView = AddButtonRowView()
         addButtonRowView.translatesAutoresizingMaskIntoConstraints = false
         addButtonRowView.addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
-        addButtonRowView.addNewButton.addTarget(self, action: #selector(addNewButtonTapped), for: .touchUpInside)
+        //addButtonRowView.addNewButton.addTarget(self, action: #selector(addNewButtonTapped), for: .touchUpInside)
         stackView.addArrangedSubview(addButtonRowView)
     }
     
@@ -2088,7 +2088,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         navigationController.modalPresentationStyle = .formSheet // or .fullScreen based on your preference
         present(navigationController, animated: true, completion: nil)
     }
-    
+    /*
     @objc private func addNewButtonTapped() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -2097,7 +2097,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             present(navigationController, animated: true, completion: nil)
         }
     }
-    
+    */
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
         rowView.removeFromSuperview()
@@ -2214,7 +2214,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
+            //button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
+            button.setTitle("   + VÄLJ LIVSMEDEL   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
@@ -2225,7 +2226,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             button.clipsToBounds = true
             return button
         }()
-        
+        /*
         let addNewButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle("   + NYTT   ", for: .normal)
@@ -2238,7 +2239,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
             return button
-        }()
+        }()*/
         
         let lateBreakfastSwitch: UISwitch = {
             let toggle = UISwitch()
@@ -2268,26 +2269,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         private func setupView() {
             addSubview(addButton)
-            addSubview(addNewButton)
+            //addSubview(addNewButton)
             addSubview(lateBreakfastLabel)
             addSubview(lateBreakfastSwitch)
 
             NSLayoutConstraint.activate([
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
                 addButton.heightAnchor.constraint(equalToConstant: 32),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-                
+                /*
                 addNewButton.topAnchor.constraint(equalTo: addButton.topAnchor),
                 addNewButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
                 addNewButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
                 addNewButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 15),
-                
+                */
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
                 lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -6),
                 
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
-                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 3)
+                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -17)
             ])
         }
     }

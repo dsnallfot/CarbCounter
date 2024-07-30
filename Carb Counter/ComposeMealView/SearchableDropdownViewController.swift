@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class SearchableDropdownViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+class SearchableDropdownViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, AddFoodItemDelegate {
     
     var onSelectItems: (([FoodItem]) -> Void)?
     var onDoneButtonTapped: (([FoodItem]) -> Void)?
@@ -79,16 +79,16 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
             tableView.reloadData()
         }
     }
-    /*
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }*/
     
     private func setupNavigationBar() {
         title = "Välj livsmedel"
         
+        let addFoodItemButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(addNewButtonTapped))
+        navigationItem.leftBarButtonItem = addFoodItemButton
+        
         let showMealButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = showMealButton
+        
     }
     
     private func setupView() {
@@ -277,6 +277,18 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     private func clearSelection() {
         selectedFoodItems.removeAll()
     }
+    
+    @objc private func addNewButtonTapped() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self
+            let navigationController = UINavigationController(rootViewController: addFoodItemVC)
+            present(navigationController, animated: true, completion: nil)
+        }
+    }
+    func didAddFoodItem() {
+            fetchFoodItems()
+        }
 }
 
 extension Notification.Name {
