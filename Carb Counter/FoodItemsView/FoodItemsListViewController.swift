@@ -238,7 +238,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Initialize and add the searchBar
         searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Sök bland sparade livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.backgroundImage = UIImage() // Make background clear
         
@@ -310,7 +309,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func updateSearchBarPlaceholder() {
-        searchBar.placeholder = searchMode == .local ? "Sök bland sparade livsmedel" : "Sök efter nya livsmedel online"
+        let foodItemCount = foodItems.count
+        searchBar.placeholder = searchMode == .local ? "Sök bland \(foodItemCount) sparade livsmedel" : "Sök efter nya livsmedel online"
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -507,6 +507,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             DispatchQueue.main.async {
                 self.sortFoodItems()
                 self.tableView.reloadData()
+                self.updateSearchBarPlaceholder() // Update the search bar placeholder after fetching items
             }
         } catch {
             print("Failed to fetch food items: \(error)")
@@ -680,6 +681,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             foodItems.remove(at: indexPath.row)
             filteredFoodItems.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
+            updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
         } catch {
             print("Failed to delete food item: \(error)")
         }
