@@ -63,6 +63,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var zeroBolus: Bool = false
     var lateBreakfast: Bool = false
     var lateBreakfastFactor = Double(1.5)
+    private var lateBreakfastTimer: Timer?
+    private let lateBreakfastDuration: TimeInterval = 90 * 60 // 90 minutes in seconds
     var startDoseGiven: Bool = false
     var remainingDoseGiven: Bool = false
     var dataSharingVC: DataSharingViewController?
@@ -244,6 +246,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         updateScheduledValuesUI() // Update labels
         
+        // Check if the late breakfast switch should be off
+        if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
+            let timeInterval = Date().timeIntervalSince(startTime)
+            if timeInterval >= lateBreakfastDuration {
+                addButtonRowView.lateBreakfastSwitch.isOn = false
+                lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
+            } else {
+                lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration - timeInterval, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
+            }
+        }
+        
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
         
@@ -258,7 +271,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         fetchFoodItems()
         checkIfEditing()
-        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -513,6 +525,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 self.exportBlankCSV() // Add this line to export a blank CSV
             }
+            self.lateBreakfastTimer?.invalidate() // Invalidate the late breakfast timer
+            self.turnOffLateBreakfastSwitch()
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
@@ -1310,6 +1324,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                 self.sendOverrideRequest(combinedString: combinedString)
+                self.startLateBreakfastTimer()
             }
             alertController.addAction(cancelAction)
             alertController.addAction(yesAction)
@@ -1317,11 +1332,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             let alertController = UIAlertController(title: "Manuell aktivering", message: "Kom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in }
+            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                self.startLateBreakfastTimer()
+            }
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
         }
+    }
+    
+    private func startLateBreakfastTimer() {
+        UserDefaults.standard.set(Date(), forKey: "lateBreakfastStartTime")
+        lateBreakfastTimer?.invalidate()
+        lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
+    }
+
+    @objc private func turnOffLateBreakfastSwitch() {
+        addButtonRowView.lateBreakfastSwitch.isOn = false
+        lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
     }
 
     private func sendOverrideRequest(combinedString: String) {
