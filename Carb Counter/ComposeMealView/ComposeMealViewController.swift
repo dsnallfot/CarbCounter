@@ -18,8 +18,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
 ///Views
     var foodItemRows: [FoodItemRowView] = []
-    var searchableDropdownView: SearchableDropdownView!
-    var searchableDropdownBottomConstraint: NSLayoutConstraint!
+    var searchableDropdownViewController: SearchableDropdownViewController!
     var stackView: UIStackView!
     var scrollView: UIScrollView!
     var contentView: UIView!
@@ -158,7 +157,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         addFromSearchableDropdownButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
         
-        setupSearchableDropdownView()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
@@ -217,11 +215,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Add gesture recognizer for lateBreakfastLabel
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
             addButtonRowView.lateBreakfastLabel.addGestureRecognizer(tapGesture)
-        
-        // Add observers for keyboard notifications
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
+ 
         // Observe changes to allowViewingOngoingMeals
         NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
         
@@ -287,8 +281,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
-    
-    
 
 ///function to initialize UI elements
     private func initializeUIElements() {
@@ -642,7 +634,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ]
         let summaryView = GradientView(colors: colors)
         summaryView.translatesAutoresizingMaskIntoConstraints = false
-        //summaryView.backgroundColor = .systemGray6//.systemBackground
         container.addSubview(summaryView)
 
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
@@ -715,36 +706,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -5)
         ])
     }
-
-    /*
-    @objc private func showBolusInfo() {
-        showAlert(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.")
-    }
-    @objc private func showCarbsInfo() {
-        showAlert(title: "Kolhydrater Totalt", message: "Den beräknade summan av alla kolhydrater i måltiden.")
-    }
-    
-    @objc private func showFatInfo() {
-        showAlert(title: "Fett Totalt", message: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.")
-    }
-    
-    @objc private func showProteinInfo() {
-        showAlert(title: "Protein Totalt", message: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.")
-    }
     
     @objc private func showAddFoodItemViewController() {
         let addFoodItemVC = AddFoodItemViewController()
         addFoodItemVC.delegate = self
         navigationController?.pushViewController(addFoodItemVC, animated: true)
     }
-    
-    private func showAlert(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-        alertController.addAction(okAction)
-        present(alertController, animated: true, completion: nil)
-    }
-     */
     
     // Custom function to format the scheduledCarbRatio
     func formatScheduledCarbRatio(_ value: Double) -> String {
@@ -855,11 +822,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         addDoneButtonToKeyboard()
     }
-    
-    
-   /* @objc private func showCRInfo() {
-        showAlert(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 1 E insulin till 25 g kolhydrater, eller 2 E insulin till 50 g kolhydrater.")
-    }*/
     
     @objc private func allowShortcutsChanged() {
         allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
@@ -973,7 +935,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
                 DispatchQueue.main.async {
                     self.foodItems = foodItems
-                    self.searchableDropdownView?.updateFoodItems(foodItems)
+                    self.searchableDropdownViewController?.updateFoodItems(foodItems)
                     print("fetchfooditems ran")
                 }
             } catch {
@@ -1303,28 +1265,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             foodItemRows.append(rowView)
             stackView.addArrangedSubview(rowView)
         }
-
-    
     
 /// Registration of meal and remote commands
-    /*
-    @objc private func lateBreakfastLabelTapped() {
-        if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd HH:mm"
-            let formattedDate = formatter.string(from: startTime)
-            
-            let alertController = UIAlertController(title: "Senaste override", message: "Aktiverades \(formattedDate)", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-        } else {
-            let alertController = UIAlertController(title: "Senaste override", message: "Ingen tidigare aktivering hittades.", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-        }
-    }*/
     
     @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
         if sender.isOn {
@@ -1444,8 +1386,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
                 let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
-                
-                //let alertController = UIAlertController(title: "Registrera startdos för måltid", message: "Vill du registrera startdosen för måltiden i iAPS/Trio?", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerStartAmountInLoopingApp(khValue: khValue, bolusValue: bolusValue)
@@ -1507,11 +1447,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
         let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
         let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-        /*let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=kh_\(khValue)_bolus_\(bolusValue)"*/
         
         let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=\(combinedString)"
-        
-        
         
         if let url = URL(string: urlString) {
             if UIApplication.shared.canOpenURL(url) {
@@ -1611,7 +1548,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                //let alertController = UIAlertController(title: "Registrera slutdos för måltiden", message: "Vill du registrera de kolhydrater, fett och protein som ännu inte registreras i iAPS/Trio, och ge en bolus?", preferredStyle: .alert)
                 var alertMessage = "Vill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
@@ -2056,66 +1992,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         netCarbsLabel.isHidden = isHidden
     }
     
-    private func setupSearchableDropdownView() {
-        searchableDropdownView = SearchableDropdownView()
-        searchableDropdownView.translatesAutoresizingMaskIntoConstraints = false
-        searchableDropdownView.isHidden = true
-        view.addSubview(searchableDropdownView)
-        
-        NSLayoutConstraint.activate([
-            searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120)
-        ])
-        
-        // Store the bottom constraint
-        searchableDropdownBottomConstraint = searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -7)
-        searchableDropdownBottomConstraint.isActive = true
-        
-        searchableDropdownView.onDoneButtonTapped = { [weak self] selectedItems in
-            self?.searchableDropdownView.isHidden = true
-            
-            if selectedItems.isEmpty {
-                // No items were added, update the "Clear All" button state
-                self?.updateClearAllButtonState()
-                return
-            }
-            
-            selectedItems.forEach { self?.addFoodItemRow(with: $0) }
-            self?.clearAllButton.isEnabled = true
-            self?.updateHeadlineVisibility()
-            
-            // Hide the dropdown and update the navigation bar
-            self?.hideSearchableDropdown()
-
-            // Enable manual text input in totalRegisteredLabel
-            self?.totalRegisteredLabel.isUserInteractionEnabled = true
-        }
-    }
-    
-    func hideSearchableDropdown() {
-        searchableDropdownView.isHidden = true
-        navigationItem.rightBarButtonItem = clearAllButton // Show "Avsluta måltid" button again
-        clearAllButton.isHidden = false // Unhide the "Avsluta måltid" button
-
-        // Enable manual text input in totalRegisteredLabel
-        totalRegisteredLabel.isUserInteractionEnabled = true
-    }
-    
-    @objc private func searchableDropdownViewDidDismiss() {
-        // Ensure the "Clear All" button is updated when the dropdown is dismissed
-        updateClearAllButtonState()
-    }
-    
-    // Call this method when the dropdown view is hidden
-    private func hideSearchableDropdownView() {
-        searchableDropdownView.isHidden = true
-        searchableDropdownView.searchBar.resignFirstResponder()
-        searchableDropdownViewDidDismiss()
-    }
-    
     @objc private func addFromSearchableDropdownButtonTapped() {
-        searchableDropdownView.completeSelection()
+        let dropdownVC = SearchableDropdownViewController()
+        dropdownVC.onDoneButtonTapped = { [weak self] selectedItems in
+            self?.handleSelectedFoodItems(selectedItems)
+        }
+        let navigationController = UINavigationController(rootViewController: dropdownVC)
+        present(navigationController, animated: true, completion: nil)
+    }
+
+    private func handleSelectedFoodItems(_ items: [FoodItem]) {
+        for item in items {
+            addFoodItemRow(with: item)
+        }
+        updateTotalNutrients()
+        updateHeadlineVisibility()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
     }
 
     func addFoodItemRow(with foodItem: FoodItem? = nil) {
@@ -2154,27 +2047,29 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double, notEaten: Double) {
-            let rowView = FoodItemRowView()
-            rowView.foodItems = foodItems //Array(foodItems.values) // Provide all food items as an array
-            rowView.delegate = self
-            rowView.translatesAutoresizingMaskIntoConstraints = false
-            stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
-            foodItemRows.append(rowView)
-            rowView.setSelectedFoodItem(foodItem) // Correctly setting the selected food item
-            rowView.portionServedTextField.text = formattedValue(portionServed)
-            rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-            
-            rowView.onDelete = { [weak self] in
-                self?.removeFoodItemRow(rowView)
-            }
-            
-            rowView.onValueChange = { [weak self] in
-                self?.updateTotalNutrients()
-                self?.updateHeadlineVisibility()
-            }
-            rowView.calculateNutrients()
+    private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double = 0.0, notEaten: Double = 0.0) {
+        let rowView = FoodItemRowView()
+        rowView.foodItems = foodItems
+        rowView.delegate = self
+        rowView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+        foodItemRows.append(rowView)
+        rowView.setSelectedFoodItem(foodItem)
+        rowView.portionServedTextField.text = formattedValue(portionServed)
+        rowView.notEatenTextField.text = formattedValue(notEaten)
+        rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        rowView.notEatenTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+
+        rowView.onDelete = { [weak self] in
+            self?.removeFoodItemRow(rowView)
         }
+
+        rowView.onValueChange = { [weak self] in
+            self?.updateTotalNutrients()
+            self?.updateHeadlineVisibility()
+        }
+        rowView.calculateNutrients()
+    }
     
     private func addAddButtonRow() {
         addButtonRowView = AddButtonRowView()
@@ -2185,22 +2080,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func addButtonTapped() {
-        if searchableDropdownView.superview == nil {
-            view.addSubview(searchableDropdownView)
-            NSLayoutConstraint.activate([
-                searchableDropdownView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                searchableDropdownView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                searchableDropdownView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                searchableDropdownView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -7)
-            ])
+        let dropdownVC = SearchableDropdownViewController()
+        dropdownVC.onDoneButtonTapped = { [weak self] selectedItems in
+            self?.handleSelectedFoodItems(selectedItems)
         }
-        
-        searchableDropdownView.isHidden = false
-        navigationItem.rightBarButtonItem = addFromSearchableDropdownButton // Show "Lägg till" button
-        clearAllButton.isHidden = true // Hide the "Avsluta måltid" button
-        
-        // Disable manual text input in totalRegisteredLabel
-        totalRegisteredLabel.isUserInteractionEnabled = false
+        let navigationController = UINavigationController(rootViewController: dropdownVC)
+        navigationController.modalPresentationStyle = .formSheet // or .fullScreen based on your preference
+        present(navigationController, animated: true, completion: nil)
     }
     
     @objc private func addNewButtonTapped() {
@@ -2259,7 +2145,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRegisteredLabel?.inputAccessoryView = toolbar
     }
     
-    @objc private func doneButtonTapped() { 
+    @objc private func doneButtonTapped() {
         totalRegisteredLabel?.resignFirstResponder()
         navigationItem.rightBarButtonItem = clearAllButton // Show "Avsluta måltid" button again
         clearAllButton.isHidden = false // Unhide the "Avsluta måltid" button
@@ -2267,32 +2153,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func cancelButtonTapped() {
         totalRegisteredLabel?.resignFirstResponder()
-        searchableDropdownView.isHidden = true
-        //navigationItem.rightBarButtonItem = clearAllButton // Show "Avsluta måltid" button again
-    }
-    
-    @objc private func keyboardWillShow(notification: NSNotification) {
-        guard let userInfo = notification.userInfo,
-              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        
-        let keyboardHeight = keyboardFrame.height
-        let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
-        
-        UIView.animate(withDuration: duration) {
-            // Adjust the bottom constraint to the top of the keyboard
-            self.searchableDropdownBottomConstraint.constant = -keyboardHeight + 85
-            self.view.layoutIfNeeded()
-        }
-    }
-    
-    @objc private func keyboardWillHide(notification: NSNotification) {
-        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
-        
-        UIView.animate(withDuration: duration) {
-            // Reset the bottom constraint
-            self.searchableDropdownBottomConstraint.constant = -7
-            self.view.layoutIfNeeded()
-        }
     }
     
     public func updateClearAllButtonState() {
@@ -2564,5 +2424,11 @@ extension ComposeMealViewController {
         } else {
             presentPopover(title: "Senaste override", message: "Ingen tidigare aktivering hittades.", sourceView: addButtonRowView.lateBreakfastLabel)
         }
+    }
+}
+
+public extension Character {
+    var isWhitespaceOrNewline: Bool {
+        return isWhitespace || isNewline
     }
 }

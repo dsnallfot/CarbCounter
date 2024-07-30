@@ -1,53 +1,42 @@
 import UIKit
+import CoreData
 
-class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+class SearchableDropdownViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     
     var onSelectItems: (([FoodItem]) -> Void)?
     var onDoneButtonTapped: (([FoodItem]) -> Void)?
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
     var selectedFoodItems: [FoodItem] = []
+    private var tableViewBottomConstraint: NSLayoutConstraint!
+    
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = "Sök & välj ett eller flera livsmedel"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        //searchBar.barTintColor = .systemBackground
         searchBar.backgroundImage = UIImage() // Removes the default background image
-        
-        // Customize the text field inside the search bar
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
-            //textField.backgroundColor = .systemBackground
-            textField.tintColor = .label // Set the cursor color
-            textField.autocorrectionType = .no // Disable autocorrection
-            textField.spellCheckingType = .no // Disable spell checking
-            
-            // Remove predictive text
+            textField.tintColor = .label
+            textField.autocorrectionType = .no
+            textField.spellCheckingType = .no
             if #available(iOS 11.0, *) {
                 textField.inputAssistantItem.leadingBarButtonGroups = []
                 textField.inputAssistantItem.trailingBarButtonGroups = []
             }
-            
-            // Create toolbar with done and cancel buttons
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
-            
-            // Create a UIButton with an SF symbol
             let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
             let cancelButton = UIButton(type: .system)
             cancelButton.setImage(symbolImage, for: .normal)
-            cancelButton.tintColor = .label // Change color if needed
-            cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24) // Adjust size if needed
+            cancelButton.tintColor = .label
+            cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
             cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
             let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
-            
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-            
             toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
-            
             textField.inputAccessoryView = toolbar
         }
-        
         return searchBar
     }()
     
@@ -63,17 +52,20 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        //segmentedControl.backgroundColor = .systemBackground // Set background color
-        segmentedControl.tintColor = .label // Set tint color
+        segmentedControl.tintColor = .label
         return segmentedControl
     }()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override func viewDidLoad() {
+        super.viewDidLoad()
         setupView()
+        setupNavigationBar()
+        fetchFoodItems()
         
         // Add observer for notifications
         NotificationCenter.default.addObserver(self, selector: #selector(foodItemsDidChange(_:)), name: .foodItemsDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         
         // Load saved search text
         if let savedSearchText = UserDefaults.standard.string(forKey: "dropdownSearchText") {
@@ -87,38 +79,39 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
             tableView.reloadData()
         }
     }
-    
+    /*
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }*/
+    
+    private func setupNavigationBar() {
+        title = "Välj livsmedel"
+        
+        let showMealButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = showMealButton
     }
     
     private func setupView() {
-        backgroundColor = .systemBackground // Set the solid background color here
+        view.backgroundColor = .systemBackground
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         
-        // Create the gradient view
-                let colors: [CGColor] = [
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-                ]
-                let gradientView = GradientView(colors: colors)
-                gradientView.translatesAutoresizingMaskIntoConstraints = false
-                
-                // Add the gradient view to the main view
-                addSubview(gradientView)
-                sendSubviewToBack(gradientView)
-                
-                // Set up constraints for the gradient view
-                NSLayoutConstraint.activate([
-                    gradientView.leadingAnchor.constraint(equalTo: leadingAnchor),
-                    gradientView.trailingAnchor.constraint(equalTo: trailingAnchor),
-                    gradientView.topAnchor.constraint(equalTo: topAnchor),
-                    gradientView.bottomAnchor.constraint(equalTo: bottomAnchor)
-                ])
-        
-        addSubview(searchBar)
-        addSubview(segmentedControl)
-        addSubview(tableView)
+        view.addSubview(searchBar)
+        view.addSubview(segmentedControl)
+        view.addSubview(tableView)
         
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         searchBar.delegate = self
@@ -126,40 +119,70 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         tableView.dataSource = self
         
         NSLayoutConstraint.activate([
-            segmentedControl.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            segmentedControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            segmentedControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            segmentedControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
             searchBar.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
-            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+        
+        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        tableViewBottomConstraint.isActive = true
+    }
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        
+        let keyboardHeight = keyboardFrame.height
+        let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
+        
+        UIView.animate(withDuration: duration) {
+            self.tableViewBottomConstraint.constant = -keyboardHeight
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
+        
+        UIView.animate(withDuration: duration) {
+            self.tableViewBottomConstraint.constant = 0
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    private func fetchFoodItems() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        
+        do {
+            foodItems = try context.fetch(fetchRequest)
+            filteredFoodItems = foodItems
+            sortFoodItems()
+            tableView.reloadData()
+        } catch {
+            print("Failed to fetch food items: \(error)")
+        }
     }
     
     @objc private func doneButtonTapped() {
-        // Clear the search bar text
         searchBar.text = ""
-        // Clear saved search text
         UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
-        
-        // Reset the filtered food items to the original list
         filteredFoodItems = foodItems
-        // Apply the segmented control filtering
         sortFoodItems()
         tableView.reloadData()
-        
         completeSelection()
     }
     
     @objc private func cancelButtonTapped() {
-        // Clear saved search text
         UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
-        // Dismiss the keyboard
         searchBar.resignFirstResponder()
     }
     
@@ -171,56 +194,16 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     private func sortFoodItems() {
         switch segmentedControl.selectedSegmentIndex {
         case 0:
-            // Case 0: Sort by name (A-Z) with items without "Ⓢ" prefix first
-            filteredFoodItems.sort { (item1, item2) in
-                let name1 = item1.name ?? ""
-                let name2 = item2.name ?? ""
-                
-                let hasPrefix1 = name1.hasPrefix("Ⓢ")
-                let hasPrefix2 = name2.hasPrefix("Ⓢ")
-                
-                if hasPrefix1 != hasPrefix2 {
-                    return !hasPrefix1 && hasPrefix2
-                }
-                return name1 < name2
-            }
+            filteredFoodItems.sort { $0.name ?? "" < $1.name ?? "" }
         case 1:
-            // Case 1: Sort items with "Ⓢ" prefix on top, then by name
-            filteredFoodItems.sort { (item1, item2) in
-                let name1 = item1.name ?? ""
-                let name2 = item2.name ?? ""
-                
-                let hasPrefix1 = name1.hasPrefix("Ⓢ")
-                let hasPrefix2 = name2.hasPrefix("Ⓢ")
-                
-                if hasPrefix1 != hasPrefix2 {
-                    return hasPrefix1 && !hasPrefix2
-                }
-                return name1 < name2
-            }
+            filteredFoodItems.sort { ($0.name?.hasPrefix("Ⓢ") ?? false) && !($1.name?.hasPrefix("Ⓢ") ?? false) }
         case 2:
-            // Case 2: Sort by suffix "①" on top, then by name
-            filteredFoodItems.sort { (item1, item2) in
-                let name1 = item1.name ?? ""
-                let name2 = item2.name ?? ""
-                
-                let hasSuffix1 = name1.hasSuffix("①")
-                let hasSuffix2 = name2.hasSuffix("①")
-                
-                if hasSuffix1 != hasSuffix2 {
-                    return hasSuffix1 && !hasSuffix2
-                }
-                return name1 < name2
-            }
+            filteredFoodItems.sort { ($0.name?.hasSuffix("①") ?? false) && !($1.name?.hasSuffix("①") ?? false) }
         case 3:
-            // Case 3: Sort by count descending
             filteredFoodItems.sort { $0.count > $1.count }
         default:
             break
         }
-    }
-    private func clearSelection() {
-        selectedFoodItems.removeAll()
     }
     
     @objc private func foodItemsDidChange(_ notification: Notification) {
@@ -230,8 +213,8 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     }
     
     func updateFoodItems(_ items: [FoodItem]) {
-        self.foodItems = items
-        self.filteredFoodItems = self.foodItems
+        foodItems = items
+        filteredFoodItems = foodItems
         sortFoodItems()
         tableView.reloadData()
     }
@@ -259,8 +242,9 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
         }
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText") //Save search text
+        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText")
         if searchText.isEmpty {
             filteredFoodItems = foodItems
         } else {
@@ -272,15 +256,8 @@ class SearchableDropdownView: UIView, UITableViewDelegate, UITableViewDataSource
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-}
-
-extension Notification.Name {
-    static let foodItemsDidChange = Notification.Name("foodItemsDidChange")
-}
-
-extension SearchableDropdownView {
+    
     func completeSelection() {
-        // Increment count for each selected item and save context
         let context = CoreDataStack.shared.context
         for item in selectedFoodItems {
             item.count += 1
@@ -290,24 +267,20 @@ extension SearchableDropdownView {
         } catch {
             print("Failed to update food item count: \(error)")
         }
-        
-        // Resign the searchBar as first responder
         searchBar.resignFirstResponder()
-        
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
         tableView.reloadData()
-        
-        // Hide the dropdown view
-        self.isHidden = true
-        
-        // Notify delegate to update navigation bar
-        (self.superview?.next as? ComposeMealViewController)?.hideSearchableDropdown()
+        dismiss(animated: true, completion: nil)
+    }
+
+    private func clearSelection() {
+        selectedFoodItems.removeAll()
     }
 }
 
-public extension Character {
-    var isWhitespaceOrNewline: Bool {
-        return isWhitespace || isNewline
-    }
+extension Notification.Name {
+static let foodItemsDidChange = Notification.Name("foodItemsDidChange")
 }
+
+
