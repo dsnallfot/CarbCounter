@@ -10,6 +10,7 @@ import AudioToolbox
 import LocalAuthentication
 import CloudKit
 import QuartzCore
+import SwiftUI
 
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable {
@@ -715,7 +716,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ])
     }
 
-    
+    /*
     @objc private func showBolusInfo() {
         showAlert(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.")
     }
@@ -743,6 +744,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         alertController.addAction(okAction)
         present(alertController, animated: true, completion: nil)
     }
+     */
     
     // Custom function to format the scheduledCarbRatio
     func formatScheduledCarbRatio(_ value: Double) -> String {
@@ -855,9 +857,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     
-    @objc private func showCRInfo() {
+   /* @objc private func showCRInfo() {
         showAlert(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 1 E insulin till 25 g kolhydrater, eller 2 E insulin till 50 g kolhydrater.")
-    }
+    }*/
     
     @objc private func allowShortcutsChanged() {
         allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
@@ -1305,7 +1307,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     
 /// Registration of meal and remote commands
-    
+    /*
     @objc private func lateBreakfastLabelTapped() {
         if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
             let formatter = DateFormatter()
@@ -1322,7 +1324,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
         }
-    }
+    }*/
     
     @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
         if sender.isOn {
@@ -2462,4 +2464,105 @@ class GradientView: UIView {
     }
 }
 
-  
+///Add popovers for info instead of alerts
+
+struct InfoPopoverView: View {
+    let title: String
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(Color(UIColor.label))
+                .padding(.top, 8)
+            Text(message)
+                .font(.subheadline)
+                .foregroundColor(Color(UIColor.label))
+                .multilineTextAlignment(.center)
+                .padding()
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+class InfoPopoverHostingController: UIHostingController<InfoPopoverView> {
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: InfoPopoverView(title: "", message: ""))
+    }
+
+    init(title: String, message: String) {
+        let view = InfoPopoverView(title: title, message: message)
+        super.init(rootView: view)
+        modalPresentationStyle = .popover
+        popoverPresentationController?.backgroundColor = .systemBackground
+        popoverPresentationController?.delegate = self
+        
+        // Dynamically calculate preferredContentSize
+        let width: CGFloat = 300
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.view.layoutIfNeeded()
+        let size = hostingController.sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+        preferredContentSize = CGSize(width: width, height: size.height)
+    }
+}
+
+extension InfoPopoverHostingController: UIPopoverPresentationControllerDelegate {
+    func popoverPresentationControllerDidDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) {
+        dismiss(animated: true, completion: nil)
+    }
+
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
+    }
+}
+
+extension ComposeMealViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
+    }
+}
+
+extension ComposeMealViewController {
+    private func presentPopover(title: String, message: String, sourceView: UIView) {
+        let popoverController = InfoPopoverHostingController(title: title, message: message)
+        popoverController.modalPresentationStyle = .popover
+        popoverController.popoverPresentationController?.sourceView = sourceView
+        popoverController.popoverPresentationController?.sourceRect = sourceView.bounds
+        popoverController.popoverPresentationController?.permittedArrowDirections = .any
+        popoverController.popoverPresentationController?.delegate = self
+        present(popoverController, animated: true, completion: nil)
+    }
+
+    @objc private func showBolusInfo() {
+        presentPopover(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.", sourceView: totalBolusAmountLabel)
+    }
+
+    @objc private func showCarbsInfo() {
+        presentPopover(title: "Kolhydrater Totalt", message: "Den beräknade summan av alla kolhydrater i måltiden.", sourceView: totalNetCarbsLabel)
+    }
+
+    @objc private func showFatInfo() {
+        presentPopover(title: "Fett Totalt", message: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", sourceView: totalNetFatLabel)
+    }
+
+    @objc private func showProteinInfo() {
+        presentPopover(title: "Protein Totalt", message: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", sourceView: totalNetProteinLabel)
+    }
+
+    @objc private func showCRInfo() {
+        presentPopover(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.\n", sourceView: nowCRLabel)
+    }
+
+    @objc private func lateBreakfastLabelTapped() {
+        if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm"
+            let formattedDate = formatter.string(from: startTime)
+            presentPopover(title: "Senaste override", message: "Aktiverades \(formattedDate)", sourceView: addButtonRowView.lateBreakfastLabel)
+        } else {
+            presentPopover(title: "Senaste override", message: "Ingen tidigare aktivering hittades.", sourceView: addButtonRowView.lateBreakfastLabel)
+        }
+    }
+}
