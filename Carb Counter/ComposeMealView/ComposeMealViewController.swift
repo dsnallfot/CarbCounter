@@ -247,15 +247,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateScheduledValuesUI() // Update labels
         
         // Check if the late breakfast switch should be off
-        if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
-            let timeInterval = Date().timeIntervalSince(startTime)
-            if timeInterval >= lateBreakfastDuration {
-                addButtonRowView.lateBreakfastSwitch.isOn = false
-                lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
-            } else {
-                lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration - timeInterval, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
-            }
-        }
+           if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
+               print("Override CR was activated: \(startTime)")
+               let timeInterval = Date().timeIntervalSince(startTime)
+               if timeInterval >= lateBreakfastDuration {
+                   addButtonRowView.lateBreakfastSwitch.isOn = false
+                   lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
+               } else {
+                   lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration - timeInterval, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
+               }
+           }
         
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
@@ -1304,6 +1305,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
         if sender.isOn {
             handleLateBreakfastSwitchOn()
+            self.startLateBreakfastTimer()
         }
     }
 
@@ -1324,7 +1326,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                 self.sendOverrideRequest(combinedString: combinedString)
-                self.startLateBreakfastTimer()
             }
             alertController.addAction(cancelAction)
             alertController.addAction(yesAction)
@@ -1333,7 +1334,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let alertController = UIAlertController(title: "Manuell aktivering", message: "Kom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.startLateBreakfastTimer()
             }
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
@@ -1342,12 +1342,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func startLateBreakfastTimer() {
-        UserDefaults.standard.set(Date(), forKey: "lateBreakfastStartTime")
+        let currentDate = Date()
+        UserDefaults.standard.set(currentDate, forKey: "lateBreakfastStartTime")
+        print("Override timer started at: \(currentDate)")
         lateBreakfastTimer?.invalidate()
         lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
     }
 
     @objc private func turnOffLateBreakfastSwitch() {
+        print("Override timer off")
         addButtonRowView.lateBreakfastSwitch.isOn = false
         lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
     }
