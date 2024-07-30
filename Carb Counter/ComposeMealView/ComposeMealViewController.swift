@@ -213,6 +213,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let customBarButtonItem = UIBarButtonItem(customView: customView)
         navigationItem.leftBarButtonItem = customBarButtonItem
         
+        // Add gesture recognizer for lateBreakfastLabel
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
+            addButtonRowView.lateBreakfastLabel.addGestureRecognizer(tapGesture)
+        
         // Add observers for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -1302,6 +1306,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
 /// Registration of meal and remote commands
     
+    @objc private func lateBreakfastLabelTapped() {
+        if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm"
+            let formattedDate = formatter.string(from: startTime)
+            
+            let alertController = UIAlertController(title: "Senaste override", message: "Aktiverades \(formattedDate)", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+        } else {
+            let alertController = UIAlertController(title: "Senaste override", message: "Ingen tidigare aktivering hittades.", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+        }
+    }
+    
     @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
         if sender.isOn {
             handleLateBreakfastSwitchOn()
@@ -2369,6 +2391,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             label.text = "OVERRIDE"
             label.translatesAutoresizingMaskIntoConstraints = false
+            label.isUserInteractionEnabled = true // Enable user interaction
             return label
         }()
         
@@ -2386,7 +2409,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             addSubview(addNewButton)
             addSubview(lateBreakfastLabel)
             addSubview(lateBreakfastSwitch)
-            
+
             NSLayoutConstraint.activate([
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
                 addButton.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -2404,7 +2427,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
                 lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 3)
             ])
-            //updateBorderColor() // Ensure border color is set correctly initially
         }
     }
 }
