@@ -2196,6 +2196,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
+    @objc private func rssButtonTapped() {
+            let rssFeedVC = RSSFeedViewController()
+            if let topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
+                if let navigationController = topController as? UINavigationController {
+                    navigationController.pushViewController(rssFeedVC, animated: true)
+                } else {
+                    let navigationController = UINavigationController(rootViewController: rssFeedVC)
+                    topController.present(navigationController, animated: true, completion: nil)
+                }
+            }
+        }
+    
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
         UserDefaults.standard.set(lateBreakfast, forKey: "lateBreakfast")
@@ -2209,13 +2221,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateScheduledValuesUI()
         updateTotalNutrients()
     }
-    
-    // Modify the AddButtonRowView class to include a checkbox
+
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
             //button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
-            button.setTitle("   + VÄLJ LIVSMEDEL   ", for: .normal)
+            button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
@@ -2226,20 +2237,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             button.clipsToBounds = true
             return button
         }()
-        /*
-        let addNewButton: UIButton = {
+        
+        let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   + NYTT   ", for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-            button.setTitleColor(.white, for: .normal)
-            button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
+            let image = UIImage(systemName: "calendar.badge.plus")
+            button.setImage(image, for: .normal)
+            button.tintColor = .label
+            //button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
             button.translatesAutoresizingMaskIntoConstraints = false
-            button.layer.cornerRadius = 14
-            button.layer.borderWidth = 2
-            button.layer.borderColor = UIColor.white.cgColor
+            //button.layer.cornerRadius = 14
+            //button.layer.borderWidth = 2
+            //button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
+            button.addTarget(self, action: #selector(rssButtonTapped), for: .touchUpInside)
             return button
-        }()*/
+        }()
         
         let lateBreakfastSwitch: UISwitch = {
             let toggle = UISwitch()
@@ -2269,27 +2281,43 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         private func setupView() {
             addSubview(addButton)
-            //addSubview(addNewButton)
+            addSubview(rssButton)
             addSubview(lateBreakfastLabel)
             addSubview(lateBreakfastSwitch)
 
             NSLayoutConstraint.activate([
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
                 addButton.heightAnchor.constraint(equalToConstant: 32),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-                /*
-                addNewButton.topAnchor.constraint(equalTo: addButton.topAnchor),
-                addNewButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
-                addNewButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                addNewButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 15),
-                */
-                lateBreakfastLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -6),
+                
+                rssButton.topAnchor.constraint(equalTo: addButton.topAnchor),
+                rssButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
+                rssButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
+                rssButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 3),
+                
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: rssButton.centerYAnchor),
+                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -4),
                 
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
-                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -17)
+                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
             ])
+        }
+        
+        @objc private func rssButtonTapped() {
+            let rssFeedVC = RSSFeedViewController()
+            if let topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
+                if let navigationController = topController as? UINavigationController {
+                    navigationController.pushViewController(rssFeedVC, animated: true)
+                } else {
+                    let navigationController = UINavigationController(rootViewController: rssFeedVC)
+                    topController.present(navigationController, animated: true, completion: nil)
+                }
+            }
+        }
+        
+        @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
+            // Handle switch toggle
         }
     }
 }

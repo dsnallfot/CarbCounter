@@ -33,6 +33,9 @@
 		659632862C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		659632872C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */; };
+		65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */; };
+		65BAB4EA2C5A95990055638D /* RSSParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E92C5A95990055638D /* RSSParser.swift */; };
+		65BAB4EC2C5AA5BE0055638D /* RSSDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4EB2C5AA5BE0055638D /* RSSDetailViewController.swift */; };
 		65C75CF62C255C8F00114BD3 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */; };
 		65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */; };
 		65C75CFA2C256FA700114BD3 /* FavoriteMealDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */; };
@@ -97,6 +100,9 @@
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
 		65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownViewController.swift; sourceTree = "<group>"; };
+		65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedViewController.swift; sourceTree = "<group>"; };
+		65BAB4E92C5A95990055638D /* RSSParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSParser.swift; sourceTree = "<group>"; };
+		65BAB4EB2C5AA5BE0055638D /* RSSDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSDetailViewController.swift; sourceTree = "<group>"; };
 		65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		65C75CF72C255D6900114BD3 /* FavoriteMealsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMealsViewController.swift; sourceTree = "<group>"; };
 		65C75CF92C256FA700114BD3 /* FavoriteMealDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMealDetailViewController.swift; sourceTree = "<group>"; };
@@ -163,6 +169,9 @@
 				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
 				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
 				65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */,
+				65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */,
+				65BAB4E92C5A95990055638D /* RSSParser.swift */,
+				65BAB4EB2C5AA5BE0055638D /* RSSDetailViewController.swift */,
 			);
 			path = ComposeMealView;
 			sourceTree = "<group>";
@@ -411,14 +420,17 @@
 				65D138AB2C43DEBD00FAE6BF /* LoadingViewController.swift in Sources */,
 				65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */,
 				653DE7A02C27520700A639D1 /* DataSharingViewController.swift in Sources */,
+				65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */,
 				65C75CFA2C256FA700114BD3 /* FavoriteMealDetailViewController.swift in Sources */,
 				650EF4142C3CA05800ADF8B0 /* CustomTabBarController.swift in Sources */,
 				6502A99D2C29681E00414DC0 /* MealHistoryViewController.swift in Sources */,
 				65C75CFE2C25966200114BD3 /* CarbRatioViewController.swift in Sources */,
 				652891CB2C33FF2C008B8BCA /* ScannerViewController.swift in Sources */,
+				65BAB4EC2C5AA5BE0055638D /* RSSDetailViewController.swift in Sources */,
 				65D138A92C4017E400FAE6BF /* OngoingMealViewController.swift in Sources */,
 				6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */,
 				6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */,
+				65BAB4EA2C5A95990055638D /* RSSParser.swift in Sources */,
 				653DE7A62C27930F00A639D1 /* RemoteSettingsViewController.swift in Sources */,
 				65C75CF62C255C8F00114BD3 /* CoreDataStack.swift in Sources */,
 				65C75CFC2C25962E00114BD3 /* SettingsViewController.swift in Sources */,
