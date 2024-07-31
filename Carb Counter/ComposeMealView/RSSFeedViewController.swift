@@ -106,11 +106,40 @@ class RSSFeedViewController: UIViewController {
     
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
+    var doneButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Skolmatsedel"
+        
         view.backgroundColor = .systemBackground
+        
+        // Create the gradient view
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        title = "Veckans Skolmat"
+        view.backgroundColor = .systemBackground
+        
+        // Add Done button to the navigation bar
+        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
         
         setupTableView()
         fetchRSSFeed()
@@ -122,6 +151,7 @@ class RSSFeedViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.backgroundColor = .clear
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -132,8 +162,12 @@ class RSSFeedViewController: UIViewController {
         ])
     }
     
+    @objc private func doneButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+    
     private func fetchRSSFeed() {
-        NetworkManager.shared.fetchRSSFeed(url: "https://skolmaten.se/kampetorpsskolan/rss/weeks/?offset=-10") { data in
+        NetworkManager.shared.fetchRSSFeed(url: "https://skolmaten.se/kampetorpsskolan/rss/weeks/?offset=-9") { data in
             guard let data = data else { return }
             
             let parser = RSSParser()
@@ -177,6 +211,7 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.numberOfLines = 0
+        cell.backgroundColor = .clear
         
         let weekdayItems = rssItems.filter {
             let calendar = Calendar(identifier: .iso8601)
@@ -184,9 +219,11 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         }
         if weekdayItems.isEmpty || weekdayItems.first?.courses.isEmpty == true {
             cell.textLabel?.text = "Måltidsinformation saknas"
+            cell.backgroundColor = .clear
         } else {
             let courses = weekdayItems.flatMap { $0.courses }
             cell.textLabel?.text = courses[indexPath.row]
+            cell.backgroundColor = .clear
         }
         return cell
     }
