@@ -4,10 +4,49 @@ class SettingsViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.backgroundColor = .clear // Make sure the table view itself is clear
+                
+                // Create the solid background view
+                let solidBackgroundView = UIView()
+                solidBackgroundView.backgroundColor = .systemBackground
+                solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Create the gradient view
+                let colors: [CGColor] = [
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+                ]
+                let gradientView = GradientView(colors: colors)
+                gradientView.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Add the solid background view and gradient view as the table view's background view
+                let backgroundContainerView = UIView()
+                backgroundContainerView.addSubview(solidBackgroundView)
+                backgroundContainerView.addSubview(gradientView)
+                tableView.backgroundView = backgroundContainerView
+                
+                // Set up constraints for the solid background view
+                NSLayoutConstraint.activate([
+                    solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                    solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                    solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                    solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+                ])
+                
+                // Set up constraints for the gradient view
+                NSLayoutConstraint.activate([
+                    gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                    gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                    gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                    gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+                ])
         title = "Inställningar"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "switchCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "valueCell")
+
+
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
         navigationItem.leftBarButtonItem = closeButton
@@ -55,6 +94,7 @@ class SettingsViewController: UITableViewController {
         if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
             cell.accessoryType = .disclosureIndicator
+            cell.backgroundColor = .clear
             switch indexPath.row {
             case 0:
                 cell.textLabel?.text = "Carb Ratio schema"
@@ -77,12 +117,14 @@ class SettingsViewController: UITableViewController {
                 toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
                 toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
+                cell.backgroundColor = .clear
             case 1:
                 let toggleSwitch = UISwitch()
                 cell.textLabel?.text = "Tillåt datarensning"
                 toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
                 toggleSwitch.addTarget(self, action: #selector(dataClearingSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
+                cell.backgroundColor = .clear
             case 2:
                 // Define the segmented control and set its properties
                 let segmentedControl = UISegmentedControl(items: ["Schema", "Fraktion"])
@@ -92,6 +134,7 @@ class SettingsViewController: UITableViewController {
                 // Configure the cell
                 cell.textLabel?.text = "Startdoser"
                 cell.accessoryView = segmentedControl
+                cell.backgroundColor = .clear
 
                 /*let toggleSwitch = UISwitch()
                 cell.textLabel?.text = "Use Start dose % of meal"
@@ -101,27 +144,35 @@ class SettingsViewController: UITableViewController {
             case 3:
                 cell.textLabel?.text = "Startdos Fraktion"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.startDoseFactor)
+                cell.backgroundColor = .clear
             case 4:
                 cell.textLabel?.text = "Maxgräns Kolhydrater"
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxCarbs)) g"
+                cell.backgroundColor = .clear
             case 5:
                 cell.textLabel?.text = "Maxgräns Bolus"
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
+                cell.backgroundColor = .clear
             case 6:
                 cell.textLabel?.text = "Override-faktor"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
+                cell.backgroundColor = .clear
             case 7:
                 cell.textLabel?.text = "Override"
                 cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
+                cell.backgroundColor = .clear
             case 8:
                 cell.textLabel?.text = "Nightscout URL"
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
+                cell.backgroundColor = .clear
             case 9:
                 cell.textLabel?.text = "Nightscout Token"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
+                cell.backgroundColor = .clear
             case 10:
                 cell.textLabel?.text = "Dabas API Secret"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
+                cell.backgroundColor = .clear
             default:
                 break
             }

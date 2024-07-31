@@ -17,6 +17,44 @@ class RemoteSettingsViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.backgroundColor = .clear // Make sure the table view itself is clear
+                
+                // Create the solid background view
+                let solidBackgroundView = UIView()
+                solidBackgroundView.backgroundColor = .systemBackground
+                solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Create the gradient view
+                let colors: [CGColor] = [
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+                ]
+                let gradientView = GradientView(colors: colors)
+                gradientView.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Add the solid background view and gradient view as the table view's background view
+                let backgroundContainerView = UIView()
+                backgroundContainerView.addSubview(solidBackgroundView)
+                backgroundContainerView.addSubview(gradientView)
+                tableView.backgroundView = backgroundContainerView
+                
+                // Set up constraints for the solid background view
+                NSLayoutConstraint.activate([
+                    solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                    solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                    solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                    solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+                ])
+                
+                // Set up constraints for the gradient view
+                NSLayoutConstraint.activate([
+                    gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                    gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                    gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                    gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+                ])
+        
         title = "Fjärrstyrning"
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
@@ -62,6 +100,7 @@ class RemoteSettingsViewController: UITableViewController {
         if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SegmentedControlCell", for: indexPath)
             cell.selectionStyle = .none
+            cell.backgroundColor = .clear
 
             let segmentedControl = UISegmentedControl(items: ["Använd genvägar", "Använd SMS API"])
             segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : 0
@@ -92,6 +131,7 @@ class RemoteSettingsViewController: UITableViewController {
             cell.textField.placeholder = "Enter \(settingName)"
             cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID"))
             cell.textField.keyboardType = settingName.contains("#") ? .phonePad : .default
+            cell.backgroundColor = .clear
 
             switch settingName {
             case "Twilio SID":
