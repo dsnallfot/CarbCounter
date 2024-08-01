@@ -11,6 +11,27 @@ class RSSFeedViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        
+        // Create the gradient view
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+            
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
         title = "Veckans Skolmat"
         setupTableView()
         fetchRSSFeed()
@@ -133,15 +154,18 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.numberOfLines = 0
+        cell.backgroundColor = .clear
         let weekdayItems = rssItems.filter {
             let calendar = Calendar(identifier: .iso8601)
             return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
         }
         if weekdayItems.isEmpty || weekdayItems.first?.courses.isEmpty == true {
             cell.textLabel?.text = "Måltidsinformation saknas"
+            cell.backgroundColor = .clear
         } else {
             let courses = weekdayItems.flatMap { $0.courses }
             cell.textLabel?.text = courses[indexPath.row].replacingOccurrences(of: "<br/>", with: "\n")
+            cell.backgroundColor = .clear
         }
         return cell
     }
@@ -193,6 +217,14 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
             } else if let bestMatch = bestMatch {
                 matchedFoodItems.insert(bestMatch.0)
             }
+        }
+
+        // Always add "Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
+        if let milkItem = foodItems.first(where: { $0.name == "Mjölk" }) {
+            matchedFoodItems.insert(milkItem)
+        }
+        if let mixedVegetablesItem = foodItems.first(where: { $0.name == "Ⓢ Blandade grönsaker (ej majs & ärtor)" }) {
+            matchedFoodItems.insert(mixedVegetablesItem)
         }
         
         print("Matched food items: \(matchedFoodItems)")

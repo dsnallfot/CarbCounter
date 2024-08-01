@@ -2344,10 +2344,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
             }
         }*/
-        
+        /*
         @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
             // Handle switch toggle
-        }
+        }*/
     }
 }
 
