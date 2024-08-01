@@ -2252,7 +2252,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let addButton: UIButton = {
             let button = UIButton(type: .system)
             //button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
-            button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
+            button.setTitle("   + VÄLJ MAT   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
@@ -2266,14 +2266,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            let image = UIImage(systemName: "calendar.badge.plus")
-            button.setImage(image, for: .normal)
+            //let image = UIImage(systemName: "menucard.fill")
+            //button.setImage(image, for: .normal)
+            button.setTitle("   SKOLMATEN   ", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.tintColor = .label
-            //button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
+            button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
             button.translatesAutoresizingMaskIntoConstraints = false
-            //button.layer.cornerRadius = 14
-            //button.layer.borderWidth = 2
-            //button.layer.borderColor = UIColor.white.cgColor
+            button.layer.cornerRadius = 14
+            button.layer.borderWidth = 2
+            button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
             button.addTarget(self, action: #selector(rssButtonTapped), for: .touchUpInside)
             return button
@@ -2318,9 +2320,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
                 
                 rssButton.topAnchor.constraint(equalTo: addButton.topAnchor),
+                rssButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 12),
                 rssButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
                 rssButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                rssButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 3),
+                //rssButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 3),
                 
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: rssButton.centerYAnchor),
                 lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -4),

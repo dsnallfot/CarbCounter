@@ -199,6 +199,15 @@ class UserDefaultsRepository {
             NotificationCenter.default.post(name: .allowViewingOngoingMealsChanged, object: nil)
         }
     }
+    
+    static var schoolFoodURL: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "schoolFoodURL")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "schoolFoodURL")
+        }
+    }
 }
 
 extension Notification.Name {

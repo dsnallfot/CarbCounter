@@ -28,7 +28,7 @@ class RSSFeedViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
@@ -39,7 +39,12 @@ class RSSFeedViewController: UIViewController {
     }
     
     private func fetchRSSFeed() {
-        NetworkManager.shared.fetchRSSFeed(url: "https://skolmaten.se/kampetorpsskolan/rss/weeks/?offset=-9") { data in
+        guard let schoolFoodURL = UserDefaultsRepository.schoolFoodURL else {
+            print("Schoolfood URL is missing")
+            return
+        }
+        
+        NetworkManager.shared.fetchRSSFeed(url: schoolFoodURL) { data in
             guard let data = data else { return }
             let parser = RSSParser()
             if let items = parser.parse(data: data) {

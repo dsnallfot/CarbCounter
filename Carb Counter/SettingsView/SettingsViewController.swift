@@ -84,7 +84,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 11 // Increased to accommodate the new rows
+            return 12 // Increased to accommodate the new rows
         default:
             return 0
         }
@@ -173,6 +173,10 @@ class SettingsViewController: UITableViewController {
                 cell.textLabel?.text = "Dabas API Secret"
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
                 cell.backgroundColor = .clear
+            case 11:
+                cell.textLabel?.text = "Skolmaten URL"
+                cell.detailTextLabel?.text = UserDefaultsRepository.schoolFoodURL
+                cell.backgroundColor = .clear
             default:
                 break
             }
@@ -257,6 +261,14 @@ class SettingsViewController: UITableViewController {
                 message = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online"
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in
                     UserDefaultsRepository.dabasAPISecret = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                }
+                return
+            case 11:
+                title = "Skolmaten URL"
+                message = "Ange URL till Skolmaten.se RSS-flöde som du vill använda:"
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.schoolFoodURL ?? "") { newValue in
+                    UserDefaultsRepository.schoolFoodURL = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
