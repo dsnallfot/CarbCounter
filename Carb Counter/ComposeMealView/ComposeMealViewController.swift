@@ -156,7 +156,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
-        addFromSearchableDropdownButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))
+        /*addFromSearchableDropdownButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))*/
         
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -2026,7 +2026,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         notEatenLabel.isHidden = isHidden
         netCarbsLabel.isHidden = isHidden
     }
-    
+    /*
     @objc private func addFromSearchableDropdownButtonTapped() {
         let dropdownVC = SearchableDropdownViewController()
         dropdownVC.onDoneButtonTapped = { [weak self] selectedItems in
@@ -2034,11 +2034,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         let navigationController = UINavigationController(rootViewController: dropdownVC)
         present(navigationController, animated: true, completion: nil)
-    }
+    }*/
 
     private func handleSelectedFoodItems(_ items: [FoodItem]) {
         for item in items {
-            addFoodItemRow(with: item)
+            addFoodItemRow(with: item) // Defaults to portionServed: nil and notEaten: nil
         }
         updateTotalNutrients()
         updateHeadlineVisibility()
@@ -2084,7 +2084,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Food item row added")
     }
     
-    private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double = 0.0, notEaten: Double = 0.0) {
+    private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double? = nil, notEaten: Double? = nil) {
         let rowView = FoodItemRowView()
         rowView.foodItems = foodItems
         rowView.delegate = self
@@ -2092,8 +2092,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
         rowView.setSelectedFoodItem(foodItem)
-        rowView.portionServedTextField.text = formattedValue(portionServed)
-        rowView.notEatenTextField.text = formattedValue(notEaten)
+
+        // Only set the text fields if the values are not nil
+        if let portionServed = portionServed {
+            rowView.portionServedTextField.text = formattedValue(portionServed)
+        }
+        if let notEaten = notEaten {
+            rowView.notEatenTextField.text = formattedValue(notEaten)
+        }
+
         rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         rowView.notEatenTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
 
