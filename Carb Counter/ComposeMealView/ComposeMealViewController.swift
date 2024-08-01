@@ -394,9 +394,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
-            clearAllFoodItems()
-            
-            for foodItem in matchedFoodItems {
+        clearAllFoodItems()
+        
+        for matchedFoodItem in matchedFoodItems {
+            if let foodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -415,13 +416,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self?.updateHeadlineVisibility()
                 }
                 rowView.calculateNutrients()
+            } else {
+                print("Food item with name \(matchedFoodItem.name ?? "") not found in foodItems.")
             }
-            
-            updateTotalNutrients()
-            updateClearAllButtonState()
-            updateSaveFavoriteButtonState()
-            updateHeadlineVisibility()
         }
+        
+        updateTotalNutrients()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
+    }
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems()
