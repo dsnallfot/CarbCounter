@@ -162,6 +162,6 @@ extension String {
     }
     
     func containsIgnoringCase(_ other: String) -> Bool {
-            return self.range(of: other, options: .caseInsensitive) != nil
+        return self.range(of: other, options: .caseInsensitive) != nil
     }
 }

@@ -6,7 +6,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg"]
+    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg", "penne"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,10 +71,9 @@ class RSSFeedViewController: UIViewController {
     private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
         return items.filter {
             let name = $0.name ?? ""
-            return name.fuzzyMatch(query) > 0.7 || name.containsIgnoringCase(query)
+            return name.fuzzyMatch(query) > 0.7 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
         }
     }
-    
     private func parseCourseDescription(_ description: String) -> [String] {
         let separators = CharacterSet(charactersIn: ", ")
         let components = description.components(separatedBy: separators)
@@ -158,42 +157,51 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         
         let parsedWords = parseCourseDescription(selectedCourse)
         
-        var matchedFoodItems: [FoodItem] = []
-        var bestMatches: [String: (FoodItem, Double)] = [:]
+        var matchedFoodItems: Set<FoodItem> = []  // Using a set to avoid duplicates
         
         for word in parsedWords {
             let matchedItems = fuzzySearch(query: word, in: foodItems)
+            var bestSPrefixMatch: (FoodItem, Double)?
+            var bestMatch: (FoodItem, Double)?
+            
             for item in matchedItems {
                 if let itemName = item.name {
                     let score = itemName.fuzzyMatch(word)
-                    if let existingItem = bestMatches[itemName], existingItem.1 >= score {
-                        continue
+                    if itemName.hasPrefix("Ⓢ") {
+                        if let currentBestSPrefixMatch = bestSPrefixMatch {
+                            if currentBestSPrefixMatch.1 < score {
+                                bestSPrefixMatch = (item, score)
+                            }
+                        } else {
+                            bestSPrefixMatch = (item, score)
+                        }
+                    } else {
+                        if let currentBestMatch = bestMatch {
+                            if currentBestMatch.1 < score {
+                                bestMatch = (item, score)
+                            }
+                        } else {
+                            bestMatch = (item, score)
+                        }
                     }
-                    bestMatches[itemName] = (item, score)
                 }
+            }
+            
+            if let bestSPrefixMatch = bestSPrefixMatch {
+                matchedFoodItems.insert(bestSPrefixMatch.0)
+            } else if let bestMatch = bestMatch {
+                matchedFoodItems.insert(bestMatch.0)
             }
         }
         
-        // Filter items that start with "Ⓢ"
-        let sPrefixMatches = bestMatches.values.filter { $0.0.name?.hasPrefix("Ⓢ") == true }
-        
-        // Use sPrefixMatches if any, otherwise use bestMatches
-        let prioritizedMatches: [FoodItem]
-        if !sPrefixMatches.isEmpty {
-            prioritizedMatches = sPrefixMatches.map { $0.0 }
-        } else {
-            prioritizedMatches = bestMatches.values.map { $0.0 }
-        }
-        
-        matchedFoodItems = prioritizedMatches
         print("Matched food items: \(matchedFoodItems)")
         
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
             navigationController?.popToViewController(composeMealVC, animated: true)
-            composeMealVC.populateWithMatchedFoodItems(matchedFoodItems)
+            composeMealVC.populateWithMatchedFoodItems(Array(matchedFoodItems))
         } else {
             let composeMealVC = ComposeMealViewController()
-            composeMealVC.matchedFoodItems = matchedFoodItems
+            composeMealVC.matchedFoodItems = Array(matchedFoodItems)
             navigationController?.pushViewController(composeMealVC, animated: true)
         }
     }
