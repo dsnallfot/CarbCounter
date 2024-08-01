@@ -7,7 +7,7 @@ class RSSFeedViewController: UIViewController {
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
     let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg"]
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -74,6 +74,35 @@ class RSSFeedViewController: UIViewController {
             return name.fuzzyMatch(query) > 0.7 || name.containsIgnoringCase(query)
         }
     }
+    
+    private func parseCourseDescription(_ description: String) -> [String] {
+        let separators = CharacterSet(charactersIn: ", ")
+        let components = description.components(separatedBy: separators)
+        
+        var parsedComponents: [String] = []
+        var currentComponent = ""
+        
+        for component in components {
+            let trimmedComponent = component.trimmingCharacters(in: .whitespacesAndNewlines)
+            if excludedWords.contains(trimmedComponent.lowercased()) {
+                if !currentComponent.isEmpty {
+                    parsedComponents.append(currentComponent.trimmingCharacters(in: .whitespacesAndNewlines))
+                    currentComponent = ""
+                }
+            } else {
+                if !currentComponent.isEmpty {
+                    currentComponent += " "
+                }
+                currentComponent += trimmedComponent
+            }
+        }
+        
+        if !currentComponent.isEmpty {
+            parsedComponents.append(currentComponent.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        
+        return parsedComponents
+    }
 }
 
 extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
@@ -127,15 +156,36 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         let courses = weekdayItems.flatMap { $0.courses }
         let selectedCourse = courses[indexPath.row]
         
-        let words = selectedCourse.split(separator: " ").map { String($0) }
+        let parsedWords = parseCourseDescription(selectedCourse)
         
         var matchedFoodItems: [FoodItem] = []
+        var bestMatches: [String: (FoodItem, Double)] = [:]
         
-        for word in words where !excludedWords.contains(word.lowercased()) {
+        for word in parsedWords {
             let matchedItems = fuzzySearch(query: word, in: foodItems)
-            matchedFoodItems.append(contentsOf: matchedItems)
+            for item in matchedItems {
+                if let itemName = item.name {
+                    let score = itemName.fuzzyMatch(word)
+                    if let existingItem = bestMatches[itemName], existingItem.1 >= score {
+                        continue
+                    }
+                    bestMatches[itemName] = (item, score)
+                }
+            }
         }
         
+        // Filter items that start with "Ⓢ"
+        let sPrefixMatches = bestMatches.values.filter { $0.0.name?.hasPrefix("Ⓢ") == true }
+        
+        // Use sPrefixMatches if any, otherwise use bestMatches
+        let prioritizedMatches: [FoodItem]
+        if !sPrefixMatches.isEmpty {
+            prioritizedMatches = sPrefixMatches.map { $0.0 }
+        } else {
+            prioritizedMatches = bestMatches.values.map { $0.0 }
+        }
+        
+        matchedFoodItems = prioritizedMatches
         print("Matched food items: \(matchedFoodItems)")
         
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
