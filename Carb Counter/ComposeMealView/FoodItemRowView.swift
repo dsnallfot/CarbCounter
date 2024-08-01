@@ -308,9 +308,11 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             }
         }
         
-        func setSelectedFoodItem(_ item: FoodItem) {
-            self.selectedFoodItem = item
-            foodItemLabel.text = item.name
+    func setSelectedFoodItem(_ item: FoodItem) {
+        print("setSelectedFoodItem called with food item: \(item.name ?? "")")
+        self.selectedFoodItem = item
+        foodItemLabel.text = item.name
+        print("Food item name set to: \(item.name ?? "")")
             delegate?.saveToCoreData() // Call the delegate method
             
             if let notes = item.notes, !notes.isEmpty {

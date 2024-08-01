@@ -1,148 +1,20 @@
 import UIKit
-
-struct RSSItem {
-    var title: String
-    var date: Date
-    var description: String
-    var courses: [String]
-}
-
-class RSSParser: NSObject, XMLParserDelegate {
-    
-    private var rssItems: [RSSItem] = []
-    private var currentElement = ""
-    private var currentTitle: String = ""
-    private var currentDate: String = ""
-    private var currentDescription: String = ""
-    private var currentCourses: [String] = []
-    
-    func parse(data: Data) -> [RSSItem]? {
-        let parser = XMLParser(data: data)
-        parser.delegate = self
-        if parser.parse() {
-            return rssItems
-        } else {
-            return nil
-        }
-    }
-    
-    // MARK: - XMLParserDelegate
-    
-    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
-        currentElement = elementName
-        if currentElement == "item" {
-            currentTitle = ""
-            currentDate = ""
-            currentDescription = ""
-            currentCourses = []
-        }
-    }
-    
-    func parser(_ parser: XMLParser, foundCharacters string: String) {
-        switch currentElement {
-        case "title":
-            currentTitle += string
-        case "pubDate":
-            currentDate += string
-        case "description":
-            currentDescription += string
-        default:
-            break
-        }
-    }
-    
-    func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == "item" {
-            // Parse the currentDate string to a Date object
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "E, d MMM yyyy HH:mm:ss Z" // Adjust the format based on your RSS feed's date format
-            if let date = dateFormatter.date(from: currentDate) {
-                let courses = currentDescription.components(separatedBy: "<br/>").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                let rssItem = RSSItem(title: currentTitle, date: date, description: currentDescription, courses: courses.isEmpty ? ["Måltidsinformation saknas"] : courses)
-                rssItems.append(rssItem)
-            } else {
-                print("Date parsing error: \(currentDate)")
-            }
-        }
-    }
-    
-    func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
-        print("Failed to parse XML: \(parseError.localizedDescription)")
-    }
-}
-
-class NetworkManager {
-    static let shared = NetworkManager()
-    
-    private init() {}
-    
-    func fetchRSSFeed(url: String, completion: @escaping (Data?) -> Void) {
-        guard let url = URL(string: url) else {
-            print("Invalid URL")
-            completion(nil)
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Error fetching RSS feed: \(error)")
-                completion(nil)
-                return
-            }
-            
-            if let data = data, let dataString = String(data: data, encoding: .utf8) {
-                print("Fetched data string: \(dataString)")  // Print the fetched string for debugging
-                completion(data)
-            } else {
-                completion(nil)
-            }
-        }
-        
-        task.resume()
-    }
-}
+import CoreData
 
 class RSSFeedViewController: UIViewController {
     
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
-    var doneButton: UIBarButtonItem!
-    
+    var foodItems: [FoodItem] = []
+    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het"]
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = .systemBackground
-        
-        // Create the gradient view
-        let colors: [CGColor] = [
-            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-        ]
-        let gradientView = GradientView(colors: colors)
-        gradientView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Add the gradient view to the main view
-        view.addSubview(gradientView)
-        view.sendSubviewToBack(gradientView)
-        
-        // Set up constraints for the gradient view
-        NSLayoutConstraint.activate([
-            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
         title = "Veckans Skolmat"
-        view.backgroundColor = .systemBackground
-        
-        // Add Done button to the navigation bar
-        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = doneButton
-        
         setupTableView()
         fetchRSSFeed()
+        fetchFoodItems()
     }
     
     private func setupTableView() {
@@ -169,7 +41,6 @@ class RSSFeedViewController: UIViewController {
     private func fetchRSSFeed() {
         NetworkManager.shared.fetchRSSFeed(url: "https://skolmaten.se/kampetorpsskolan/rss/weeks/?offset=-9") { data in
             guard let data = data else { return }
-            
             let parser = RSSParser()
             if let items = parser.parse(data: data) {
                 self.rssItems = items
@@ -179,6 +50,23 @@ class RSSFeedViewController: UIViewController {
             } else {
                 print("Failed to parse RSS feed")
             }
+        }
+    }
+    
+    private func fetchFoodItems() {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let request: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        do {
+            foodItems = try context.fetch(request)
+        } catch {
+            print("Failed to fetch food items: \(error)")
+        }
+    }
+    
+    private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
+        return items.filter {
+            let name = $0.name ?? ""
+            return name.fuzzyMatch(query) > 0.7 || name.containsIgnoringCase(query)
         }
     }
 }
@@ -211,26 +99,47 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.numberOfLines = 0
-        cell.backgroundColor = .clear
-        
         let weekdayItems = rssItems.filter {
             let calendar = Calendar(identifier: .iso8601)
             return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
         }
         if weekdayItems.isEmpty || weekdayItems.first?.courses.isEmpty == true {
             cell.textLabel?.text = "Måltidsinformation saknas"
-            cell.backgroundColor = .clear
         } else {
             let courses = weekdayItems.flatMap { $0.courses }
-            cell.textLabel?.text = courses[indexPath.row]
-            cell.backgroundColor = .clear
+            cell.textLabel?.text = courses[indexPath.row].replacingOccurrences(of: "<br/>", with: "\n")
         }
         return cell
     }
-}
-
-extension Date {
-    var year: Int {
-        return Calendar.current.component(.year, from: self)
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let weekdayItems = rssItems.filter {
+            let calendar = Calendar(identifier: .iso8601)
+            return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
+        }
+        let courses = weekdayItems.flatMap { $0.courses }
+        let selectedCourse = courses[indexPath.row]
+        
+        let words = selectedCourse.split(separator: " ").map { String($0) }
+        
+        var matchedFoodItems: [FoodItem] = []
+        
+        for word in words where !excludedWords.contains(word.lowercased()) {
+            let matchedItems = fuzzySearch(query: word, in: foodItems)
+            matchedFoodItems.append(contentsOf: matchedItems)
+        }
+        
+        print("Matched food items: \(matchedFoodItems)")
+        
+        if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+            navigationController?.popToViewController(composeMealVC, animated: true)
+            composeMealVC.populateWithMatchedFoodItems(matchedFoodItems)
+        } else {
+            let composeMealVC = ComposeMealViewController()
+            composeMealVC.matchedFoodItems = matchedFoodItems
+            navigationController?.pushViewController(composeMealVC, animated: true)
+        }
     }
 }

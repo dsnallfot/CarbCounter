@@ -56,6 +56,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
 ///Data and states
     var foodItems: [FoodItem] = []
+    var matchedFoodItems: [FoodItem] = []
     var scheduledStartDose = Double(20)
     var scheduledCarbRatio = Double(25)
     var allowShortcuts: Bool = false
@@ -234,6 +235,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        //updateUIWithMatchedFoodItems()
         view.endEditing(true)
         
         updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
@@ -391,6 +393,36 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
     
+    func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
+            clearAllFoodItems()
+            
+            for foodItem in matchedFoodItems {
+                let rowView = FoodItemRowView()
+                rowView.foodItems = foodItems
+                rowView.delegate = self
+                rowView.translatesAutoresizingMaskIntoConstraints = false
+                stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                foodItemRows.append(rowView)
+                rowView.setSelectedFoodItem(foodItem)
+                rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+                
+                rowView.onDelete = { [weak self] in
+                    self?.removeFoodItemRow(rowView)
+                }
+                
+                rowView.onValueChange = { [weak self] in
+                    self?.updateTotalNutrients()
+                    self?.updateHeadlineVisibility()
+                }
+                rowView.calculateNutrients()
+            }
+            
+            updateTotalNutrients()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
+        }
+    
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         clearAllFoodItems()
 
@@ -454,7 +486,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
-        //print("Completed populateWithFavoriteMeal")
     }
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
@@ -2045,6 +2076,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if !isEditingMeal {
             startEditing()
         }
+        rowView.calculateNutrients()
+        print("Food item row added")
     }
     
     private func addFoodItemRow(with foodItem: FoodItem, portionServed: Double = 0.0, notEaten: Double = 0.0) {
@@ -2197,16 +2230,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func rssButtonTapped() {
-            let rssFeedVC = RSSFeedViewController()
-            if let topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                if let navigationController = topController as? UINavigationController {
-                    navigationController.pushViewController(rssFeedVC, animated: true)
-                } else {
-                    let navigationController = UINavigationController(rootViewController: rssFeedVC)
-                    topController.present(navigationController, animated: true, completion: nil)
-                }
-            }
-        }
+        let rssFeedVC = RSSFeedViewController()
+        navigationController?.pushViewController(rssFeedVC, animated: true)
+    }
     
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
@@ -2303,7 +2329,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
             ])
         }
-        
+        /*
         @objc private func rssButtonTapped() {
             let rssFeedVC = RSSFeedViewController()
             if let topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
@@ -2314,7 +2340,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     topController.present(navigationController, animated: true, completion: nil)
                 }
             }
-        }
+        }*/
         
         @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
             // Handle switch toggle
