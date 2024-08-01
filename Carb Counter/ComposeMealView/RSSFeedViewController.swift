@@ -6,7 +6,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg", "penne"]
+    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg", "kokosmjölk"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,9 +71,10 @@ class RSSFeedViewController: UIViewController {
     private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
         return items.filter {
             let name = $0.name ?? ""
-            return name.fuzzyMatch(query) > 0.7 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+            return name.fuzzyMatch(query) > 0.2 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
         }
     }
+
     private func parseCourseDescription(_ description: String) -> [String] {
         let separators = CharacterSet(charactersIn: ", ")
         let components = description.components(separatedBy: separators)
