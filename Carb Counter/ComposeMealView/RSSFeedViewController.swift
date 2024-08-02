@@ -7,35 +7,53 @@ class RSSFeedViewController: UIViewController {
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
     let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg", "kokosmjölk"]
+    var offset = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
         // Create the gradient view
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Add the gradient view to the main view
-            view.addSubview(gradientView)
-            view.sendSubviewToBack(gradientView)
-            
-            // Set up constraints for the gradient view
-            NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
-        title = "Veckans Skolmat"
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        title = "Skolmat Vecka"
+        setupNavigationBar()
         setupTableView()
         fetchRSSFeed()
         fetchFoodItems()
+    }
+    
+    private func setupNavigationBar() {
+        let leftChevron = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(decrementOffset))
+        let rightChevron = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(incrementOffset))
+        navigationItem.rightBarButtonItems = [rightChevron, leftChevron]
+    }
+    
+    @objc private func decrementOffset() {
+        offset -= 1
+        fetchRSSFeed()
+    }
+    
+    @objc private func incrementOffset() {
+        offset += 1
+        fetchRSSFeed()
     }
     
     private func setupTableView() {
@@ -60,19 +78,26 @@ class RSSFeedViewController: UIViewController {
     }
     
     private func fetchRSSFeed() {
-        guard let schoolFoodURL = UserDefaultsRepository.schoolFoodURL else {
+        guard var schoolFoodURL = UserDefaultsRepository.schoolFoodURL else {
             print("Schoolfood URL is missing")
             return
         }
+        
+        schoolFoodURL += "/?offset=\(offset)"
         
         NetworkManager.shared.fetchRSSFeed(url: schoolFoodURL) { data in
             guard let data = data else { return }
             let parser = RSSParser()
             if let items = parser.parse(data: data) {
                 self.rssItems = items
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
+                
+                if let firstItem = items.first, let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
+                    DispatchQueue.main.async {
+                        self.title = "Skolmat Vecka \(weekOfYear)"
+                        self.tableView.reloadData()
+                    }
                 }
+                
             } else {
                 print("Failed to parse RSS feed")
             }
