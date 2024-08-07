@@ -336,10 +336,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
         }
-        updateTotalNutrients()
-        updateHeadlineVisibility()
-        updateRemainsBolus()
-        updateClearAllButtonState()
         
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
@@ -355,6 +351,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
         }
+        updateTotalNutrients()
+        updateHeadlineVisibility()
+        updateRemainsBolus()
+        updateClearAllButtonState()
         saveToCoreData()
     }
         
@@ -564,6 +564,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.registeredBolusSoFar = 0.0
             
             print("Variables reset to 0.0")
+            self.updateRemainsBolus()
             self.updateTotalNutrients()
             self.clearAllButton.isEnabled = false // Disable the "Clear All" button
             self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
@@ -603,6 +604,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredBolusSoFar = 0.0
         
         print("Variables reset to 0.0")
+        updateRemainsBolus()
         // Reset the totalNetCarbsLabel and other total labels
         totalNetCarbsLabel.text = "0 g"
         totalNetFatLabel.text = "0 g"
@@ -1472,7 +1474,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Bolus?", message: "\nVill du även ge en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Ge bolus?", message: "\nVill du även ge en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
             bolusValue = "0.0"
             self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
@@ -1644,7 +1646,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             message += "\nVill du ge en bolus till måltiden?\n\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera mängden:"
         }
 
-        let bolusAlertController = UIAlertController(title: "Bolus?", message: message, preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Ge bolus?", message: message, preferredStyle: .alert)
         bolusAlertController.addTextField { textField in
             textField.text = bolusValue
             textField.keyboardType = .decimalPad
@@ -2079,8 +2081,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
-            
-            //let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
+
             totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + "E"
             
             remainsContainer?.backgroundColor = .systemGray
@@ -2089,7 +2090,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         let remainsValue = Double(remainsText) ?? 0.0
-        //let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
         
         switch (remainsValue, remainsBolus) {
         case (-0.5...0.5, -0.05...0.05):
