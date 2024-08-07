@@ -2281,7 +2281,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             //button.setImage(image, for: .normal)
             button.setTitle("   SKOLMATEN   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-            button.tintColor = .label
+            button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.cornerRadius = 14
