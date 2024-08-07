@@ -71,6 +71,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var dataSharingVC: DataSharingViewController?
     var mealEmojis: String? = "🍴"
     var mealDate: Date?
+    var registeredFatSoFar = Double(0.0)
+    var registeredProteinSoFar = Double(0.0)
+    var registeredBolusSoFar = Double(0.0)
 
 ///Meal monitoring
     var exportTimer: Timer?
@@ -337,10 +340,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateHeadlineVisibility()
         updateRemainsBolus()
         updateClearAllButtonState()
+        
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
             startDoseGiven = false
             remainingDoseGiven = false
+            
+            // Reset the variables to 0.0
+            registeredFatSoFar = 0.0
+            registeredProteinSoFar = 0.0
+            registeredBolusSoFar = 0.0
+            
+            print("Variables reset to 0.0")
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
         }
@@ -547,6 +558,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
             self.clearAllFoodItems()
             self.totalRegisteredLabel.text = ""
+            // Reset the variables to 0.0
+            self.registeredFatSoFar = 0.0
+            self.registeredProteinSoFar = 0.0
+            self.registeredBolusSoFar = 0.0
+            
+            print("Variables reset to 0.0")
             self.updateTotalNutrients()
             self.clearAllButton.isEnabled = false // Disable the "Clear All" button
             self.clearAllFoodItemRowsFromCoreData() // Add this line to clear Core Data entries
@@ -580,6 +597,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Reset the text of totalRegisteredLabel
         totalRegisteredLabel.text = ""
+        // Reset the variables to 0.0
+        registeredFatSoFar = 0.0
+        registeredProteinSoFar = 0.0
+        registeredBolusSoFar = 0.0
+        
+        print("Variables reset to 0.0")
         // Reset the totalNetCarbsLabel and other total labels
         totalNetCarbsLabel.text = "0 g"
         totalNetFatLabel.text = "0 g"
@@ -907,6 +930,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             clearAllFoodItems()
             
             var lastTotalRegisteredValue: Double?
+            var lastRegisteredFatSoFar: Double?
+            var lastRegisteredProteinSoFar: Double?
+            var lastRegisteredBolusSoFar: Double?
 
             for (index, savedFoodItem) in savedFoodItems.enumerated() {
                 
@@ -921,8 +947,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         rowView.foodItemRow = savedFoodItem
                         
                         rowView.setSelectedFoodItem(foodItem)
-                        rowView.portionServedTextField.text = formatNumber(savedFoodItem.portionServed)
-                        rowView.notEatenTextField.text = formatNumber(savedFoodItem.notEaten)
+                        
+                        let portionServedValue = formatNumber(savedFoodItem.portionServed)
+                        rowView.portionServedTextField.text = portionServedValue == "0" ? nil : portionServedValue
+                        
+                        let notEatenValue = formatNumber(savedFoodItem.notEaten)
+                        rowView.notEatenTextField.text = notEatenValue == "0" ? nil : notEatenValue
                         
                         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
                         foodItemRows.append(rowView)
@@ -938,19 +968,47 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         rowView.calculateNutrients()
                     }
                 }
-
+                
                 // Keep track of the last total registered value
                 lastTotalRegisteredValue = max(lastTotalRegisteredValue ?? 0, savedFoodItem.totalRegisteredValue)
+                
+                // Track the last registered values
+                lastRegisteredFatSoFar = savedFoodItem.registeredFatSoFar
+                lastRegisteredProteinSoFar = savedFoodItem.registeredProteinSoFar
+                lastRegisteredBolusSoFar = savedFoodItem.registeredBolusSoFar
             }
-            
+
             // Update the totalRegisteredLabel with the last saved value
             if let lastValue = lastTotalRegisteredValue {
-                totalRegisteredLabel.text = formatNumber(lastValue)
-                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
+                let formattedLastValue = formatNumber(lastValue)
+                totalRegisteredLabel.text = formattedLastValue == "0" ? nil : formattedLastValue
+                
+                // Check if the formatted number is greater than 0
+                if let textValue = totalRegisteredLabel.text, let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")), numberValue > 0 {
+                    saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
+                } else {
+                    saveMealToHistory = false // Just in case you want to reset it when the value is not greater than 0
+                }
             } else {
                 print("Debug - No lastTotalRegisteredValue found")
             }
             
+            // Optionally update any other UI elements or properties with the last values
+            if let lastFatValue = lastRegisteredFatSoFar {
+                // Update your UI or use the last fat value as needed
+                print("Last registered fat so far: \(lastFatValue)")
+            }
+
+            if let lastProteinValue = lastRegisteredProteinSoFar {
+                // Update your UI or use the last protein value as needed
+                print("Last registered protein so far: \(lastProteinValue)")
+            }
+
+            if let lastBolusValue = lastRegisteredBolusSoFar {
+                // Update your UI or use the last bolus value as needed
+                print("Last registered bolus so far: \(lastBolusValue)")
+            }
+
             // Ensure UI elements are initialized
             initializeUIElements()
             
@@ -996,6 +1054,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Extract the totalRegisteredLabel value, handling potential nil values
         let totalRegisteredText = totalRegisteredLabel.text ?? "0"
         let totalRegisteredValue = Double(totalRegisteredText) ?? 0
+        let registeredFatSoFar = registeredFatSoFar
+        let registeredProteinSoFar = registeredProteinSoFar
+        let registeredBolusSoFar = registeredBolusSoFar
+        
 
         for rowView in foodItemRows {
             if let foodItemRow = rowView.foodItemRow {
@@ -1006,12 +1068,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 if totalRegisteredValue > foodItemRow.totalRegisteredValue {
                     foodItemRow.totalRegisteredValue = totalRegisteredValue
                 }
+                foodItemRow.registeredFatSoFar = registeredFatSoFar
+                foodItemRow.registeredProteinSoFar = registeredProteinSoFar
+                foodItemRow.registeredBolusSoFar = registeredBolusSoFar
             } else {
                 let foodItemRow = FoodItemRow(context: context)
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
                 foodItemRow.totalRegisteredValue = totalRegisteredValue
+                foodItemRow.registeredFatSoFar = registeredFatSoFar
+                foodItemRow.registeredProteinSoFar = registeredProteinSoFar
+                foodItemRow.registeredBolusSoFar = registeredBolusSoFar
                 rowView.foodItemRow = foodItemRow
             }
         }
@@ -1321,7 +1389,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
             
             let alertTitle = "Aktivera override"
-            let alertMessage = "Vill du aktivera overriden \n'\(overrideName)' i iAPS/Trio?"
+            let alertMessage = "\nVill du aktivera overriden \n'\(overrideName)' i iAPS/Trio?"
             
             let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
@@ -1332,7 +1400,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(yesAction)
             present(alertController, animated: true, completion: nil)
         } else {
-            let alertController = UIAlertController(title: "Manuell aktivering", message: "Kom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Manuell aktivering", message: "\nKom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
             }
@@ -1376,7 +1444,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         switch result {
                         case .success:
                             AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS/Trio", preferredStyle: .alert)
+                            let alertController = UIAlertController(title: "Lyckades!", message: "\nKommandot levererades till iAPS/Trio", preferredStyle: .alert)
                             alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                                 self.dismiss(animated: true, completion: nil)
                             })
@@ -1404,7 +1472,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Bolus?", message: "\nVill du även ge en bolus till måltiden?", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
             bolusValue = "0.0"
             self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
@@ -1418,9 +1486,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func proceedWithStartAmount(khValue: String, bolusValue: String) {
+        let fatValue = "0.0"
+        let proteinValue = "0.0"
+        
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
                     self.registerStartAmountInLoopingApp(khValue: khValue, bolusValue: bolusValue)
@@ -1429,10 +1500,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                let alertController = UIAlertController(title: "Manuell registrering", message: "Registrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue)
+                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
                     self.startDoseGiven = true
                 }
                 alertController.addAction(cancelAction)
@@ -1440,10 +1511,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "Vill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue)
+                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
                 self.startDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
@@ -1494,27 +1565,86 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func remainContainerTapped() {
         // Check if mealDate is nil and set it to the current date if it is
-            if mealDate == nil {
-                mealDate = Date()
-            }
+        if mealDate == nil {
+            mealDate = Date()
+        }
         createEmojiString()
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
-        if remainsValue < 0 {
+        if bolusRemainsValue < 0 {
+            let bolusText = totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
+            let crText = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
+            if let bolusValue = Double(bolusText), let crValue = Double(crText) {
+                let khValue = bolusValue * crValue
+                let formattedKhValue = formatValue(String(format: "%.0f",khValue))
+                print("Calculated khValue: \(formattedKhValue)")
+                let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med minst \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
+                let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                alert.addAction(okAction)
+                present(alert, animated: true, completion: nil)
+                return
+            } else {
+                print("Invalid input for calculation")
+            }
+        }
+        else if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: "Varning", message: "Du har registrerat en större startdos än vad som slutligen åts! \n\nSe till att komplettera med minst \(khValue) kolhydrater för att undvika lågt blodsocker!", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med minst \(khValue) kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
             return
+            
         }
-        
         let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        let fatValue = formatValue(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
-        let proteinValue = formatValue(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0")
+        
+        let totalFatValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let fatValue = formatValue("\(totalFatValue - registeredFatSoFar)")
+        
+        let totalProteinValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let proteinValue = formatValue("\(totalProteinValue - registeredProteinSoFar)")
+        
         let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
-        let bolusAlertController = UIAlertController(title: "Registrera måltid", message: "Vill du även ge en bolus till måltiden?\n\nDosen är beräknad utifrån aktuell CR. Om du önskar kan du justera den:", preferredStyle: .alert)
+        let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
+        let bolusTotal = totalBolusAmountLabel.text
+        let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        let carbsTotal = totalNetCarbsLabel.text ?? "0 g"
+        let fatSoFar = String(format: "%.0f", registeredFatSoFar)
+        let fatTotal = totalNetFatLabel.text ?? "0 g"
+        let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
+        let proteinTotal = totalNetProteinLabel.text ?? "0 g"
+
+        var message = ""
+
+        // Check if any of the values are greater than 0
+        if (Double(carbsSoFar) ?? 0) > 0 || registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0 {
+            message += "\nDu har hittills registrerat:\n\n"
+            
+            if let carbsSoFarDouble = Double(carbsSoFar), carbsSoFarDouble > 0 {
+                message += "• \(carbsSoFar) g kolhydrater (av tot \(carbsTotal))\n"
+            }
+            
+            if registeredFatSoFar > 0 {
+                message += "• \(fatSoFar) g fett (av tot \(fatTotal))\n"
+            }
+            
+            if registeredProteinSoFar > 0 {
+                message += "• \(proteinSoFar) g protein (av tot \(proteinTotal))\n"
+            }
+            
+            if registeredBolusSoFar > 0 {
+                message += "• \(bolusSoFar) E insulin (av tot \(bolusTotal ?? "0 E"))\n"
+                message += "\nVill du ge ytterligare bolus till måltiden?\n\nDen föreslagna dosen är beräknad utifrån vad du redan gett, samt aktuell CR. Om du vill kan du justera mängden:"
+            } else {
+                message += "\nVill du ge en bolus till måltiden?\n\nDen föreslagna dosen  är beräknad utifrån aktuell CR. Om du vill kan du justera mängden:"
+            }
+        } else {
+            message += "\nVill du ge en bolus till måltiden?\n\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera mängden:"
+        }
+
+        let bolusAlertController = UIAlertController(title: "Bolus?", message: message, preferredStyle: .alert)
         bolusAlertController.addTextField { textField in
             textField.text = bolusValue
             textField.keyboardType = .decimalPad
@@ -1524,14 +1654,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.zeroBolus = true
             self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: "0.0")
         }
-        
+
         let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
             if let textField = bolusAlertController.textFields?.first, let customBolusValue = Double(textField.text?.replacingOccurrences(of: ",", with: ".") ?? "0") {
                 self.zeroBolus = false
                 self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: String(customBolusValue))
             }
         }
-        
+
         bolusAlertController.addAction(noAction)
         bolusAlertController.addAction(yesAction)
         present(bolusAlertController, animated: true, completion: nil)
@@ -1562,7 +1692,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         if showAlert {
-            let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "Måltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", preferredStyle: .alert)
+            let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
             }
@@ -1583,17 +1713,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                var alertMessage = "Vill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
+                var alertMessage = "\nVill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n\(fatValue) g fett"
+                    alertMessage += "\n• \(fatValue) g fett"
                 }
                 if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n\(proteinValue) g protein"
+                    alertMessage += "\n• \(proteinValue) g protein"
                 }
                 
-                alertMessage += "\n\(finalBolusValue) E insulin"
-                            
+                alertMessage += "\n• \(finalBolusValue) E insulin"
+                
                 let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
@@ -1603,21 +1733,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 alertController.addAction(yesAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                var alertMessage = "Registrera nu de kolhydrater som ännu inte registreras i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n\(khValue) g kolhydrater"
+                var alertMessage = "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n\(fatValue) g fett"
+                    alertMessage += "\n• \(fatValue) g fett"
                 }
                 if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n\(proteinValue) g protein"
+                    alertMessage += "\n• \(proteinValue) g protein"
                 }
                 
-                alertMessage += "\n\(finalBolusValue) E insulin"
+                alertMessage += "\n• \(finalBolusValue) E insulin"
                 
                 let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue)
+                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
                     self.remainingDoseGiven = true
                 }
                 alertController.addAction(cancelAction)
@@ -1625,21 +1755,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            var alertMessage = "Vill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n\(khValue) g kolhydrater"
+            var alertMessage = "\nVill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
             
             if let fat = Double(fatValue), fat > 0 {
-                alertMessage += "\n\(fatValue) g fett"
+                alertMessage += "\n• \(fatValue) g fett"
             }
             if let protein = Double(proteinValue), protein > 0 {
-                alertMessage += "\n\(proteinValue) g protein"
+                alertMessage += "\n• \(proteinValue) g protein"
             }
             
-            alertMessage += "\n\(finalBolusValue) E insulin"
+            alertMessage += "\n• \(finalBolusValue) E insulin"
             
             let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue)
+                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
                 self.remainingDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
@@ -1731,20 +1861,34 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    private func updateRegisteredAmount(khValue: String) {
+    private func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
+        
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        
+        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        
+        registeredFatSoFar += fatDoubleValue
+        registeredProteinSoFar += proteinDoubleValue
+        registeredBolusSoFar += bolusDoubleValue
+        
+        print("Updated registeredFatSoFar: \(registeredFatSoFar)")
+        print("Updated registeredProteinSoFar: \(registeredProteinSoFar)")
+        print("Updated registeredBolusSoFar: \(registeredBolusSoFar)")
+        
         updateTotalNutrients()
         clearAllButton.isEnabled = true
+        
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
-            //print ("saveMealToHistory = false")
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
-            //print ("saveMealToHistory = true")
         }
+        
         if UserDefaultsRepository.allowSharingOngoingMeals {
             self.exportToCSV()
         }
@@ -1908,33 +2052,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     private func updateRemainsBolus() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
-
         let totalCarbsValue = Double(totalNetCarbs)
-        
-        let remainsTextString: String
-        
-        if self.startDoseGiven == true {
-            remainsTextString = "+ KVAR ATT GE"
-        } else {
-            remainsTextString = "+ HELA DOSEN"
-        }
+        let remainsTextString = self.startDoseGiven ? "+ KVAR ATT GE" : "+ HELA DOSEN"
+        let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
         
         if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
             
-            let remainsBolus = roundDownToNearest05(remainsValue / scheduledCarbRatio)
+            let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
             totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
-            if remainsValue < -0.5 {
+            
+            if remainsValue < -0.5 || remainsBolus < -0.05 {
                 remainsLabel.text = "ÖVERDOS!"
             } else {
                 remainsLabel.text = remainsTextString
             }
             
-            switch remainsValue {
-            case -0.5...0.5:
+            switch (remainsValue, remainsBolus) {
+            case (-0.5...0.5, -0.05...0.05):
                 remainsContainer.backgroundColor = .systemGreen
-            case let x where x > 0.5:
+            case let (x, y) where x > 0.5 || y > 0.05:
                 remainsContainer.backgroundColor = .systemOrange
             default:
                 remainsContainer.backgroundColor = .systemRed
@@ -1942,7 +2080,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
             
-            let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio)
+            //let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
             totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + "E"
             
             remainsContainer?.backgroundColor = .systemGray
@@ -1951,11 +2089,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
         let remainsValue = Double(remainsText) ?? 0.0
+        //let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
         
-        switch remainsValue {
-        case -0.5...0.5:
+        switch (remainsValue, remainsBolus) {
+        case (-0.5...0.5, -0.05...0.05):
             remainsContainer.backgroundColor = .systemGreen
-        case let x where x > 0.5:
+        case let (x, y) where x > 0.5 || y > 0.05:
             remainsContainer.backgroundColor = .systemOrange
         default:
             remainsContainer.backgroundColor = .systemRed
