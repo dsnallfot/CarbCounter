@@ -6,6 +6,9 @@ struct FoodItemRowData {
     var portionServed: Double
     var notEaten: Double
     var totalRegisteredValue: Double
+    var registeredFatSoFar: Double
+    var registeredProteinSoFar: Double
+    var registeredBolusSoFar: Double
 }
 
 class OngoingMealViewController: UIViewController {
@@ -171,7 +174,10 @@ class OngoingMealViewController: UIViewController {
                 foodItemID: row.foodItemID,
                 portionServed: row.portionServed,
                 notEaten: row.notEaten,
-                totalRegisteredValue: row.totalRegisteredValue
+                totalRegisteredValue: row.totalRegisteredValue,
+                registeredFatSoFar: row.registeredFatSoFar,
+                registeredProteinSoFar: row.registeredProteinSoFar,
+                registeredBolusSoFar: row.registeredBolusSoFar
             )
         }
         

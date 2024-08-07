@@ -618,7 +618,7 @@ class DataSharingViewController: UIViewController {
         var foodItemRows = [FoodItemRowData]()
         
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 4 else {
+        guard columns.count == 7 else {
             print("Import Failed: CSV file was not correctly formatted")
             return []
         }
@@ -630,7 +630,10 @@ class DataSharingViewController: UIViewController {
                     foodItemID: UUID(uuidString: values[0]),
                     portionServed: Double(values[1]) ?? 0.0,
                     notEaten: Double(values[2]) ?? 0.0,
-                    totalRegisteredValue: Double(values[3]) ?? 0.0
+                    totalRegisteredValue: Double(values[3]) ?? 0.0,
+                    registeredFatSoFar: Double(values[4]) ?? 0.0,
+                    registeredProteinSoFar: Double(values[5]) ?? 0.0,
+                    registeredBolusSoFar: Double(values[6]) ?? 0.0
                 )
                 foodItemRows.append(foodItemRow)
             }
@@ -679,15 +682,18 @@ extension DataSharingViewController {
     }
     
     private func createOngoingMealCSV(from foodItemRows: [FoodItemRowData]) -> String {
-        var csvString = "foodItemID;portionServed;notEaten;totalRegisteredValue\n"
+        var csvString = "foodItemID;portionServed;notEaten;totalRegisteredValue;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
         
         for row in foodItemRows {
             let foodItemID = row.foodItemID?.uuidString ?? ""
             let portionServed = row.portionServed
             let notEaten = row.notEaten
             let totalRegisteredValue = row.totalRegisteredValue
+            let registeredFatSoFar = row.registeredFatSoFar
+            let registeredProteinSoFar = row.registeredProteinSoFar
+            let registeredBolusSoFar = row.registeredBolusSoFar
             
-            csvString += "\(foodItemID);\(portionServed);\(notEaten);\(totalRegisteredValue)\n"
+            csvString += "\(foodItemID);\(portionServed);\(notEaten);\(totalRegisteredValue);\(registeredFatSoFar);\(registeredProteinSoFar);\(registeredBolusSoFar)\n"
         }
         
         return csvString

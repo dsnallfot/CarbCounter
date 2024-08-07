@@ -159,8 +159,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         clearAllButton.tintColor = .red // Set the button color to red
         navigationItem.rightBarButtonItem = clearAllButton
         
-        /*addFromSearchableDropdownButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(addFromSearchableDropdownButtonTapped))*/
-        
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
@@ -975,9 +973,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 lastTotalRegisteredValue = max(lastTotalRegisteredValue ?? 0, savedFoodItem.totalRegisteredValue)
                 
                 // Track the last registered values
-                lastRegisteredFatSoFar = savedFoodItem.registeredFatSoFar
-                lastRegisteredProteinSoFar = savedFoodItem.registeredProteinSoFar
-                lastRegisteredBolusSoFar = savedFoodItem.registeredBolusSoFar
+                lastRegisteredFatSoFar = max(lastRegisteredFatSoFar ?? 0, savedFoodItem.registeredFatSoFar)
+                lastRegisteredProteinSoFar = max(lastRegisteredProteinSoFar ?? 0, savedFoodItem.registeredProteinSoFar)
+                lastRegisteredBolusSoFar = max(lastRegisteredBolusSoFar ?? 0, savedFoodItem.registeredBolusSoFar)
             }
 
             // Update the totalRegisteredLabel with the last saved value
@@ -997,17 +995,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             // Optionally update any other UI elements or properties with the last values
             if let lastFatValue = lastRegisteredFatSoFar {
-                // Update your UI or use the last fat value as needed
+                registeredFatSoFar = Double(lastFatValue)
                 print("Last registered fat so far: \(lastFatValue)")
             }
 
             if let lastProteinValue = lastRegisteredProteinSoFar {
-                // Update your UI or use the last protein value as needed
+                registeredProteinSoFar = Double(lastProteinValue)
                 print("Last registered protein so far: \(lastProteinValue)")
             }
 
             if let lastBolusValue = lastRegisteredBolusSoFar {
-                // Update your UI or use the last bolus value as needed
+                registeredBolusSoFar = Double(lastBolusValue)
                 print("Last registered bolus so far: \(lastBolusValue)")
             }
 
@@ -1295,12 +1293,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let portionServed = Double(rowView.portionServedTextField.text ?? "") ?? 0.0
                 let notEaten = Double(rowView.notEatenTextField.text ?? "") ?? 0.0
                 let totalRegisteredValue = Double(totalRegisteredLabel.text ?? "") ?? 0.0
+                let registeredFatSoFar = registeredFatSoFar
+                let registeredProteinSoFar = registeredProteinSoFar
+                let registeredBolusSoFar = registeredBolusSoFar
                 
                 let rowData = FoodItemRowData(
                     foodItemID: foodItem.id,
                     portionServed: portionServed,
                     notEaten: notEaten,
-                    totalRegisteredValue: totalRegisteredValue
+                    totalRegisteredValue: totalRegisteredValue,
+                    registeredFatSoFar: registeredFatSoFar,
+                    registeredProteinSoFar: registeredProteinSoFar,
+                    registeredBolusSoFar: registeredBolusSoFar
                 )
                 foodItemRowData.append(rowData)
             }
@@ -1313,8 +1317,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             clearAllFoodItems()
             
-            // Find the maximum totalRegisteredValue from the imported rows
+            // Find the maximum totalRegisteredValue (and fat, protein & bolus so far) from the imported rows
             let maxTotalRegisteredValue = importedRows.map { $0.totalRegisteredValue }.max() ?? 0.0
+            let maxRegisteredFatSoFar = importedRows.map { $0.registeredFatSoFar }.max() ?? 0.0
+            let maxRegisteredProteinSoFar = importedRows.map { $0.registeredProteinSoFar }.max() ?? 0.0
+            let maxRegisteredBolusSoFar = importedRows.map { $0.registeredBolusSoFar }.max() ?? 0.0
             
             for row in importedRows {
                 if let foodItem = getFoodItemByID(row.foodItemID) {
@@ -1322,8 +1329,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
             }
             
-            // Set the totalRegisteredLabel text to the maximum totalRegisteredValue
+            // Set the totalRegisteredLabel text to the maximum totalRegisteredValue, and update the fat, protein and bolus so far variables
             totalRegisteredLabel.text = String(format: "%.0f", maxTotalRegisteredValue)
+            registeredFatSoFar = maxRegisteredFatSoFar
+            registeredProteinSoFar = maxRegisteredProteinSoFar
+            registeredBolusSoFar = maxRegisteredBolusSoFar
+            
             
             updateTotalNutrients()
             updateClearAllButtonState()
