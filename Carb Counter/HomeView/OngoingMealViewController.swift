@@ -124,7 +124,6 @@ class OngoingMealViewController: UIViewController {
     }
     
     @objc private func importOngoingMealCSV() {
-        // Automatically import ongoing meal CSV
         let dataSharingVC = DataSharingViewController()
         dataSharingVC.importOngoingMealCSV()
     }
@@ -209,10 +208,12 @@ class OngoingMealViewController: UIViewController {
     
     @objc private func didImportOngoingMeal(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
-            // Clear existing rows and add imported rows
+            //print("Received imported rows: \(importedRows)") // Log the received data
             foodItemRows = importedRows
             reloadStackView()
             updateUIBasedOnData()
+        } else {
+            print("Failed to receive imported rows")
         }
     }
     
@@ -230,6 +231,8 @@ class OngoingMealViewController: UIViewController {
                     let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
                     let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
                     stackView.addArrangedSubview(rowView)
+                } else {
+                    print("Food item not found for ID: \(String(describing: row.foodItemID))")
                 }
             }
         }

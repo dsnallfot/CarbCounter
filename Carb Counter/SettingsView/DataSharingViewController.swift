@@ -182,6 +182,7 @@ class DataSharingViewController: UIViewController {
             let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
             let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
             let importedRows = parseOngoingMealCSV(rows)
+            //print("Parsed Rows: \(importedRows)") // Log parsed rows
             NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
             print("Import Successful: OngoingMeal.csv has been imported")
         } catch {
@@ -625,7 +626,7 @@ class DataSharingViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 4 {
+            if values.count == 7 {
                 let foodItemRow = FoodItemRowData(
                     foodItemID: UUID(uuidString: values[0]),
                     portionServed: Double(values[1]) ?? 0.0,
@@ -636,6 +637,8 @@ class DataSharingViewController: UIViewController {
                     registeredBolusSoFar: Double(values[6]) ?? 0.0
                 )
                 foodItemRows.append(foodItemRow)
+            } else {
+                print("Import Failed: Row was not correctly formatted: \(row)")
             }
         }
         
