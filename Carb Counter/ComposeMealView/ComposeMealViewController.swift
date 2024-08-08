@@ -1507,7 +1507,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerStartAmountInLoopingApp(khValue: khValue, bolusValue: bolusValue)
+                    self.registerStartAmountInLoopingApp(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
                 }
                 alertController.addAction(cancelAction)
                 alertController.addAction(yesAction)
@@ -1542,13 +1542,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    private func registerStartAmountInLoopingApp(khValue: String, bolusValue: String) {
+    private func registerStartAmountInLoopingApp(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         let khValue = khValue.replacingOccurrences(of: ".", with: ",")
         let bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        
+        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        
+        registeredFatSoFar += fatDoubleValue
+        registeredProteinSoFar += proteinDoubleValue
+        registeredBolusSoFar += bolusDoubleValue
+        
         self.startDoseGiven = true
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
@@ -1814,6 +1823,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let newRegisteredValue = currentRegisteredValue + remainsValue
         
         totalRegisteredLabel.text = String(format:"%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        
+        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        
+        registeredFatSoFar += fatDoubleValue
+        registeredProteinSoFar += proteinDoubleValue
+        registeredBolusSoFar += bolusDoubleValue
+        
         self.remainingDoseGiven = true
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
