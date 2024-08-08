@@ -1524,7 +1524,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrat \n\(bolusValue) E insulin", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
