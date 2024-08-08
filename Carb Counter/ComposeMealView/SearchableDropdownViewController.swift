@@ -66,18 +66,18 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         NotificationCenter.default.addObserver(self, selector: #selector(foodItemsDidChange(_:)), name: .foodItemsDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
+
         // Load saved search text
-        if let savedSearchText = UserDefaults.standard.string(forKey: "dropdownSearchText") {
-            searchBar.text = savedSearchText
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-            sortFoodItems()
-            tableView.reloadData()
-        } else {
-            filteredFoodItems = foodItems
-            sortFoodItems()
-            tableView.reloadData()
-        }
+                if let savedSearchText = UserDefaultsRepository.dropdownSearchText {
+                    searchBar.text = savedSearchText
+                    filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
+                    sortFoodItems()
+                    tableView.reloadData()
+                } else {
+                    filteredFoodItems = foodItems
+                    sortFoodItems()
+                    tableView.reloadData()
+                }
     }
     
     private func setupNavigationBar() {
@@ -174,7 +174,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     
     @objc private func doneButtonTapped() {
         searchBar.text = ""
-        UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
+        UserDefaultsRepository.dropdownSearchText = nil
         filteredFoodItems = foodItems
         sortFoodItems()
         tableView.reloadData()
@@ -182,7 +182,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }
     
     @objc private func cancelButtonTapped() {
-        UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
+        UserDefaultsRepository.dropdownSearchText = nil
         searchBar.resignFirstResponder()
     }
     
@@ -242,9 +242,9 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         }
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
-    
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText")
+        UserDefaultsRepository.dropdownSearchText = searchText
         if searchText.isEmpty {
             filteredFoodItems = foodItems
         } else {
@@ -253,6 +253,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         sortFoodItems()
         tableView.reloadData()
     }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }

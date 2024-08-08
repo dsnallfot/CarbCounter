@@ -129,7 +129,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ])
         
 ///Reset lateBreakfast to false
-        UserDefaults.standard.set(false, forKey: "lateBreakfast")
+        UserDefaultsRepository.lateBreakfast = false
         lateBreakfast = false
         
 /// Ensure addButtonRowView is initialized
@@ -139,9 +139,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor // Fetch factor for calculating late breakfast CR
         
-        lateBreakfast = UserDefaults.standard.bool(forKey: "lateBreakfast")
+        lateBreakfast = UserDefaultsRepository.lateBreakfast
         addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
-        
+
         if lateBreakfast {
             scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
         }
@@ -174,7 +174,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
         
         // Load allowShortcuts from UserDefaults
-        allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
+        allowShortcuts = UserDefaultsRepository.allowShortcuts
         
         // Create buttons
         let calendarImage = UIImage(systemName: "calendar")
@@ -249,7 +249,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateScheduledValuesUI() // Update labels
         
         // Check if the late breakfast switch should be off
-           if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
+        if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
                print("Override CR was activated: \(startTime)")
                let timeInterval = Date().timeIntervalSince(startTime)
                if timeInterval >= lateBreakfastDuration {
@@ -882,7 +882,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func allowShortcutsChanged() {
-        allowShortcuts = UserDefaults.standard.bool(forKey: "allowShortcuts")
+        allowShortcuts = UserDefaultsRepository.allowShortcuts
     }
     
     // Helper function to format values and remove trailing .0
@@ -1425,7 +1425,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     private func startLateBreakfastTimer() {
         let currentDate = Date()
-        UserDefaults.standard.set(currentDate, forKey: "lateBreakfastStartTime")
+        UserDefaultsRepository.lateBreakfastStartTime = currentDate
         print("Override timer started at: \(currentDate)")
         lateBreakfastTimer?.invalidate()
         lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
@@ -2023,8 +2023,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let roundedBolus = roundDownToNearest05(totalBolus)
         totalBolusAmountLabel.text = formatNumber(roundedBolus) + " E"
         
-        if UserDefaults.standard.bool(forKey: "useStartDosePercentage") {
-            let startDoseFactor = UserDefaults.standard.double(forKey: "startDoseFactor")
+        if  UserDefaultsRepository.useStartDosePercentage {
+            let startDoseFactor = UserDefaultsRepository.startDoseFactor
             let totalStartAmount = totalNetCarbs * startDoseFactor
             totalStartAmountLabel.text = String(format: "%.0fg", totalStartAmount)
             let startBolus = totalStartAmount / scheduledCarbRatio
@@ -2397,7 +2397,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
-        UserDefaults.standard.set(lateBreakfast, forKey: "lateBreakfast")
+        UserDefaultsRepository.lateBreakfast = lateBreakfast
         
         if lateBreakfast {
             scheduledCarbRatio /= lateBreakfastFactor
@@ -2635,7 +2635,7 @@ extension ComposeMealViewController {
     }
 
     @objc private func lateBreakfastLabelTapped() {
-        if let startTime = UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date {
+        if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm"
             let formattedDate = formatter.string(from: startTime)

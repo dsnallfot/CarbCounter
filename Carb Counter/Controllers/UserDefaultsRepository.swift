@@ -153,6 +153,15 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "lateBreakfastOverrideName")
         }
     }
+
+    static var lateBreakfastStartTime: Date? {
+        get {
+            return UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "lateBreakfastStartTime")
+        }
+    }
         
     static var dabasAPISecret: String {
         get {
@@ -208,6 +217,23 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "schoolFoodURL")
         }
     }
+    
+    static var dropdownSearchText: String? {
+            get {
+                return UserDefaults.standard.string(forKey: "dropdownSearchText")
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "dropdownSearchText")
+            }
+        }
+    static var savedSearchText: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "savedSearchText")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "savedSearchText")
+        }
+        }
 }
 
 extension Notification.Name {

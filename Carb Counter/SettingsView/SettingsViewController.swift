@@ -136,11 +136,6 @@ class SettingsViewController: UITableViewController {
                 cell.accessoryView = segmentedControl
                 cell.backgroundColor = .clear
 
-                /*let toggleSwitch = UISwitch()
-                cell.textLabel?.text = "Use Start dose % of meal"
-                toggleSwitch.isOn = UserDefaultsRepository.useStartDosePercentage
-                toggleSwitch.addTarget(self, action: #selector(useStartDosePercentageSwitchChanged(_:)), for: .valueChanged)
-                cell.accessoryView = toggleSwitch*/
             case 3:
                 cell.textLabel?.text = "Startdos Fraktion"
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.startDoseFactor)
