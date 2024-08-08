@@ -1485,7 +1485,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
         // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Ge bolus?", message: "\nVill du även ge en bolus till måltiden?", preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: "\nVälj 'Ja' för att ge en bolus, eller välj 'Nej' för att endast registrera kolhydrater i nästa steg... ", preferredStyle: .alert)
         let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
             bolusValue = "0.0"
             self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
@@ -1602,7 +1602,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let khValue = bolusValue * crValue
                 let formattedKhValue = formatValue(String(format: "%.0f",khValue))
                 //print("Calculated khValue: \(formattedKhValue)")
-                let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med minst \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
+                let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
                 let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
                 alert.addAction(okAction)
                 present(alert, animated: true, completion: nil)
@@ -1613,7 +1613,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         else if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med minst \(khValue) kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
@@ -1643,31 +1643,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         // Check if any of the values are greater than 0
         if (Double(carbsSoFar) ?? 0) > 0 || registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0 {
-            message += "\nDu har hittills registrerat:\n\n"
+            message += "\nDu har tidigare registrerat:\n\n"
             
             if let carbsSoFarDouble = Double(carbsSoFar), carbsSoFarDouble > 0 {
-                message += "• \(carbsSoFar) g kolhydrater (av tot \(carbsTotal))\n"
+                message += "• Kolhydrater:     \(carbsSoFar) g      (av \(carbsTotal))\n"
             }
             
             if registeredFatSoFar > 0 {
-                message += "• \(fatSoFar) g fett (av tot \(fatTotal))\n"
+                message += "• Fett:                  \(fatSoFar) g      (av \(fatTotal))\n"
             }
             
             if registeredProteinSoFar > 0 {
-                message += "• \(proteinSoFar) g protein (av tot \(proteinTotal))\n"
+                message += "• Protein:              \(proteinSoFar) g      (av \(proteinTotal))\n"
             }
             
             if registeredBolusSoFar > 0 {
-                message += "• \(bolusSoFar) E insulin (av tot \(bolusTotal ?? "0 E"))\n"
-                message += "\nVill du ge ytterligare bolus till måltiden?\n\nDen föreslagna dosen är beräknad utifrån vad du redan gett, samt aktuell CR. Om du vill kan du justera mängden:"
+                message += "• Insulin:          \(bolusSoFar) E   (av \(bolusTotal ?? "0 E"))\n"
+                message += "\nDen föreslagna dosen är beräknad utifrån tidigare given bolus, samt aktuell CR. Om du vill kan du justera dosen manuellt:"
             } else {
-                message += "\nVill du ge en bolus till måltiden?\n\nDen föreslagna dosen  är beräknad utifrån aktuell CR. Om du vill kan du justera mängden:"
+                message += "\nDen föreslagna dosen  är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
             }
         } else {
-            message += "\nVill du ge en bolus till måltiden?\n\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera mängden:"
+            message += "\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
         }
 
-        let bolusAlertController = UIAlertController(title: "Ge bolus?", message: message, preferredStyle: .alert)
+        let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: message, preferredStyle: .alert)
         bolusAlertController.addTextField { textField in
             textField.text = bolusValue
             textField.keyboardType = .decimalPad
@@ -1736,7 +1736,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
-                var alertMessage = "\nVill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
+                var alertMessage = "\nVill du registrera måltiden i iAPS/Trio enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
                 
                 if let fat = Double(fatValue), fat > 0 {
                     alertMessage += "\n• \(fatValue) g fett"
@@ -1778,7 +1778,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
-            var alertMessage = "\nVill du registrera måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
+            var alertMessage = "\nVill du registrera måltiden i iAPS/Trio enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
             
             if let fat = Double(fatValue), fat > 0 {
                 alertMessage += "\n• \(fatValue) g fett"
