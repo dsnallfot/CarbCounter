@@ -388,7 +388,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
-        clearAllFoodItems()
+        //clearAllFoodItems() //Commented out to keep registeredsofar carbs and bolus as well as food item rows even when adding a matched meal
         
         for matchedFoodItem in matchedFoodItems {
             if let foodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
@@ -422,7 +422,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
-        clearAllFoodItems()
+        //clearAllFoodItems() //Commented out to keep registeredsofar carbs and bolus as well as food item rows even when adding a favorite meal
 
         guard let itemsString = favoriteMeal.items as? String else {
             print("Error: Unable to cast favoriteMeal.items to String.")
@@ -487,7 +487,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
-        clearAllFoodItems()
+        //clearAllFoodItems() //Commented out to keep registeredsofar carbs and bolus as well as food item rows even when adding a history meal
         
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
@@ -531,7 +531,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func clearAllButtonTapped() {
-        guard let clearAllButton = clearAllButton else {
+        guard clearAllButton != nil else {
             //print("clearAllButton is nil")
             return
         }
@@ -544,13 +544,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 self.saveMealHistory() // Save MealHistory if the flag is true
             }
             self.clearAllFoodItems()
-            self.totalRegisteredLabel.text = ""
-            // Reset the variables to 0.0
-            self.registeredFatSoFar = 0.0
-            self.registeredProteinSoFar = 0.0
-            self.registeredBolusSoFar = 0.0
-            
-            print("Variables reset to 0.0 due to clearAllButtonTapped")
+            //self.totalRegisteredLabel.text = ""
             self.updateRemainsBolus()
             self.updateTotalNutrients()
             self.clearAllButton.isEnabled = false // Disable the "Clear All" button
@@ -589,9 +583,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredFatSoFar = 0.0
         registeredProteinSoFar = 0.0
         registeredBolusSoFar = 0.0
-        
         print("Variables reset to 0.0 due to clearAllFoodItems")
+        
         updateRemainsBolus()
+        
         // Reset the totalNetCarbsLabel and other total labels
         totalNetCarbsLabel.text = "0 g"
         totalNetFatLabel.text = "0 g"
@@ -1138,7 +1133,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func saveFavoriteMeals() {
-        guard let saveFavoriteButton = saveFavoriteButton else {
+        guard saveFavoriteButton != nil else {
             //print("saveFavoriteButton is nil")
             return
         }
@@ -1315,7 +1310,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func didTakeoverRegistration(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
-            clearAllFoodItems()
+            //clearAllFoodItems() Not needed. No fooditems can be present as the same time as ongoingmeal is beeing observed and taken over
             
             // Find the maximum totalRegisteredValue (and fat, protein & bolus so far) from the imported rows
             let maxTotalRegisteredValue = importedRows.map { $0.totalRegisteredValue }.max() ?? 0.0
@@ -2055,14 +2050,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
                 totalStartAmountLabel.text = String(format: "%.0fg", totalNetCarbs)
-                let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
                 let startBolus = totalNetCarbs / scheduledCarbRatio
                 let roundedStartBolus = roundDownToNearest05(startBolus)
                 totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
             } else {
                 totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
-                let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
-                let startBolus = totalStartAmount / scheduledCarbRatio
+                let startBolus = scheduledStartDose / scheduledCarbRatio
                 let roundedStartBolus = roundDownToNearest05(startBolus)
                 totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
             }

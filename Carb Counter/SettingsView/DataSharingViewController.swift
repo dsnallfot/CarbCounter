@@ -657,12 +657,18 @@ class DataSharingViewController: UIViewController {
 extension DataSharingViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        url.startAccessingSecurityScopedResource()
-        defer { url.stopAccessingSecurityScopedResource() }
-        if let entityName = controller.accessibilityHint {
-            Task { await parseCSV(at: url, for: entityName) }
+        
+        // Check if accessing the resource is successful
+        if url.startAccessingSecurityScopedResource() {
+            defer { url.stopAccessingSecurityScopedResource() }
+            if let entityName = controller.accessibilityHint {
+                Task { await parseCSV(at: url, for: entityName) }
+            }
+        } else {
+            print("Failed to access security-scoped resource.")
         }
     }
+
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
     }

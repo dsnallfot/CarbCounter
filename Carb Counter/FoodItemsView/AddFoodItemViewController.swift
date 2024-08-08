@@ -342,7 +342,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func updateSaveButtonTitle() {
-        if let foodItem = foodItem {
+        if foodItem != nil {
             // Edit mode
             if saveButton.isEnabled {
                 updateButtonTitle(saveButton, withTitle: "Spara ändringar")
