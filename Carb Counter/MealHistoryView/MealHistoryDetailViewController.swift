@@ -69,7 +69,7 @@ class MealHistoryDetailViewController: UIViewController {
 
     @objc private func repeatMeal() {
         guard let mealHistory = mealHistory else {
-            print("mealHistory is nil")
+            //print("mealHistory is nil")
             return
         }
 

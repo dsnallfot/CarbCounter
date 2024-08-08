@@ -183,7 +183,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
             composeMealVC.populateWithFavoriteMeal(favoriteMeal)
             navigationController?.popViewController(animated: true)
-            print("Navigated back to ComposeMealViewController and populated with favorite meal.")
+            //print("Navigated back to ComposeMealViewController and populated with favorite meal.")
         } else {
             print("ComposeMealViewController not found in navigation stack.")
         }
