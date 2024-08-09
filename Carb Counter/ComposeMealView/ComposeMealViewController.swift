@@ -13,7 +13,7 @@ import QuartzCore
 import SwiftUI
 
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate {
     static weak var current: ComposeMealViewController?
 
 ///Views
@@ -1498,7 +1498,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: false)
                 self.startDoseGiven = true
             }
             alertController.addAction(cancelAction)
@@ -1506,29 +1506,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             present(alertController, animated: true, completion: nil)
         } else {
             // Present MealViewController embedded in a UINavigationController
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
-                    
-                    // Wrap the MealViewController in a UINavigationController
-                    let navigationController = UINavigationController(rootViewController: mealVC)
-                    
-                    // Set the modal presentation style to pageSheet for a modal sheet presentation
-                    navigationController.modalPresentationStyle = .pageSheet
-                    
-                    // Optional: If you want to make the sheet dismissible with a swipe
-                    if #available(iOS 15.0, *) {
-                        navigationController.sheetPresentationController?.detents = [.medium(), .large()]
-                    }
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                mealVC.delegate = self
+                let navigationController = UINavigationController(rootViewController: mealVC)
+                navigationController.modalPresentationStyle = .pageSheet
 
-                    // Present the UINavigationController
-                    present(navigationController, animated: true, completion: {
-                        // Populate the MealViewController with the values
-                        mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method, startDose: startDose)
-                    })
+                if #available(iOS 15.0, *) {
+                    navigationController.sheetPresentationController?.detents = [.medium(), .large()]
+                }
+
+                present(navigationController, animated: true, completion: {
+                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method, startDose: startDose)
+                })
+            }
                 }
             
         }
-    }
         
       /*
 
@@ -1792,7 +1786,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
+                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue, startDose: false)
                     self.remainingDoseGiven = true
                 }
                 alertController.addAction(cancelAction)
@@ -1814,7 +1808,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
+                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue, startDose: false)
                 self.remainingDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
@@ -1886,512 +1880,60 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
     }
-    /*
-    private func sendMealRequest(combinedString: String) {
-        let method = UserDefaultsRepository.method
-        if method == "iOS Shortcuts" {
-            print("iOS shortcuts can not be combined with Twilio SMS API")
-        } else {
-            authenticateUser { [weak self] authenticated in
-                guard let self = self else { return }
-                if authenticated {
-                    self.twilioRequest(combinedString: combinedString) { result in
-                        switch result {
-                        case .success:
-                            AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS/Trio", preferredStyle: .alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                                self.dismiss(animated: true, completion: nil)
-                            })
-                            self.present(alertController, animated: true, completion: nil)
-                        case .failure(let error):
-                            AudioServicesPlaySystemSound(SystemSoundID(1053))
-                            let alertController = UIAlertController(title: "Fel", message: error.localizedDescription, preferredStyle: .alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                            self.present(alertController, animated: true, completion: nil)
-                        }
-                    }
-                }
-            }
+    
+    func didUpdateMealValues(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
+            print("updateRegisteredAmount function ran from delegate")
+            updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: startDose)
         }
-    }*/
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /*
-    @objc private func startAmountContainerTapped() {
-        // Check if mealDate is nil and set it to the current date if it is
-            if mealDate == nil {
-                mealDate = Date()
-            }
-        
-        createEmojiString()
-        let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
-        
-        // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: "\nVälj 'Ja' för att ge en bolus, eller välj 'Nej' för att endast registrera kolhydrater i nästa steg... ", preferredStyle: .alert)
-        let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            bolusValue = "0.0"
-            self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
-        }
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
-            self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
-        }
-        bolusAlertController.addAction(noAction)
-        bolusAlertController.addAction(yesAction)
-        present(bolusAlertController, animated: true, completion: nil)
-    }*/
-    
-    /*
-    private func proceedWithStartAmount(khValue: String, bolusValue: String) {
-        let fatValue = "0.0"
-        let proteinValue = "0.0"
-        
-        if UserDefaultsRepository.method == "iOS Shortcuts" {
-            if allowShortcuts {
-                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerStartAmountInLoopingApp(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(yesAction)
-                present(alertController, animated: true, completion: nil)
-            } else {
-                let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
-                    self.startDoseGiven = true
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(okAction)
-                present(alertController, animated: true, completion: nil)
-            }
-        } else {
-            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
-                self.startDoseGiven = true
-                let caregiverName = UserDefaultsRepository.caregiverName
-                let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
-                let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                self.sendMealRequest(combinedString: combinedString)
-            }
-            alertController.addAction(cancelAction)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-        }
-    }*/
-    
-    /*
-    private func registerStartAmountInLoopingApp(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        let khValue = khValue.replacingOccurrences(of: ".", with: ",")
-        let bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
+ 
+    public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
+        print("updateRegisteredAmount function ran")
+        // Print the received values to verify they are passed correctly
+        print("Received KH Value: \(khValue)")
+        print("Received Fat Value: \(fatValue)")
+        print("Received Protein Value: \(proteinValue)")
+        print("Received Bolus Value: \(bolusValue)")
+        print("Received Start Dose: \(startDose)")
+
+        // Set the startDoseGiven variable based on the received startDose value
+        self.startDoseGiven = startDose
+
+        // Print the startDoseGiven value to confirm it is set correctly
+        print("Start Dose Given is set to: \(self.startDoseGiven)")
+
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
+
+        // Print the updated totalRegisteredValue
+        print("Updated Total Registered Value: \(newRegisteredValue)g")
+
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-        
+
         let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        
+
         registeredFatSoFar += fatDoubleValue
         registeredProteinSoFar += proteinDoubleValue
         registeredBolusSoFar += bolusDoubleValue
-        
-        self.startDoseGiven = true
-        if totalRegisteredLabel.text == "" {
-            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
-            //print ("saveMealToHistory = false")
-            startDoseGiven = false
-            remainingDoseGiven = false
-        } else {
-            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
-            //print ("saveMealToHistory = true")
-        }
-        saveToCoreData()
-        updateTotalNutrients()
-        clearAllButton.isEnabled = true
-        let caregiverName = UserDefaultsRepository.caregiverName
-        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
-        let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-        
-        let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=\(combinedString)"
-        
-        if let url = URL(string: urlString) {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-        }
-    }*/
-    
-    
-    
-    
 
-    
-    
-    
-    
-    
-    
-    
-    /*
-    @objc private func remainContainerTapped() {
-        // Check if mealDate is nil and set it to the current date if it is
-        if mealDate == nil {
-            mealDate = Date()
-        }
-        createEmojiString()
-        let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        
-        if bolusRemainsValue < 0 {
-            let bolusText = totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let crText = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            if let bolusValue = Double(bolusText), let crValue = Double(crText) {
-                let khValue = bolusValue * crValue
-                let formattedKhValue = formatValue(String(format: "%.0f",khValue))
-                //print("Calculated khValue: \(formattedKhValue)")
-                let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
-                let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                alert.addAction(okAction)
-                present(alert, animated: true, completion: nil)
-                return
-            } else {
-                print("Invalid input for calculation")
-            }
-        }
-        else if remainsValue < 0 {
-            let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alert.addAction(okAction)
-            present(alert, animated: true, completion: nil)
-            return
-            
-        }
-        let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        
-        let totalFatValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
-        let fatValue = formatValue("\(totalFatValue - registeredFatSoFar)")
-        
-        let totalProteinValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
-        let proteinValue = formatValue("\(totalProteinValue - registeredProteinSoFar)")
-        
-        let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
-        
-        let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text
-        let carbsSoFar = totalRegisteredLabel.text ?? "0"
-        let carbsTotal = totalNetCarbsLabel.text ?? "0 g"
-        let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        let fatTotal = totalNetFatLabel.text ?? "0 g"
-        let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
-        let proteinTotal = totalNetProteinLabel.text ?? "0 g"
+        // Print the accumulated values for fat, protein, and bolus
+        print("Accumulated Fat So Far: \(registeredFatSoFar)g")
+        print("Accumulated Protein So Far: \(registeredProteinSoFar)g")
+        print("Accumulated Bolus So Far: \(registeredBolusSoFar)E")
 
-        var message = ""
-
-        // Check if any of the values are greater than 0
-        if (Double(carbsSoFar) ?? 0) > 0 || registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0 {
-            message += "\nDu har tidigare registrerat:\n\n"
-            
-            if let carbsSoFarDouble = Double(carbsSoFar), carbsSoFarDouble > 0 {
-                message += "• Kolhydrater:     \(carbsSoFar) g      (av \(carbsTotal))\n"
-            }
-            
-            if registeredFatSoFar > 0 {
-                message += "• Fett:                  \(fatSoFar) g      (av \(fatTotal))\n"
-            }
-            
-            if registeredProteinSoFar > 0 {
-                message += "• Protein:              \(proteinSoFar) g      (av \(proteinTotal))\n"
-            }
-            
-            if registeredBolusSoFar > 0 {
-                message += "• Insulin:          \(bolusSoFar) E   (av \(bolusTotal ?? "0 E"))\n"
-                message += "\nDen föreslagna dosen är beräknad utifrån tidigare given bolus, samt aktuell CR. Om du vill kan du justera dosen manuellt:"
-            } else {
-                message += "\nDen föreslagna dosen  är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
-            }
-        } else {
-            message += "\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
-        }
-
-        let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: message, preferredStyle: .alert)
-        bolusAlertController.addTextField { textField in
-            textField.text = bolusValue
-            textField.keyboardType = .decimalPad
-            textField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
-        }
-        let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            self.zeroBolus = true
-            self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: "0.0")
-        }
-
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
-            if let textField = bolusAlertController.textFields?.first, let customBolusValue = Double(textField.text?.replacingOccurrences(of: ",", with: ".") ?? "0") {
-                self.zeroBolus = false
-                self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: String(customBolusValue))
-            }
-        }
-
-        bolusAlertController.addAction(noAction)
-        bolusAlertController.addAction(yesAction)
-        present(bolusAlertController, animated: true, completion: nil)
-    }*/
-    
-    /*
-    private func checkAndProceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        var adjustedKhValue = khValue
-        var adjustedBolusValue = self.zeroBolus ? "0.0" : bolusValue
-        var showAlert = false
-        
-        if let maxCarbs = UserDefaultsRepository.maxCarbs as Double?,
-           let khValueDouble = Double(khValue),
-           khValueDouble > maxCarbs {
-            adjustedKhValue = String(format: "%.0f", maxCarbs)
-            if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"),
-               let currentBolusValue = Double(bolusValue) {
-                let calculatedBolusValue = maxCarbs / carbRatio
-                adjustedBolusValue = self.zeroBolus ? "0.0" : String(format: "%.2f", min(calculatedBolusValue, currentBolusValue))
-            }
-            showAlert = true
-        }
-        
-        if let maxBolus = UserDefaultsRepository.maxBolus as Double?,
-           let bolusValueDouble = Double(bolusValue),
-           bolusValueDouble > maxBolus {
-            adjustedBolusValue = String(format: "%.2f", maxBolus)
-            showAlert = true
-        }
-        
-        if showAlert {
-            let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
-            }
-            maxCarbsAlert.addAction(okAction)
-            present(maxCarbsAlert, animated: true, completion: nil)
-        } else {
-            self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
-        }
-    }
-    
-    private func proceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
-        let alertTitle: String
-        if self.startDoseGiven == true {
-            alertTitle = "Registrera resten av måltiden"
-        } else {
-            alertTitle = "Registrera hela måltiden"
-        }
-        if UserDefaultsRepository.method == "iOS Shortcuts" {
-            if allowShortcuts {
-                var alertMessage = "\nVill du registrera måltiden i iAPS/Trio enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
-                
-                if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n• \(fatValue) g fett"
-                }
-                if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n• \(proteinValue) g protein"
-                }
-                
-                alertMessage += "\n• \(finalBolusValue) E insulin"
-                
-                let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerRemainingAmountInLoopingApp(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(yesAction)
-                present(alertController, animated: true, completion: nil)
-            } else {
-                var alertMessage = "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
-                
-                if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n• \(fatValue) g fett"
-                }
-                if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n• \(proteinValue) g protein"
-                }
-                
-                alertMessage += "\n• \(finalBolusValue) E insulin"
-                
-                let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
-                    self.remainingDoseGiven = true
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(okAction)
-                present(alertController, animated: true, completion: nil)
-            }
-        } else {
-            var alertMessage = "\nVill du registrera måltiden i iAPS/Trio enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
-            
-            if let fat = Double(fatValue), fat > 0 {
-                alertMessage += "\n• \(fatValue) g fett"
-            }
-            if let protein = Double(proteinValue), protein > 0 {
-                alertMessage += "\n• \(proteinValue) g protein"
-            }
-            
-            alertMessage += "\n• \(finalBolusValue) E insulin"
-            
-            let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
-                self.remainingDoseGiven = true
-                let caregiverName = UserDefaultsRepository.caregiverName
-                let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let emojis: String
-                if self.startDoseGiven == true {
-                    emojis = "🍽️"
-                } else {
-                    emojis = "\(self.getMealEmojis())🍽️"
-                }
-                let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                self.sendMealRequest(combinedString: combinedString)
-            }
-            alertController.addAction(cancelAction)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-        }
-    }
-    
-    func registerRemainingAmountInLoopingApp(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        let khValue = khValue.replacingOccurrences(of: ".", with: ",")
-        let fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
-        let proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
-        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue.replacingOccurrences(of: ".", with: ",")
-        
-        let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let newRegisteredValue = currentRegisteredValue + remainsValue
-        
-        totalRegisteredLabel.text = String(format:"%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-        
-        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        
-        registeredFatSoFar += fatDoubleValue
-        registeredProteinSoFar += proteinDoubleValue
-        registeredBolusSoFar += bolusDoubleValue
-        
-        self.remainingDoseGiven = true
-        if totalRegisteredLabel.text == "" {
-            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
-            //print ("saveMealToHistory = false")
-        } else {
-            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
-            //print ("saveMealToHistory = true")
-        }
-        saveToCoreData()
-        updateTotalNutrients()
-        clearAllButton.isEnabled = true
-        let caregiverName = UserDefaultsRepository.caregiverName
-        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        
-        let emojis: String
-        if self.startDoseGiven == true {
-            emojis = "🍽️"
-        } else {
-            emojis = "\(self.getMealEmojis())🍽️"
-        }
-        
-        let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-        
-        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(combinedString)"
-        
-        if let url = URL(string: urlString) {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-        }
-    }
-    
-    private func sendMealRequest(combinedString: String) {
-        let method = UserDefaultsRepository.method
-        if method == "iOS Shortcuts" {
-            print("iOS shortcuts can not be combined with Twilio SMS API")
-        } else {
-            authenticateUser { [weak self] authenticated in
-                guard let self = self else { return }
-                if authenticated {
-                    self.twilioRequest(combinedString: combinedString) { result in
-                        switch result {
-                        case .success:
-                            AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: "Lyckades!", message: "Kommandot levererades till iAPS/Trio", preferredStyle: .alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                                self.dismiss(animated: true, completion: nil)
-                            })
-                            self.present(alertController, animated: true, completion: nil)
-                        case .failure(let error):
-                            AudioServicesPlaySystemSound(SystemSoundID(1053))
-                            let alertController = UIAlertController(title: "Fel", message: error.localizedDescription, preferredStyle: .alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                            self.present(alertController, animated: true, completion: nil)
-                        }
-                    }
-                }
-            }
-        }
-    }*/
-    //Use this func when coming back from MealVC
-    public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let newRegisteredValue = currentRegisteredValue + remainsValue
-        
-        totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-        
-        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        
-        registeredFatSoFar += fatDoubleValue
-        registeredProteinSoFar += proteinDoubleValue
-        registeredBolusSoFar += bolusDoubleValue
-        
-        //print("Updated registeredFatSoFar: \(registeredFatSoFar)")
-        //print("Updated registeredProteinSoFar: \(registeredProteinSoFar)")
-        //print("Updated registeredBolusSoFar: \(registeredBolusSoFar)")
-        
         saveValuesToUserDefaults()
         saveToCoreData()
         updateTotalNutrients()
         clearAllButton.isEnabled = true
-        
+
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
         }
-        
+
         if UserDefaultsRepository.allowSharingOngoingMeals {
             self.exportToCSV()
         }

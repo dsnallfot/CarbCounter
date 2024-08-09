@@ -10,7 +10,7 @@ import LocalAuthentication
 import AudioToolbox
 
 class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestable  {
-    //var appStateController: AppStateController?
+    weak var delegate: MealViewControllerDelegate?
     
     @IBOutlet weak var carbsEntryField: UITextField!
     @IBOutlet weak var fatEntryField: UITextField!
@@ -703,46 +703,85 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     }
     
     func sendMealRequest(combinedString: String) {
-        // Retrieve the method value from UserDefaultsRepository
+        print("Sendmealrequest function ran")
         let method = UserDefaultsRepository.method
-        
-        if method != "SMS API" {
-            // URL encode combinedString
-            guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                print("Failed to encode URL string")
-                return
-            }
-            let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(encodedString)"
-            if let url = URL(string: urlString) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-            dismiss(animated: true, completion: nil)
+
+        // Extract values from the combinedString
+        let carbs = extractValue(from: combinedString, prefix: "Kolhydrater: ", suffix: "g")
+        let fats = extractValue(from: combinedString, prefix: "Fett: ", suffix: "g")
+        let proteins = extractValue(from: combinedString, prefix: "Protein: ", suffix: "g")
+        let bolus = extractValue(from: combinedString, prefix: "Insulin: ", suffix: "E")
+
+        if method == "iOS Shortcuts" {
+            // Call the delegate method immediately for iOS Shortcuts
+            delegate?.didUpdateMealValues(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: self.startDose)
+            handleShortcutsRequest(combinedString: combinedString, carbs: carbs, fats: fats, proteins: proteins, bolus: bolus, startDose: self.startDose)
         } else {
-            // If method is "SMS API", proceed with sending the request
-            twilioRequest(combinedString: combinedString) { result in
-                switch result {
-                case .success:
-                    // Play success sound
-                    AudioServicesPlaySystemSound(SystemSoundID(1322))
-                    
-                    // Show success alert
-                    let alertController = UIAlertController(title: "Lyckades!", message: "Meddelandet levererades", preferredStyle: .alert)
-                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                        // Dismiss the current view controller
-                        self.dismiss(animated: true, completion: nil)
-                    }))
-                    self.present(alertController, animated: true, completion: nil)
-                case .failure(let error):
-                    // Play failure sound
-                    AudioServicesPlaySystemSound(SystemSoundID(1053))
-                    
-                    // Show error alert
-                    let alertController = UIAlertController(title: "Fel", message: error.localizedDescription, preferredStyle: .alert)
-                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(alertController, animated: true, completion: nil)
+            handleTwilioRequest(combinedString: combinedString, carbs: carbs, fats: fats, proteins: proteins, bolus: bolus, startDose: self.startDose)
+        }
+    }
+
+    // Handle the iOS Shortcuts case
+    private func handleShortcutsRequest(combinedString: String, carbs: String, fats: String, proteins: String, bolus: String, startDose: Bool) {
+        guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("Failed to encode URL string")
+            return
+        }
+        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(encodedString)"
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+        print("Dismissing MealViewController")
+        self.dismiss(animated: true, completion: nil)
+    }
+
+    // Handle the Twilio SMS request case
+    private func handleTwilioRequest(combinedString: String, carbs: String, fats: String, proteins: String, bolus: String, startDose: Bool) {
+        twilioRequest(combinedString: combinedString) { result in
+            switch result {
+            case .success:
+                AudioServicesPlaySystemSound(SystemSoundID(1322))
+                let alertController = UIAlertController(title: "Lyckades!", message: "Meddelandet levererades", preferredStyle: .alert)
+                alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                    // Call updateRegisteredAmount after successful SMS API call
+                    if let composeMealVC = self.findComposeMealViewController() {
+                                        composeMealVC.updateRegisteredAmount(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: startDose)
+                                    } else {
+                                        print("ComposeMealViewController not found")
+                                    }
+                                    print("Dismissing MealViewController after successful SMS API call")
+                                    self.dismiss(animated: true, completion: nil)
+                                }))
+                self.present(alertController, animated: true, completion: nil)
+            case .failure(let error):
+                AudioServicesPlaySystemSound(SystemSoundID(1053))
+                let alertController = UIAlertController(title: "Fel", message: error.localizedDescription, preferredStyle: .alert)
+                alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alertController, animated: true, completion: nil)
+            }
+        }
+    }
+
+    
+    // Function to find ComposeMealViewController in the navigation stack
+    private func findComposeMealViewController() -> ComposeMealViewController? {
+        if let navController = self.presentingViewController as? UINavigationController {
+            for vc in navController.viewControllers {
+                if let composeMealVC = vc as? ComposeMealViewController {
+                    return composeMealVC
                 }
             }
         }
+        return nil
+    }
+
+    // Helper function to extract values from combinedString
+    func extractValue(from text: String, prefix: String, suffix: String) -> String {
+        if let startRange = text.range(of: prefix)?.upperBound,
+           let endRange = text.range(of: suffix, range: startRange..<text.endIndex)?.lowerBound {
+            return String(text[startRange..<endRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return ""
     }
     
     @IBAction func editingChanged(_ sender: Any) {
@@ -782,4 +821,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBAction func doneButtonTapped(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
+}
+
+protocol MealViewControllerDelegate: AnyObject {
+    func didUpdateMealValues(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool)
 }
