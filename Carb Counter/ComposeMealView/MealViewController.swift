@@ -32,18 +32,23 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var mealDateTime: UIDatePicker!
     @IBOutlet weak var bolusLabel: UILabel!
     @IBOutlet weak var bolusUnits: UITextField!
-    //@IBOutlet weak var CRValue: UITextField!
-    //@IBOutlet weak var minPredBGValue: UITextField!
-    //@IBOutlet weak var minBGStack: UIStackView!
     @IBOutlet weak var bolusStack: UIStackView!
     @IBOutlet weak var plusSign: UIImageView!
-    //@IBOutlet weak var infoStack: UIStackView!
     
     var startDose: Bool = false
     
     var CR: Decimal = 0.0
     var minGuardBG: Decimal = 0.0
     var lowThreshold: Decimal = 0.0
+    
+    var bolusSoFar = ""
+    var bolusTotal = ""
+    var carbsSoFar = ""
+    var carbsTotal = ""
+    var fatSoFar = ""
+    var fatTotal = ""
+    var proteinSoFar = ""
+    var proteinTotal = ""
     
     let maxCarbs = UserDefaultsRepository.maxCarbs as Double?
     let maxFatProtein = UserDefaultsRepository.maxCarbs as Double?
@@ -83,12 +88,25 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         // Set the navigation bar title
             self.title = "Registrera Måltid"
+        
+        // Create the info button with SF Symbol "info.circle"
+            let infoButton = UIBarButtonItem(
+                image: UIImage(systemName: "info.circle"),
+                style: .plain,
+                target: self,
+                action: #selector(infoButtonTapped)
+            )
+            
+            // Set the info button as the left bar button item
+            self.navigationItem.leftBarButtonItem = infoButton
             
             // Create the cancel button
             let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
             
             // Set the cancel button as the right bar button item
             self.navigationItem.rightBarButtonItem = cancelButton
+        
+        updateSendMealButtonText("Skicka Måltid")
         
         carbsEntryField.delegate = self
         fatEntryField.delegate = self
@@ -112,29 +130,18 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             bolusStack.addGestureRecognizer(bolusStackTap)
             bolusStack.isUserInteractionEnabled = true
         
-        /*
-        // Add tap gesture recognizer to minBGStack
-                let minBGStackTap = UITapGestureRecognizer(target: self, action: #selector(minBGStackTapped))
-                minBGStack.addGestureRecognizer(minBGStackTap)
-        
-        // Add tap gesture recognizer to infoStack
-                let infoStackTap = UITapGestureRecognizer(target: self, action: #selector(minBGStackTapped))
-                infoStack.addGestureRecognizer(infoStackTap)
-        */
-    //Bolus calculation preperations
-        
-        //Carb ratio
-        /*if let sharedCRDouble = Double(sharedCRValue) {
-            CR = Decimal(sharedCRDouble)
-        } else {
-            print("CR could not be fetched")
-        }*/
-        
         // Create a NumberFormatter instance
         let numberFormatter = NumberFormatter()
         numberFormatter.minimumFractionDigits = 0
         numberFormatter.maximumFractionDigits = 1
 
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Set the button text with the correct font attributes
+        updateSendMealButtonText(sendMealButton.currentTitle ?? "Skicka Måltid")
     }
     
     
@@ -181,6 +188,185 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         @objc func doneTapped() {
             view.endEditing(true)
         }
+    
+    // Function that gets called when the info button is tapped
+    @objc func infoButtonTapped() {
+        togglePopupView()
+    }
+    
+    func togglePopupView() {
+        if popupView == nil {
+            showPopupView()
+        } else {
+            dismissPopupView()
+        }
+    }
+    
+    func showPopupView() {
+        // Calculate remaining values and format strings
+        let bolusSoFarValue = Double(bolusSoFar) ?? 0.0
+        let bolusTotalValue = Double(bolusTotal) ?? 0.0
+        let carbsSoFarValue = Double(carbsSoFar) ?? 0.0
+        let carbsTotalValue = Double(carbsTotal) ?? 0.0
+        let fatSoFarValue = Double(fatSoFar) ?? 0.0
+        let fatTotalValue = Double(fatTotal) ?? 0.0
+        let proteinSoFarValue = Double(proteinSoFar) ?? 0.0
+        let proteinTotalValue = Double(proteinTotal) ?? 0.0
+
+        let bolusRemaining = String(format: "%.2f", bolusTotalValue - bolusSoFarValue)
+        let carbsRemaining = String(format: "%.0f", carbsTotalValue - carbsSoFarValue)
+        let fatRemaining = String(format: "%.0f", fatTotalValue - fatSoFarValue)
+        let proteinRemaining = String(format: "%.0f", proteinTotalValue - proteinSoFarValue)
+
+        let carbCalcString = "\(carbsRemaining) g (av \(carbsTotal) g)"
+        let fatCalcString = "\(fatRemaining) g (av \(fatTotal) g)"
+        let proteinCalcString = "\(proteinRemaining) g (av \(proteinTotal) g)"
+        let bolusCalcString = "\(bolusRemaining) E (av \(bolusTotal) E)"
+
+        if popupView == nil {
+            // Create a new UIView for the popup
+            let popupView = UIView()
+
+            // Set the background color using the provided RGBA values
+            popupView.backgroundColor = UIColor(red: 90/255, green: 104/255, blue: 125/255, alpha: 1.0)
+
+            popupView.layer.cornerRadius = 10
+            popupView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the popup view to the main view
+            view.addSubview(popupView)
+            
+            // Set up initial constraints for the popup view
+            let initialTopConstraint = popupView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -270)
+            NSLayoutConstraint.activate([
+                popupView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+                popupView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+                initialTopConstraint,
+                popupView.heightAnchor.constraint(equalToConstant: 270)
+            ])
+            
+            // Add content to the popup view
+            let stackView = UIStackView()
+            stackView.axis = .vertical
+            stackView.alignment = .fill
+            stackView.distribution = .equalSpacing
+            stackView.spacing = 10 // Increase the spacing between elements
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+            popupView.addSubview(stackView)
+            
+            // Add stack view constraints
+            NSLayoutConstraint.activate([
+                stackView.leadingAnchor.constraint(equalTo: popupView.leadingAnchor, constant: 20),
+                stackView.trailingAnchor.constraint(equalTo: popupView.trailingAnchor, constant: -20),
+                stackView.topAnchor.constraint(equalTo: popupView.topAnchor, constant: 20),
+                stackView.bottomAnchor.constraint(equalTo: popupView.bottomAnchor, constant: -20)
+            ])
+            
+            // Add the "ÅTERSTÅR ATT REGISTRERA" title as a centered, semibold label
+            let titleLabel = UILabel()
+            titleLabel.text = "Återstår att registrera"
+            titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+            titleLabel.textColor = UIColor.white  // Set text color to white
+            titleLabel.textAlignment = .center
+            stackView.addArrangedSubview(titleLabel)
+            
+            // Add a spacer to increase space between the title and the rows below
+            let spacerView = UIView()
+            spacerView.translatesAutoresizingMaskIntoConstraints = false
+            spacerView.heightAnchor.constraint(equalToConstant: 2).isActive = true
+            stackView.addArrangedSubview(spacerView)
+
+            // Add a divider line above the first row (Kolhydrater)
+            let dividerAboveKolhydrater = UIView()
+            dividerAboveKolhydrater.backgroundColor = UIColor.gray
+            dividerAboveKolhydrater.translatesAutoresizingMaskIntoConstraints = false
+            stackView.addArrangedSubview(dividerAboveKolhydrater)
+            
+            NSLayoutConstraint.activate([
+                dividerAboveKolhydrater.heightAnchor.constraint(equalToConstant: 1)
+            ])
+            
+            // Add metrics to the popup
+            let metrics = ["Kolhydrater", "Fett", "Protein", "Bolus"]
+            let values = [
+                carbCalcString,
+                fatCalcString,
+                proteinCalcString,
+                bolusCalcString
+            ]
+
+            for (index, metric) in metrics.enumerated() {
+                let rowStackView = UIStackView()
+                rowStackView.axis = .horizontal
+                rowStackView.alignment = .center
+                rowStackView.distribution = .fill
+                rowStackView.spacing = 2
+                
+                let label = UILabel()
+                label.text = "• \(metric)"
+                label.textAlignment = .left
+                label.textColor = UIColor.white  // Set text color to white
+                label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+                
+                let spacer = UIView()
+                spacer.translatesAutoresizingMaskIntoConstraints = false
+                spacer.widthAnchor.constraint(equalToConstant: 20).isActive = true
+                
+                let valueLabel = UILabel()
+                valueLabel.text = values[index]
+                valueLabel.textAlignment = .right
+                valueLabel.textColor = UIColor.white  // Set text color to white
+                valueLabel.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+                
+                rowStackView.addArrangedSubview(label)
+                rowStackView.addArrangedSubview(spacer)
+                rowStackView.addArrangedSubview(valueLabel)
+                
+                stackView.addArrangedSubview(rowStackView)
+                
+                // Add a divider line between rows
+                if index < metrics.count {
+                    let divider = UIView()
+                    divider.backgroundColor = UIColor.gray
+                    divider.translatesAutoresizingMaskIntoConstraints = false
+                    stackView.addArrangedSubview(divider)
+                    
+                    NSLayoutConstraint.activate([
+                        divider.heightAnchor.constraint(equalToConstant: 1)
+                    ])
+                }
+            }
+
+            // Store the popup view
+            self.popupView = popupView
+            
+            // Animate the popup view
+            view.layoutIfNeeded()
+            UIView.animate(withDuration: 0.2, animations: {
+                initialTopConstraint.constant = 10
+                self.view.layoutIfNeeded()
+            })
+
+            // Add tap gesture recognizer to dismiss the popup view
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissPopupView))
+            view.addGestureRecognizer(tapGesture)
+        }
+    }
+
+        
+    @objc func dismissPopupView() {
+           if let popupView = self.popupView {
+               // Animate the popup view to move up
+               UIView.animate(withDuration: 0.2, animations: {
+                   popupView.frame.origin.y = -270
+                   self.view.layoutIfNeeded()
+               }) { _ in
+                   // Remove the popup view from the superview
+                   popupView.removeFromSuperview()
+                   self.popupView = nil
+               }
+           }
+       }
     
     @objc func cancelButtonTapped() {
         // Dismiss the view controller when the cancel button is tapped
@@ -315,15 +501,16 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //    self.carbsEntryField.becomeFirstResponder()
     //}
     
-    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String,  method: String, startDose: Bool, cr: String) {
+    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String) {
         // Log the values to the console (optional)
-        print("KH Value: \(khValue)")
+        /*print("KH Value: \(khValue)")
         print("Fat Value: \(fatValue)")
         print("Protein Value: \(proteinValue)")
         print("Bolus Value: \(bolusValue)")
         print("Emojis: \(emojis)")
         print("Method: \(method)")
         print("Startdose: \(startDose)")
+        print("Remainingdose: \(remainDose)")
         print("bolusSoFar: \(bolusSoFar)")
         print("bolusTotal: \(bolusTotal)")
         print("carbsSoFar: \(carbsSoFar)")
@@ -332,7 +519,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         print("fatTotal: \(fatTotal)")
         print("proteinSoFar: \(proteinSoFar)")
         print("proteinTotal: \(proteinTotal)")
-        print("CR: \(cr)")
+        print("CR: \(cr)")*/
 
         // Populate the UI elements with the passed values
         self.carbsEntryField.text = khValue
@@ -346,17 +533,40 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Set the startDose property
         self.startDose = startDose
         
+        self.bolusSoFar = bolusSoFar
+        self.bolusTotal = bolusTotal
+        self.carbsSoFar = carbsSoFar
+        self.carbsTotal = carbsTotal
+        self.fatSoFar = fatSoFar
+        self.fatTotal = fatTotal
+        self.proteinSoFar = proteinSoFar
+        self.proteinTotal = proteinTotal
+        
         // Convert the cr string to a Decimal and set the CR property
-            if let crDecimal = Decimal(string: cr) {
-                self.CR = crDecimal
-                print("CR successfully converted to Decimal: \(self.CR)")
-            } else {
-                print("Failed to convert CR to Decimal")
-                // Handle the error as needed, e.g., show an alert to the user or set a default value
-            }
+        if let crDecimal = Decimal(string: cr) {
+            self.CR = crDecimal
+            print("CR successfully converted to Decimal: \(self.CR)")
+        } else {
+            print("Failed to convert CR to Decimal")
+            // Handle the error as needed, e.g., show an alert to the user or set a default value
+        }
+
+        // Set the title based on the remainDose value
+        if remainDose {
+            self.title = "Registrera hela måltiden"
+        } else {
+            self.title = "Registrera startdos"
+        }
         
         // Simulate a tap on the bolusStack to transfer bolusCalculated.text to bolusEntryField.text
         //bolusStackTapped()
+    }
+    
+    func updateSendMealButtonText(_ text: String) {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont(name: "HelveticaNeue-Medium", size: 20.0)!
+        ]
+        sendMealButton.setAttributedTitle(NSAttributedString(string: text, attributes: attributes), for: .normal)
     }
     
     func sendMealorMealandBolus() {

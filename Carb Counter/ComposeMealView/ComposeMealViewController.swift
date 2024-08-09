@@ -15,27 +15,27 @@ import SwiftUI
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate {
     static weak var current: ComposeMealViewController?
-
-///Views
+    
+    ///Views
     var foodItemRows: [FoodItemRowView] = []
     var searchableDropdownViewController: SearchableDropdownViewController!
     var stackView: UIStackView!
     var scrollView: UIScrollView!
     var contentView: UIView!
     var addButtonRowView: AddButtonRowView!
-   
-///Buttons
+    
+    ///Buttons
     var clearAllButton: UIBarButtonItem!
     var saveFavoriteButton: UIButton!
     var addFromSearchableDropdownButton: UIBarButtonItem!
     
-///Summary labels
+    ///Summary labels
     var totalBolusAmountLabel: UILabel!
     var totalNetCarbsLabel: UILabel!
     var totalNetFatLabel: UILabel!
     var totalNetProteinLabel: UILabel!
-
-///Treatment labels
+    
+    ///Treatment labels
     var crLabel: UILabel!
     var nowCRLabel: UILabel!
     var startAmountContainer: UIView!
@@ -48,13 +48,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var registeredContainer: UIView!
     var totalRegisteredLabel: UITextField!
     
-///Meal food item rows  labels
+    ///Meal food item rows  labels
     var foodItemLabel: UILabel!
     var portionServedLabel: UILabel!
     var notEatenLabel: UILabel!
     var netCarbsLabel: UILabel!
-
-///Data and states
+    
+    ///Data and states
     var foodItems: [FoodItem] = []
     var matchedFoodItems: [FoodItem] = []
     var scheduledStartDose = Double(20)
@@ -74,8 +74,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var registeredFatSoFar = Double(0.0)
     var registeredProteinSoFar = Double(0.0)
     var registeredBolusSoFar = Double(0.0)
-
-///Meal monitoring
+    
+    ///Meal monitoring
     var exportTimer: Timer?
     private var isEditingMeal = false {
         didSet {
@@ -95,30 +95,30 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         initializeUIElements() // Ensure UI elements are initialized
         ComposeMealViewController.current = self
         
-///Create the gradient view
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Add the gradient view to the main view
-            view.addSubview(gradientView)
-            view.sendSubviewToBack(gradientView)
-            
-            // Set up constraints for the gradient view
-            NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
+        ///Create the gradient view
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         
         title = "Måltid"
         
-///Setup the fixed header containing summary and headline
+        ///Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fixedHeaderContainer)
@@ -129,11 +129,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 150)
         ])
         
-///Reset lateBreakfast to false
+        ///Reset lateBreakfast to false
         UserDefaultsRepository.lateBreakfast = false
         lateBreakfast = false
         
-/// Ensure addButtonRowView is initialized
+        /// Ensure addButtonRowView is initialized
         addButtonRowView = AddButtonRowView()
         updatePlaceholderValuesForCurrentHour()
         lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
@@ -149,16 +149,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         setupHeadline(in: fixedHeaderContainer)
         setupScrollView(below: fixedHeaderContainer)
         
-/// Initializing
+        /// Initializing
         clearAllButton = UIBarButtonItem(title: "Avsluta måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red
         navigationItem.rightBarButtonItem = clearAllButton
-
+        
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
         
-///Inital fetch
+        ///Inital fetch
         self.fetchFoodItems()
         totalRegisteredLabel.delegate = self
         loadFoodItemsFromCoreData()
@@ -182,11 +182,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
         saveFavoriteButton.isEnabled = false
         saveFavoriteButton.tintColor = .gray
-
+        
         let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
         stackView.axis = .horizontal
         stackView.spacing = 20
-
+        
         let customView = UIView()
         customView.addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -196,13 +196,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             stackView.topAnchor.constraint(equalTo: customView.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: customView.bottomAnchor)
         ])
-
+        
         let customBarButtonItem = UIBarButtonItem(customView: customView)
         navigationItem.leftBarButtonItem = customBarButtonItem
-
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
         addButtonRowView.lateBreakfastLabel.addGestureRecognizer(tapGesture)
-
+        
         NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
@@ -226,22 +226,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Check if the late breakfast switch should be off
         if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
-               print("Override CR was activated: \(startTime)")
-               let timeInterval = Date().timeIntervalSince(startTime)
-               if timeInterval >= lateBreakfastDuration {
-                   addButtonRowView.lateBreakfastSwitch.isOn = false
-                   lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
-               } else {
-                   lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration - timeInterval, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
-               }
-           }
+            print("Override CR was activated: \(startTime)")
+            let timeInterval = Date().timeIntervalSince(startTime)
+            if timeInterval >= lateBreakfastDuration {
+                addButtonRowView.lateBreakfastSwitch.isOn = false
+                lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
+            } else {
+                lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration - timeInterval, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
+            }
+        }
         
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
         
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
-
+        
         // Call the desired function
         print("Data import triggered")
         Task {
@@ -260,8 +260,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
     }
-
-///function to initialize UI elements
+    
+    ///function to initialize UI elements
     private func initializeUIElements() {
         if totalRegisteredLabel == nil {
             totalRegisteredLabel = UITextField()
@@ -289,7 +289,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             //print("Debug - Initialized saveFavoriteButton")
         }
     }
-
+    
     private func formatNumberWithoutTrailingZero(_ number: Double) -> String {
         let formattedNumber = String(format: "%.1f", number)
         return formattedNumber.hasSuffix(".0") ? String(formattedNumber.dropLast(2)) : formattedNumber
@@ -308,7 +308,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         print("mealEmojis updated: \(mealEmojis ?? "")")
     }
-
+    
     private func removeDuplicateEmojis(from string: String) -> String {
         var uniqueEmojis = Set<Character>()
         return string.filter { uniqueEmojis.insert($0).inserted }
@@ -325,7 +325,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             startDoseGiven = false
             remainingDoseGiven = false
             
-           // Reset the variables to 0.0
+            // Reset the variables to 0.0
             registeredFatSoFar = 0.0
             registeredProteinSoFar = 0.0
             registeredBolusSoFar = 0.0
@@ -340,7 +340,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateClearAllButtonState()
         saveToCoreData()
     }
-        
+    
     public func updateSaveFavoriteButtonState() {
         guard let saveFavoriteButton = saveFavoriteButton else {
             //("saveFavoriteButton is nil")
@@ -369,8 +369,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
         if ComposeMealViewController.current === self {
-                    ComposeMealViewController.current = nil
-                }
+            ComposeMealViewController.current = nil
+        }
     }
     
     @objc private func showFavoriteMeals() {
@@ -423,7 +423,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         //clearAllFoodItems() //Commented out to keep registeredsofar carbs and bolus as well as food item rows even when adding a favorite meal
-
+        
         guard let itemsString = favoriteMeal.items as? String else {
             print("Error: Unable to cast favoriteMeal.items to String.")
             return
@@ -458,11 +458,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         rowView.setSelectedFoodItem(foodItem)
                         rowView.portionServedTextField.text = formattedValue(portionServed)
                         rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-
+                        
                         rowView.onDelete = { [weak self] in
                             self?.removeFoodItemRow(rowView)
                         }
-
+                        
                         rowView.onValueChange = { [weak self] in
                             self?.updateTotalNutrients()
                             self?.updateHeadlineVisibility()
@@ -610,7 +610,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveCSV(data: blankCSVString, fileName: "OngoingMeal.csv")
         print("Blank CSV export done")
     }
-
+    
     private func saveCSV(data: String, fileName: String) {
         guard let dataSharingVC = dataSharingVC else { return }
         Task {
@@ -618,7 +618,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             dataSharingVC.saveCSV(data: data, fileName: fileName)
         }
     }
-
+    
     
     private func setupScrollView(below header: UIView) {
         //print("setupScrollView ran")
@@ -677,66 +677,66 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let summaryView = GradientView(colors: colors)
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(summaryView)
-
+        
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
-
+        
         let bolusLabel = createLabel(text: "BOLUS", fontSize: 9, weight: .bold, color: .white)
         totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
-
+        
         let bolusTapGesture = UITapGestureRecognizer(target: self, action: #selector(showBolusInfo))
         bolusContainer.isUserInteractionEnabled = true
         bolusContainer.addGestureRecognizer(bolusTapGesture)
-
+        
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
-
+        
         let summaryLabel = createLabel(text: "KOLHYDRATER", fontSize: 9, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
-
+        
         let carbsTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCarbsInfo))
         carbsContainer.isUserInteractionEnabled = true
         carbsContainer.addGestureRecognizer(carbsTapGesture)
-
+        
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
-
+        
         let netFatLabel = createLabel(text: "FETT", fontSize: 9, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(fatStack, in: fatContainer, padding: fatPadding)
-
+        
         let fatTapGesture = UITapGestureRecognizer(target: self, action: #selector(showFatInfo))
         fatContainer.isUserInteractionEnabled = true
         fatContainer.addGestureRecognizer(fatTapGesture)
-
+        
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
-
+        
         let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 9, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
-
+        
         let proteinTapGesture = UITapGestureRecognizer(target: self, action: #selector(showProteinInfo))
         proteinContainer.isUserInteractionEnabled = true
         proteinContainer.addGestureRecognizer(proteinTapGesture)
-
+        
         let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         summaryView.addSubview(hStack)
-
+        
         NSLayoutConstraint.activate([
             summaryView.heightAnchor.constraint(equalToConstant: 60),
             summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -881,23 +881,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         return dateFormatter.string(from: Date())
     }
-
-/// Core data functions
-
+    
+    /// Core data functions
+    
     func startAutoSaveToCSV() {
-            if UserDefaultsRepository.allowSharingOngoingMeals {
-                exportTimer?.invalidate()
-                exportTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
-                print("Auto-save to CSV started with a 20-second interval.")
-            }
-        }
-
-        func stopAutoSaveToCSV() {
+        if UserDefaultsRepository.allowSharingOngoingMeals {
             exportTimer?.invalidate()
-            exportTimer = nil
-            print("Auto-save to CSV stopped.")
+            exportTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
+            print("Auto-save to CSV started with a 20-second interval.")
         }
-
+    }
+    
+    func stopAutoSaveToCSV() {
+        exportTimer?.invalidate()
+        exportTimer = nil
+        print("Auto-save to CSV stopped.")
+    }
+    
     @objc func exportToCSV() {
         Task {
             await DataSharingViewController().exportOngoingMealToCSV()
@@ -906,7 +906,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func loadFoodItemsFromCoreData() {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-
+        
         do {
             let savedFoodItems = try context.fetch(fetchRequest)
             
@@ -917,7 +917,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             var lastRegisteredFatSoFar: Double = 0.0
             var lastRegisteredProteinSoFar: Double = 0.0
             var lastRegisteredBolusSoFar: Double = 0.0
-
+            
             for savedFoodItem in savedFoodItems {
                 if let foodItemID = savedFoodItem.foodItemID,
                    let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
@@ -957,10 +957,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 lastRegisteredFatSoFar = savedFoodItem.registeredFatSoFar
                 lastRegisteredProteinSoFar = savedFoodItem.registeredProteinSoFar
                 lastRegisteredBolusSoFar = savedFoodItem.registeredBolusSoFar
-
+                
                 //print("Saved Food Item - totalRegisteredValue: \(savedFoodItem.totalRegisteredValue), registeredFatSoFar: \(savedFoodItem.registeredFatSoFar), registeredProteinSoFar: \(savedFoodItem.registeredProteinSoFar), registeredBolusSoFar: \(savedFoodItem.registeredBolusSoFar)")
             }
-
+            
             // Update the totalRegisteredLabel with the last saved value
             let formattedLastValue = formatNumber(lastTotalRegisteredValue)
             totalRegisteredLabel.text = formattedLastValue == "0" ? nil : formattedLastValue
@@ -975,13 +975,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Optionally update any other UI elements or properties with the last values
             registeredFatSoFar = lastRegisteredFatSoFar
             //print("Last registered fat so far: \(lastRegisteredFatSoFar)")
-
+            
             registeredProteinSoFar = lastRegisteredProteinSoFar
             //print("Last registered protein so far: \(lastRegisteredProteinSoFar)")
-
+            
             registeredBolusSoFar = lastRegisteredBolusSoFar
             //print("Last registered bolus so far: \(lastRegisteredBolusSoFar)")
-
+            
             // Ensure UI elements are initialized
             initializeUIElements()
             
@@ -995,20 +995,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     public func fetchFoodItems() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
-            do {
-                let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
-                DispatchQueue.main.async {
-                    self.foodItems = foodItems
-                    self.searchableDropdownViewController?.updateFoodItems(foodItems)
-                    print("fetchfooditems ran")
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    print("Failed to fetch food items: \(error)")
-                }
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        do {
+            let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
+            DispatchQueue.main.async {
+                self.foodItems = foodItems
+                self.searchableDropdownViewController?.updateFoodItems(foodItems)
+                print("fetchfooditems ran")
             }
+        } catch {
+            DispatchQueue.main.async {
+                print("Failed to fetch food items: \(error)")
+            }
+        }
     }
     
     private func updatePlaceholderValuesForCurrentHour() {
@@ -1023,14 +1023,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     func saveToCoreData() {
         let context = CoreDataStack.shared.context
-
+        
         // Extract the totalRegisteredLabel value, handling potential nil values
         let totalRegisteredText = totalRegisteredLabel.text ?? "0"
         let totalRegisteredValue = Double(totalRegisteredText) ?? 0
         let registeredFatSoFar = self.registeredFatSoFar
         let registeredProteinSoFar = self.registeredProteinSoFar
         let registeredBolusSoFar = self.registeredBolusSoFar
-
+        
         for rowView in foodItemRows {
             if let foodItemRow = rowView.foodItemRow {
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
@@ -1061,7 +1061,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 //print("\(registeredBolusSoFar) registeredBolusSoFar saved else")
             }
         }
-
+        
         do {
             try context.save()
             //print("Debug - Successfully saved FoodItemRows to Core Data")
@@ -1076,7 +1076,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("No food items to save.")
             return
         }
-
+        
         let context = CoreDataStack.shared.context
         
         let mealHistory = MealHistory(context: context)
@@ -1114,14 +1114,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         do {
             try context.save()
             print("MealHistory saved successfully!")
-
+            
         } catch {
             print("Failed to save MealHistory: \(error)")
         }
         
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
-
+        
         // Call the desired function
         Task {
             await dataSharingVC.exportMealHistoryToCSV()
@@ -1188,10 +1188,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
             
             CoreDataStack.shared.saveContext()
-
+            
             // Ensure dataSharingVC is instantiated
             guard let dataSharingVC = self.dataSharingVC else { return }
-
+            
             // Call the desired function
             Task {
                 await dataSharingVC.exportFavoriteMealsToCSV()
@@ -1238,7 +1238,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         checkIfEditing()
     }
-///OngoingMeal monitoring
+    ///OngoingMeal monitoring
     func startEditing() {
         guard !isEditingMeal else {
             return
@@ -1247,26 +1247,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
         startAutoSaveToCSV()
     }
-
-        func stopEditing() {
-            print("Stop editing triggered. Checking if still editing...")
-            checkIfEditing()
-        }
+    
+    func stopEditing() {
+        print("Stop editing triggered. Checking if still editing...")
+        checkIfEditing()
+    }
     
     private func checkIfEditing() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-            do {
-                let foodItemRows = try context.fetch(fetchRequest)
-                isEditingMeal = !foodItemRows.isEmpty
-                print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
-                if !isEditingMeal {
-                    stopAutoSaveToCSV()
-                }
-            } catch {
-                print("Failed to fetch food item rows: \(error)")
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+        do {
+            let foodItemRows = try context.fetch(fetchRequest)
+            isEditingMeal = !foodItemRows.isEmpty
+            print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
+            if !isEditingMeal {
+                stopAutoSaveToCSV()
             }
+        } catch {
+            print("Failed to fetch food item rows: \(error)")
         }
+    }
     
     func exportFoodItemRows() -> [FoodItemRowData] {
         var foodItemRowData: [FoodItemRowData] = []
@@ -1337,55 +1337,54 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             updateHeadlineVisibility()
         }
     }
-        
+    
     private func getFoodItemByID(_ id: UUID?) -> FoodItem? {
-            guard let id = id else { return nil }
-
-            let context = CoreDataStack.shared.context
-            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-            fetchRequest.fetchLimit = 1
-
-            do {
-                let items = try context.fetch(fetchRequest)
-                return items.first
-            } catch {
-                print("Failed to fetch FoodItem with id \(id): \(error)")
-                return nil
-            }
-        }
+        guard let id = id else { return nil }
         
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        fetchRequest.fetchLimit = 1
+        
+        do {
+            let items = try context.fetch(fetchRequest)
+            return items.first
+        } catch {
+            print("Failed to fetch FoodItem with id \(id): \(error)")
+            return nil
+        }
+    }
+    
     private func clearCurrentRows() {
-            // Implement the method to clear current rows
-            for row in foodItemRows {
-                stackView.removeArrangedSubview(row)
-                row.removeFromSuperview()
-            }
-            foodItemRows.removeAll()
-            updateClearAllButtonState()
-            updateSaveFavoriteButtonState()
-            updateHeadlineVisibility()
+        // Implement the method to clear current rows
+        for row in foodItemRows {
+            stackView.removeArrangedSubview(row)
+            row.removeFromSuperview()
         }
-        
+        foodItemRows.removeAll()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
+    }
+    
     private func addRow(for foodItem: FoodItem, portionServed: Double, notEaten: Double) {
-            let rowView = FoodItemRowView()
-            rowView.selectedFoodItem = foodItem
-            rowView.portionServedTextField.text = "\(portionServed)"
-            rowView.notEatenTextField.text = "\(notEaten)"
-            
-            foodItemRows.append(rowView)
-            stackView.addArrangedSubview(rowView)
-        }
+        let rowView = FoodItemRowView()
+        rowView.selectedFoodItem = foodItem
+        rowView.portionServedTextField.text = "\(portionServed)"
+        rowView.notEatenTextField.text = "\(notEaten)"
+        
+        foodItemRows.append(rowView)
+        stackView.addArrangedSubview(rowView)
+    }
     
-/// Registration of meal and remote commands
-    
+    /// Registration of meal and remote commands
     @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
         if sender.isOn {
             handleLateBreakfastSwitchOn()
             self.startLateBreakfastTimer()
         }
     }
-
+    
     private func handleLateBreakfastSwitchOn() {
         guard let overrideName = UserDefaultsRepository.lateBreakfastOverrideName else {
             print("No override name available")
@@ -1425,13 +1424,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         lateBreakfastTimer?.invalidate()
         lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
     }
-
+    
     @objc private func turnOffLateBreakfastSwitch() {
         print("Override timer off")
         addButtonRowView.lateBreakfastSwitch.isOn = false
         lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
     }
-
+    
     private func sendOverrideRequest(combinedString: String) {
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
@@ -1469,8 +1468,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
 
-    
-    
     @objc private func startAmountContainerTapped() {
         // Check if mealDate is nil and set it to the current date if it is
         if mealDate == nil {
@@ -1496,20 +1493,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let carbsSoFar = totalRegisteredLabel.text ?? "0"
         let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        let fatTotal = totalNetFatLabel.text ?? "0"
+        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
         let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         
         let cr = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"
         
         let startDose = true
+        let remainDose = false
         
         if !allowShortcuts {
             //Use alert when manually registering
             let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: false)
+                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: true)
                 self.startDoseGiven = true
             }
             alertController.addAction(cancelAction)
@@ -1522,28 +1520,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 mealVC.delegate = self
                 let navigationController = UINavigationController(rootViewController: mealVC)
                 navigationController.modalPresentationStyle = .pageSheet
-
-                if #available(iOS 15.0, *) {
-                    navigationController.sheetPresentationController?.detents = [.medium(), .large()]
-                }
-
+                
+                /*if #available(iOS 15.0, *) {
+                 navigationController.sheetPresentationController?.detents = [.medium(), .large()]
+                 }*/
+                
                 present(navigationController, animated: true, completion: {
-                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, cr: cr)
+                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr)
                 })
             }
-                }
-            
         }
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
+    }
     
     @objc private func remainContainerTapped() {
         // Check if mealDate is nil and set it to the current date if it is
@@ -1589,67 +1576,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         
-        let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text
-        let carbsSoFar = totalRegisteredLabel.text ?? "0"
-        let carbsTotal = totalNetCarbsLabel.text ?? "0 g"
-        let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        let fatTotal = totalNetFatLabel.text ?? "0 g"
-        let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
-        let proteinTotal = totalNetProteinLabel.text ?? "0 g"
-
-        var message = ""
-
-        // Check if any of the values are greater than 0
-        if (Double(carbsSoFar) ?? 0) > 0 || registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0 {
-            message += "\nDu har tidigare registrerat:\n\n"
-            
-            if let carbsSoFarDouble = Double(carbsSoFar), carbsSoFarDouble > 0 {
-                message += "• Kolhydrater:     \(carbsSoFar) g      (av \(carbsTotal))\n"
-            }
-            
-            if registeredFatSoFar > 0 {
-                message += "• Fett:                  \(fatSoFar) g      (av \(fatTotal))\n"
-            }
-            
-            if registeredProteinSoFar > 0 {
-                message += "• Protein:              \(proteinSoFar) g      (av \(proteinTotal))\n"
-            }
-            
-            if registeredBolusSoFar > 0 {
-                message += "• Insulin:          \(bolusSoFar) E   (av \(bolusTotal ?? "0 E"))\n"
-                message += "\nDen föreslagna dosen är beräknad utifrån tidigare given bolus, samt aktuell CR. Om du vill kan du justera dosen manuellt:"
-            } else {
-                message += "\nDen föreslagna dosen  är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
-            }
-        } else {
-            message += "\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
-        }
-/*
-        let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: message, preferredStyle: .alert)
-        bolusAlertController.addTextField { textField in
-            textField.text = bolusValue
-            textField.keyboardType = .decimalPad
-            textField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
-        }
-        let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            self.zeroBolus = true
-            self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: "0.0")
-        }
-
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
-            if let textField = bolusAlertController.textFields?.first, let customBolusValue = Double(textField.text?.replacingOccurrences(of: ",", with: ".") ?? "0") {
-                self.zeroBolus = false
-                self.checkAndProceedWithRemainingAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: String(customBolusValue))
-            }
-        }
-
-        bolusAlertController.addAction(noAction)
-        bolusAlertController.addAction(yesAction)
-        present(bolusAlertController, animated: true, completion: nil)*/
-    }
-    
-    private func checkAndProceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         var adjustedKhValue = khValue
         var adjustedBolusValue = self.zeroBolus ? "0.0" : bolusValue
         var showAlert = false
@@ -1684,60 +1610,39 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
         }
     }
-    
+        
     private func proceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
-        let alertTitle: String
-        if self.startDoseGiven == true {
-            alertTitle = "Registrera resten av måltiden"
-        } else {
-            alertTitle = "Registrera hela måltiden"
-        }
+        let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
-            if allowShortcuts {
-                var alertMessage = "\nVill du registrera måltiden i iAPS/Trio enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
-                
-                if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n• \(fatValue) g fett"
-                }
-                if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n• \(proteinValue) g protein"
-                }
-                
-                alertMessage += "\n• \(finalBolusValue) E insulin"
-                
-                let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerRemainingAmountInLoopingApp(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue)
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(yesAction)
-                present(alertController, animated: true, completion: nil)
-            } else {
-                var alertMessage = "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
-                
-                if let fat = Double(fatValue), fat > 0 {
-                    alertMessage += "\n• \(fatValue) g fett"
-                }
-                if let protein = Double(proteinValue), protein > 0 {
-                    alertMessage += "\n• \(proteinValue) g protein"
-                }
-                
-                alertMessage += "\n• \(finalBolusValue) E insulin"
-                
-                let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue, startDose: false)
-                    self.remainingDoseGiven = true
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(okAction)
-                present(alertController, animated: true, completion: nil)
-            }
+            method = "iOS Shortcuts"
         } else {
-            var alertMessage = "\nVill du registrera måltiden i iAPS/Trio enligt summeringen nedan?\n\n• \(khValue) g kolhydrater"
+            method = "SMS API"
+        }
+        
+        let emojis: String
+        if self.startDoseGiven == true {
+            emojis = "🍽️"
+        } else {
+            emojis = "\(self.getMealEmojis())🍽️"
+        }
+        
+        let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
+        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0"
+        let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let fatSoFar = String(format: "%.0f", registeredFatSoFar)
+        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
+        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        
+        let cr = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"
+        
+        let startDose = true
+        let remainDose = true
+        
+        if !allowShortcuts {
+            var alertMessage = "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
             
             if let fat = Double(fatValue), fat > 0 {
                 alertMessage += "\n• \(fatValue) g fett"
@@ -1748,135 +1653,88 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             alertMessage += "\n• \(finalBolusValue) E insulin"
             
-            let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue, startDose: false)
                 self.remainingDoseGiven = true
-                let caregiverName = UserDefaultsRepository.caregiverName
-                let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let emojis: String
-                if self.startDoseGiven == true {
-                    emojis = "🍽️"
-                } else {
-                    emojis = "\(self.getMealEmojis())🍽️"
-                }
-                let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                // replace self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
-        }
-    }
-    
-    func registerRemainingAmountInLoopingApp(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        let khValue = khValue.replacingOccurrences(of: ".", with: ",")
-        let fatValue = fatValue.replacingOccurrences(of: ".", with: ",")
-        let proteinValue = proteinValue.replacingOccurrences(of: ".", with: ",")
-        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue.replacingOccurrences(of: ".", with: ",")
-        
-        let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let newRegisteredValue = currentRegisteredValue + remainsValue
-        
-        totalRegisteredLabel.text = String(format:"%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-        
-        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        
-        registeredFatSoFar += fatDoubleValue
-        registeredProteinSoFar += proteinDoubleValue
-        registeredBolusSoFar += bolusDoubleValue
-        
-        self.remainingDoseGiven = true
-        if totalRegisteredLabel.text == "" {
-            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
-            //print ("saveMealToHistory = false")
+            
         } else {
-            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
-            //print ("saveMealToHistory = true")
-        }
-        saveToCoreData()
-        updateTotalNutrients()
-        clearAllButton.isEnabled = true
-        let caregiverName = UserDefaultsRepository.caregiverName
-        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        
-        let emojis: String
-        if self.startDoseGiven == true {
-            emojis = "🍽️"
-        } else {
-            emojis = "\(self.getMealEmojis())🍽️"
-        }
-        
-        let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-        
-        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(combinedString)"
-        
-        if let url = URL(string: urlString) {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            // Present MealViewController embedded in a UINavigationController
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                mealVC.delegate = self
+                let navigationController = UINavigationController(rootViewController: mealVC)
+                navigationController.modalPresentationStyle = .pageSheet
+                
+                /*if #available(iOS 15.0, *) {
+                 navigationController.sheetPresentationController?.detents = [.medium(), .large()]
+                 }*/
+                
+                present(navigationController, animated: true, completion: {
+                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr)
+                })
             }
         }
     }
     
     func didUpdateMealValues(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
-            print("updateRegisteredAmount function ran from delegate")
-            updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: startDose)
-        }
- 
+        print("updateRegisteredAmount function ran from delegate")
+        updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: startDose)
+    }
+    
     public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
         print("updateRegisteredAmount function ran")
         // Print the received values to verify they are passed correctly
-        print("Received KH Value: \(khValue)")
+        /*print("Received KH Value: \(khValue)")
         print("Received Fat Value: \(fatValue)")
         print("Received Protein Value: \(proteinValue)")
         print("Received Bolus Value: \(bolusValue)")
-        print("Received Start Dose: \(startDose)")
-
+        print("Received Start Dose: \(startDose)")*/
+        
         // Set the startDoseGiven variable based on the received startDose value
         self.startDoseGiven = startDose
-
+        
         // Print the startDoseGiven value to confirm it is set correctly
         print("Start Dose Given is set to: \(self.startDoseGiven)")
-
+        
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
-
+        
         // Print the updated totalRegisteredValue
         print("Updated Total Registered Value: \(newRegisteredValue)g")
-
+        
         totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-
+        
         let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-
+        
         registeredFatSoFar += fatDoubleValue
         registeredProteinSoFar += proteinDoubleValue
         registeredBolusSoFar += bolusDoubleValue
-
+        
         // Print the accumulated values for fat, protein, and bolus
-        print("Accumulated Fat So Far: \(registeredFatSoFar)g")
+        /*print("Accumulated Fat So Far: \(registeredFatSoFar)g")
         print("Accumulated Protein So Far: \(registeredProteinSoFar)g")
-        print("Accumulated Bolus So Far: \(registeredBolusSoFar)E")
-
+        print("Accumulated Bolus So Far: \(registeredBolusSoFar)E")*/
+        
         saveValuesToUserDefaults()
         saveToCoreData()
         updateTotalNutrients()
         clearAllButton.isEnabled = true
-
+        
         if totalRegisteredLabel.text == "" {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
         }
-
+        
         if UserDefaultsRepository.allowSharingOngoingMeals {
             self.exportToCSV()
         }
@@ -2022,7 +1880,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateRemainsBolus()
         updateSaveFavoriteButtonState() // Add this line
     }
-
+    
     private func formatNumber(_ value: Double) -> String {
         if value == floor(value) {
             return String(format: "%.0f", value)
@@ -2065,7 +1923,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
-
+            
             totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + "E"
             
             remainsContainer?.backgroundColor = .systemGray
@@ -2149,16 +2007,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         notEatenLabel.isHidden = isHidden
         netCarbsLabel.isHidden = isHidden
     }
-    /*
-    @objc private func addFromSearchableDropdownButtonTapped() {
-        let dropdownVC = SearchableDropdownViewController()
-        dropdownVC.onDoneButtonTapped = { [weak self] selectedItems in
-            self?.handleSelectedFoodItems(selectedItems)
-        }
-        let navigationController = UINavigationController(rootViewController: dropdownVC)
-        present(navigationController, animated: true, completion: nil)
-    }*/
-
+    
     private func handleSelectedFoodItems(_ items: [FoodItem]) {
         for item in items {
             addFoodItemRow(with: item) // Defaults to portionServed: nil and notEaten: nil
@@ -2168,32 +2017,32 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
     }
-
+    
     func addFoodItemRow(with foodItem: FoodItem? = nil) {
         guard let stackView = stackView else {
             print("stackView is nil")
             return
         }
-
+        
         let rowView = FoodItemRowView()
         rowView.foodItems = foodItems
         rowView.delegate = self
         rowView.translatesAutoresizingMaskIntoConstraints = false
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
-
+        
         if let foodItem = foodItem {
             rowView.setSelectedFoodItem(foodItem)
         }
-
+        
         rowView.onDelete = { [weak self] in
             self?.removeFoodItemRow(rowView)
         }
-
+        
         rowView.onValueChange = { [weak self] in
             self?.updateTotalNutrients()
         }
-
+        
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -2215,7 +2064,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
         foodItemRows.append(rowView)
         rowView.setSelectedFoodItem(foodItem)
-
+        
         // Only set the text fields if the values are not nil
         if let portionServed = portionServed {
             rowView.portionServedTextField.text = formattedValue(portionServed)
@@ -2223,14 +2072,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let notEaten = notEaten {
             rowView.notEatenTextField.text = formattedValue(notEaten)
         }
-
+        
         rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         rowView.notEatenTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-
+        
         rowView.onDelete = { [weak self] in
             self?.removeFoodItemRow(rowView)
         }
-
+        
         rowView.onValueChange = { [weak self] in
             self?.updateTotalNutrients()
             self?.updateHeadlineVisibility()
@@ -2242,7 +2091,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         addButtonRowView = AddButtonRowView()
         addButtonRowView.translatesAutoresizingMaskIntoConstraints = false
         addButtonRowView.addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
-        //addButtonRowView.addNewButton.addTarget(self, action: #selector(addNewButtonTapped), for: .touchUpInside)
         stackView.addArrangedSubview(addButtonRowView)
     }
     
@@ -2255,16 +2103,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         navigationController.modalPresentationStyle = .formSheet // or .fullScreen based on your preference
         present(navigationController, animated: true, completion: nil)
     }
-    /*
-    @objc private func addNewButtonTapped() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
-            addFoodItemVC.delegate = self
-            let navigationController = UINavigationController(rootViewController: addFoodItemVC)
-            present(navigationController, animated: true, completion: nil)
-        }
-    }
-    */
+
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
         stackView.removeArrangedSubview(rowView)
         rowView.removeFromSuperview()
@@ -2381,7 +2220,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateScheduledValuesUI()
         updateTotalNutrients()
     }
-
+    
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
@@ -2400,8 +2239,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            //let image = UIImage(systemName: "menucard.fill")
-            //button.setImage(image, for: .normal)
             button.setTitle("   SKOLMATEN   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
@@ -2446,7 +2283,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             addSubview(rssButton)
             addSubview(lateBreakfastLabel)
             addSubview(lateBreakfastSwitch)
-
+            
             NSLayoutConstraint.activate([
                 addButton.topAnchor.constraint(equalTo: topAnchor, constant: 12),
                 addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
@@ -2457,7 +2294,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 rssButton.leadingAnchor.constraint(equalTo: addButton.trailingAnchor, constant: 12),
                 rssButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
                 rssButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-                //rssButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 3),
                 
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: rssButton.centerYAnchor),
                 lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -4),
@@ -2466,22 +2302,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
             ])
         }
-        /*
-        @objc private func rssButtonTapped() {
-            let rssFeedVC = RSSFeedViewController()
-            if let topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                if let navigationController = topController as? UINavigationController {
-                    navigationController.pushViewController(rssFeedVC, animated: true)
-                } else {
-                    let navigationController = UINavigationController(rootViewController: rssFeedVC)
-                    topController.present(navigationController, animated: true, completion: nil)
-                }
-            }
-        }*/
-        /*
-        @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
-            // Handle switch toggle
-        }*/
     }
 }
 
@@ -2495,9 +2315,9 @@ extension ComposeMealViewController: AddFoodItemDelegate {
 }
 
 class GradientView: UIView {
-
+    
     private let gradientLayer = CAGradientLayer()
-
+    
     init(colors: [CGColor]) {
         super.init(frame: .zero)
         gradientLayer.colors = colors
@@ -2505,11 +2325,11 @@ class GradientView: UIView {
         gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
         layer.insertSublayer(gradientLayer, at: 0)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         gradientLayer.frame = bounds
@@ -2521,7 +2341,7 @@ class GradientView: UIView {
 struct InfoPopoverView: View {
     let title: String
     let message: String
-
+    
     var body: some View {
         VStack(spacing: 4) {
             Text(title)
@@ -2543,7 +2363,7 @@ class InfoPopoverHostingController: UIHostingController<InfoPopoverView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: InfoPopoverView(title: "", message: ""))
     }
-
+    
     init(title: String, message: String) {
         let view = InfoPopoverView(title: title, message: message)
         super.init(rootView: view)
@@ -2564,7 +2384,7 @@ extension InfoPopoverHostingController: UIPopoverPresentationControllerDelegate 
     func popoverPresentationControllerDidDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) {
         dismiss(animated: true, completion: nil)
     }
-
+    
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         return .none
     }
@@ -2586,27 +2406,27 @@ extension ComposeMealViewController {
         popoverController.popoverPresentationController?.delegate = self
         present(popoverController, animated: true, completion: nil)
     }
-
+    
     @objc private func showBolusInfo() {
         presentPopover(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.", sourceView: totalBolusAmountLabel)
     }
-
+    
     @objc private func showCarbsInfo() {
         presentPopover(title: "Kolhydrater Totalt", message: "Den beräknade summan av alla kolhydrater i måltiden.", sourceView: totalNetCarbsLabel)
     }
-
+    
     @objc private func showFatInfo() {
         presentPopover(title: "Fett Totalt", message: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", sourceView: totalNetFatLabel)
     }
-
+    
     @objc private func showProteinInfo() {
         presentPopover(title: "Protein Totalt", message: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", sourceView: totalNetProteinLabel)
     }
-
+    
     @objc private func showCRInfo() {
         presentPopover(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.\n", sourceView: nowCRLabel)
     }
-
+    
     @objc private func lateBreakfastLabelTapped() {
         if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
             let formatter = DateFormatter()
