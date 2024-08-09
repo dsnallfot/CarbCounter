@@ -1480,8 +1480,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         createEmojiString()
         
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        let fatValue = "0.0"
-        let proteinValue = "0.0"
+        let fatValue = "0"
+        let proteinValue = "0"
         var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
         let method: String
@@ -1490,6 +1490,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             method = "SMS API"
         }
+        
+        let startDose = true
         
         if !allowShortcuts {
             //Use alert when manually registering
@@ -1521,7 +1523,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     // Present the UINavigationController
                     present(navigationController, animated: true, completion: {
                         // Populate the MealViewController with the values
-                        mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method)
+                        mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method, startDose: startDose)
                     })
                 }
             

@@ -3,8 +3,8 @@
     <device id="retina4_7" orientation="portrait" appearance="dark"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -508,7 +508,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nvq-Wb-yth" userLabel="Carbs">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="nGc-RD-cUd">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0YQ-7b-NEo">
@@ -520,6 +520,7 @@
                                                                 <constraint firstAttribute="width" constant="120" id="NLG-zS-JET"/>
                                                             </constraints>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gn6-6a-c9u">
@@ -531,12 +532,14 @@
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="25" id="hE3-Si-3WM"/>
                                                                     </constraints>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                     <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                                 </textField>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="g" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IPh-Jy-RLa">
                                                                     <rect key="frame" x="174" y="9" width="25" height="20.5"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                             </subviews>
@@ -547,7 +550,7 @@
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
-                                            <color key="backgroundColor" systemColor="quaternarySystemFillColor"/>
+                                            <color key="backgroundColor" red="0.36470589040000001" green="0.40784314269999999" blue="0.48235297199999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                             <constraints>
                                                 <constraint firstAttribute="bottom" secondItem="0YQ-7b-NEo" secondAttribute="bottom" id="JY5-9i-4GD"/>
                                                 <constraint firstItem="0YQ-7b-NEo" firstAttribute="leading" secondItem="nGc-RD-cUd" secondAttribute="leadingMargin" constant="4" id="UKM-A7-KXa"/>
@@ -581,7 +584,7 @@
                                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="40" id="C62-FQ-Ukb"/>
                                                                     </constraints>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                    <nil key="textColor"/>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="KwA-iw-O4f">
@@ -593,13 +596,14 @@
                                                                             <constraints>
                                                                                 <constraint firstAttribute="width" constant="55" id="Unv-k5-SfU"/>
                                                                             </constraints>
+                                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                             <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                                         </textField>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="g" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F3e-rW-2xi">
                                                                             <rect key="frame" x="55" y="9" width="25" height="20.5"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                            <nil key="textColor"/>
+                                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                     </subviews>
@@ -610,7 +614,7 @@
                                                             </subviews>
                                                         </stackView>
                                                     </subviews>
-                                                    <color key="backgroundColor" systemColor="quaternarySystemFillColor"/>
+                                                    <color key="backgroundColor" red="0.36470589040000001" green="0.40784314269999999" blue="0.48235297199999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <constraints>
                                                         <constraint firstAttribute="bottom" secondItem="Nbr-cL-TbU" secondAttribute="bottom" id="8cx-uK-XN0"/>
                                                         <constraint firstItem="Nbr-cL-TbU" firstAttribute="leading" secondItem="AEL-SS-ZDM" secondAttribute="leadingMargin" constant="4" id="G8T-Yp-Usg"/>
@@ -641,7 +645,7 @@
                                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="8tc-iS-c01"/>
                                                                     </constraints>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                    <nil key="textColor"/>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                     <lineBreakStrategy key="lineBreakStrategy"/>
                                                                 </label>
@@ -654,13 +658,14 @@
                                                                             <constraints>
                                                                                 <constraint firstAttribute="width" constant="35" id="Nsq-ro-7k9"/>
                                                                             </constraints>
+                                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                             <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                                         </textField>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="g" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tvp-6y-cuK">
                                                                             <rect key="frame" x="35" y="9" width="25" height="20.5"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                            <nil key="textColor"/>
+                                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                     </subviews>
@@ -671,7 +676,7 @@
                                                             </subviews>
                                                         </stackView>
                                                     </subviews>
-                                                    <color key="backgroundColor" systemColor="quaternarySystemFillColor"/>
+                                                    <color key="backgroundColor" red="0.36470589040000001" green="0.40784314269999999" blue="0.48235297199999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <constraints>
                                                         <constraint firstAttribute="trailingMargin" secondItem="2yZ-gJ-ThM" secondAttribute="trailing" constant="4" id="7y0-cg-adA"/>
                                                         <constraint firstItem="2yZ-gJ-ThM" firstAttribute="leading" secondItem="gwA-x0-jOL" secondAttribute="leadingMargin" constant="4" id="mWz-Xd-4Jz"/>
@@ -692,7 +697,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AUX-cq-9ke" userLabel="Notes">
                                         <rect key="frame" x="0.0" y="92.5" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ABR-oy-nFE">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="39"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eXo-9i-ROd">
@@ -704,7 +709,7 @@
                                                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="3bR-WK-9yO"/>
                                                             </constraints>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                            <nil key="textColor"/>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <textField toolTip="Amount of carbs" opaque="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="248" highlighted="YES" selected="YES" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" placeholder="..." textAlignment="right" adjustsFontForContentSizeCategory="YES" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="XNP-0Y-Zdb">
@@ -713,13 +718,14 @@
                                                             <constraints>
                                                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="140" id="o7v-5f-jGV"/>
                                                             </constraints>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <textInputTraits key="textInputTraits"/>
                                                         </textField>
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
-                                            <color key="backgroundColor" systemColor="quaternarySystemFillColor"/>
+                                            <color key="backgroundColor" red="0.36470589040000001" green="0.40784314269999999" blue="0.48235297199999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                             <constraints>
                                                 <constraint firstAttribute="bottom" secondItem="eXo-9i-ROd" secondAttribute="bottom" id="CK3-8W-3Eb"/>
                                                 <constraint firstItem="eXo-9i-ROd" firstAttribute="leading" secondItem="ABR-oy-nFE" secondAttribute="leadingMargin" constant="4" id="KT8-xr-aUv"/>
@@ -738,7 +744,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xi8-BJ-sG2" userLabel="Tid">
                                         <rect key="frame" x="0.0" y="139" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="4yn-a5-OOJ">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="phY-ht-nVS">
@@ -750,16 +756,17 @@
                                                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="sNA-ir-jlI"/>
                                                             </constraints>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                            <nil key="textColor"/>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <datePicker contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="nHQ-i4-fV2">
                                                             <rect key="frame" x="128" y="0.0" width="199" height="38.5"/>
+                                                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </datePicker>
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
-                                            <color key="backgroundColor" systemColor="quaternarySystemFillColor"/>
+                                            <color key="backgroundColor" red="0.36470589040000001" green="0.40784314269999999" blue="0.48235297199999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                             <constraints>
                                                 <constraint firstAttribute="trailingMargin" secondItem="phY-ht-nVS" secondAttribute="trailing" constant="-4" id="H2G-sf-fmg"/>
                                                 <constraint firstAttribute="bottom" secondItem="phY-ht-nVS" secondAttribute="bottom" id="VNb-Vq-a7a"/>
@@ -778,50 +785,51 @@
                                     <view autoresizesSubviews="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="MWZ-hX-P7t" userLabel="Bolus calculations">
                                         <rect key="frame" x="0.0" y="185.5" width="343" height="38"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="2Ma-eG-rjJ" userLabel="Calc stack">
-                                                <rect key="frame" x="12" y="3" width="319" height="32"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="2Ma-eG-rjJ" userLabel="Calc stack">
+                                                <rect key="frame" x="159" y="3" width="176" height="32"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="9aF-ti-Qeq" userLabel="Bolus stack">
-                                                        <rect key="frame" x="0.0" y="0.0" width="319" height="32"/>
+                                                    <stackView opaque="NO" contentMode="right" horizontalHuggingPriority="252" verticalHuggingPriority="252" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="9aF-ti-Qeq" userLabel="Bolus stack">
+                                                        <rect key="frame" x="0.0" y="5.5" width="176" height="21"/>
                                                         <subviews>
-                                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Dos:" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="1fh-wh-zY3">
-                                                                <rect key="frame" x="0.0" y="0.0" width="30" height="32"/>
+                                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Förslag bolus:" adjustsFontSizeToFit="NO" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="1fh-wh-zY3">
+                                                                <rect key="frame" x="0.0" y="0.0" width="105" height="21"/>
                                                                 <accessibility key="accessibilityConfiguration">
                                                                     <accessibilityTraits key="traits" notEnabled="YES"/>
                                                                 </accessibility>
-                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
                                                                 <textInputTraits key="textInputTraits"/>
                                                             </textField>
-                                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="--" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="QiM-g0-oiq">
-                                                                <rect key="frame" x="38" y="0.0" width="13.5" height="32"/>
+                                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="--" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="QiM-g0-oiq">
+                                                                <rect key="frame" x="113" y="0.0" width="15" height="21"/>
                                                                 <accessibility key="accessibilityConfiguration">
                                                                     <accessibilityTraits key="traits" notEnabled="YES"/>
                                                                 </accessibility>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="50" id="YCR-xy-41h"/>
                                                                 </constraints>
-                                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                                                 <textInputTraits key="textInputTraits"/>
                                                             </textField>
-                                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="E" textAlignment="natural" adjustsFontSizeToFit="NO" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="GZh-9c-WQ6">
-                                                                <rect key="frame" x="59.5" y="0.0" width="259.5" height="32"/>
+                                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="E" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="GZh-9c-WQ6">
+                                                                <rect key="frame" x="136" y="0.0" width="12" height="21"/>
                                                                 <accessibility key="accessibilityConfiguration">
                                                                     <accessibilityTraits key="traits" notEnabled="YES"/>
                                                                 </accessibility>
-                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="12" id="bgF-Hk-XGM"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
                                                                 <textInputTraits key="textInputTraits"/>
                                                             </textField>
-                                                            <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="plus.app" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="lqb-3C-dZw">
-                                                                <rect key="frame" x="323" y="1" width="0.0" height="29.5"/>
-                                                                <color key="tintColor" red="0.1843137443" green="0.40784314269999999" blue="0.77254903320000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" image="plus.app" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="lqb-3C-dZw">
+                                                                <rect key="frame" x="156" y="1" width="20" height="18.5"/>
+                                                                <color key="tintColor" systemColor="linkColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="20" id="aWf-y6-YGL"/>
+                                                                </constraints>
                                                                 <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default"/>
                                                             </imageView>
                                                         </subviews>
-                                                        <constraints>
-                                                            <constraint firstAttribute="trailing" secondItem="lqb-3C-dZw" secondAttribute="trailing" constant="-4" id="g3y-fo-Zyf"/>
-                                                        </constraints>
                                                     </stackView>
                                                 </subviews>
                                             </stackView>
@@ -829,14 +837,13 @@
                                         <constraints>
                                             <constraint firstItem="2Ma-eG-rjJ" firstAttribute="top" secondItem="MWZ-hX-P7t" secondAttribute="top" constant="3" id="Anh-Vt-Jll"/>
                                             <constraint firstItem="2Ma-eG-rjJ" firstAttribute="centerY" secondItem="MWZ-hX-P7t" secondAttribute="centerY" id="P6Q-Xf-xey"/>
-                                            <constraint firstItem="2Ma-eG-rjJ" firstAttribute="leading" secondItem="MWZ-hX-P7t" secondAttribute="leadingMargin" constant="4" id="e5k-Xp-CAr"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="2Ma-eG-rjJ" secondAttribute="trailing" constant="4" id="gcW-Ht-ivk"/>
+                                            <constraint firstAttribute="trailing" secondItem="2Ma-eG-rjJ" secondAttribute="trailing" constant="8" id="rQj-NV-3DQ"/>
                                         </constraints>
                                     </view>
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="opf-Hp-yIb" userLabel="Bolus">
                                         <rect key="frame" x="0.0" y="231.5" width="343" height="38.5"/>
                                         <view key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="VBV-QD-xlj">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="39"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NWG-6j-sB3">
@@ -848,7 +855,7 @@
                                                                 <constraint firstAttribute="width" constant="90" id="VhQ-K9-vyT"/>
                                                             </constraints>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                            <nil key="textColor"/>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Sos-ZK-9Qy">
@@ -860,6 +867,7 @@
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="25" id="tED-gh-hHY"/>
                                                                     </constraints>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                     <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                                     <connections>
@@ -869,7 +877,7 @@
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="E" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kLl-2N-9ZM">
                                                                     <rect key="frame" x="204" y="5" width="25" height="20.5"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                    <nil key="textColor"/>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                             </subviews>
@@ -880,7 +888,6 @@
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
-                                            <color key="backgroundColor" name="Basal"/>
                                             <constraints>
                                                 <constraint firstAttribute="trailingMargin" secondItem="NWG-6j-sB3" secondAttribute="trailing" constant="4" id="HMJ-xH-fyi"/>
                                                 <constraint firstAttribute="bottom" secondItem="NWG-6j-sB3" secondAttribute="bottom" constant="4" id="rAO-VK-ea8"/>
@@ -888,6 +895,7 @@
                                                 <constraint firstItem="NWG-6j-sB3" firstAttribute="top" secondItem="VBV-QD-xlj" secondAttribute="top" constant="4" id="xdk-dx-2qC"/>
                                             </constraints>
                                         </view>
+                                        <color key="backgroundColor" systemColor="systemBlueColor"/>
                                         <blurEffect style="regular"/>
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
@@ -902,7 +910,7 @@
                                     <constraint firstAttribute="height" constant="270" id="7V1-bO-awE"/>
                                 </constraints>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z3H-dk-YIf">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z3H-dk-YIf">
                                 <rect key="frame" x="12" y="310" width="351" height="70"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="70" id="lRk-nl-Kmh"/>
@@ -964,7 +972,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="q9e-nG-AqV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1414" y="828"/>
+            <point key="canvasLocation" x="1413.5999999999999" y="827.13643178410803"/>
         </scene>
     </scenes>
     <resources>
@@ -972,17 +980,11 @@
         <image name="list.bullet.clipboard" catalog="system" width="98" height="128"/>
         <image name="plus.app" catalog="system" width="128" height="114"/>
         <image name="takeoutbag.and.cup.and.straw" catalog="system" width="128" height="114"/>
-        <namedColor name="Basal">
-            <color red="0.32899999618530273" green="0.32400000095367432" blue="0.4779999852180481" alpha="0.33000001311302185" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
-        <systemColor name="quaternarySystemFillColor">
-            <color red="0.45490196078431372" green="0.45490196078431372" blue="0.50196078431372548" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="secondaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        <systemColor name="linkColor">
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

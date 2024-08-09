@@ -39,6 +39,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var plusSign: UIImageView!
     //@IBOutlet weak var infoStack: UIStackView!
     
+    var startDose: Bool = false
+    
     var CR: Decimal = 0.0
     var minGuardBG: Decimal = 0.0
     var lowThreshold: Decimal = 0.0
@@ -55,6 +57,29 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.backgroundColor = .systemBackground
+        
+        // Create the gradient view
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         
         // Set the navigation bar title
             self.title = "Registrera Måltid"
@@ -81,6 +106,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         // Add tap gesture recognizers to labels
         addGestureRecognizers()
+        
+        // Add a tap gesture recognizer to bolusStack
+            let bolusStackTap = UITapGestureRecognizer(target: self, action: #selector(bolusStackTapped))
+            bolusStack.addGestureRecognizer(bolusStackTap)
+            bolusStack.isUserInteractionEnabled = true
         
         /*
         // Add tap gesture recognizer to minBGStack
@@ -285,22 +315,30 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //    self.carbsEntryField.becomeFirstResponder()
     //}
     
-    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, method: String) {
-        // Log the values to the console for now
+    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, method: String, startDose: Bool) {
+        // Log the values to the console (optional)
         print("KH Value: \(khValue)")
         print("Fat Value: \(fatValue)")
         print("Protein Value: \(proteinValue)")
         print("Bolus Value: \(bolusValue)")
         print("Emojis: \(emojis)")
         print("Method: \(method)")
+        print("Startdose: \(startDose)")
 
-        // You can later use these values to populate the UI elements in MealViewController
-        // For example:
-        // self.carbsEntryField.text = khValue
-        // self.fatEntryField.text = fatValue
-        // self.proteinEntryField.text = proteinValue
-        // self.bolusEntryField.text = bolusValue
-        // etc.
+        // Populate the UI elements with the passed values
+        self.carbsEntryField.text = khValue
+        self.fatEntryField.text = fatValue
+        self.proteinEntryField.text = proteinValue
+        self.bolusCalculated.text = bolusValue
+
+        // Optionally populate the notes entry field with the emojis or any default text
+        self.notesEntryField.text = emojis
+        
+        // Set the startDose property
+        self.startDose = startDose
+        
+        // Simulate a tap on the bolusStack to transfer bolusCalculated.text to bolusEntryField.text
+        //bolusStackTapped()
     }
     
     func sendMealorMealandBolus() {
@@ -368,23 +406,17 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     // Action method to handle tap on bolusStack
     @objc func bolusStackTapped() {
-        if isBolusEntryFieldPopulated {
-            // If bolusEntryField is already populated, make it empty
-            bolusEntryField.text = ""
-            isBolusEntryFieldPopulated = false
-            sendMealorMealandBolus()
-        } else {
-            // If bolusEntryField is empty, populate it with the value from bolusCalculated
-            bolusEntryField.text = bolusCalculated.text
-            isBolusEntryFieldPopulated = true
-            sendMealorMealandBolus()
+            if isBolusEntryFieldPopulated {
+                // If bolusEntryField is already populated, make it empty
+                bolusEntryField.text = ""
+                isBolusEntryFieldPopulated = false
+            } else {
+                // If bolusEntryField is empty, populate it with the value from bolusCalculated
+                bolusEntryField.text = bolusCalculated.text
+                isBolusEntryFieldPopulated = true
             }
+            sendMealorMealandBolus() // Update the state after the tap action
         }
-    
-    /*@IBAction func presetButtonTapped(_ sender: Any) {
-        let customActionViewController = storyboard!.instantiateViewController(withIdentifier: "remoteCustomAction") as! CustomActionViewController
-        self.present(customActionViewController, animated: true, completion: nil)
-    }*/
     
     @IBAction func sendRemoteMealPressed(_ sender: Any) {
         // Disable the button to prevent multiple taps
@@ -680,7 +712,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 print("Failed to encode URL string")
                 return
             }
-            let urlString = "shortcuts://run-shortcut?name=Remote%20Meal&input=text&text=\(encodedString)"
+            let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(encodedString)"
             if let url = URL(string: urlString) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
             }
