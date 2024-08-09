@@ -35,8 +35,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //@IBOutlet weak var CRValue: UITextField!
     //@IBOutlet weak var minPredBGValue: UITextField!
     //@IBOutlet weak var minBGStack: UIStackView!
-   // @IBOutlet weak var bolusStack: UIStackView!
-    //@IBOutlet weak var plusSign: UIImageView!
+    @IBOutlet weak var bolusStack: UIStackView!
+    @IBOutlet weak var plusSign: UIImageView!
     //@IBOutlet weak var infoStack: UIStackView!
     
     var CR: Decimal = 0.0
@@ -55,15 +55,22 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        /*if UserDefaultsRepository.forceDarkMode.value {
-            overrideUserInterfaceStyle = .dark
-        }*/
+        
+        // Set the navigation bar title
+            self.title = "Registrera Måltid"
+            
+            // Create the cancel button
+            let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+            
+            // Set the cancel button as the right bar button item
+            self.navigationItem.rightBarButtonItem = cancelButton
+        
         carbsEntryField.delegate = self
         fatEntryField.delegate = self
         proteinEntryField.delegate = self
         notesEntryField.delegate = self
         bolusEntryField.delegate = self
-        
+
         setupInputAccessoryView()
         setupDatePickerLimits()
         self.focusCarbsEntryField()
@@ -144,6 +151,12 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         @objc func doneTapped() {
             view.endEditing(true)
         }
+    
+    @objc func cancelButtonTapped() {
+        // Dismiss the view controller when the cancel button is tapped
+        self.dismiss(animated: true, completion: nil)
+    }
+
     
     // Add tap gesture recognizers to labels
         func addGestureRecognizers() {
@@ -271,6 +284,24 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //func focusCarbsEntryField() {
     //    self.carbsEntryField.becomeFirstResponder()
     //}
+    
+    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, method: String) {
+        // Log the values to the console for now
+        print("KH Value: \(khValue)")
+        print("Fat Value: \(fatValue)")
+        print("Protein Value: \(proteinValue)")
+        print("Bolus Value: \(bolusValue)")
+        print("Emojis: \(emojis)")
+        print("Method: \(method)")
+
+        // You can later use these values to populate the UI elements in MealViewController
+        // For example:
+        // self.carbsEntryField.text = khValue
+        // self.fatEntryField.text = fatValue
+        // self.proteinEntryField.text = proteinValue
+        // self.bolusEntryField.text = bolusValue
+        // etc.
+    }
     
     func sendMealorMealandBolus() {
         let attributes: [NSAttributedString.Key: Any] = [

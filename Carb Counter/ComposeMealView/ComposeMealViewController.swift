@@ -1473,49 +1473,72 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func startAmountContainerTapped() {
         // Check if mealDate is nil and set it to the current date if it is
-            if mealDate == nil {
-                mealDate = Date()
-            }
+        if mealDate == nil {
+            mealDate = Date()
+        }
         
         createEmojiString()
+        
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
-        
-        self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
-        
-        /*
-        // Ask if the user wants to give a bolus
-        let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: "\nVälj 'Ja' för att ge en bolus, eller välj 'Nej' för att endast registrera kolhydrater i nästa steg... ", preferredStyle: .alert)
-        let noAction = UIAlertAction(title: "Nej", style: .default) { _ in
-            bolusValue = "0.0"
-            self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
-        }
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
-            self.proceedWithStartAmount(khValue: khValue, bolusValue: bolusValue)
-        }
-        bolusAlertController.addAction(noAction)
-        bolusAlertController.addAction(yesAction)
-        present(bolusAlertController, animated: true, completion: nil)*/
-    }
-    
-    private func proceedWithStartAmount(khValue: String, bolusValue: String) {
         let fatValue = "0.0"
         let proteinValue = "0.0"
+        var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
+        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
+        let method: String
+        if UserDefaultsRepository.method == "iOS Shortcuts" {
+            method = "iOS Shortcuts"
+        } else {
+            method = "SMS API"
+        }
         
+        if !allowShortcuts {
+            //Use alert when manually registering
+            let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
+                self.startDoseGiven = true
+            }
+            alertController.addAction(cancelAction)
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+        } else {
+            // Present MealViewController embedded in a UINavigationController
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                    
+                    // Wrap the MealViewController in a UINavigationController
+                    let navigationController = UINavigationController(rootViewController: mealVC)
+                    
+                    // Set the modal presentation style to pageSheet for a modal sheet presentation
+                    navigationController.modalPresentationStyle = .pageSheet
+                    
+                    // Optional: If you want to make the sheet dismissible with a swipe
+                    if #available(iOS 15.0, *) {
+                        navigationController.sheetPresentationController?.detents = [.medium(), .large()]
+                    }
+
+                    // Present the UINavigationController
+                    present(navigationController, animated: true, completion: {
+                        // Populate the MealViewController with the values
+                        mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method)
+                    })
+                }
+            
+        }
+    }
+        
+      /*
+
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             if allowShortcuts {
+                let method = "iOS Shortcuts"
                 
-                //Ersätt self.registerStartAmountInLoopingApp med MealVC modal och ta ned värden
-                /*
-                let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
-                    self.registerStartAmountInLoopingApp(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(yesAction)
-                present(alertController, animated: true, completion: nil)*/
+                //Add code to open MealVC and populate with values
+                populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method)
+                 
             } else {
+                //Use alert when manually registering
                 let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
@@ -1527,30 +1550,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             }
         } else {
+            let method = "SMS API"
             
             //Ersätt self.sendMealRequest med MealVC modal och ta ned värden
-            
-            /*
-            let alertController = UIAlertController(title: "Registrera startdos för måltiden", message: "\nVill du registrera den angivna startdosen för måltiden i iAPS/Trio enligt summeringen nedan? \n\n\(khValue) g kolhydrater \n\(bolusValue) E insulin", preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
                 self.startDoseGiven = true
                 let caregiverName = UserDefaultsRepository.caregiverName
                 let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
                 let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
-                let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-                let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                self.sendMealRequest(combinedString: combinedString)
-            }
-            alertController.addAction(cancelAction)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)*/
+            
+            //Add code to open MealVC and populate with values
+            populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method)
+            
         }
-    }
+    }*/
     
-    //Flytta ut till MealViewCOntroller
-    private func registerStartAmountInLoopingApp(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+    func returnFromMealVC(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+        
         let khValue = khValue.replacingOccurrences(of: ".", with: ",")
         let bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
@@ -1579,19 +1595,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveToCoreData()
         updateTotalNutrients()
         clearAllButton.isEnabled = true
-        let caregiverName = UserDefaultsRepository.caregiverName
-        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
-        let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
-        let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: 0g\nProtein: 0g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(bolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
         
-        let urlString = "shortcuts://run-shortcut?name=Startdos&input=text&text=\(combinedString)"
-        
-        if let url = URL(string: urlString) {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-        }
     }
     
     
@@ -1820,7 +1824,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
                 let currentDate = self.getCurrentDateUTC() // Get the current date in UTC format
                 let combinedString = "Remote Måltid\nKolhydrater: \(khValue)g\nFett: \(fatValue)g\nProtein: \(proteinValue)g\nNotering: \(emojis)\nDatum: \(currentDate)\nInsulin: \(finalBolusValue)E\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-                self.sendMealRequest(combinedString: combinedString)
+                // replace self.sendMealRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
@@ -1880,7 +1884,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
     }
-    
+    /*
     private func sendMealRequest(combinedString: String) {
         let method = UserDefaultsRepository.method
         if method == "iOS Shortcuts" {
@@ -1908,7 +1912,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
             }
         }
-    }
+    }*/
     
     
     
@@ -2355,8 +2359,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
     }*/
-    
-    private func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+    //Use this func when coming back from MealVC
+    public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
         let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
