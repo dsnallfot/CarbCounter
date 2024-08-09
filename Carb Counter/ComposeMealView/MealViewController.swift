@@ -119,8 +119,16 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         self.focusCarbsEntryField()
         
         // Disable autocomplete and spell checking
+        carbsEntryField.autocorrectionType = .no
+        carbsEntryField.spellCheckingType = .no
+        fatEntryField.autocorrectionType = .no
+        fatEntryField.spellCheckingType = .no
+        proteinEntryField.autocorrectionType = .no
+        proteinEntryField.spellCheckingType = .no
         notesEntryField.autocorrectionType = .no
         notesEntryField.spellCheckingType = .no
+        bolusEntryField.autocorrectionType = .no
+        bolusEntryField.spellCheckingType = .no
         
         // Add tap gesture recognizers to labels
         addGestureRecognizers()
@@ -545,7 +553,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Convert the cr string to a Decimal and set the CR property
         if let crDecimal = Decimal(string: cr) {
             self.CR = crDecimal
-            print("CR successfully converted to Decimal: \(self.CR)")
+            //print("CR successfully converted to Decimal: \(self.CR)")
         } else {
             print("Failed to convert CR to Decimal")
             // Handle the error as needed, e.g., show an alert to the user or set a default value
