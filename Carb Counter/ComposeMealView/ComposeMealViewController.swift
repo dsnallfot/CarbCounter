@@ -1482,7 +1482,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         let fatValue = "0"
         let proteinValue = "0"
-        var bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
+        let bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
         let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
@@ -1490,6 +1490,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             method = "SMS API"
         }
+        
+        let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
+        let bolusTotal = totalBolusAmountLabel.text ?? "0"
+        let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        let carbsTotal = totalNetCarbsLabel.text ?? "0 g"
+        let fatSoFar = String(format: "%.0f", registeredFatSoFar)
+        let fatTotal = totalNetFatLabel.text ?? "0 g"
+        let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
+        let proteinTotal = totalNetProteinLabel.text ?? "0 g"
         
         let startDose = true
         
@@ -1517,82 +1526,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
 
                 present(navigationController, animated: true, completion: {
-                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method, startDose: startDose)
+                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose)
                 })
             }
                 }
             
         }
-        
-      /*
-
-        if UserDefaultsRepository.method == "iOS Shortcuts" {
-            if allowShortcuts {
-                let method = "iOS Shortcuts"
-                
-                //Add code to open MealVC and populate with values
-                populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method)
-                 
-            } else {
-                //Use alert when manually registering
-                let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
-                    self.startDoseGiven = true
-                }
-                alertController.addAction(cancelAction)
-                alertController.addAction(okAction)
-                present(alertController, animated: true, completion: nil)
-            }
-        } else {
-            let method = "SMS API"
-            
-            //Ersätt self.sendMealRequest med MealVC modal och ta ned värden
-                self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue)
-                self.startDoseGiven = true
-                let caregiverName = UserDefaultsRepository.caregiverName
-                let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-                let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis() // Check if foodItemRows is empty and set emojis accordingly
-            
-            //Add code to open MealVC and populate with values
-            populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, method: method)
-            
-        }
-    }*/
     
-    func returnFromMealVC(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        
-        let khValue = khValue.replacingOccurrences(of: ".", with: ",")
-        let bolusValue = bolusValue.replacingOccurrences(of: ".", with: ",")
-        let currentRegisteredValue = Double(totalRegisteredLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let newRegisteredValue = currentRegisteredValue + remainsValue
-        totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
-        
-        let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        
-        registeredFatSoFar += fatDoubleValue
-        registeredProteinSoFar += proteinDoubleValue
-        registeredBolusSoFar += bolusDoubleValue
-        
-        self.startDoseGiven = true
-        if totalRegisteredLabel.text == "" {
-            saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by send input
-            //print ("saveMealToHistory = false")
-            startDoseGiven = false
-            remainingDoseGiven = false
-        } else {
-            saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by send input
-            //print ("saveMealToHistory = true")
-        }
-        saveToCoreData()
-        updateTotalNutrients()
-        clearAllButton.isEnabled = true
-        
-    }
+
     
     
     
@@ -1682,7 +1623,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             message += "\nDen föreslagna dosen är beräknad utifrån aktuell CR. Om du vill kan du justera dosen manuellt:"
         }
-
+/*
         let bolusAlertController = UIAlertController(title: "Vill du ge en bolus till måltiden?", message: message, preferredStyle: .alert)
         bolusAlertController.addTextField { textField in
             textField.text = bolusValue
@@ -1703,7 +1644,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         bolusAlertController.addAction(noAction)
         bolusAlertController.addAction(yesAction)
-        present(bolusAlertController, animated: true, completion: nil)
+        present(bolusAlertController, animated: true, completion: nil)*/
     }
     
     private func checkAndProceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {

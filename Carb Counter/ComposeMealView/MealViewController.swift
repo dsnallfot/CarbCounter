@@ -315,7 +315,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //    self.carbsEntryField.becomeFirstResponder()
     //}
     
-    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, method: String, startDose: Bool) {
+    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String,  method: String, startDose: Bool) {
         // Log the values to the console (optional)
         print("KH Value: \(khValue)")
         print("Fat Value: \(fatValue)")
@@ -324,6 +324,14 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         print("Emojis: \(emojis)")
         print("Method: \(method)")
         print("Startdose: \(startDose)")
+        print("bolusSoFar: \(bolusSoFar)")
+        print("bolusTotal: \(bolusTotal)")
+        print("carbsSoFar: \(carbsSoFar)")
+        print("carbsTotal: \(carbsTotal)")
+        print("fatSoFar: \(fatSoFar)")
+        print("fatTotal: \(fatTotal)")
+        print("proteinSoFar: \(proteinSoFar)")
+        print("proteinTotal: \(proteinTotal)")
 
         // Populate the UI elements with the passed values
         self.carbsEntryField.text = khValue
