@@ -315,7 +315,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //    self.carbsEntryField.becomeFirstResponder()
     //}
     
-    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String,  method: String, startDose: Bool) {
+    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String,  method: String, startDose: Bool, cr: String) {
         // Log the values to the console (optional)
         print("KH Value: \(khValue)")
         print("Fat Value: \(fatValue)")
@@ -332,6 +332,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         print("fatTotal: \(fatTotal)")
         print("proteinSoFar: \(proteinSoFar)")
         print("proteinTotal: \(proteinTotal)")
+        print("CR: \(cr)")
 
         // Populate the UI elements with the passed values
         self.carbsEntryField.text = khValue
@@ -344,6 +345,15 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         // Set the startDose property
         self.startDose = startDose
+        
+        // Convert the cr string to a Decimal and set the CR property
+            if let crDecimal = Decimal(string: cr) {
+                self.CR = crDecimal
+                print("CR successfully converted to Decimal: \(self.CR)")
+            } else {
+                print("Failed to convert CR to Decimal")
+                // Handle the error as needed, e.g., show an alert to the user or set a default value
+            }
         
         // Simulate a tap on the bolusStack to transfer bolusCalculated.text to bolusEntryField.text
         //bolusStackTapped()

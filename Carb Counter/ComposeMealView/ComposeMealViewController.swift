@@ -1492,13 +1492,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text ?? "0"
+        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0"
         let carbsSoFar = totalRegisteredLabel.text ?? "0"
-        let carbsTotal = totalNetCarbsLabel.text ?? "0 g"
+        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        let fatTotal = totalNetFatLabel.text ?? "0 g"
+        let fatTotal = totalNetFatLabel.text ?? "0"
         let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
-        let proteinTotal = totalNetProteinLabel.text ?? "0 g"
+        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        
+        let cr = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"
         
         let startDose = true
         
@@ -1526,7 +1528,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
 
                 present(navigationController, animated: true, completion: {
-                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose)
+                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, cr: cr)
                 })
             }
                 }
