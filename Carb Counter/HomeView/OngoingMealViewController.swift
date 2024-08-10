@@ -115,7 +115,7 @@ class OngoingMealViewController: UIViewController {
     
     private func startImportTimer() {
         stopImportTimer() // Stop any existing timer
-        importTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
+        importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
     }
     
     private func stopImportTimer() {

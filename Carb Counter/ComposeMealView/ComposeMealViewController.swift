@@ -616,10 +616,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func exportBlankCSV() {
-        let blankCSVString = "foodItemID;portionServed;notEaten;totalRegisteredValue\n"
+        let blankCSVString = "foodItemID;portionServed;notEaten;totalRegisteredValue;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
         // Save the CSV data
         saveCSV(data: blankCSVString, fileName: "OngoingMeal.csv")
-        print("Blank CSV export done")
+        print("Blank ongoing meal CSV export done")
     }
     
     private func saveCSV(data: String, fileName: String) {
@@ -898,8 +898,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     func startAutoSaveToCSV() {
         if UserDefaultsRepository.allowSharingOngoingMeals {
             exportTimer?.invalidate()
-            exportTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
-            print("Auto-save to CSV started with a 20-second interval.")
+            exportTimer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(exportToCSV), userInfo: nil, repeats: true)
+            print("Auto-save to CSV started with a 30-second interval.")
         }
     }
     
