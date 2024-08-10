@@ -24,6 +24,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func showMainViewController() {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let mainVC = storyboard.instantiateInitialViewController()
+        
+        // Ensure that ComposeMealViewController is accessible globally
+                if let tabBarController = mainVC as? UITabBarController {
+                    if let composeMealVC = tabBarController.viewControllers?.compactMap({ $0 as? ComposeMealViewController }).first {
+                        ComposeMealViewController.shared = composeMealVC
+                    }
+                }
             
             // Add a transition animation
             let transition = CATransition()

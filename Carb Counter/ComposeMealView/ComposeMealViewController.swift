@@ -15,6 +15,7 @@ import SwiftUI
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate {
     static weak var current: ComposeMealViewController?
+    static var shared: ComposeMealViewController?
     
     ///Views
     var foodItemRows: [FoodItemRowView] = []
@@ -95,6 +96,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         loadValuesFromUserDefaults()
         initializeUIElements() // Ensure UI elements are initialized
         ComposeMealViewController.current = self
+        ComposeMealViewController.shared = self
         
         ///Create the gradient view
         let colors: [CGColor] = [
@@ -327,13 +329,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             startDoseGiven = false
             remainingDoseGiven = false
             
-            // Reset the variables to 0.0
-            registeredFatSoFar = 0.0
-            registeredProteinSoFar = 0.0
-            registeredBolusSoFar = 0.0
-            registeredCarbsSoFar = 0.0
-            
-            print("Variables reset to 0.0 due to totalRegisteredLabelDidChange")
+            // Reset the variables to 0.0 and save to UserDefaults
+            resetVariablesToDefault()
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
             
@@ -344,6 +341,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 // If conversion fails, default to 0.0
                 registeredCarbsSoFar = 0.0
             }
+            
+            // Save the current values to UserDefaults
+            saveValuesToUserDefaults()
         }
 
         // Call additional update methods
@@ -591,13 +591,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateHeadlineVisibility()
         
         // Reset the text of totalRegisteredLabel
-        totalRegisteredLabel.text = "" //test
-        // Reset the variables to 0.0
-        registeredFatSoFar = 0.0
-        registeredProteinSoFar = 0.0
-        registeredBolusSoFar = 0.0
-        registeredCarbsSoFar = 0.0
-        print("Variables reset to 0.0 due to clearAllFoodItems")
+        totalRegisteredLabel.text = ""
+        
+        // Reset the variables to 0.0 and save to UserDefaults
+        resetVariablesToDefault()
         
         updateRemainsBolus()
         
@@ -989,77 +986,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Debug - Failed to fetch FoodItemRows: \(error)")
         }
     }
-    /*
-    private func loadFoodItemsFromCoreData() {
-        let context = CoreDataStack.shared.context
-        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
-        
-        do {
-            let savedFoodItems = try context.fetch(fetchRequest)
-            
-            // Clear current food item rows to avoid duplicates
-            //clearAllFoodItems() //Not needed?
-            
-            for savedFoodItem in savedFoodItems {
-                if let foodItemID = savedFoodItem.foodItemID,
-                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
-                    
-                    if !foodItemRows.contains(where: { $0.foodItemRow?.foodItemID == foodItemID }) {
-                        let rowView = FoodItemRowView()
-                        rowView.foodItems = foodItems
-                        rowView.delegate = self
-                        rowView.translatesAutoresizingMaskIntoConstraints = false
-                        rowView.foodItemRow = savedFoodItem
-                        
-                        rowView.setSelectedFoodItem(foodItem)
-                        
-                        let portionServedValue = formatNumber(savedFoodItem.portionServed)
-                        rowView.portionServedTextField.text = portionServedValue == "0" ? nil : portionServedValue
-                        
-                        let notEatenValue = formatNumber(savedFoodItem.notEaten)
-                        rowView.notEatenTextField.text = notEatenValue == "0" ? nil : notEatenValue
-                        
-                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
-                        foodItemRows.append(rowView)
-                        
-                        rowView.onDelete = { [weak self] in
-                            self?.removeFoodItemRow(rowView)
-                        }
-                        
-                        rowView.onValueChange = { [weak self] in
-                            self?.updateTotalNutrients()
-                        }
-                        
-                        rowView.calculateNutrients()
-                    }
-                }
-            }
-            
-            // Load the values from UserDefaults instead of CoreData
-            loadValuesFromUserDefaults()
-            
-            // Set totalRegisteredLabel based on registeredCarbsSoFar
-            let formattedLastValue = formatNumber(registeredCarbsSoFar)
-            totalRegisteredLabel.text = formattedLastValue == "0" ? nil : formattedLastValue
-            
-            // Check if the formatted number is greater than 0
-            if let textValue = totalRegisteredLabel.text, let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")), numberValue > 0 {
-                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty
-            } else {
-                saveMealToHistory = false // Reset if the value is not greater than 0
-            }
-            
-            // Ensure UI elements are initialized
-            initializeUIElements()
-            
-            updateTotalNutrients()
-            updateClearAllButtonState()
-            updateSaveFavoriteButtonState()
-            updateHeadlineVisibility()
-        } catch {
-            print("Debug - Failed to fetch FoodItemRows: \(error)")
-        }
-    }*/
     
     public func fetchFoodItems() {
         let context = CoreDataStack.shared.context
@@ -1092,10 +1018,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let context = CoreDataStack.shared.context
         
         // Extract the totalRegisteredLabel value, handling potential nil values
-        let registeredCarbsSoFar = self.registeredCarbsSoFar
+        /*let registeredCarbsSoFar = self.registeredCarbsSoFar
         let registeredFatSoFar = self.registeredFatSoFar
         let registeredProteinSoFar = self.registeredProteinSoFar
-        let registeredBolusSoFar = self.registeredBolusSoFar
+        let registeredBolusSoFar = self.registeredBolusSoFar*/
         
         for rowView in foodItemRows {
             if let foodItemRow = rowView.foodItemRow {
@@ -1103,7 +1029,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
                 // Only update totalRegisteredValue if it's greater than the existing value
-                if registeredCarbsSoFar > foodItemRow.totalRegisteredValue {
+                /*if registeredCarbsSoFar > foodItemRow.totalRegisteredValue {
                     foodItemRow.totalRegisteredValue = registeredCarbsSoFar
                 }
                 foodItemRow.registeredFatSoFar = registeredFatSoFar
@@ -1112,16 +1038,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 //print("\(registeredFatSoFar) registeredFatSoFar saved if")
                 //print("\(registeredProteinSoFar) registeredProteinSoFar saved if")
                 //print("\(registeredBolusSoFar) registeredBolusSoFar saved if")
-                //print("\(registeredCarbsSoFar) registeredCarbsSoFar saved if")
+                //print("\(registeredCarbsSoFar) registeredCarbsSoFar saved if")*/
             } else {
                 let foodItemRow = FoodItemRow(context: context)
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                foodItemRow.totalRegisteredValue = registeredCarbsSoFar
+                /*foodItemRow.totalRegisteredValue = registeredCarbsSoFar
                 foodItemRow.registeredFatSoFar = registeredFatSoFar
                 foodItemRow.registeredProteinSoFar = registeredProteinSoFar
-                foodItemRow.registeredBolusSoFar = registeredBolusSoFar
+                foodItemRow.registeredBolusSoFar = registeredBolusSoFar*/
                 rowView.foodItemRow = foodItemRow
                 //print("\(registeredFatSoFar) registeredFatSoFar saved else")
                 //print("\(registeredProteinSoFar) registeredProteinSoFar saved else")
@@ -1343,7 +1269,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if let foodItem = rowView.selectedFoodItem {
                 let portionServed = Double(rowView.portionServedTextField.text ?? "") ?? 0.0
                 let notEaten = Double(rowView.notEatenTextField.text ?? "") ?? 0.0
-                let totalRegisteredValue = Double(totalRegisteredLabel.text ?? "") ?? 0.0
+                let totalRegisteredValue = registeredCarbsSoFar
                 let registeredFatSoFar = registeredFatSoFar
                 let registeredProteinSoFar = registeredProteinSoFar
                 let registeredBolusSoFar = registeredBolusSoFar
@@ -1369,6 +1295,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         UserDefaults.standard.set(registeredProteinSoFar, forKey: "registeredProteinSoFar")
         UserDefaults.standard.set(registeredBolusSoFar, forKey: "registeredBolusSoFar")
         UserDefaults.standard.set(registeredCarbsSoFar, forKey: "registeredCarbsSoFar")
+        UserDefaults.standard.synchronize() // Ensure the values are written to disk immediately
     }
     
     func loadValuesFromUserDefaults() {
@@ -1376,6 +1303,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredProteinSoFar = UserDefaults.standard.double(forKey: "registeredProteinSoFar")
         registeredBolusSoFar = UserDefaults.standard.double(forKey: "registeredBolusSoFar")
         registeredCarbsSoFar = UserDefaults.standard.double(forKey: "registeredCarbsSoFar")
+    }
+    
+    private func resetVariablesToDefault() {
+        registeredFatSoFar = 0.0
+        registeredProteinSoFar = 0.0
+        registeredBolusSoFar = 0.0
+        registeredCarbsSoFar = 0.0
+        
+        // Save the reset values to UserDefaults
+        saveValuesToUserDefaults()
+        
+        print("Variables reset to 0.0 and saved to UserDefaults")
     }
     
     @objc private func didTakeoverRegistration(_ notification: Notification) {

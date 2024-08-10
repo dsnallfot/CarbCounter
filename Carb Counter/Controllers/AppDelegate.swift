@@ -9,6 +9,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         setupAppearance()
+        
+        // Register for remote notifications if needed
+        application.registerForRemoteNotifications()
+        
         return true
     }
     
@@ -16,6 +20,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return .portrait
     }
 
+    // MARK: - Background Task Handling
+    
+    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // This is where you would perform any background data fetching
+        // For example, syncing data with a server, fetching updates, etc.
+        // Call completionHandler(.newData) if new data is available, otherwise .noData or .failed
+        
+        completionHandler(.newData) // Assuming new data is fetched successfully
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // Handle remote notifications for background fetch
+        // This could include fetching data related to the notification
+        completionHandler(.newData)
+    }
+    
     // MARK: - UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
@@ -45,7 +65,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Core Data stack
 
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "CarbsCounter") // Replace "YourModelName" with the name of your Core Data model
+        let container = NSPersistentContainer(name: "CarbsCounter") // Replace "CarbsCounter" with the name of your Core Data model if different
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
