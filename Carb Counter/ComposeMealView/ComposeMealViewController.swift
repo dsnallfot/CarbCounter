@@ -74,6 +74,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var registeredFatSoFar = Double(0.0)
     var registeredProteinSoFar = Double(0.0)
     var registeredBolusSoFar = Double(0.0)
+    var registeredCarbsSoFar = Double(0.0)
     
     ///Meal monitoring
     var exportTimer: Timer?
@@ -315,12 +316,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func totalRegisteredLabelDidChange(_ textField: UITextField) {
-        //print("totalreglabeldidchange")
+        // Trim whitespace and replace commas with dots
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
         }
         
-        if totalRegisteredLabel.text == "" {
+        // Check if the text is empty
+        if let text = totalRegisteredLabel.text, text.isEmpty {
             saveMealToHistory = false // Set false when totalRegisteredLabel becomes empty by manual input
             startDoseGiven = false
             remainingDoseGiven = false
@@ -329,11 +331,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             registeredFatSoFar = 0.0
             registeredProteinSoFar = 0.0
             registeredBolusSoFar = 0.0
+            registeredCarbsSoFar = 0.0
             
-            print("Variables reset  to 0.0 due to totalRegisteredLabelDidChange")
+            print("Variables reset to 0.0 due to totalRegisteredLabelDidChange")
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
+            
+            // If there's text in totalRegisteredLabel, try to convert it to a Double and assign it to registeredCarbsSoFar
+            if let text = totalRegisteredLabel.text, let carbsValue = Double(text) {
+                registeredCarbsSoFar = carbsValue
+            } else {
+                // If conversion fails, default to 0.0
+                registeredCarbsSoFar = 0.0
+            }
         }
+
+        // Call additional update methods
         updateTotalNutrients()
         updateHeadlineVisibility()
         updateRemainsBolus()
@@ -583,6 +596,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredFatSoFar = 0.0
         registeredProteinSoFar = 0.0
         registeredBolusSoFar = 0.0
+        registeredCarbsSoFar = 0.0
         print("Variables reset to 0.0 due to clearAllFoodItems")
         
         updateRemainsBolus()
@@ -911,12 +925,80 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let savedFoodItems = try context.fetch(fetchRequest)
             
             // Clear current food item rows to avoid duplicates
-            //clearAllFoodItems() //Not needed?
+            // clearAllFoodItems() //Not needed?
             
-            var lastTotalRegisteredValue: Double = 0.0
-            var lastRegisteredFatSoFar: Double = 0.0
-            var lastRegisteredProteinSoFar: Double = 0.0
-            var lastRegisteredBolusSoFar: Double = 0.0
+            for savedFoodItem in savedFoodItems {
+                if let foodItemID = savedFoodItem.foodItemID,
+                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
+                    
+                    // Commented out the duplicate check condition
+                    // if !foodItemRows.contains(where: { $0.foodItemRow?.foodItemID == foodItemID }) {
+                    
+                    let rowView = FoodItemRowView()
+                    rowView.foodItems = foodItems
+                    rowView.delegate = self
+                    rowView.translatesAutoresizingMaskIntoConstraints = false
+                    rowView.foodItemRow = savedFoodItem
+                    
+                    rowView.setSelectedFoodItem(foodItem)
+                    
+                    let portionServedValue = formatNumber(savedFoodItem.portionServed)
+                    rowView.portionServedTextField.text = portionServedValue == "0" ? nil : portionServedValue
+                    
+                    let notEatenValue = formatNumber(savedFoodItem.notEaten)
+                    rowView.notEatenTextField.text = notEatenValue == "0" ? nil : notEatenValue
+                    
+                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
+                    foodItemRows.append(rowView)
+                    
+                    rowView.onDelete = { [weak self] in
+                        self?.removeFoodItemRow(rowView)
+                    }
+                    
+                    rowView.onValueChange = { [weak self] in
+                        self?.updateTotalNutrients()
+                    }
+                    
+                    rowView.calculateNutrients()
+                    // } // End of the duplicate check condition
+                }
+            }
+            
+            // Load the values from UserDefaults instead of CoreData
+            loadValuesFromUserDefaults()
+            
+            // Set totalRegisteredLabel based on registeredCarbsSoFar
+            let formattedLastValue = formatNumber(registeredCarbsSoFar)
+            totalRegisteredLabel.text = formattedLastValue == "0" ? nil : formattedLastValue
+            
+            // Check if the formatted number is greater than 0
+            if let textValue = totalRegisteredLabel.text, let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")), numberValue > 0 {
+                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty
+            } else {
+                saveMealToHistory = false // Reset if the value is not greater than 0
+            }
+            
+            // Ensure UI elements are initialized
+            initializeUIElements()
+            
+            updateTotalNutrients()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
+        } catch {
+            print("Debug - Failed to fetch FoodItemRows: \(error)")
+        }
+    }
+    /*
+    private func loadFoodItemsFromCoreData() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+        
+        do {
+            let savedFoodItems = try context.fetch(fetchRequest)
+            
+            // Clear current food item rows to avoid duplicates
+            //clearAllFoodItems() //Not needed?
             
             for savedFoodItem in savedFoodItems {
                 if let foodItemID = savedFoodItem.foodItemID,
@@ -951,36 +1033,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         rowView.calculateNutrients()
                     }
                 }
-                
-                // Update the last values directly
-                lastTotalRegisteredValue = savedFoodItem.totalRegisteredValue
-                lastRegisteredFatSoFar = savedFoodItem.registeredFatSoFar
-                lastRegisteredProteinSoFar = savedFoodItem.registeredProteinSoFar
-                lastRegisteredBolusSoFar = savedFoodItem.registeredBolusSoFar
-                
-                //print("Saved Food Item - totalRegisteredValue: \(savedFoodItem.totalRegisteredValue), registeredFatSoFar: \(savedFoodItem.registeredFatSoFar), registeredProteinSoFar: \(savedFoodItem.registeredProteinSoFar), registeredBolusSoFar: \(savedFoodItem.registeredBolusSoFar)")
             }
             
-            // Update the totalRegisteredLabel with the last saved value
-            let formattedLastValue = formatNumber(lastTotalRegisteredValue)
+            // Load the values from UserDefaults instead of CoreData
+            loadValuesFromUserDefaults()
+            
+            // Set totalRegisteredLabel based on registeredCarbsSoFar
+            let formattedLastValue = formatNumber(registeredCarbsSoFar)
             totalRegisteredLabel.text = formattedLastValue == "0" ? nil : formattedLastValue
             
             // Check if the formatted number is greater than 0
             if let textValue = totalRegisteredLabel.text, let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")), numberValue > 0 {
-                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by coredata import
+                saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty
             } else {
-                saveMealToHistory = false // Just in case you want to reset it when the value is not greater than 0
+                saveMealToHistory = false // Reset if the value is not greater than 0
             }
-            
-            // Optionally update any other UI elements or properties with the last values
-            registeredFatSoFar = lastRegisteredFatSoFar
-            //print("Last registered fat so far: \(lastRegisteredFatSoFar)")
-            
-            registeredProteinSoFar = lastRegisteredProteinSoFar
-            //print("Last registered protein so far: \(lastRegisteredProteinSoFar)")
-            
-            registeredBolusSoFar = lastRegisteredBolusSoFar
-            //print("Last registered bolus so far: \(lastRegisteredBolusSoFar)")
             
             // Ensure UI elements are initialized
             initializeUIElements()
@@ -992,7 +1059,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } catch {
             print("Debug - Failed to fetch FoodItemRows: \(error)")
         }
-    }
+    }*/
     
     public func fetchFoodItems() {
         let context = CoreDataStack.shared.context
@@ -1025,8 +1092,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let context = CoreDataStack.shared.context
         
         // Extract the totalRegisteredLabel value, handling potential nil values
-        let totalRegisteredText = totalRegisteredLabel.text ?? "0"
-        let totalRegisteredValue = Double(totalRegisteredText) ?? 0
+        let registeredCarbsSoFar = self.registeredCarbsSoFar
         let registeredFatSoFar = self.registeredFatSoFar
         let registeredProteinSoFar = self.registeredProteinSoFar
         let registeredBolusSoFar = self.registeredBolusSoFar
@@ -1037,8 +1103,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
                 // Only update totalRegisteredValue if it's greater than the existing value
-                if totalRegisteredValue > foodItemRow.totalRegisteredValue {
-                    foodItemRow.totalRegisteredValue = totalRegisteredValue
+                if registeredCarbsSoFar > foodItemRow.totalRegisteredValue {
+                    foodItemRow.totalRegisteredValue = registeredCarbsSoFar
                 }
                 foodItemRow.registeredFatSoFar = registeredFatSoFar
                 foodItemRow.registeredProteinSoFar = registeredProteinSoFar
@@ -1046,12 +1112,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 //print("\(registeredFatSoFar) registeredFatSoFar saved if")
                 //print("\(registeredProteinSoFar) registeredProteinSoFar saved if")
                 //print("\(registeredBolusSoFar) registeredBolusSoFar saved if")
+                //print("\(registeredCarbsSoFar) registeredCarbsSoFar saved if")
             } else {
                 let foodItemRow = FoodItemRow(context: context)
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                foodItemRow.totalRegisteredValue = totalRegisteredValue
+                foodItemRow.totalRegisteredValue = registeredCarbsSoFar
                 foodItemRow.registeredFatSoFar = registeredFatSoFar
                 foodItemRow.registeredProteinSoFar = registeredProteinSoFar
                 foodItemRow.registeredBolusSoFar = registeredBolusSoFar
@@ -1059,6 +1126,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 //print("\(registeredFatSoFar) registeredFatSoFar saved else")
                 //print("\(registeredProteinSoFar) registeredProteinSoFar saved else")
                 //print("\(registeredBolusSoFar) registeredBolusSoFar saved else")
+                //print("\(registeredCarbsSoFar) registeredCarbsSoFar saved else")
             }
         }
         
@@ -1300,12 +1368,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         UserDefaults.standard.set(registeredFatSoFar, forKey: "registeredFatSoFar")
         UserDefaults.standard.set(registeredProteinSoFar, forKey: "registeredProteinSoFar")
         UserDefaults.standard.set(registeredBolusSoFar, forKey: "registeredBolusSoFar")
+        UserDefaults.standard.set(registeredCarbsSoFar, forKey: "registeredCarbsSoFar")
     }
     
     func loadValuesFromUserDefaults() {
         registeredFatSoFar = UserDefaults.standard.double(forKey: "registeredFatSoFar")
         registeredProteinSoFar = UserDefaults.standard.double(forKey: "registeredProteinSoFar")
         registeredBolusSoFar = UserDefaults.standard.double(forKey: "registeredBolusSoFar")
+        registeredCarbsSoFar = UserDefaults.standard.double(forKey: "registeredCarbsSoFar")
     }
     
     @objc private func didTakeoverRegistration(_ notification: Notification) {
@@ -1490,7 +1560,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
         let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0"
-        let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        //let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
         let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
         let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
@@ -1629,7 +1700,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
         let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0"
-        let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        //let carbsSoFar = totalRegisteredLabel.text ?? "0"
+        let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
         let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
         let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
@@ -1709,20 +1781,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Print the updated totalRegisteredValue
         print("Updated Total Registered Value: \(newRegisteredValue)g")
         
-        totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+        //totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
+
         
         let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let carbsDoubleValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         
         registeredFatSoFar += fatDoubleValue
         registeredProteinSoFar += proteinDoubleValue
         registeredBolusSoFar += bolusDoubleValue
+        registeredCarbsSoFar += carbsDoubleValue
+        
+        totalRegisteredLabel.text = String(format: "%.0f", registeredCarbsSoFar).replacingOccurrences(of: ",", with: ".")
         
         // Print the accumulated values for fat, protein, and bolus
-        /*print("Accumulated Fat So Far: \(registeredFatSoFar)g")
+        print("Accumulated Fat So Far: \(registeredFatSoFar)g")
         print("Accumulated Protein So Far: \(registeredProteinSoFar)g")
-        print("Accumulated Bolus So Far: \(registeredBolusSoFar)E")*/
+        print("Accumulated Bolus So Far: \(registeredBolusSoFar)E")
+        print("Accumulated Carbs So Far: \(registeredCarbsSoFar)g")
         
         saveValuesToUserDefaults()
         saveToCoreData()
