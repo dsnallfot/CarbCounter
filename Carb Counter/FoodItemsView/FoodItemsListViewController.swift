@@ -209,8 +209,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
         
-        navigationItem.rightBarButtonItems = [barcodeButton]
-        navigationItem.leftBarButtonItems = [clearButton, addButton]
+        navigationItem.rightBarButtonItems = [barcodeButton, addButton]
+        navigationItem.leftBarButtonItems = [clearButton]
         updateClearButtonVisibility()
     }
     

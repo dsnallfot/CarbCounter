@@ -89,22 +89,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Set the navigation bar title
             self.title = "Registrera Måltid"
         
-        // Create the info button with SF Symbol "info.circle"
-            let infoButton = UIBarButtonItem(
-                image: UIImage(systemName: "info.circle"),
-                style: .plain,
-                target: self,
-                action: #selector(infoButtonTapped)
-            )
-            
-            // Set the info button as the left bar button item
-            self.navigationItem.leftBarButtonItem = infoButton
-            
-            // Create the cancel button
-            let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-            
-            // Set the cancel button as the right bar button item
-            self.navigationItem.rightBarButtonItem = cancelButton
+        setupCloseButton() // Add this line to set up the close button
+        setupInfoButton()  // Add this line to set up the info button on the right side
         
         updateSendMealButtonText("Skicka Måltid")
         
@@ -150,6 +136,25 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
 
         // Set the button text with the correct font attributes
         updateSendMealButtonText(sendMealButton.currentTitle ?? "Skicka Måltid")
+    }
+    
+    private func setupCloseButton() {
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+    
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func setupInfoButton() {
+        let infoButton = UIBarButtonItem(
+            image: UIImage(systemName: "info.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(infoButtonTapped)
+        )
+        navigationItem.rightBarButtonItem = infoButton
     }
     
     
@@ -375,11 +380,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                }
            }
        }
-    
-    @objc func cancelButtonTapped() {
-        // Dismiss the view controller when the cancel button is tapped
-        self.dismiss(animated: true, completion: nil)
-    }
 
     
     // Add tap gesture recognizers to labels

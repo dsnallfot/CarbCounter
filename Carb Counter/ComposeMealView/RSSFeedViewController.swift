@@ -2,6 +2,7 @@ import UIKit
 import CoreData
 
 class RSSFeedViewController: UIViewController {
+    weak var delegate: RSSFeedDelegate?
     
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
@@ -13,7 +14,18 @@ class RSSFeedViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        // Create the gradient view
+        // Setup gradient view and close button
+        setupGradientView()
+        setupCloseButton()
+        
+        title = "Skolmat Vecka"
+        setupNavigationBar()
+        setupTableView()
+        fetchRSSFeed()
+        fetchFoodItems()
+    }
+    
+    private func setupGradientView() {
         let colors: [CGColor] = [
             UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
             UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
@@ -22,22 +34,20 @@ class RSSFeedViewController: UIViewController {
         let gradientView = GradientView(colors: colors)
         gradientView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Add the gradient view to the main view
         view.addSubview(gradientView)
         view.sendSubviewToBack(gradientView)
         
-        // Set up constraints for the gradient view
         NSLayoutConstraint.activate([
             gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        title = "Skolmat Vecka"
-        setupNavigationBar()
-        setupTableView()
-        fetchRSSFeed()
-        fetchFoodItems()
+    }
+    
+    private func setupCloseButton() {
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
     }
     
     private func setupNavigationBar() {
@@ -56,6 +66,10 @@ class RSSFeedViewController: UIViewController {
         fetchRSSFeed()
     }
     
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     private func setupTableView() {
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -71,10 +85,6 @@ class RSSFeedViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-    }
-    
-    @objc private func doneButtonTapped() {
-        navigationController?.popViewController(animated: true)
     }
     
     private func fetchRSSFeed() {
@@ -204,7 +214,6 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         }
         let courses = weekdayItems.flatMap { $0.courses }
         let selectedCourse = courses[indexPath.row]
-        
         let parsedWords = parseCourseDescription(selectedCourse)
         
         var matchedFoodItems: Set<FoodItem> = []  // Using a set to avoid duplicates
@@ -243,7 +252,7 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
                 matchedFoodItems.insert(bestMatch.0)
             }
         }
-
+        
         // Always add "Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
         if let milkItem = foodItems.first(where: { $0.name == "Mjölk" }) {
             matchedFoodItems.insert(milkItem)
@@ -254,13 +263,11 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         
         print("Matched food items: \(matchedFoodItems)")
         
-        if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-            navigationController?.popToViewController(composeMealVC, animated: true)
-            composeMealVC.populateWithMatchedFoodItems(Array(matchedFoodItems))
-        } else {
-            let composeMealVC = ComposeMealViewController()
-            composeMealVC.matchedFoodItems = Array(matchedFoodItems)
-            navigationController?.pushViewController(composeMealVC, animated: true)
-        }
+        delegate?.didSelectFoodItems(Array(matchedFoodItems))
+        dismiss(animated: true, completion: nil)
     }
+}
+
+protocol RSSFeedDelegate: AnyObject {
+    func didSelectFoodItems(_ foodItems: [FoodItem])
 }

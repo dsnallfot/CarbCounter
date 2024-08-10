@@ -13,7 +13,7 @@ import QuartzCore
 import SwiftUI
 
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate {
     static weak var current: ComposeMealViewController?
     static var shared: ComposeMealViewController?
     
@@ -400,20 +400,39 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
     
+    func didSelectFoodItems(_ foodItems: [FoodItem]) {
+        // Clear the previously matched items if you want to replace the current list
+        // clearAllFoodItems() // Uncomment this if you want to reset before adding new items
+
+        // Update your UI with the newly selected food items
+        populateWithMatchedFoodItems(foodItems)
+        
+        // Print the selected food items (for debugging purposes)
+        print("Selected food items: \(foodItems)")
+        
+        // If you have a tableView or collectionView showing these items, reload it
+        // tableView.reloadData() // Uncomment this if you have a table view that needs updating
+    }
+    
     func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
-        //clearAllFoodItems() //Commented out to keep registeredsofar carbs and bolus as well as food item rows even when adding a matched meal
+        // Optionally clear existing rows if desired
+        // clearAllFoodItems() // Uncomment if you want to reset the view before adding new items
         
         for matchedFoodItem in matchedFoodItems {
-            if let foodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
+            if let existingFoodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
+                // If the item is already present, configure and add its row view
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
                 rowView.translatesAutoresizingMaskIntoConstraints = false
                 stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count - 1)
                 foodItemRows.append(rowView)
-                rowView.setSelectedFoodItem(foodItem)
+                
+                // Set the selected food item in the row view
+                rowView.setSelectedFoodItem(existingFoodItem)
                 rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
                 
+                // Set up the delete and value change handlers
                 rowView.onDelete = { [weak self] in
                     self?.removeFoodItemRow(rowView)
                 }
@@ -422,12 +441,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self?.updateTotalNutrients()
                     self?.updateHeadlineVisibility()
                 }
+                
+                // Calculate nutrients based on the selected food item and portion size
                 rowView.calculateNutrients()
             } else {
+                // Handle the case where a matched food item is not found in the current foodItems list
                 print("Food item with name \(matchedFoodItem.name ?? "") not found in foodItems.")
             }
         }
         
+        // Update UI elements and visibility based on the newly added food items
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -2219,10 +2242,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     
-    @objc private func rssButtonTapped() {
+    @objc internal func rssButtonTapped() {
         let rssFeedVC = RSSFeedViewController()
-        navigationController?.pushViewController(rssFeedVC, animated: true)
-    }
+                rssFeedVC.delegate = self
+                let navigationController = UINavigationController(rootViewController: rssFeedVC)
+                navigationController.modalPresentationStyle = .formSheet // or .fullScreen based on your preference
+                present(navigationController, animated: true, completion: nil)
+            }
     
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
@@ -2256,7 +2282,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   SKOLMATEN   ", for: .normal)
+            button.setTitle("   + SKOLMAT   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue.withAlphaComponent(0.3)

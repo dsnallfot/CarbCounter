@@ -147,11 +147,6 @@ class HomeViewController: UIViewController {
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -110)
         ])
-        
-        // Add cog wheel icon to the top right corner
-        let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
-        navigationItem.rightBarButtonItem = settingsButton
-        
         updateNavigationBarButtons()
     }
         
@@ -159,6 +154,10 @@ class HomeViewController: UIViewController {
         let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
         eyeButton.isEnabled = UserDefaultsRepository.allowViewingOngoingMeals
         navigationItem.leftBarButtonItem = eyeButton
+        
+        // Add cog wheel icon to the top right corner
+        let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
+        navigationItem.rightBarButtonItem = settingsButton
     }
     
     @objc func showOngoingMeal() {

@@ -108,8 +108,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         notesTextField.autocorrectionType = .no
         
         // Add Cancel button to the navigation bar
-        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
+        /*let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton*/
         
         // Add toolbar with "Next" and "Done" buttons
         let toolbar = UIToolbar()
@@ -165,6 +165,33 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
+        
+        // Add close button only if presented modally
+        if self.isModal() {
+            setupCloseButton()
+        }
+    }
+    
+    private func setupCloseButton() {
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+
+    private func isModal() -> Bool {
+        if self.presentingViewController != nil {
+            return true
+        }
+        if self.navigationController?.presentingViewController?.presentedViewController == self.navigationController {
+            return true
+        }
+        if self.tabBarController?.presentingViewController is UITabBarController {
+            return true
+        }
+        return false
     }
     
     // Helper method to format the double values
@@ -238,7 +265,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    @objc func cancelButtonTapped() {
+    /*@objc func cancelButtonTapped() {
         if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
             // Pushed onto a navigation stack
             navigationController.popViewController(animated: true)
@@ -246,7 +273,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Presented modally
             dismiss(animated: true, completion: nil)
         }
-    }
+    }*/
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
