@@ -616,7 +616,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func exportBlankCSV() {
-        let blankCSVString = "foodItemID;portionServed;notEaten;totalRegisteredValue;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
+        let blankCSVString = "foodItemID;portionServed;notEaten;registeredCarbsSoFar;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
         // Save the CSV data
         saveCSV(data: blankCSVString, fileName: "OngoingMeal.csv")
         print("Blank ongoing meal CSV export done")
@@ -1028,9 +1028,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                // Only update totalRegisteredValue if it's greater than the existing value
-                /*if registeredCarbsSoFar > foodItemRow.totalRegisteredValue {
-                    foodItemRow.totalRegisteredValue = registeredCarbsSoFar
+                // Only update registeredCarbsSoFar if it's greater than the existing value
+                /*if registeredCarbsSoFar > foodItemRow.registeredCarbsSoFar {
+                    foodItemRow.registeredCarbsSoFar = registeredCarbsSoFar
                 }
                 foodItemRow.registeredFatSoFar = registeredFatSoFar
                 foodItemRow.registeredProteinSoFar = registeredProteinSoFar
@@ -1044,7 +1044,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                /*foodItemRow.totalRegisteredValue = registeredCarbsSoFar
+                /*foodItemRow.registeredCarbsSoFar = registeredCarbsSoFar
                 foodItemRow.registeredFatSoFar = registeredFatSoFar
                 foodItemRow.registeredProteinSoFar = registeredProteinSoFar
                 foodItemRow.registeredBolusSoFar = registeredBolusSoFar*/
@@ -1269,7 +1269,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if let foodItem = rowView.selectedFoodItem {
                 let portionServed = Double(rowView.portionServedTextField.text ?? "") ?? 0.0
                 let notEaten = Double(rowView.notEatenTextField.text ?? "") ?? 0.0
-                let totalRegisteredValue = registeredCarbsSoFar
+                let registeredCarbsSoFar = registeredCarbsSoFar
                 let registeredFatSoFar = registeredFatSoFar
                 let registeredProteinSoFar = registeredProteinSoFar
                 let registeredBolusSoFar = registeredBolusSoFar
@@ -1278,7 +1278,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     foodItemID: foodItem.id,
                     portionServed: portionServed,
                     notEaten: notEaten,
-                    totalRegisteredValue: totalRegisteredValue,
+                    registeredCarbsSoFar: registeredCarbsSoFar,
                     registeredFatSoFar: registeredFatSoFar,
                     registeredProteinSoFar: registeredProteinSoFar,
                     registeredBolusSoFar: registeredBolusSoFar
@@ -1321,8 +1321,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             //clearAllFoodItems() Not needed. No fooditems can be present as the same time as ongoingmeal is beeing observed and taken over
             
-            // Find the maximum totalRegisteredValue (and fat, protein & bolus so far) from the imported rows
-            let maxTotalRegisteredValue = importedRows.map { $0.totalRegisteredValue }.max() ?? 0.0
+            // Find the maximum registeredCarbsSoFar (and fat, protein & bolus so far) from the imported rows
+            let maxregisteredCarbsSoFar = importedRows.map { $0.registeredCarbsSoFar }.max() ?? 0.0
             let maxRegisteredFatSoFar = importedRows.map { $0.registeredFatSoFar }.max() ?? 0.0
             let maxRegisteredProteinSoFar = importedRows.map { $0.registeredProteinSoFar }.max() ?? 0.0
             let maxRegisteredBolusSoFar = importedRows.map { $0.registeredBolusSoFar }.max() ?? 0.0
@@ -1333,8 +1333,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 }
             }
             
-            // Set the totalRegisteredLabel text to the maximum totalRegisteredValue, and update the fat, protein and bolus so far variables
-            totalRegisteredLabel.text = String(format: "%.0f", maxTotalRegisteredValue)
+            // Set the totalRegisteredLabel text to the maximum registeredCarbsSoFar, and update the fat, protein and bolus so far variables
+            totalRegisteredLabel.text = String(format: "%.0f", maxregisteredCarbsSoFar)
             registeredFatSoFar = maxRegisteredFatSoFar
             registeredProteinSoFar = maxRegisteredProteinSoFar
             registeredBolusSoFar = maxRegisteredBolusSoFar
@@ -1717,7 +1717,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
         
-        // Print the updated totalRegisteredValue
+        // Print the updated registeredCarbsSoFar
         print("Updated Total Registered Value: \(newRegisteredValue)g")
         
         //totalRegisteredLabel.text = String(format: "%.0f", newRegisteredValue).replacingOccurrences(of: ",", with: ".")
