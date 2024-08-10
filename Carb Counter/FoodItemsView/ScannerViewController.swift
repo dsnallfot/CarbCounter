@@ -68,9 +68,9 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         overlayView.backgroundColor = UIColor.clear
         view.addSubview(overlayView)
 
-        // Add cancel button to the navigation bar
-        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
+        // Add done button to the navigation bar
+        let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
     }
 
     func resetBarcodeProcessingState() {
@@ -82,7 +82,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         }
     }
 
-    @objc private func cancelButtonTapped() {
+    @objc private func doneButtonTapped() {
         if let navigationController = navigationController {
             navigationController.popViewController(animated: true)
         } else {

@@ -2282,7 +2282,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   + SKOLMAT   ", for: .normal)
+            button.setTitle("   SKOLMATEN   ", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
@@ -2381,24 +2381,32 @@ class GradientView: UIView {
 
 ///Add popovers for info instead of alerts
 
+
 struct InfoPopoverView: View {
     let title: String
     let message: String
     
+    let backgroundColor = Color(red: 90/255, green: 104/255, blue: 125/255)
+    
     var body: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(Color(UIColor.label))
-                .padding(.top, 8)
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(Color(UIColor.label))
-                .multilineTextAlignment(.center)
-                .padding()
-            Spacer()
+        ZStack {
+            backgroundColor.opacity(0.7)
+            
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.top, 12)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                Spacer()
+            }
+            .padding()
         }
-        .padding()
+        .edgesIgnoringSafeArea(.all)
     }
 }
 
@@ -2411,7 +2419,6 @@ class InfoPopoverHostingController: UIHostingController<InfoPopoverView> {
         let view = InfoPopoverView(title: title, message: message)
         super.init(rootView: view)
         modalPresentationStyle = .popover
-        popoverPresentationController?.backgroundColor = .systemBackground
         popoverPresentationController?.delegate = self
         
         // Dynamically calculate preferredContentSize
@@ -2451,7 +2458,7 @@ extension ComposeMealViewController {
     }
     
     @objc private func showBolusInfo() {
-        presentPopover(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka de kolhydrater som måltiden består av.", sourceView: totalBolusAmountLabel)
+        presentPopover(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.", sourceView: totalBolusAmountLabel)
     }
     
     @objc private func showCarbsInfo() {
@@ -2467,7 +2474,7 @@ extension ComposeMealViewController {
     }
     
     @objc private func showCRInfo() {
-        presentPopover(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.\n", sourceView: nowCRLabel)
+        presentPopover(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.", sourceView: nowCRLabel)
     }
     
     @objc private func lateBreakfastLabelTapped() {

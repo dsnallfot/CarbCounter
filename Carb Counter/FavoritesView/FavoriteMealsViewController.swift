@@ -43,8 +43,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         backButton.title = "Tillbaka"
         navigationItem.backBarButtonItem = backButton
         
-        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
+        /*let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
+        navigationItem.rightBarButtonItem = cancelButton*/
         
         setupSearchBar()
         setupTableView()
@@ -63,9 +63,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         fetchFavoriteMeals()
     }
     
-    @objc private func cancelButtonTapped() {
+    /*@objc private func cancelButtonTapped() {
         navigationController?.popViewController(animated: true)
-    }
+    }*/
     
     private func setupSearchBar() {
         searchBar = UISearchBar()
