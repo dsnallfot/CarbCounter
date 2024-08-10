@@ -815,22 +815,26 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             }
 
             // Function to create combined string with selected date
-            func createCombinedString(carbs: Double, fats: Double, proteins: Double) -> String {
-                let mealNotesValue = mealNotes.text ?? ""
-                let cleanedMealNotes = mealNotesValue
-                let name = UserDefaultsRepository.caregiverName
-                let secret = UserDefaultsRepository.remoteSecretCode
-                // Convert bolusValue to string and trim any leading or trailing whitespace
-                let trimmedBolusValue = "\(bolusValue)".trimmingCharacters(in: .whitespacesAndNewlines)
-                
-                // Get selected date from mealDateTime and format to ISO 8601
-                let selectedDate = mealDateTime.date
-                let formattedDate = formatDateToISO8601(selectedDate)
+        func createCombinedString(carbs: Double, fats: Double, proteins: Double) -> String {
+            let mealNotesValue = mealNotes.text ?? ""
+            let cleanedMealNotes = mealNotesValue
+            let name = UserDefaultsRepository.caregiverName
+            let secret = UserDefaultsRepository.remoteSecretCode
+            // Convert bolusValue to string and trim any leading or trailing whitespace
+            let trimmedBolusValue = "\(bolusValue)".trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            // Ensure that carbs, fats, and proteins are non-negative
+            let adjustedCarbs = max(carbs, 0)
+            let adjustedFats = max(fats, 0)
+            let adjustedProteins = max(proteins, 0)
+            
+            // Get selected date from mealDateTime and format to ISO 8601
+            let selectedDate = mealDateTime.date
+            let formattedDate = formatDateToISO8601(selectedDate)
 
-                    // Construct and return the combinedString with bolus
-                    return "Remote Måltid\nKolhydrater: \(carbs)g\nFett: \(fats)g\nProtein: \(proteins)g\nNotering: \(cleanedMealNotes)\nDatum: \(formattedDate)\nInsulin: \(trimmedBolusValue)E\nInlagt av: \(name)\nHemlig kod: \(secret)"
-
-            }
+            // Construct and return the combinedString with bolus
+            return "Remote Måltid\nKolhydrater: \(adjustedCarbs)g\nFett: \(adjustedFats)g\nProtein: \(adjustedProteins)g\nNotering: \(cleanedMealNotes)\nDatum: \(formattedDate)\nInsulin: \(trimmedBolusValue)E\nInlagt av: \(name)\nHemlig kod: \(secret)"
+        }
         
         //Alert for meal without bolus
         func showMealConfirmationAlert(combinedString: String) {
@@ -963,7 +967,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             print("Failed to encode URL string")
             return
         }
-        let urlString = "shortcuts://run-shortcut?name=Slutdos&input=text&text=\(encodedString)"
+        let urlString = "shortcuts://run-shortcut?name=CarbCounter&input=text&text=\(encodedString)"
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
