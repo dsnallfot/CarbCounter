@@ -2037,7 +2037,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         netCarbsLabel = UILabel()
         netCarbsLabel.text = "KOLHYDR."
         netCarbsLabel.textAlignment = .right
-        netCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        netCarbsLabel.widthAnchor.constraint(equalToConstant: 52).isActive = true
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
         headlineStackView.addArrangedSubview(foodItemLabel)
