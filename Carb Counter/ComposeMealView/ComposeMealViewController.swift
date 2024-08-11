@@ -669,11 +669,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         if keyboardShowing {
             // Adjust constraints when the keyboard is shown
-            scrollViewBottomConstraint?.constant = -(keyboardHeight + 48)
+            scrollViewBottomConstraint?.constant = -(keyboardHeight + 50)
             addButtonRowViewBottomConstraint?.constant = -(keyboardHeight - 88)
         } else {
             // Reset constraints when the keyboard is hidden
-            scrollViewBottomConstraint?.constant = -145
+            scrollViewBottomConstraint?.constant = -150
             addButtonRowViewBottomConstraint?.constant = -10
         }
 
@@ -693,7 +693,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         contentView.backgroundColor = .clear
         scrollView.addSubview(contentView)
         
-        scrollViewBottomConstraint = scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -164)
+        scrollViewBottomConstraint = scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -150)
         
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: header.bottomAnchor),
@@ -737,7 +737,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         addButtonRowView.addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         view.addSubview(addButtonRowView)
         
-        addButtonRowViewBottomConstraint = addButtonRowView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25)
+        addButtonRowViewBottomConstraint = addButtonRowView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
         
         NSLayoutConstraint.activate([
             addButtonRowView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -2258,7 +2258,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
+            button.setTitle("+ VÄLJ I LISTA", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
@@ -2272,7 +2272,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   + SKOLMAT   ", for: .normal)
+            button.setTitle("+ SKOLMATEN", for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
@@ -2295,11 +2295,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
-            label.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
+            label.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
             label.text = "OVERRIDE"
+            label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             label.isUserInteractionEnabled = true
             return label
+        }()
+        
+        let lateBreakfastContainer: UIView = {
+            let view = UIView()
+            view.backgroundColor = .systemBlue.withAlphaComponent(0.35)
+            view.layer.cornerRadius = 8
+            view.layer.borderWidth = 2
+            view.layer.borderColor = UIColor.white.cgColor
+            view.clipsToBounds = true
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
         }()
         
         override init(frame: CGRect) {
@@ -2312,25 +2324,47 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         private func setupView() {
-            addSubview(rssButton)
-            addSubview(addButton)
-            addSubview(lateBreakfastLabel)
-            addSubview(lateBreakfastSwitch)
-            
+            // Create the container for the lateBreakfastSwitch and label
+            let lateBreakfastContainer = UIView()
+            lateBreakfastContainer.translatesAutoresizingMaskIntoConstraints = false
+            lateBreakfastContainer.backgroundColor = .systemBlue.withAlphaComponent(0.35)
+            lateBreakfastContainer.layer.cornerRadius = 8
+            lateBreakfastContainer.layer.borderWidth = 2
+            lateBreakfastContainer.layer.borderColor = UIColor.white.cgColor
+            lateBreakfastContainer.clipsToBounds = true
+
+            // Add label and switch to the container
+            lateBreakfastContainer.addSubview(lateBreakfastLabel)
+            lateBreakfastContainer.addSubview(lateBreakfastSwitch)
+
+            // Adjust the switch's transform to make it smaller
+            lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.75, y: 0.75)
+
+            // Create the horizontal stack view (HStack)
+            let stackView = UIStackView(arrangedSubviews: [addButton, rssButton, lateBreakfastContainer])
+            stackView.axis = .horizontal
+            stackView.alignment = .fill
+            stackView.distribution = .fillEqually
+            stackView.spacing = 8
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+
+            // Add the stack view to the main view
+            addSubview(stackView)
+
+            // Set up constraints for the stack view
             NSLayoutConstraint.activate([
-                addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
-                addButton.heightAnchor.constraint(equalToConstant: 38),
-                addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-
-                rssButton.centerXAnchor.constraint(equalTo: centerXAnchor),
-                rssButton.bottomAnchor.constraint(equalTo: addButton.bottomAnchor),
-                rssButton.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
-
-                lateBreakfastLabel.centerYAnchor.constraint(equalTo: rssButton.centerYAnchor),
-                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: -2),
+                stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+                stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+                stackView.heightAnchor.constraint(equalToConstant: 44),
+                stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 
-                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastLabel.centerYAnchor),
-                lateBreakfastSwitch.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15)
+                // Align lateBreakfastLabel inside the container
+                lateBreakfastLabel.topAnchor.constraint(equalTo: lateBreakfastContainer.topAnchor, constant: 4),
+                lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
+
+                // Align lateBreakfastSwitch inside the container
+                lateBreakfastSwitch.bottomAnchor.constraint(equalTo: lateBreakfastContainer.bottomAnchor),
+                lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
             ])
         }
     }
