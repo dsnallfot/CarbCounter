@@ -132,7 +132,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 138)
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 143)
         ])
         
         ///Reset lateBreakfast to false
@@ -669,8 +669,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         if keyboardShowing {
             // Adjust constraints when the keyboard is shown
-            scrollViewBottomConstraint?.constant = -(keyboardHeight + 50)
-            addButtonRowViewBottomConstraint?.constant = -(keyboardHeight - 83)
+            scrollViewBottomConstraint?.constant = -(keyboardHeight + 48)
+            addButtonRowViewBottomConstraint?.constant = -(keyboardHeight - 88)
         } else {
             // Reset constraints when the keyboard is hidden
             scrollViewBottomConstraint?.constant = -145
@@ -693,7 +693,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         contentView.backgroundColor = .clear
         scrollView.addSubview(contentView)
         
-        scrollViewBottomConstraint = scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -160)
+        scrollViewBottomConstraint = scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -164)
         
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: header.bottomAnchor),
@@ -2003,29 +2003,33 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
         headlineContainer.addSubview(headlineStackView)
         
-        let font = UIFont.systemFont(ofSize: 10)
+        let font = UIFont.systemFont(ofSize: 9)
         
         foodItemLabel = UILabel()
-        foodItemLabel.text = "LIVSMEDEL                    "
+        foodItemLabel.text = "LIVSMEDEL"
         foodItemLabel.textAlignment = .left
+        foodItemLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 140).isActive = true
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
         
         portionServedLabel = UILabel()
         portionServedLabel.text = "PORTION"
         portionServedLabel.textAlignment = .left
+        portionServedLabel.widthAnchor.constraint(equalToConstant: 66).isActive = true
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
         notEatenLabel.text = "LÄMNAT"
-        notEatenLabel.textAlignment = .right
+        notEatenLabel.textAlignment = .left
+        notEatenLabel.widthAnchor.constraint(equalToConstant: 44).isActive = true
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
         netCarbsLabel.text = "KOLHYDRATER"
         netCarbsLabel.textAlignment = .right
+        netCarbsLabel.widthAnchor.constraint(equalToConstant: 70).isActive = true
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
         headlineStackView.addArrangedSubview(foodItemLabel)
@@ -2315,7 +2319,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             NSLayoutConstraint.activate([
                 addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
-                addButton.heightAnchor.constraint(equalToConstant: 40),
+                addButton.heightAnchor.constraint(equalToConstant: 38),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
 
                 rssButton.centerXAnchor.constraint(equalTo: centerXAnchor),

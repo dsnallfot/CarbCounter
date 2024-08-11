@@ -128,6 +128,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular, scale: .medium)
             let resizedImage = trashImage?.applyingSymbolConfiguration(config)
             button.setImage(resizedImage, for: .normal)
+            button.widthAnchor.constraint(equalToConstant: 16).isActive = true
             button.tintColor = .red
             button.translatesAutoresizingMaskIntoConstraints = false
             return button
@@ -151,8 +152,8 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             stackView.translatesAutoresizingMaskIntoConstraints = false
             addSubview(stackView)
             
-            foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 125)
-            foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 140)
+            foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 125)
+            foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 140)
             foodItemLabelWidthConstraintWithoutInfo.isActive = true
             
             NSLayoutConstraint.activate([
