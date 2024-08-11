@@ -57,7 +57,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             label.textColor = .label
             label.adjustsFontSizeToFitWidth = true
             label.isHidden = true
-            label.font = UIFont.boldSystemFont(ofSize: label.font.pointSize) // Set the font to bold
+            label.font = UIFont.boldSystemFont(ofSize: label.font.pointSize)
             return label
         }()
         
@@ -66,7 +66,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             label.text = "Food Item"
             label.translatesAutoresizingMaskIntoConstraints = false
             label.textColor = .label
-            label.isUserInteractionEnabled = true // Make the label interactable
+            label.isUserInteractionEnabled = true
             return label
         }()
         

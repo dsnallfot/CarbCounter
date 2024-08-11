@@ -536,7 +536,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
             completionHandler(true)
         }
-        deleteAction.backgroundColor = .red // Optionally set the background color
+        deleteAction.backgroundColor = .red
         
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions

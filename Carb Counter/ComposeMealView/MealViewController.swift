@@ -85,12 +85,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
-        // Set the navigation bar title
+
             self.title = "Registrera Måltid"
         
-        setupCloseButton() // Add this line to set up the close button
-        setupInfoButton()  // Add this line to set up the info button on the right side
+        setupCloseButton()
+        setupInfoButton()
         
         updateSendMealButtonText("Skicka Måltid")
         
@@ -134,7 +133,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        // Set the button text with the correct font attributes
         updateSendMealButtonText(sendMealButton.currentTitle ?? "Skicka Måltid")
     }
     
@@ -240,7 +238,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Create a new UIView for the popup
             let popupView = UIView()
 
-            // Set the background color using the provided RGBA values
             popupView.backgroundColor = UIColor(red: 90/255, green: 104/255, blue: 125/255, alpha: 1.0)
 
             popupView.layer.cornerRadius = 10
@@ -263,7 +260,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             stackView.axis = .vertical
             stackView.alignment = .fill
             stackView.distribution = .equalSpacing
-            stackView.spacing = 10 // Increase the spacing between elements
+            stackView.spacing = 10
             stackView.translatesAutoresizingMaskIntoConstraints = false
             popupView.addSubview(stackView)
             
@@ -279,7 +276,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let titleLabel = UILabel()
             titleLabel.text = "Återstår att registrera"
             titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-            titleLabel.textColor = UIColor.white  // Set text color to white
+            titleLabel.textColor = UIColor.white
             titleLabel.textAlignment = .center
             stackView.addArrangedSubview(titleLabel)
             
@@ -318,7 +315,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 let label = UILabel()
                 label.text = "• \(metric)"
                 label.textAlignment = .left
-                label.textColor = UIColor.white  // Set text color to white
+                label.textColor = UIColor.white
                 label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
                 
                 let spacer = UIView()
@@ -328,7 +325,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 let valueLabel = UILabel()
                 valueLabel.text = values[index]
                 valueLabel.textAlignment = .right
-                valueLabel.textColor = UIColor.white  // Set text color to white
+                valueLabel.textColor = UIColor.white
                 valueLabel.font = UIFont.systemFont(ofSize: 17, weight: .medium)
                 
                 rowStackView.addArrangedSubview(label)
@@ -559,15 +556,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Handle the error as needed, e.g., show an alert to the user or set a default value
         }
 
-        // Set the title based on the remainDose value
+        // Set the title based on the remainDose value and always populate bolus field for startdose
         if remainDose {
             self.title = "Registrera hela måltiden"
         } else {
             self.title = "Registrera startdos"
+            bolusStackTapped()
         }
-        
-        // Simulate a tap on the bolusStack to transfer bolusCalculated.text to bolusEntryField.text
-        //bolusStackTapped()
     }
     
     func updateSendMealButtonText(_ text: String) {
@@ -663,18 +658,12 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             return // If button is already disabled, return to prevent double registration
         }
         
-        // Retrieve the maximum carbs value from UserDefaultsRepository
-        //let maxCarbs = UserDefaultsRepository.maxCarbs.value
-        //let maxBolus = UserDefaultsRepository.maxBolus.value
-        
         // BOLUS ENTRIES
         //Process bolus entries
         guard var bolusText = bolusUnits.text else {
             print("Note: Bolus amount not entered")
             return
         }
-        
-        // Replace all occurrences of ',' with '.
         
         bolusText = bolusText.replacingOccurrences(of: ",", with: ".")
         
@@ -695,7 +684,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             }
             bolusValue = bolusDouble
         }
-        //Let code remain for now - to be cleaned
         if bolusValue > ((maxBolus ?? 2) + 0.05) {
             // Play failure sound
             AudioServicesPlaySystemSound(SystemSoundID(1053))
@@ -797,7 +785,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         }
         
         // Call createCombinedString to get the combined string
-        //let combinedString = createCombinedString(carbs: carbs, fats: fats, proteins: proteins)
         let combinedString = createCombinedString(carbs: carbsValue, fats: fatsValue, proteins: proteinsValue)
         
         // Show confirmation alert

@@ -39,10 +39,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         setupTableView()
         fetchMealHistories()
         
-        // Add Cancel button to the navigation bar
-        /*let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton*/
-        
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
@@ -56,10 +52,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         backButton.title = "Historik"
         navigationItem.backBarButtonItem = backButton
     }
-    
-    /*@objc private func cancelButtonTapped() {
-        navigationController?.popViewController(animated: true)
-    }*/
     
     private func setupDatePicker() {
         datePicker = UIDatePicker()

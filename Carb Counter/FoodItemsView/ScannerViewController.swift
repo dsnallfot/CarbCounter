@@ -10,7 +10,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Scanna streckkod"  // Add this line to set the title
+        title = "Scanna streckkod"
 
         view.backgroundColor = UIColor.black
         captureSession = AVCaptureSession()
