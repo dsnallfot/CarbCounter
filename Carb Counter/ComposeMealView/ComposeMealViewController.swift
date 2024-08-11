@@ -371,6 +371,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     @objc private func registeredContainerTapped() {
         totalRegisteredLabel.becomeFirstResponder()
+        hideAllDeleteButtons()
     }
     
     @objc private func allowViewingOngoingMealsChanged() {
@@ -1269,6 +1270,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         checkIfEditing()
     }
+    
+    private func hideAllDeleteButtons() {
+        for row in foodItemRows {
+            row.hideDeleteButton()
+        }
+    }
     ///OngoingMeal monitoring
     func startEditing() {
         guard !isEditingMeal else {
@@ -1516,7 +1523,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if mealDate == nil {
             mealDate = Date()
         }
-        
+        hideAllDeleteButtons()
         createEmojiString()
         
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
@@ -1578,6 +1585,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if mealDate == nil {
             mealDate = Date()
         }
+        hideAllDeleteButtons()
         createEmojiString()
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
@@ -2015,7 +2023,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         portionServedLabel = UILabel()
         portionServedLabel.text = "PORTION"
         portionServedLabel.textAlignment = .left
-        portionServedLabel.widthAnchor.constraint(equalToConstant: 66).isActive = true
+        portionServedLabel.widthAnchor.constraint(equalToConstant: 69).isActive = true
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
@@ -2027,9 +2035,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
-        netCarbsLabel.text = "KOLHYDRATER"
+        netCarbsLabel.text = "KOLHYDR."
         netCarbsLabel.textAlignment = .right
-        netCarbsLabel.widthAnchor.constraint(equalToConstant: 70).isActive = true
+        netCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
         headlineStackView.addArrangedSubview(foodItemLabel)
@@ -2142,6 +2150,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let navigationController = UINavigationController(rootViewController: dropdownVC)
         navigationController.modalPresentationStyle = .formSheet
         present(navigationController, animated: true, completion: nil)
+        
+        hideAllDeleteButtons()
     }
 
     private func removeFoodItemRow(_ rowView: FoodItemRowView) {
@@ -2256,6 +2266,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let navigationController = UINavigationController(rootViewController: rssFeedVC)
                 navigationController.modalPresentationStyle = .formSheet
                 present(navigationController, animated: true, completion: nil)
+        
+        hideAllDeleteButtons()
             }
     
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
@@ -2271,7 +2283,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateScheduledValuesUI()
         updateTotalNutrients()
     }
-    
+
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
@@ -2313,7 +2325,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
             label.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
-            label.text = "OVERRIDE"
+            label.text = "     OVERRIDE     "
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             label.isUserInteractionEnabled = true
