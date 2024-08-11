@@ -2077,6 +2077,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         stackView.insertArrangedSubview(rowView, at: index)
         foodItemRows.append(rowView)
         
+        //print("Added row at index: \(index), Total rows now: \(foodItemRows.count)")
+
         if let foodItem = foodItem {
             rowView.setSelectedFoodItem(foodItem)
         }
@@ -2094,7 +2096,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
         
-        // Ensure startEditing is only called if not already editing
         if !isEditingMeal {
             startEditing()
         }
@@ -2220,16 +2221,32 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func didTapNextButton(_ rowView: FoodItemRowView, currentTextField: UITextField) {
-        if let currentIndex = foodItemRows.firstIndex(of: rowView) {
-            let nextIndex = currentIndex + 1
-            if nextIndex < foodItemRows.count {
-                let nextRowView = foodItemRows[nextIndex]
-                if currentTextField == rowView.portionServedTextField {
-                    nextRowView.portionServedTextField.becomeFirstResponder()
-                } else if currentTextField == rowView.notEatenTextField {
-                    nextRowView.notEatenTextField.becomeFirstResponder()
+        guard let currentIndex = foodItemRows.firstIndex(of: rowView) else {
+            print("Row not found in foodItemRows")
+            return
+        }
+
+        let nextIndex = (currentIndex + 1) % foodItemRows.count
+        //print("Current Index: \(currentIndex), Next Index: \(nextIndex), Total Rows: \(foodItemRows.count)")
+
+        let nextRowView = foodItemRows[nextIndex]
+        //print("Attempting to move to row: \(nextIndex)")
+
+        DispatchQueue.main.async {
+            if currentTextField == rowView.portionServedTextField {
+                if nextRowView.portionServedTextField.becomeFirstResponder() {
+                    //print("Successfully made portionServedTextField first responder for row \(nextIndex)")
+                } else {
+                    print("Failed to make portionServedTextField first responder for row \(nextIndex)")
+                }
+            } else if currentTextField == rowView.notEatenTextField {
+                if nextRowView.notEatenTextField.becomeFirstResponder() {
+                    //print("Successfully made notEatenTextField first responder for row \(nextIndex)")
+                } else {
+                    print("Failed to make notEatenTextField first responder for row \(nextIndex)")
                 }
             }
+            self.scrollView.scrollRectToVisible(nextRowView.frame, animated: true)
         }
     }
     
