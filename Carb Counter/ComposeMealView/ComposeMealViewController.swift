@@ -25,7 +25,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var contentView: UIView!
     var addButtonRowView: AddButtonRowView!
     private var scrollViewBottomConstraint: NSLayoutConstraint?
-    private var contentViewBottomConstraint: NSLayoutConstraint?
+    //private var contentViewBottomConstraint: NSLayoutConstraint?
     private var addButtonRowViewBottomConstraint: NSLayoutConstraint?
     
     ///Buttons
@@ -693,7 +693,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         contentView.backgroundColor = .clear
         scrollView.addSubview(contentView)
         
-        scrollViewBottomConstraint = scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -150)
+        scrollViewBottomConstraint = scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -160)
         
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: header.bottomAnchor),
@@ -737,7 +737,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         addButtonRowView.addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         view.addSubview(addButtonRowView)
         
-        addButtonRowViewBottomConstraint = addButtonRowView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -15)
+        addButtonRowViewBottomConstraint = addButtonRowView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25)
         
         NSLayoutConstraint.activate([
             addButtonRowView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -2255,11 +2255,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let addButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle("   + VÄLJ I LISTA   ", for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
-            button.layer.cornerRadius = 16
+            button.layer.cornerRadius = 8
             button.layer.borderWidth = 2
             button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
@@ -2268,12 +2268,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("   SKOLMATEN   ", for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            button.setTitle("   + SKOLMAT   ", for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
             button.translatesAutoresizingMaskIntoConstraints = false
-            button.layer.cornerRadius = 16
+            button.layer.cornerRadius = 8
             button.layer.borderWidth = 2
             button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
@@ -2315,7 +2315,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             NSLayoutConstraint.activate([
                 addButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
-                addButton.heightAnchor.constraint(equalToConstant: 32),
+                addButton.heightAnchor.constraint(equalToConstant: 40),
                 addButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
 
                 rssButton.centerXAnchor.constraint(equalTo: centerXAnchor),
