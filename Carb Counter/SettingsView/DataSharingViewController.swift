@@ -735,7 +735,6 @@ class DataSharingViewController: UIViewController {
         userDefaultsData["maxCarbs"] = String(UserDefaultsRepository.maxCarbs)
         userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
         userDefaultsData["lateBreakfastFactor"] = String(UserDefaultsRepository.lateBreakfastFactor)
-        userDefaultsData["scheduledCarbRatio"] = String(UserDefaultsRepository.scheduledCarbRatio)
         userDefaultsData["lateBreakfast"] = UserDefaultsRepository.lateBreakfast.description
 
         userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
@@ -802,8 +801,6 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.maxBolus = Double(values[1]) ?? 1.0
             case "lateBreakfastFactor":
                 UserDefaultsRepository.lateBreakfastFactor = Double(values[1]) ?? 1.0
-            case "scheduledCarbRatio":
-                UserDefaultsRepository.scheduledCarbRatio = Double(values[1]) ?? 30.0
             case "lateBreakfast":
                 UserDefaultsRepository.lateBreakfast = Bool(values[1]) ?? false
             case "lateBreakfastOverrideName":
