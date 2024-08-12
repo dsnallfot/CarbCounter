@@ -78,41 +78,96 @@ class DataSharingViewController: UIViewController {
     
     //Manual exporting and importing
     @objc private func exportData() {
-        let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Välj vilken data du vill exportera", message: nil, preferredStyle: .actionSheet)
         
-        alert.addAction(UIAlertAction(title: "Exportera allt", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: "Hela databasen", style: .default, handler: { _ in
             Task { await self.exportAllCSVFiles() }
         }))
+        
+        alert.addAction(UIAlertAction(title: "Användarinställningar", style: .default, handler: { _ in
+            Task { await self.exportUserDefaultsToCSV() }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+        
+        present(alert, animated: true, completion: nil)
+    }
+    /*
+     @objc private func exportData() {
+     let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
+     
+     alert.addAction(UIAlertAction(title: "Exportera allt", style: .default, handler: { _ in
+     Task { await self.exportAllCSVFiles() }
+     }))
+     alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+     
+     present(alert, animated: true, completion: nil)
+     }*/
+    
+    /*
+     @objc private func importData() {
+     let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
+     
+     alert.addAction(UIAlertAction(title: "Importera allt", style: .default, handler: { _ in
+     Task { await self.importAllCSVFiles() }
+     }))
+     alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
+     Task { await self.importCSV(for: "Food Items") }
+     }))
+     alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
+     Task { await self.importCSV(for: "Favorite Meals") }
+     }))
+     alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
+     Task { await self.importCSV(for: "Meal History") }
+     }))
+     alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
+     Task { await self.importCSV(for: "Carb Ratio Schedule") }
+     }))
+     alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
+     Task { await self.importCSV(for: "Start Dose Schedule") }
+     }))
+     alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+     
+     present(alert, animated: true, completion: nil)
+     }*/
+    
+    @objc private func importData() {
+        let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Importera hela databasen", style: .default, handler: { _ in
+            Task { await self.importAllCSVFiles() }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
+            Task { await self.importCSV(for: "Food Items") }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
+            Task { await self.importCSV(for: "Favorite Meals") }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
+            Task { await self.importCSV(for: "Meal History") }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
+            Task { await self.importCSV(for: "Carb Ratio Schedule") }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
+            Task { await self.importCSV(for: "Start Dose Schedule") }
+        }))
+        
+        // New option for importing user settings
+        alert.addAction(UIAlertAction(title: "Användarinställningar", style: .default, handler: { _ in
+            Task { await self.importUserDefaultsFromCSV() }
+        }))
+        
         alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
         
         present(alert, animated: true, completion: nil)
     }
     
-    @objc private func importData() {
-        let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
-        
-        alert.addAction(UIAlertAction(title: "Importera allt", style: .default, handler: { _ in
-            Task { await self.importAllCSVFiles() }
-        }))
-        alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Food Items") }
-        }))
-        alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Favorite Meals") }
-        }))
-        alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Meal History") }
-        }))
-        alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Carb Ratio Schedule") }
-        }))
-        alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Start Dose Schedule") }
-        }))
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
-        
-        present(alert, animated: true, completion: nil)
-    }
     
     @objc private func exportAllCSVFiles() async {
         await exportCarbRatioScheduleToCSV()
@@ -130,7 +185,7 @@ class DataSharingViewController: UIViewController {
     }
     
     private func performImportAllCSVFiles() async {
-        // Check if the function was called less than 10 seconds ago
+        // Check if the function was called less than 15 seconds ago
         if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 15 {
             print("Import blocked to prevent running more often than every 15 seconds")
             return
@@ -342,6 +397,15 @@ class DataSharingViewController: UIViewController {
             pendingImportEntityName = entityName
         }
     }
+    /*
+     private func presentDocumentPicker(for entityName: String) async {
+     DispatchQueue.main.async {
+     let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
+     documentPicker.delegate = self
+     documentPicker.accessibilityHint = entityName
+     self.present(documentPicker, animated: true, completion: nil)
+     }
+     }*/
     
     private func presentDocumentPicker(for entityName: String) async {
         DispatchQueue.main.async {
@@ -651,11 +715,127 @@ class DataSharingViewController: UIViewController {
         alertController.addAction(okAction)
         present(alertController, animated: true, completion: nil)
     }
+    
+    ///Userdefaults export, import and parsing
+    @objc private func exportUserDefaultsToCSV() async {
+        var userDefaultsData = [String: String]()
+
+        // Collecting UserDefaults data
+        userDefaultsData["twilioSIDString"] = UserDefaultsRepository.twilioSIDString
+        userDefaultsData["twilioSecretString"] = UserDefaultsRepository.twilioSecretString
+        userDefaultsData["twilioFromNumberString"] = UserDefaultsRepository.twilioFromNumberString
+        userDefaultsData["twilioToNumberString"] = UserDefaultsRepository.twilioToNumberString
+        userDefaultsData["caregiverName"] = UserDefaultsRepository.caregiverName
+        userDefaultsData["remoteSecretCode"] = UserDefaultsRepository.remoteSecretCode
+        userDefaultsData["allowShortcuts"] = UserDefaultsRepository.allowShortcuts.description
+        userDefaultsData["allowDataClearing"] = UserDefaultsRepository.allowDataClearing.description
+
+        userDefaultsData["useStartDosePercentage"] = UserDefaultsRepository.useStartDosePercentage.description
+        userDefaultsData["startDoseFactor"] = String(UserDefaultsRepository.startDoseFactor)
+        userDefaultsData["maxCarbs"] = String(UserDefaultsRepository.maxCarbs)
+        userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
+        userDefaultsData["lateBreakfastFactor"] = String(UserDefaultsRepository.lateBreakfastFactor)
+        userDefaultsData["scheduledCarbRatio"] = String(UserDefaultsRepository.scheduledCarbRatio)
+        userDefaultsData["lateBreakfast"] = UserDefaultsRepository.lateBreakfast.description
+
+        userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
+        userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
+        userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
+        userDefaultsData["nightscoutURL"] = UserDefaultsRepository.nightscoutURL ?? ""
+        userDefaultsData["nightscoutToken"] = UserDefaultsRepository.nightscoutToken ?? ""
+
+        userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
+        userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
+        userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
+
+        let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
+
+        // Get the current caregiver name
+        let caregiverName = UserDefaultsRepository.caregiverName.replacingOccurrences(of: " ", with: "_")
+
+        // Create a timestamped filename with caregiver name
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        let timestamp = dateFormatter.string(from: Date())
+        let fileName = "UserDefaults_\(caregiverName)_\(timestamp).csv"
+
+        await saveCSV(data: csvString, fileName: fileName)
+        showAlert(title: "Export lyckades", message: "Användarinställningarna har exporterats.")
+    }
+
+
+
+    
+    @objc private func importUserDefaultsFromCSV() async {
+        await presentDocumentPicker(for: "UserDefaults")
+    }
+    
+    private func parseUserDefaultsCSV(_ rows: [String]) {
+        for row in rows {
+            let values = row.components(separatedBy: ";")
+            guard values.count == 2 else { continue }
+            
+            switch values[0] {
+            case "twilioSIDString":
+                UserDefaultsRepository.twilioSIDString = values[1]
+            case "twilioSecretString":
+                UserDefaultsRepository.twilioSecretString = values[1]
+            case "twilioFromNumberString":
+                UserDefaultsRepository.twilioFromNumberString = values[1]
+            case "twilioToNumberString":
+                UserDefaultsRepository.twilioToNumberString = values[1]
+            case "caregiverName":
+                UserDefaultsRepository.caregiverName = values[1]
+            case "remoteSecretCode":
+                UserDefaultsRepository.remoteSecretCode = values[1]
+            case "allowShortcuts":
+                UserDefaultsRepository.allowShortcuts = Bool(values[1]) ?? false
+            case "allowDataClearing":
+                UserDefaultsRepository.allowDataClearing = Bool(values[1]) ?? false
+            case "useStartDosePercentage":
+                UserDefaultsRepository.useStartDosePercentage = Bool(values[1]) ?? false
+            case "startDoseFactor":
+                UserDefaultsRepository.startDoseFactor = Double(values[1]) ?? 0.5
+            case "maxCarbs":
+                UserDefaultsRepository.maxCarbs = Double(values[1]) ?? 30.0
+            case "maxBolus":
+                UserDefaultsRepository.maxBolus = Double(values[1]) ?? 1.0
+            case "lateBreakfastFactor":
+                UserDefaultsRepository.lateBreakfastFactor = Double(values[1]) ?? 1.0
+            case "scheduledCarbRatio":
+                UserDefaultsRepository.scheduledCarbRatio = Double(values[1]) ?? 30.0
+            case "lateBreakfast":
+                UserDefaultsRepository.lateBreakfast = Bool(values[1]) ?? false
+            case "lateBreakfastOverrideName":
+                UserDefaultsRepository.lateBreakfastOverrideName = values[1]
+            case "lateBreakfastStartTime":
+                if let date = ISO8601DateFormatter().date(from: values[1]) {
+                    UserDefaultsRepository.lateBreakfastStartTime = date
+                }
+            case "dabasAPISecret":
+                UserDefaultsRepository.dabasAPISecret = values[1]
+            case "nightscoutURL":
+                UserDefaultsRepository.nightscoutURL = values[1]
+            case "nightscoutToken":
+                UserDefaultsRepository.nightscoutToken = values[1]
+            case "allowSharingOngoingMeals":
+                UserDefaultsRepository.allowSharingOngoingMeals = Bool(values[1]) ?? false
+            case "allowViewingOngoingMeals":
+                UserDefaultsRepository.allowViewingOngoingMeals = Bool(values[1]) ?? true
+            case "schoolFoodURL":
+                UserDefaultsRepository.schoolFoodURL = values[1]
+            default:
+                break
+            }
+        }
+    }
 }
+
+
 
 // Document Picker Delegate Methods
 extension DataSharingViewController: UIDocumentPickerDelegate {
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+    /*func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         
         // Check if accessing the resource is successful
@@ -663,6 +843,27 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
             defer { url.stopAccessingSecurityScopedResource() }
             if let entityName = controller.accessibilityHint {
                 Task { await parseCSV(at: url, for: entityName) }
+            }
+        } else {
+            print("Failed to access security-scoped resource.")
+        }
+    }*/
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        
+        if url.startAccessingSecurityScopedResource() {
+            defer { url.stopAccessingSecurityScopedResource() }
+            if let entityName = controller.accessibilityHint {
+                if entityName == "UserDefaults" {
+                    Task {
+                        let csvData = try String(contentsOf: url, encoding: .utf8)
+                        let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
+                        parseUserDefaultsCSV(rows)
+                        showAlert(title: "Import lyckades", message: "Användarinställningarna har importerats.")
+                    }
+                } else {
+                    Task { await parseCSV(at: url, for: entityName) }
+                }
             }
         } else {
             print("Failed to access security-scoped resource.")
