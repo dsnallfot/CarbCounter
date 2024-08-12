@@ -122,6 +122,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
+        // Add the "Plate" image on top of the gradient view
+            let plateImageView = UIImageView(image: UIImage(named: "Plate"))
+            plateImageView.contentMode = .scaleAspectFit
+            plateImageView.alpha = 0.08
+            plateImageView.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(plateImageView)
+            
+            // Set up constraints for the plate image view
+            NSLayoutConstraint.activate([
+                plateImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                plateImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 20),
+                plateImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9), // Adjust size as needed
+                plateImageView.heightAnchor.constraint(equalTo: plateImageView.widthAnchor)
+            ])
+        
         title = "Måltid"
         
         ///Setup the fixed header containing summary and headline
