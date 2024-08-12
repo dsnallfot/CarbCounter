@@ -825,7 +825,9 @@ class DataSharingViewController: UIViewController {
                 break
             }
         }
+        NotificationCenter.default.post(name: .didImportUserDefaults, object: nil)
     }
+    
 }
 
 
@@ -932,7 +934,7 @@ extension DataSharingViewController {
         }
 }
 
-// Extend Notification.Name
 extension Notification.Name {
     static let didImportOngoingMeal = Notification.Name("didImportOngoingMeal")
+    static let didImportUserDefaults = Notification.Name("didImportUserDefaults")
 }
