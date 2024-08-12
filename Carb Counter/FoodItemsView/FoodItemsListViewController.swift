@@ -529,15 +529,25 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // "Mer" action
+        let moreAction = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
+            let foodItem = self.filteredFoodItems[indexPath.row]
+            self.showLocalFoodItemDetails(foodItem)
+            completionHandler(true)
+        }
+        moreAction.backgroundColor = .systemGray
+        moreAction.image = UIImage(systemName: "ellipsis.circle.fill")
+
         // "Ändra" action
-        let editAction = UIContextualAction(style: .normal, title: "Ändra") { (_, _, completionHandler) in
+        let editAction = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
             self.editFoodItem(at: indexPath)
             completionHandler(true)
         }
-        editAction.backgroundColor = .systemBlue // Set the background color to blue
-        
+        editAction.backgroundColor = .systemBlue
+        editAction.image = UIImage(systemName: "square.and.pencil")
+
         // "Radera" action
-        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (_, _, completionHandler) in
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { (_, _, completionHandler) in
             if self.searchMode == .local {
                 let foodItem = self.filteredFoodItems[indexPath.row]
                 self.showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? "detta livsmedel")
@@ -545,9 +555,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             completionHandler(true)
         }
         deleteAction.backgroundColor = .red
-        
+        deleteAction.image = UIImage(systemName: "trash.fill")
+
         // Add both actions to the configuration
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction, moreAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
         return configuration
     }

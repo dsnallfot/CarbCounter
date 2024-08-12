@@ -184,16 +184,18 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // Implement swipe actions
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let editAction = UIContextualAction(style: .normal, title: "Ändra") { [weak self] (action, view, completionHandler) in
+        let editAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
             self?.editFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
         editAction.backgroundColor = .systemBlue
+        editAction.image = UIImage(systemName: "square.and.pencil")
         
-        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { [weak self] (action, view, completionHandler) in
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] (action, view, completionHandler) in
             self?.confirmDeleteFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
+        deleteAction.image = UIImage(systemName: "trash.fill")
         
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
