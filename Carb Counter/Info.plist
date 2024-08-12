@@ -2,15 +2,38 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>UISupportedInterfaceOrientations</key>
+    <key>AppIntents</key>
     <array>
-        <string>UIInterfaceOrientationPortrait</string>
+        <dict>
+            <key>IntentClass</key>
+            <string>UpdateRegisteredAmountIntent</string>
+        </dict>
     </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
+    <key>CFBundleURLTypes</key>
     <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.dsnallfot.CarbsCounter</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>carbcounter</string>
+            </array>
+        </dict>
     </array>
+    <key>NSBiometricUsageDescription</key>
+    <string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
+    <key>NSUbiquitousContainers</key>
+    <dict>
+        <key>iCloud.com.dsnallfot.CarbsCounter</key>
+        <dict>
+            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
+            <true/>
+            <key>NSUbiquitousContainerName</key>
+            <string>CarbsCounter</string>
+            <key>NSUbiquitousContainerSupportedFolderLevels</key>
+            <string>Any</string>
+        </dict>
+    </dict>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>
@@ -30,39 +53,14 @@
             </array>
         </dict>
     </dict>
-    <key>CFBundleURLTypes</key>
+    <key>UIBackgroundModes</key>
     <array>
-        <dict>
-            <key>CFBundleURLName</key>
-            <string>com.dsnallfot.CarbsCounter</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>carbcounter</string>
-            </array>
-        </dict>
+        <string>fetch</string>
+        <string>processing</string>
+        <string>remote-notification</string>
     </array>
     <key>UIFileSharingEnabled</key>
     <true/>
-    <key>LSSupportsOpeningDocumentsInPlace</key>
-    <true/>
-    <key>NSUbiquitousContainers</key>
-    <dict>
-        <key>iCloud.com.dsnallfot.CarbsCounter</key>
-        <dict>
-            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
-            <true/>
-            <key>NSUbiquitousContainerSupportedFolderLevels</key>
-            <string>Any</string>
-            <key>NSUbiquitousContainerName</key>
-            <string>CarbsCounter</string>
-        </dict>
-    </dict>
-    <key>NSDocumentsFolderUsageDescription</key>
-    <string>We need access to your documents to import and export food items.</string>
-    <key>NSFaceIDUsageDescription</key>
-    <string>This app requires Face ID to securely authenticate your identity for sending meal requests.</string>
-    <key>NSBiometricUsageDescription</key>
-    <string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
     <key>com.apple.developer.icloud-container-identifiers</key>
     <array>
         <string>iCloud.com.dsnallfot.CarbsCounter</string>
@@ -73,12 +71,8 @@
     </array>
     <key>com.apple.developer.ubiquity-kvstore-identifier</key>
     <string>iCloud.com.dsnallfot.CarbsCounter</string>
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-    </array>
-    <key>NSCameraUsageDescription</key>
-    <string>We need access to your camera to scan barcodes.</string>
+    <!-- Ensure that your app can run in the background when handling shortcuts or other tasks -->
+    <key>UIRequiresFullScreen</key>
+    <true/>
 </dict>
 </plist>

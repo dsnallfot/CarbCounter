@@ -45,6 +45,8 @@ class SettingsViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "switchCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "valueCell")
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateToggleStates), name: .didImportUserDefaults, object: nil)
 
 
         
@@ -63,6 +65,26 @@ class SettingsViewController: UITableViewController {
         let backButton = UIBarButtonItem()
         backButton.title = "Tillbaka"
         navigationItem.backBarButtonItem = backButton
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .didImportUserDefaults, object: nil)
+    }
+    
+    @objc private func updateToggleStates() {
+        for case let cell as UITableViewCell in tableView.visibleCells {
+            if let toggleSwitch = cell.accessoryView as? UISwitch {
+                if cell.textLabel?.text == "Tillåt fjärrstyrning" {
+                    toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
+                } else if cell.textLabel?.text == "Tillåt datarensning" {
+                    toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
+                } else if cell.textLabel?.text == "Tillåt delning av pågående måltid" {
+                    toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
+                }
+            } else if let segmentedControl = cell.accessoryView as? UISegmentedControl, cell.textLabel?.text == "Startdoser" {
+                segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
+            }
+        }
     }
     
     @objc private func cancelButtonTapped() {

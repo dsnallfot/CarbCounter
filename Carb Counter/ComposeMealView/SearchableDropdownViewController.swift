@@ -83,12 +83,20 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     private func setupNavigationBar() {
         title = "Välj livsmedel"
         
+        // Create the close button
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+        
+        // Create the info.circle button (existing addFoodItemButton)
         let addFoodItemButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(addNewButtonTapped))
-        navigationItem.leftBarButtonItem = addFoodItemButton
         
-        let showMealButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = showMealButton
+        // Create the show meal button for the right side of the navigation bar
+        let showMealButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
         
+        // Set both buttons on the left side of the navigation bar
+        navigationItem.rightBarButtonItems = [showMealButton, addFoodItemButton]
+        
+
     }
     
     private func setupView() {
@@ -134,6 +142,10 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         
         tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         tableViewBottomConstraint.isActive = true
+    }
+    
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
     }
     
     @objc private func keyboardWillShow(notification: NSNotification) {

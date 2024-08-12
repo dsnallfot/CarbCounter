@@ -5,7 +5,7 @@ struct FoodItemRowData {
     var foodItemID: UUID?
     var portionServed: Double
     var notEaten: Double
-    var totalRegisteredValue: Double
+    var registeredCarbsSoFar: Double
     var registeredFatSoFar: Double
     var registeredProteinSoFar: Double
     var registeredBolusSoFar: Double
@@ -115,7 +115,7 @@ class OngoingMealViewController: UIViewController {
     
     private func startImportTimer() {
         stopImportTimer() // Stop any existing timer
-        importTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
+        importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
     }
     
     private func stopImportTimer() {
@@ -173,7 +173,7 @@ class OngoingMealViewController: UIViewController {
                 foodItemID: row.foodItemID,
                 portionServed: row.portionServed,
                 notEaten: row.notEaten,
-                totalRegisteredValue: row.totalRegisteredValue,
+                registeredCarbsSoFar: row.registeredCarbsSoFar,
                 registeredFatSoFar: row.registeredFatSoFar,
                 registeredProteinSoFar: row.registeredProteinSoFar,
                 registeredBolusSoFar: row.registeredBolusSoFar
@@ -397,7 +397,7 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func addTotalRegisteredCarbsRow() {
-        guard let latestTotalRegisteredValue = foodItemRows.last?.totalRegisteredValue else { return }
+        guard let latestregisteredCarbsSoFar = foodItemRows.last?.registeredCarbsSoFar else { return }
         
         let rowView = UIStackView()
         rowView.axis = .horizontal
@@ -411,7 +411,7 @@ class OngoingMealViewController: UIViewController {
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
-        totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue) + " g"
+        totalCarbsLabel.text = String(format: "%.0f", latestregisteredCarbsSoFar) + " g"
         totalCarbsLabel.textColor = .label
         totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right

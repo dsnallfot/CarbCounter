@@ -43,9 +43,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         backButton.title = "Tillbaka"
         navigationItem.backBarButtonItem = backButton
         
-        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
-        
         setupSearchBar()
         setupTableView()
         setupNavigationBar()
@@ -63,18 +60,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         fetchFavoriteMeals()
     }
     
-    @objc private func cancelButtonTapped() {
-        navigationController?.popViewController(animated: true)
-    }
-    
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
         searchBar.placeholder = "Sök favoritmåltid"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.barTintColor = .clear//.systemBackground
-        searchBar.backgroundColor = .clear//.systemBackground
-        searchBar.backgroundImage = UIImage() // Make background clear
+        searchBar.barTintColor = .clear
+        searchBar.backgroundColor = .clear
+        searchBar.backgroundImage = UIImage()
         view.addSubview(searchBar)
         
         NSLayoutConstraint.activate([
