@@ -88,14 +88,7 @@ class HomeViewController: UIViewController {
         imageContainerView.translatesAutoresizingMaskIntoConstraints = false
         imageContainerView.layer.cornerRadius = 40 // Increase corner radius
         imageContainerView.layer.masksToBounds = true
-        
-        /*
-        // Add shadow/glow to the container view - Needs to check why this doesn't work
-        imageContainerView.layer.shadowColor = UIColor.white.cgColor
-        imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 10)
-        imageContainerView.layer.shadowRadius = 30
-        imageContainerView.layer.shadowOpacity = 0.5 // Increase shadow opacity
-        */
+
         // Create and setup the app icon image view
         let appIconImageView = UIImageView()
         if let image = UIImage(named: "launch") {
@@ -147,11 +140,6 @@ class HomeViewController: UIViewController {
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -110)
         ])
-        
-        // Add cog wheel icon to the top right corner
-        let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
-        navigationItem.rightBarButtonItem = settingsButton
-        
         updateNavigationBarButtons()
     }
         
@@ -159,6 +147,10 @@ class HomeViewController: UIViewController {
         let eyeButton = UIBarButtonItem(image: UIImage(systemName: "eye"), style: .plain, target: self, action: #selector(showOngoingMeal))
         eyeButton.isEnabled = UserDefaultsRepository.allowViewingOngoingMeals
         navigationItem.leftBarButtonItem = eyeButton
+        
+        // Add cog wheel icon to the top right corner
+        let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(openSettings))
+        navigationItem.rightBarButtonItem = settingsButton
     }
     
     @objc func showOngoingMeal() {
@@ -173,15 +165,4 @@ class HomeViewController: UIViewController {
         let navController = UINavigationController(rootViewController: settingsVC)
         present(navController, animated: true, completion: nil)
     }
-    /*
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        
-        // Update shadow/glow based on user interface style
-        let isDarkMode = traitCollection.userInterfaceStyle == .dark
-        if let imageContainerView = view.subviews.first(where: { $0 is UIView }) {
-            imageContainerView.layer.shadowColor = isDarkMode ? UIColor.white.cgColor : UIColor.black.cgColor
-            imageContainerView.layer.shadowOpacity = isDarkMode ? 0.5 : 0.25 // Adjust based on mode
-        }
-    }*/
 }

@@ -44,7 +44,7 @@ class LoadingViewController: UIViewController {
         titleLabel.textAlignment = .center
         titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textColor = UIColor.label.withAlphaComponent(0.4) // Set the text color with 0.4 opacity
+        titleLabel.textColor = UIColor.label.withAlphaComponent(0.4)
         
         // Create and setup the container view for the image
         let imageContainerView = UIView()
@@ -63,7 +63,7 @@ class LoadingViewController: UIViewController {
         }
         appIconImageView.contentMode = .scaleAspectFit
         appIconImageView.translatesAutoresizingMaskIntoConstraints = false
-        appIconImageView.alpha = 0.3 // Set the image opacity to 30%
+        appIconImageView.alpha = 0.3
         
         // Add the image view to the container view
         imageContainerView.addSubview(appIconImageView)

@@ -43,9 +43,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         backButton.title = "Tillbaka"
         navigationItem.backBarButtonItem = backButton
         
-        let cancelButton = UIBarButtonItem(title: "Avbryt", style: .plain, target: self, action: #selector(cancelButtonTapped))
-        navigationItem.rightBarButtonItem = cancelButton
-        
         setupSearchBar()
         setupTableView()
         setupNavigationBar()
@@ -63,18 +60,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         fetchFavoriteMeals()
     }
     
-    @objc private func cancelButtonTapped() {
-        navigationController?.popViewController(animated: true)
-    }
-    
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
         searchBar.placeholder = "Sök favoritmåltid"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.barTintColor = .clear//.systemBackground
-        searchBar.backgroundColor = .clear//.systemBackground
-        searchBar.backgroundImage = UIImage() // Make background clear
+        searchBar.barTintColor = .clear
+        searchBar.backgroundColor = .clear
+        searchBar.backgroundImage = UIImage()
         view.addSubview(searchBar)
         
         NSLayoutConstraint.activate([
@@ -183,7 +176,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
             composeMealVC.populateWithFavoriteMeal(favoriteMeal)
             navigationController?.popViewController(animated: true)
-            print("Navigated back to ComposeMealViewController and populated with favorite meal.")
+            //print("Navigated back to ComposeMealViewController and populated with favorite meal.")
         } else {
             print("ComposeMealViewController not found in navigation stack.")
         }

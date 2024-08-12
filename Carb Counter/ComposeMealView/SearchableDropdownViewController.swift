@@ -66,29 +66,37 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         NotificationCenter.default.addObserver(self, selector: #selector(foodItemsDidChange(_:)), name: .foodItemsDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
+
         // Load saved search text
-        if let savedSearchText = UserDefaults.standard.string(forKey: "dropdownSearchText") {
-            searchBar.text = savedSearchText
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-            sortFoodItems()
-            tableView.reloadData()
-        } else {
-            filteredFoodItems = foodItems
-            sortFoodItems()
-            tableView.reloadData()
-        }
+                if let savedSearchText = UserDefaultsRepository.dropdownSearchText {
+                    searchBar.text = savedSearchText
+                    filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
+                    sortFoodItems()
+                    tableView.reloadData()
+                } else {
+                    filteredFoodItems = foodItems
+                    sortFoodItems()
+                    tableView.reloadData()
+                }
     }
     
     private func setupNavigationBar() {
         title = "Välj livsmedel"
         
+        // Create the close button
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+        
+        // Create the info.circle button (existing addFoodItemButton)
         let addFoodItemButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(addNewButtonTapped))
-        navigationItem.leftBarButtonItem = addFoodItemButton
         
-        let showMealButton = UIBarButtonItem(title: "Visa måltid", style: .plain, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = showMealButton
+        // Create the show meal button for the right side of the navigation bar
+        let showMealButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
         
+        // Set both buttons on the left side of the navigation bar
+        navigationItem.rightBarButtonItems = [showMealButton, addFoodItemButton]
+        
+
     }
     
     private func setupView() {
@@ -136,6 +144,10 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         tableViewBottomConstraint.isActive = true
     }
     
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     @objc private func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
@@ -174,7 +186,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     
     @objc private func doneButtonTapped() {
         searchBar.text = ""
-        UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
+        UserDefaultsRepository.dropdownSearchText = nil
         filteredFoodItems = foodItems
         sortFoodItems()
         tableView.reloadData()
@@ -182,7 +194,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }
     
     @objc private func cancelButtonTapped() {
-        UserDefaults.standard.removeObject(forKey: "dropdownSearchText")
+        UserDefaultsRepository.dropdownSearchText = nil
         searchBar.resignFirstResponder()
     }
     
@@ -242,9 +254,9 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         }
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
-    
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        UserDefaults.standard.set(searchText, forKey: "dropdownSearchText")
+        UserDefaultsRepository.dropdownSearchText = searchText
         if searchText.isEmpty {
             filteredFoodItems = foodItems
         } else {
@@ -253,6 +265,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         sortFoodItems()
         tableView.reloadData()
     }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }

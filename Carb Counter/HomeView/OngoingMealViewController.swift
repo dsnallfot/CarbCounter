@@ -5,7 +5,10 @@ struct FoodItemRowData {
     var foodItemID: UUID?
     var portionServed: Double
     var notEaten: Double
-    var totalRegisteredValue: Double
+    var registeredCarbsSoFar: Double
+    var registeredFatSoFar: Double
+    var registeredProteinSoFar: Double
+    var registeredBolusSoFar: Double
 }
 
 class OngoingMealViewController: UIViewController {
@@ -112,7 +115,7 @@ class OngoingMealViewController: UIViewController {
     
     private func startImportTimer() {
         stopImportTimer() // Stop any existing timer
-        importTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
+        importTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(importOngoingMealCSV), userInfo: nil, repeats: true)
     }
     
     private func stopImportTimer() {
@@ -121,7 +124,6 @@ class OngoingMealViewController: UIViewController {
     }
     
     @objc private func importOngoingMealCSV() {
-        // Automatically import ongoing meal CSV
         let dataSharingVC = DataSharingViewController()
         dataSharingVC.importOngoingMealCSV()
     }
@@ -171,7 +173,10 @@ class OngoingMealViewController: UIViewController {
                 foodItemID: row.foodItemID,
                 portionServed: row.portionServed,
                 notEaten: row.notEaten,
-                totalRegisteredValue: row.totalRegisteredValue
+                registeredCarbsSoFar: row.registeredCarbsSoFar,
+                registeredFatSoFar: row.registeredFatSoFar,
+                registeredProteinSoFar: row.registeredProteinSoFar,
+                registeredBolusSoFar: row.registeredBolusSoFar
             )
         }
         
@@ -203,10 +208,12 @@ class OngoingMealViewController: UIViewController {
     
     @objc private func didImportOngoingMeal(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
-            // Clear existing rows and add imported rows
+            //print("Received imported rows: \(importedRows)") // Log the received data
             foodItemRows = importedRows
             reloadStackView()
             updateUIBasedOnData()
+        } else {
+            print("Failed to receive imported rows")
         }
     }
     
@@ -224,6 +231,8 @@ class OngoingMealViewController: UIViewController {
                     let netCarbs = calculateNetCarbs(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
                     let rowView = createNonEditableRowView(for: foodItem, portionServed: row.portionServed, notEaten: row.notEaten, netCarbs: netCarbs)
                     stackView.addArrangedSubview(rowView)
+                } else {
+                    print("Food item not found for ID: \(String(describing: row.foodItemID))")
                 }
             }
         }
@@ -388,7 +397,7 @@ class OngoingMealViewController: UIViewController {
     }
     
     private func addTotalRegisteredCarbsRow() {
-        guard let latestTotalRegisteredValue = foodItemRows.last?.totalRegisteredValue else { return }
+        guard let latestregisteredCarbsSoFar = foodItemRows.last?.registeredCarbsSoFar else { return }
         
         let rowView = UIStackView()
         rowView.axis = .horizontal
@@ -402,7 +411,7 @@ class OngoingMealViewController: UIViewController {
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let totalCarbsLabel = UILabel()
-        totalCarbsLabel.text = String(format: "%.0f", latestTotalRegisteredValue) + " g"
+        totalCarbsLabel.text = String(format: "%.0f", latestregisteredCarbsSoFar) + " g"
         totalCarbsLabel.textColor = .label
         totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         totalCarbsLabel.textAlignment = .right

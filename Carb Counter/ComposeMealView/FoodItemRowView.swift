@@ -57,7 +57,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             label.textColor = .label
             label.adjustsFontSizeToFitWidth = true
             label.isHidden = true
-            label.font = UIFont.boldSystemFont(ofSize: label.font.pointSize) // Set the font to bold
+            label.font = UIFont.boldSystemFont(ofSize: label.font.pointSize)
             return label
         }()
         
@@ -66,7 +66,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             label.text = "Food Item"
             label.translatesAutoresizingMaskIntoConstraints = false
             label.textColor = .label
-            label.isUserInteractionEnabled = true // Make the label interactable
+            label.isUserInteractionEnabled = true
             return label
         }()
         
@@ -91,7 +91,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             let label = UILabel()
             label.textColor = .gray
             label.translatesAutoresizingMaskIntoConstraints = false
-            label.widthAnchor.constraint(equalToConstant: 14).isActive = true
+            label.widthAnchor.constraint(equalToConstant: 17).isActive = true
             label.textAlignment = .left
             label.textColor = .label
             label.adjustsFontSizeToFitWidth = true
@@ -128,6 +128,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular, scale: .medium)
             let resizedImage = trashImage?.applyingSymbolConfiguration(config)
             button.setImage(resizedImage, for: .normal)
+            button.widthAnchor.constraint(equalToConstant: 25).isActive = true
             button.tintColor = .red
             button.translatesAutoresizingMaskIntoConstraints = false
             return button
@@ -138,6 +139,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             setupView()
             addInputAccessoryView()
             setupLabelTapGesture()
+            
         }
         
         required init?(coder: NSCoder) {
@@ -151,8 +153,8 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             stackView.translatesAutoresizingMaskIntoConstraints = false
             addSubview(stackView)
             
-            foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 125)
-            foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(equalToConstant: 140)
+            foodItemLabelWidthConstraintWithInfo = foodItemLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 125)
+            foodItemLabelWidthConstraintWithoutInfo = foodItemLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 140)
             foodItemLabelWidthConstraintWithoutInfo.isActive = true
             
             NSLayoutConstraint.activate([
@@ -162,6 +164,8 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
             
+            setupSwipeGesture()
+            deleteButton.isHidden = true
             deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
             
             portionServedTextField.addTarget(self, action: #selector(calculateNutrients), for: .editingChanged)
@@ -175,6 +179,41 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             delegate?.saveToCoreData()
             delegate?.stopEditing()
         }
+    
+    private func setupSwipeGesture() {
+        let swipeLeftGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipeGesture(_:)))
+        swipeLeftGesture.direction = .left
+        addGestureRecognizer(swipeLeftGesture)
+        
+        let swipeRightGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipeGesture(_:)))
+        swipeRightGesture.direction = .right
+        addGestureRecognizer(swipeRightGesture)
+    }
+    
+    @objc private func handleSwipeGesture(_ gesture: UISwipeGestureRecognizer) {
+        if gesture.direction == .left {
+            UIView.animate(withDuration: 0.3) {
+                self.deleteButton.isHidden = false
+            }
+        } else if gesture.direction == .right {
+            UIView.animate(withDuration: 0.3) {
+                self.deleteButton.isHidden = true
+            }
+        }
+    }
+    
+    func hideDeleteButton() {
+        UIView.animate(withDuration: 0.3) {
+            self.deleteButton.isHidden = true
+        }
+    }
+    
+    @objc private func deleteButtonTapped() {
+        onDelete?()
+        delegate?.deleteFoodItemRow(self)
+        hideDeleteButton() // Hide the delete button after deletion
+        delegate?.stopEditing()
+    }
         
         private func setupLabelTapGesture() {
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(foodItemLabelTapped))
@@ -264,11 +303,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             }
             return nil
         }
-        @objc private func deleteButtonTapped() {
-            onDelete?()
-            delegate?.deleteFoodItemRow(self)
-            delegate?.stopEditing()
-        }
+
         @objc func calculateNutrients() {
             guard let selectedFoodItem = selectedFoodItem else { return }
             let portionServed = Double(portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0
