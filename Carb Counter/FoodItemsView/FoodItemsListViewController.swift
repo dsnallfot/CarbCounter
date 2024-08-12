@@ -529,6 +529,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // "Ändra" action
+        let editAction = UIContextualAction(style: .normal, title: "Ändra") { (_, _, completionHandler) in
+            self.editFoodItem(at: indexPath)
+            completionHandler(true)
+        }
+        editAction.backgroundColor = .systemBlue // Set the background color to blue
+        
+        // "Radera" action
         let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (_, _, completionHandler) in
             if self.searchMode == .local {
                 let foodItem = self.filteredFoodItems[indexPath.row]
@@ -538,10 +546,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         deleteAction.backgroundColor = .red
         
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        // Add both actions to the configuration
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
         return configuration
     }
+
     
     private func showDeleteConfirmationAlert(at indexPath: IndexPath, foodItemName: String) {
         let alert = UIAlertController(title: "Radera Livsmedel", message: "Bekräfta att du vill radera: '\(foodItemName)'?", preferredStyle: .actionSheet)
@@ -638,10 +648,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "Ändra", style: .destructive, handler: { _ in
-            self.editFoodItem(at: IndexPath(row: self.filteredFoodItems.firstIndex(of: foodItem) ?? 0, section: 0))
-        }))
-        
         alert.addAction(UIAlertAction(title: "+ Lägg till i måltid", style: .default, handler: { _ in
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
@@ -651,6 +657,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         present(alert, animated: true, completion: nil)
         tableView.deselectRow(at: IndexPath(row: self.filteredFoodItems.firstIndex(of: foodItem) ?? 0, section: 0), animated: true)
     }
+
     
     private func addToComposeMealViewController(foodItem: FoodItem) {
         guard let tabBarController = tabBarController else {
