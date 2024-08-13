@@ -442,8 +442,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 rowView.foodItems = foodItems
                 rowView.delegate = self
                 rowView.translatesAutoresizingMaskIntoConstraints = false
-                let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                stackView.insertArrangedSubview(rowView, at: index)
+                stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                 foodItemRows.append(rowView)
                 
                 // Set the selected food item in the row view
@@ -507,8 +506,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         rowView.foodItems = foodItems
                         rowView.delegate = self
                         rowView.translatesAutoresizingMaskIntoConstraints = false
-                        let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                        stackView.insertArrangedSubview(rowView, at: index)
+                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                         foodItemRows.append(rowView)
                         rowView.setSelectedFoodItem(foodItem)
                         rowView.portionServedTextField.text = formattedValue(portionServed)
@@ -550,8 +548,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 rowView.foodItems = foodItems
                 rowView.delegate = self
                 rowView.translatesAutoresizingMaskIntoConstraints = false
-                let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                stackView.insertArrangedSubview(rowView, at: index)
+                stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                 foodItemRows.append(rowView)
                 rowView.setSelectedFoodItem(foodItem)
                 rowView.portionServedTextField.text = formattedValue(foodEntry.entryPortionServed)
@@ -1056,8 +1053,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     let notEatenValue = formatNumber(savedFoodItem.notEaten)
                     rowView.notEatenTextField.text = notEatenValue == "0" ? nil : notEatenValue
                     
-                    let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                    stackView.insertArrangedSubview(rowView, at: index)
+                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                     foodItemRows.append(rowView)
                     
                     rowView.onDelete = { [weak self] in
@@ -2128,8 +2124,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         rowView.foodItems = foodItems
         rowView.delegate = self
         rowView.translatesAutoresizingMaskIntoConstraints = false
-        let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-        stackView.insertArrangedSubview(rowView, at: index)
+        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
         foodItemRows.append(rowView)
         
         //print("Added row at index: \(index), Total rows now: \(foodItemRows.count)")
@@ -2162,8 +2157,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         rowView.foodItems = foodItems
         rowView.delegate = self
         rowView.translatesAutoresizingMaskIntoConstraints = false
-        let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-        stackView.insertArrangedSubview(rowView, at: index)
+        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
         foodItemRows.append(rowView)
         rowView.setSelectedFoodItem(foodItem)
         
