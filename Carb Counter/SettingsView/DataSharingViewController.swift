@@ -713,7 +713,7 @@ class DataSharingViewController: UIViewController {
         let timestamp = dateFormatter.string(from: Date())
         let fileName = "UserDefaults_\(caregiverName)_\(timestamp).csv"
 
-        await saveCSV(data: csvString, fileName: fileName)
+        await saveUserDefaultsCSV(data: csvString, fileName: fileName)
         showAlert(title: "Export lyckades", message: "Användarinställningarna har exporterats.")
     }
 
@@ -785,23 +785,8 @@ class DataSharingViewController: UIViewController {
     
 }
 
-
-
 // Document Picker Delegate Methods
 extension DataSharingViewController: UIDocumentPickerDelegate {
-    /*func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let url = urls.first else { return }
-        
-        // Check if accessing the resource is successful
-        if url.startAccessingSecurityScopedResource() {
-            defer { url.stopAccessingSecurityScopedResource() }
-            if let entityName = controller.accessibilityHint {
-                Task { await parseCSV(at: url, for: entityName) }
-            }
-        } else {
-            print("Failed to access security-scoped resource.")
-        }
-    }*/
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         
@@ -872,6 +857,30 @@ extension DataSharingViewController {
                 
                 let fileManager = FileManager.default
                 let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
+                let destinationURL = iCloudURL?.appendingPathComponent(fileName)
+                
+                if let destinationURL = destinationURL {
+                    if fileManager.fileExists(atPath: destinationURL.path) {
+                        try fileManager.removeItem(at: destinationURL)
+                    }
+                    try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
+                    print("Export Successful: Data has been exported to iCloud successfully.")
+                } else {
+                    print("Export Failed: iCloud Drive URL is nil.")
+                }
+            } catch {
+                print("Failed to save file to iCloud: \(error)")
+            }
+        }
+    public func saveUserDefaultsCSV(data: String, fileName: String) async {
+            let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
+            let tempFilePath = tempDirectory.appendingPathComponent(fileName)
+            
+            do {
+                try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
+                
+                let fileManager = FileManager.default
+                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/Användarinställningar")
                 let destinationURL = iCloudURL?.appendingPathComponent(fileName)
                 
                 if let destinationURL = destinationURL {
