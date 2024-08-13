@@ -2098,10 +2098,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     public func updateHeadlineVisibility() {
         let isHidden = foodItemRows.isEmpty
-        foodItemLabel.isHidden = isHidden
-        portionServedLabel.isHidden = isHidden
-        notEatenLabel.isHidden = isHidden
-        netCarbsLabel.isHidden = isHidden
+        
+        foodItemLabel?.isHidden = isHidden
+        portionServedLabel?.isHidden = isHidden
+        notEatenLabel?.isHidden = isHidden
+        netCarbsLabel?.isHidden = isHidden
     }
     
     private func handleSelectedFoodItems(_ items: [FoodItem]) {

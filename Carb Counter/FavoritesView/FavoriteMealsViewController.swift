@@ -206,7 +206,10 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         let detailVC = FavoriteMealDetailViewController()
         detailVC.favoriteMeal = favoriteMeal
         detailVC.delegate = self
-        navigationController?.pushViewController(detailVC, animated: true)
+        let navController = UINavigationController(rootViewController: detailVC)
+        navController.modalPresentationStyle = .pageSheet
+        
+        present(navController, animated: true, completion: nil)
     }
     
     private func confirmDeleteFavoriteMeal(at indexPath: IndexPath) {
