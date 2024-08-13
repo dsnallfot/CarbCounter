@@ -1,0 +1,21 @@
+//Localizable.strings
+//Carb Counter
+
+//Created by Daniel Snällfot on 2024-08-13.
+
+
+/* Loading and home screen */
+"Räkna Kolhydrater" = "Räkna Kolhydrater";
+"Uppdaterar data" = "Uppdaterar data";
+
+/* Ongoing Meal Viewcontroller */
+"Ta över registrering" = "Ta över registrering";
+"Ingen måltidregistrering pågår" = "Ingen måltidregistrering pågår";
+"Pågående måltid" = "Pågående måltid";
+"Ingen näringsinformation tillgänglig." = "Ingen näringsinformation tillgänglig.";
+"LIVSMEDEL" = "LIVSMEDEL";
+"PORTION" = "PORTION";
+"LÄMNAT" = "LÄMNAT";
+"KH" = "KH";
+"REGISTRERADE KOLHYDRATER:" = "REGISTRERADE KOLHYDRATER:";
+"TOT KOLHYDRATER I MÅLTIDEN:" = "TOT KOLHYDRATER I MÅLTIDEN:";

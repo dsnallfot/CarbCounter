@@ -28,7 +28,7 @@ class OngoingMealViewController: UIViewController {
     
     let takeoverButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Ta över registrering", for: .normal)
+        button.setTitle(NSLocalizedString("Ta över registrering", comment: "Ta över registrering"), for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
@@ -42,7 +42,7 @@ class OngoingMealViewController: UIViewController {
     
     let noDataLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ingen måltidregistrering pågår"
+        label.text = NSLocalizedString("Ingen måltidregistrering pågår", comment: "Ingen måltidregistrering pågår")
         label.textColor = .gray
         label.textAlignment = .center
         label.font = UIFont.italicSystemFont(ofSize: 16)
@@ -148,7 +148,7 @@ class OngoingMealViewController: UIViewController {
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
         navigationItem.leftBarButtonItem = closeButton
-        navigationItem.title = "Pågående måltid"
+        navigationItem.title = NSLocalizedString("Pågående måltid", comment: "Pågående måltid")
         
         setupTakeoverButton()
     }
@@ -335,7 +335,7 @@ class OngoingMealViewController: UIViewController {
             }
         }
         if message.isEmpty {
-            message = "Ingen näringsinformation tillgänglig."
+            message = NSLocalizedString("Ingen näringsinformation tillgänglig.", comment: "Ingen näringsinformation tillgänglig.")
         } else {
             // Remove the last newline character
             message = String(message.dropLast())
@@ -358,14 +358,14 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let nameLabel = UILabel()
-        nameLabel.text = "LIVSMEDEL"
+        nameLabel.text = NSLocalizedString("LIVSMEDEL", comment: "LIVSMEDEL")
         nameLabel.textColor = .gray
         nameLabel.textAlignment = .left
         nameLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let portionLabel = UILabel()
-        portionLabel.text = "PORTION"
+        portionLabel.text = NSLocalizedString("PORTION", comment: "PORTION")
         portionLabel.textColor = .gray
         portionLabel.textAlignment = .right
         portionLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -373,7 +373,7 @@ class OngoingMealViewController: UIViewController {
         portionLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "LÄMNAT"
+        notEatenLabel.text = NSLocalizedString("LÄMNAT", comment: "LÄMNAT")
         notEatenLabel.textColor = .gray
         notEatenLabel.textAlignment = .right
         notEatenLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -381,7 +381,7 @@ class OngoingMealViewController: UIViewController {
         notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let carbsLabel = UILabel()
-        carbsLabel.text = "KH"
+        carbsLabel.text = NSLocalizedString("KH", comment: "KH")
         carbsLabel.textColor = .gray
         carbsLabel.textAlignment = .right
         carbsLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -405,7 +405,7 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "REGISTRERADE KOLHYDRATER:"
+        titleLabel.text = NSLocalizedString("REGISTRERADE KOLHYDRATER:", comment: "REGISTRERADE KOLHYDRATER:")
         titleLabel.textColor = .label
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -434,7 +434,7 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "TOT KOLHYDRATER I MÅLTIDEN:"
+        titleLabel.text = NSLocalizedString("TOT KOLHYDRATER I MÅLTIDEN:", comment: "TOT KOLHYDRATER I MÅLTIDEN:")
         titleLabel.textColor = .systemOrange
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)

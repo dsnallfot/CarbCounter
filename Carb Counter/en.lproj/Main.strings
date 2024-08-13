@@ -1,0 +1,147 @@
+
+/* Class = "UITextField"; text = "Förslag bolus:"; ObjectID = "1fh-wh-zY3"; */
+"1fh-wh-zY3.text" = "Calc. bolus:";
+
+/* Class = "UILabel"; text = "⌚️ Tid"; ObjectID = "7Og-yn-C4M"; */
+"7Og-yn-C4M.text" = "⌚️ Time";
+
+/* Class = "UILabel"; text = "💧 Bolus"; ObjectID = "7Ry-Bf-akX"; */
+"7Ry-Bf-akX.text" = "💧 Bolus";
+
+/* Class = "UITextField"; placeholder = "..."; ObjectID = "7kw-Ua-cCd"; */
+"7kw-Ua-cCd.placeholder" = "...";
+
+/* Class = "UIButton"; configuration.title = "Spara"; ObjectID = "9lt-Yp-VTI"; */
+"9lt-Yp-VTI.configuration.title" = "Save";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "9lt-Yp-VTI"; */
+"9lt-Yp-VTI.normalTitle" = "Button";
+
+/* Class = "UIViewController"; title = "Livsmedel"; ObjectID = "AZi-TP-gJ5"; */
+"AZi-TP-gJ5.title" = "Food Items";
+
+/* Class = "UIViewController"; title = "Hem"; ObjectID = "BEx-OW-pxv"; */
+"BEx-OW-pxv.title" = "Home";
+
+/* Class = "UINavigationItem"; title = "Livsmedel"; ObjectID = "Dfo-7M-I2U"; */
+"Dfo-7M-I2U.title" = "Food Items";
+
+/* Class = "UITextField"; placeholder = "..."; ObjectID = "DiT-de-lGZ"; */
+"DiT-de-lGZ.placeholder" = "...";
+
+/* Class = "UILabel"; text = "g"; ObjectID = "F3e-rW-2xi"; */
+"F3e-rW-2xi.text" = "g";
+
+/* Class = "UIButton"; configuration.title = "+ Lägg till i måltid"; ObjectID = "Fkf-UD-N5l"; */
+"Fkf-UD-N5l.configuration.title" = "+ Add to meal";
+
+/* Class = "UITextField"; text = "E"; ObjectID = "GZh-9c-WQ6"; */
+"GZh-9c-WQ6.text" = "E";
+
+/* Class = "UITextField"; ibShadowedToolTip = "Amount of carbs"; ObjectID = "Hxs-Mk-eUs"; */
+"Hxs-Mk-eUs.ibShadowedToolTip" = "Amount of carbs";
+
+/* Class = "UITextField"; placeholder = "0"; ObjectID = "Hxs-Mk-eUs"; */
+"Hxs-Mk-eUs.placeholder" = "0";
+
+/* Class = "UILabel"; text = "g"; ObjectID = "IPh-Jy-RLa"; */
+"IPh-Jy-RLa.text" = "g";
+
+/* Class = "UILabel"; text = "📝 Noteringar"; ObjectID = "Icp-9G-Z9E"; */
+"Icp-9G-Z9E.text" = "📝 Notes";
+
+/* Class = "UITextField"; placeholder = "--"; ObjectID = "QiM-g0-oiq"; */
+"QiM-g0-oiq.placeholder" = "--";
+
+/* Class = "UILabel"; text = "Fett"; ObjectID = "Rpw-F0-a3g"; */
+"Rpw-F0-a3g.text" = "Fat";
+
+/* Class = "UITextField"; ibShadowedToolTip = "Amount of carbs"; ObjectID = "XNP-0Y-Zdb"; */
+"XNP-0Y-Zdb.ibShadowedToolTip" = "Amount of carbs";
+
+/* Class = "UITextField"; placeholder = "..."; ObjectID = "XNP-0Y-Zdb"; */
+"XNP-0Y-Zdb.placeholder" = "...";
+
+/* Class = "UILabel"; text = "🥨 Kolhydrater"; ObjectID = "XQi-Yx-BhK"; */
+"XQi-Yx-BhK.text" = "🥨 Carbs";
+
+/* Class = "UITabBarItem"; title = "Hem"; ObjectID = "Xuu-Go-pzw"; */
+"Xuu-Go-pzw.title" = "Home";
+
+/* Class = "UITextField"; ibShadowedToolTip = "Amount of carbs"; ObjectID = "YeI-Fv-Odz"; */
+"YeI-Fv-Odz.ibShadowedToolTip" = "Amount of carbs";
+
+/* Class = "UITextField"; placeholder = "0"; ObjectID = "YeI-Fv-Odz"; */
+"YeI-Fv-Odz.placeholder" = "0";
+
+/* Class = "UITextField"; placeholder = "emoji"; ObjectID = "a4z-Gi-dHK"; */
+"a4z-Gi-dHK.placeholder" = "emoji";
+
+/* Class = "UITextField"; placeholder = "..."; ObjectID = "bFQ-rT-8tx"; */
+"bFQ-rT-8tx.placeholder" = "...";
+
+/* Class = "UITextField"; placeholder = "..."; ObjectID = "d9P-nc-SgB"; */
+"d9P-nc-SgB.placeholder" = "...";
+
+/* Class = "UITabBarItem"; title = "Livsmedel"; ObjectID = "deS-7R-KdV"; */
+"deS-7R-KdV.title" = "Food Items";
+
+/* Class = "UITextField"; ibShadowedToolTip = "Amount of carbs"; ObjectID = "dgh-UO-7vg"; */
+"dgh-UO-7vg.ibShadowedToolTip" = "Amount of carbs";
+
+/* Class = "UITextField"; placeholder = "0"; ObjectID = "dgh-UO-7vg"; */
+"dgh-UO-7vg.placeholder" = "0";
+
+/* Class = "UILabel"; text = "g/100g"; ObjectID = "kJd-Si-KMN"; */
+"kJd-Si-KMN.text" = "g/100g";
+
+/* Class = "UILabel"; text = "E"; ObjectID = "kLl-2N-9ZM"; */
+"kLl-2N-9ZM.text" = "U";
+
+/* Class = "UITabBarItem"; title = "Måltid"; ObjectID = "kNM-lm-0Vi"; */
+"kNM-lm-0Vi.title" = "Meal";
+
+/* Class = "UILabel"; text = "Kolhydrater"; ObjectID = "kSg-9f-fTK"; */
+"kSg-9f-fTK.text" = "Carbs";
+
+/* Class = "UILabel"; text = "Anteckningar"; ObjectID = "mTI-gT-iKj"; */
+"mTI-gT-iKj.text" = "Notes";
+
+/* Class = "UILabel"; text = "🍗 Protein"; ObjectID = "nTd-7W-kOi"; */
+"nTd-7W-kOi.text" = "🍗 Protein";
+
+/* Class = "UILabel"; text = "Protein"; ObjectID = "qDh-Gu-sQr"; */
+"qDh-Gu-sQr.text" = "Protein";
+
+/* Class = "UITextField"; ibShadowedToolTip = "Amount of carbs"; ObjectID = "qUZ-TQ-FNS"; */
+"qUZ-TQ-FNS.ibShadowedToolTip" = "Amount of carbs";
+
+/* Class = "UITextField"; placeholder = "0"; ObjectID = "qUZ-TQ-FNS"; */
+"qUZ-TQ-FNS.placeholder" = "0";
+
+/* Class = "UILabel"; text = "Livsmedel"; ObjectID = "sNQ-9u-Ntn"; */
+"sNQ-9u-Ntn.text" = "Food Item";
+
+/* Class = "UILabel"; text = "g/100g"; ObjectID = "t51-xQ-b9U"; */
+"t51-xQ-b9U.text" = "g/100g";
+
+/* Class = "UILabel"; text = "g"; ObjectID = "tvp-6y-cuK"; */
+"tvp-6y-cuK.text" = "g";
+
+/* Class = "UILabel"; text = "g/100g"; ObjectID = "xzg-Qp-CK3"; */
+"xzg-Qp-CK3.text" = "g/100g";
+
+/* Class = "UIViewController"; title = "Remote Meal"; ObjectID = "yLH-Uo-1Tx"; */
+"yLH-Uo-1Tx.title" = "Remote Meal";
+
+/* Class = "UITextField"; placeholder = "..."; ObjectID = "ysZ-9K-15S"; */
+"ysZ-9K-15S.placeholder" = "...";
+
+/* Class = "UIButton"; configuration.title = "Skicka Måltid"; ObjectID = "z3H-dk-YIf"; */
+"z3H-dk-YIf.configuration.title" = "Send Meal";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "z3H-dk-YIf"; */
+"z3H-dk-YIf.normalTitle" = "Button";
+
+/* Class = "UILabel"; text = "🧀 Fett"; ObjectID = "zxL-Gj-HYt"; */
+"zxL-Gj-HYt.text" = "🧀 Fat";

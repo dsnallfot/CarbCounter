@@ -40,7 +40,7 @@ class LoadingViewController: UIViewController {
     private func setupUI() {
         // Create and setup the title label
         let titleLabel = UILabel()
-        titleLabel.text = "Räkna Kolhydrater"
+        titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
         titleLabel.textAlignment = .center
         titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -75,7 +75,7 @@ class LoadingViewController: UIViewController {
         
         // Create and set up the label
         let loadingLabel = UILabel()
-        loadingLabel.text = "Uppdaterar data"
+        loadingLabel.text = NSLocalizedString("Uppdaterar data", comment: "Updating data")
         loadingLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         loadingLabel.textAlignment = .center
         loadingLabel.textColor = .label
