@@ -719,9 +719,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet // or .automatic depending on your needs
+            
+            present(navController, animated: true, completion: nil)
         }
     }
+    
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
@@ -906,29 +910,38 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
-    
+
     private func navigateToAddFoodItem(foodItem: FoodItem) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.foodItem = foodItem
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
-    
+
     private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
             addFoodItemVC.isPerPiece = isPerPiece
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
-    
+
     private func navigateToAddFoodItemWithUpdate(existingItem: FoodItem, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -936,7 +949,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             addFoodItemVC.foodItem = existingItem
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
             addFoodItemVC.isUpdateMode = true
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
     

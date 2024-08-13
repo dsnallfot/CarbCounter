@@ -2189,7 +2189,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self?.handleSelectedFoodItems(selectedItems)
         }
         let navigationController = UINavigationController(rootViewController: dropdownVC)
-        navigationController.modalPresentationStyle = .formSheet
+        navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true, completion: nil)
         
         hideAllDeleteButtons()
@@ -2306,7 +2306,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let rssFeedVC = RSSFeedViewController()
                 rssFeedVC.delegate = self
                 let navigationController = UINavigationController(rootViewController: rssFeedVC)
-                navigationController.modalPresentationStyle = .formSheet
+                navigationController.modalPresentationStyle = .pageSheet
                 present(navigationController, animated: true, completion: nil)
         
         hideAllDeleteButtons()
