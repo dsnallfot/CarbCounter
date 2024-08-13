@@ -74,5 +74,8 @@
     <!-- Ensure that your app can run in the background when handling shortcuts or other tasks -->
     <key>UIRequiresFullScreen</key>
     <true/>
+    <!-- Add the default development region -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>sv</string>
 </dict>
 </plist>

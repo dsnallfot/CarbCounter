@@ -843,15 +843,17 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             present(confirmationAlert, animated: true, completion: nil)
         }
         
+        /*
         //Alert for meal WITH bolus
         func showMealBolusConfirmationAlert(combinedString: String) {
+            let method = UserDefaultsRepository.method
             // Set isAlertShowing to true before showing the alert
             isAlertShowing = true
             // Confirmation alert before sending the request
             let confirmationAlert = UIAlertController(title: "Bekräfta måltid och bolus", message: "Vill du registrera denna måltid och ge \(bolusValue) E bolus?", preferredStyle: .alert)
             
             confirmationAlert.addAction(UIAlertAction(title: "Ja", style: .default, handler: { (action: UIAlertAction!) in
-                // Authenticate with Face ID
+                // Authenticate with Face ID if using Twilio, otherwise just authenticate with passcode within iOS shortcut
                 self.authenticateWithBiometrics {
                     // Proceed with the request after successful authentication
                     self.sendMealRequest(combinedString: combinedString)
@@ -864,8 +866,41 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             }))
             
             present(confirmationAlert, animated: true, completion: nil)
+        }*/
+        
+        func showMealBolusConfirmationAlert(combinedString: String) {
+            let method = UserDefaultsRepository.method
+            isAlertShowing = true
+            
+            let confirmationAlert = UIAlertController(title: "Bekräfta måltid och bolus", message: "Vill du registrera denna måltid och ge \(bolusValue) E bolus?", preferredStyle: .alert)
+            
+            let confirmAction: UIAlertAction
+            
+            // Authenticate with biometrics if using Twilio, otherwise just authenticate with passcode within iOS shortcut
+            if method == "iOS Shortcuts" {
+                confirmAction = UIAlertAction(title: "Ja", style: .default) { _ in
+                    self.sendMealRequest(combinedString: combinedString)
+                }
+            } else {
+                confirmAction = UIAlertAction(title: "Ja", style: .default) { _ in
+                    self.authenticateWithBiometrics {
+                        self.sendMealRequest(combinedString: combinedString)
+                    }
+                }
+            }
+            
+            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
+                self.handleAlertDismissal()
+            }
+            
+            confirmationAlert.addAction(confirmAction)
+            confirmationAlert.addAction(cancelAction)
+            
+            present(confirmationAlert, animated: true, completion: nil)
         }
     }
+        
+        
     
     func authenticateWithBiometrics(completion: @escaping () -> Void) {
         let context = LAContext()
