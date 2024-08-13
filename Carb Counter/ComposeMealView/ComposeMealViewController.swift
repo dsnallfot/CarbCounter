@@ -610,6 +610,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             //print("Clear button tapped and isEditingMeal set to false")
             self.stopAutoSaveToCSV()
             if UserDefaultsRepository.allowSharingOngoingMeals {
+                self.cleanDuplicateFiles()
                 self.exportBlankCSV()
             }
             self.lateBreakfastTimer?.invalidate()
@@ -670,6 +671,37 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             dataSharingVC.saveCSV(data: data, fileName: fileName)
         }
     }
+    
+    private func cleanDuplicateFiles() {
+            DispatchQueue.global(qos: .background).async {
+                let fileManager = FileManager.default
+                
+                // Get the iCloud URL for the CarbsCounter directory
+                guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+                    print("Failed to get iCloud URL.")
+                    return
+                }
+
+                do {
+                    // Get all files in the directory
+                    let files = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil)
+
+                    // Filter files that match the pattern "OngoingMeal X.csv" (where X is a number)
+                    let duplicateFiles = files.filter { url in
+                        let filename = url.lastPathComponent
+                        return filename.starts(with: "OngoingMeal ") && filename.hasSuffix(".csv") && filename != "OngoingMeal.csv"
+                    }
+
+                    // Delete each duplicate file
+                    for file in duplicateFiles {
+                        try fileManager.removeItem(at: file)
+                        print("Deleted duplicate file: \(file.lastPathComponent)")
+                    }
+                } catch {
+                    print("Error while cleaning up duplicate files: \(error)")
+                }
+            }
+        }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
         adjustForKeyboard(notification: notification, keyboardShowing: true)
@@ -2186,6 +2218,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             startDoseGiven = false
             remainingDoseGiven = false
             if UserDefaultsRepository.allowSharingOngoingMeals {
+                cleanDuplicateFiles()
                 exportBlankCSV()
             }
         }
@@ -2339,8 +2372,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
-            label.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
-            label.text = "     OVERRIDE     "
+            label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            label.text = "OVERRIDE"
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             label.isUserInteractionEnabled = true
@@ -2382,7 +2415,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             lateBreakfastContainer.addSubview(lateBreakfastSwitch)
 
             // Adjust the switch's transform to make it smaller
-            lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.75, y: 0.75)
+            lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
 
             // Create the horizontal stack view (HStack)
             let stackView = UIStackView(arrangedSubviews: [addButton, rssButton, lateBreakfastContainer])
@@ -2403,12 +2436,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 
                 // Align lateBreakfastLabel inside the container
-                lateBreakfastLabel.topAnchor.constraint(equalTo: lateBreakfastContainer.topAnchor, constant: 4),
-                lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
+                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 14),
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
+                //lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
 
                 // Align lateBreakfastSwitch inside the container
-                lateBreakfastSwitch.bottomAnchor.constraint(equalTo: lateBreakfastContainer.bottomAnchor),
-                lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
+                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 7),
+                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
+                //lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
             ])
         }
     }
