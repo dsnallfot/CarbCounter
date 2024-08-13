@@ -67,10 +67,18 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let overlayView = ScannerOverlayView(frame: view.frame)
         overlayView.backgroundColor = UIColor.clear
         view.addSubview(overlayView)
+        
+        setupCloseButton()
 
-        // Add done button to the navigation bar
-        let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = doneButton
+    }
+    
+    private func setupCloseButton() {
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+    
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
     }
 
     func resetBarcodeProcessingState() {
@@ -79,14 +87,6 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             if !self.captureSession.isRunning {
                 self.captureSession.startRunning()
             }
-        }
-    }
-
-    @objc private func doneButtonTapped() {
-        if let navigationController = navigationController {
-            navigationController.popViewController(animated: true)
-        } else {
-            dismiss(animated: true, completion: nil)
         }
     }
 

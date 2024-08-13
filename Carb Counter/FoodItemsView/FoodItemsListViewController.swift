@@ -751,9 +751,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     
-    @objc private func navigateToScanner() {
+    /*@objc private func navigateToScanner() {
         let scannerVC = ScannerViewController()
         navigationController?.pushViewController(scannerVC, animated: true)
+    }*/
+    
+    @objc private func navigateToScanner() {
+        let scannerVC = ScannerViewController()
+        let navController = UINavigationController(rootViewController: scannerVC)
+        navController.modalPresentationStyle = .pageSheet
+        
+        present(navController, animated: true, completion: nil)
     }
     
     private func fetchNutritionalInfo(for gtin: String) {
