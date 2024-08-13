@@ -529,15 +529,25 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // "Mer" action
+        let moreAction = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
+            let foodItem = self.filteredFoodItems[indexPath.row]
+            self.showLocalFoodItemDetails(foodItem)
+            completionHandler(true)
+        }
+        moreAction.backgroundColor = .systemGray
+        moreAction.image = UIImage(systemName: "ellipsis.circle.fill")
+
         // "Ändra" action
-        let editAction = UIContextualAction(style: .normal, title: "Ändra") { (_, _, completionHandler) in
+        let editAction = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
             self.editFoodItem(at: indexPath)
             completionHandler(true)
         }
-        editAction.backgroundColor = .systemBlue // Set the background color to blue
-        
+        editAction.backgroundColor = .systemBlue
+        editAction.image = UIImage(systemName: "square.and.pencil")
+
         // "Radera" action
-        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { (_, _, completionHandler) in
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { (_, _, completionHandler) in
             if self.searchMode == .local {
                 let foodItem = self.filteredFoodItems[indexPath.row]
                 self.showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? "detta livsmedel")
@@ -545,9 +555,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             completionHandler(true)
         }
         deleteAction.backgroundColor = .red
-        
+        deleteAction.image = UIImage(systemName: "trash.fill")
+
         // Add both actions to the configuration
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction, moreAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
         return configuration
     }
@@ -708,9 +719,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet // or .automatic depending on your needs
+            
+            present(navController, animated: true, completion: nil)
         }
     }
+    
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
@@ -736,9 +751,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     
-    @objc private func navigateToScanner() {
+    /*@objc private func navigateToScanner() {
         let scannerVC = ScannerViewController()
         navigationController?.pushViewController(scannerVC, animated: true)
+    }*/
+    
+    @objc private func navigateToScanner() {
+        let scannerVC = ScannerViewController()
+        let navController = UINavigationController(rootViewController: scannerVC)
+        navController.modalPresentationStyle = .pageSheet
+        
+        present(navController, animated: true, completion: nil)
     }
     
     private func fetchNutritionalInfo(for gtin: String) {
@@ -895,29 +918,38 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
-    
+
     private func navigateToAddFoodItem(foodItem: FoodItem) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.foodItem = foodItem
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
-    
+
     private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
             addFoodItemVC.isPerPiece = isPerPiece
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
-    
+
     private func navigateToAddFoodItemWithUpdate(existingItem: FoodItem, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
@@ -925,7 +957,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             addFoodItemVC.foodItem = existingItem
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
             addFoodItemVC.isUpdateMode = true
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            present(navController, animated: true, completion: nil)
         }
     }
     

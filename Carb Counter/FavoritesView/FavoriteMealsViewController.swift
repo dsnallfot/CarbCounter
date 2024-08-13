@@ -174,9 +174,13 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         print("Selected favorite meal: \(favoriteMeal.name ?? "Unknown")")
         
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-            composeMealVC.populateWithFavoriteMeal(favoriteMeal)
-            navigationController?.popViewController(animated: true)
-            //print("Navigated back to ComposeMealViewController and populated with favorite meal.")
+            composeMealVC.checkAndHandleExistingMeal(replacementAction: {
+                composeMealVC.addFavoriteMeal(favoriteMeal)
+            }, additionAction: {
+                composeMealVC.addFavoriteMeal(favoriteMeal)
+            }, completion: {
+                self.navigationController?.popViewController(animated: true)
+            })
         } else {
             print("ComposeMealViewController not found in navigation stack.")
         }
@@ -184,16 +188,18 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // Implement swipe actions
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let editAction = UIContextualAction(style: .normal, title: "Ändra") { [weak self] (action, view, completionHandler) in
+        let editAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
             self?.editFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
         editAction.backgroundColor = .systemBlue
+        editAction.image = UIImage(systemName: "square.and.pencil")
         
-        let deleteAction = UIContextualAction(style: .destructive, title: "Radera") { [weak self] (action, view, completionHandler) in
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] (action, view, completionHandler) in
             self?.confirmDeleteFavoriteMeal(at: indexPath)
             completionHandler(true)
         }
+        deleteAction.image = UIImage(systemName: "trash.fill")
         
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
@@ -204,7 +210,10 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         let detailVC = FavoriteMealDetailViewController()
         detailVC.favoriteMeal = favoriteMeal
         detailVC.delegate = self
-        navigationController?.pushViewController(detailVC, animated: true)
+        let navController = UINavigationController(rootViewController: detailVC)
+        navController.modalPresentationStyle = .pageSheet
+        
+        present(navController, animated: true, completion: nil)
     }
     
     private func confirmDeleteFavoriteMeal(at indexPath: IndexPath) {

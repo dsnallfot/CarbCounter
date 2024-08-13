@@ -169,7 +169,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         setupTreatmentView(in: fixedHeaderContainer)
         setupHeadline(in: fixedHeaderContainer)
         setupScrollView(below: fixedHeaderContainer)
-        setupAddButtonRowView() 
+        setupAddButtonRowView()
         
         /// Initializing
         clearAllButton = UIBarButtonItem(title: "Avsluta måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
@@ -432,25 +432,45 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
     }
     
+    internal func checkAndHandleExistingMeal(replacementAction: @escaping () -> Void, additionAction: @escaping () -> Void, completion: @escaping () -> Void) {
+        if !foodItemRows.isEmpty {
+            let alert = UIAlertController(title: "Lägg till eller ersätt?", message: "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Ersätt", style: .destructive, handler: { _ in
+                self.clearAllFoodItems()
+                replacementAction()
+                completion()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Addera", style: .default, handler: { _ in
+                additionAction()
+                completion()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler:  nil))
+            
+            present(alert, animated: true, completion: nil)
+        } else {
+            additionAction()
+            completion()
+        }
+    }
+    
     func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
         // clearAllFoodItems() // Uncomment if you want to reset the view before adding new items
         
         for matchedFoodItem in matchedFoodItems {
             if let existingFoodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
-                // If the item is already present, configure and add its row view
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
                 rowView.translatesAutoresizingMaskIntoConstraints = false
-                let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                stackView.insertArrangedSubview(rowView, at: index)
+                stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                 foodItemRows.append(rowView)
                 
-                // Set the selected food item in the row view
                 rowView.setSelectedFoodItem(existingFoodItem)
                 rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
                 
-                // Set up the delete and value change handlers
                 rowView.onDelete = { [weak self] in
                     self?.removeFoodItemRow(rowView)
                 }
@@ -460,15 +480,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self?.updateHeadlineVisibility()
                 }
                 
-                // Calculate nutrients based on the selected food item and portion size
                 rowView.calculateNutrients()
             } else {
-                // Handle the case where a matched food item is not found in the current foodItems list
                 print("Food item with name \(matchedFoodItem.name ?? "") not found in foodItems.")
             }
         }
         
-        // Update UI elements and visibility based on the newly added food items
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -476,14 +493,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
-        //clearAllFoodItems() //Commented out to keep current registeredsofar carbs and bolus as well as food item rows even when adding a favorite meal
-        
+        checkAndHandleExistingMeal(replacementAction: {
+            self.addFavoriteMeal(favoriteMeal)
+        }, additionAction: {
+            self.addFavoriteMeal(favoriteMeal)
+        }, completion: {
+        })
+    }
+
+    internal func addFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
         guard let itemsString = favoriteMeal.items as? String else {
             print("Error: Unable to cast favoriteMeal.items to String.")
             return
         }
-        
-        print("Items String: \(itemsString)")
         
         guard let data = itemsString.data(using: .utf8) else {
             print("Error: Unable to convert itemsString to Data.")
@@ -500,15 +522,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 if let name = item["name"] as? String,
                    let portionServedString = item["portionServed"] as? String,
                    let portionServed = Double(portionServedString) {
-                    //print("Item name: \(name), Portion Served: \(portionServed)")
                     if let foodItem = foodItems.first(where: { $0.name == name }) {
-                        //print("Food Item Found: \(foodItem.name ?? "")")
                         let rowView = FoodItemRowView()
                         rowView.foodItems = foodItems
                         rowView.delegate = self
                         rowView.translatesAutoresizingMaskIntoConstraints = false
-                        let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                        stackView.insertArrangedSubview(rowView, at: index)
+                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                         foodItemRows.append(rowView)
                         rowView.setSelectedFoodItem(foodItem)
                         rowView.portionServedTextField.text = formattedValue(portionServed)
@@ -542,16 +561,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
-        //clearAllFoodItems() //Commented out to keep registeredsofar carbs and bolus as well as food item rows even when adding a history meal
-        
+        checkAndHandleExistingMeal(replacementAction: {
+            self.addMealHistory(mealHistory)
+        }, additionAction: {
+            self.addMealHistory(mealHistory)
+        }, completion: {
+        })
+    }
+
+    internal func addMealHistory(_ mealHistory: MealHistory) {
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
             if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
                 rowView.translatesAutoresizingMaskIntoConstraints = false
-                let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                stackView.insertArrangedSubview(rowView, at: index)
+                stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                 foodItemRows.append(rowView)
                 rowView.setSelectedFoodItem(foodItem)
                 rowView.portionServedTextField.text = formattedValue(foodEntry.entryPortionServed)
@@ -610,6 +635,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             //print("Clear button tapped and isEditingMeal set to false")
             self.stopAutoSaveToCSV()
             if UserDefaultsRepository.allowSharingOngoingMeals {
+                self.cleanDuplicateFiles()
                 self.exportBlankCSV()
             }
             self.lateBreakfastTimer?.invalidate()
@@ -670,6 +696,37 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             dataSharingVC.saveCSV(data: data, fileName: fileName)
         }
     }
+    
+    private func cleanDuplicateFiles() {
+            DispatchQueue.global(qos: .background).async {
+                let fileManager = FileManager.default
+                
+                // Get the iCloud URL for the CarbsCounter directory
+                guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+                    print("Failed to get iCloud URL.")
+                    return
+                }
+
+                do {
+                    // Get all files in the directory
+                    let files = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil)
+
+                    // Filter files that match the pattern "OngoingMeal X.csv" (where X is a number)
+                    let duplicateFiles = files.filter { url in
+                        let filename = url.lastPathComponent
+                        return filename.starts(with: "OngoingMeal ") && filename.hasSuffix(".csv") && filename != "OngoingMeal.csv"
+                    }
+
+                    // Delete each duplicate file
+                    for file in duplicateFiles {
+                        try fileManager.removeItem(at: file)
+                        print("Deleted duplicate file: \(file.lastPathComponent)")
+                    }
+                } catch {
+                    print("Error while cleaning up duplicate files: \(error)")
+                }
+            }
+        }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
         adjustForKeyboard(notification: notification, keyboardShowing: true)
@@ -1024,8 +1081,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     let notEatenValue = formatNumber(savedFoodItem.notEaten)
                     rowView.notEatenTextField.text = notEatenValue == "0" ? nil : notEatenValue
                     
-                    let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-                    stackView.insertArrangedSubview(rowView, at: index)
+                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
                     foodItemRows.append(rowView)
                     
                     rowView.onDelete = { [weak self] in
@@ -2070,10 +2126,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     public func updateHeadlineVisibility() {
         let isHidden = foodItemRows.isEmpty
-        foodItemLabel.isHidden = isHidden
-        portionServedLabel.isHidden = isHidden
-        notEatenLabel.isHidden = isHidden
-        netCarbsLabel.isHidden = isHidden
+        
+        foodItemLabel?.isHidden = isHidden
+        portionServedLabel?.isHidden = isHidden
+        notEatenLabel?.isHidden = isHidden
+        netCarbsLabel?.isHidden = isHidden
     }
     
     private func handleSelectedFoodItems(_ items: [FoodItem]) {
@@ -2096,8 +2153,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         rowView.foodItems = foodItems
         rowView.delegate = self
         rowView.translatesAutoresizingMaskIntoConstraints = false
-        let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-        stackView.insertArrangedSubview(rowView, at: index)
+        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
         foodItemRows.append(rowView)
         
         //print("Added row at index: \(index), Total rows now: \(foodItemRows.count)")
@@ -2130,8 +2186,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         rowView.foodItems = foodItems
         rowView.delegate = self
         rowView.translatesAutoresizingMaskIntoConstraints = false
-        let index = stackView.arrangedSubviews.isEmpty ? 0 : stackView.arrangedSubviews.count - 1
-        stackView.insertArrangedSubview(rowView, at: index)
+        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
         foodItemRows.append(rowView)
         rowView.setSelectedFoodItem(foodItem)
         
@@ -2163,7 +2218,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self?.handleSelectedFoodItems(selectedItems)
         }
         let navigationController = UINavigationController(rootViewController: dropdownVC)
-        navigationController.modalPresentationStyle = .formSheet
+        navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true, completion: nil)
         
         hideAllDeleteButtons()
@@ -2186,6 +2241,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             startDoseGiven = false
             remainingDoseGiven = false
             if UserDefaultsRepository.allowSharingOngoingMeals {
+                cleanDuplicateFiles()
                 exportBlankCSV()
             }
         }
@@ -2279,7 +2335,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let rssFeedVC = RSSFeedViewController()
                 rssFeedVC.delegate = self
                 let navigationController = UINavigationController(rootViewController: rssFeedVC)
-                navigationController.modalPresentationStyle = .formSheet
+                navigationController.modalPresentationStyle = .pageSheet
                 present(navigationController, animated: true, completion: nil)
         
         hideAllDeleteButtons()
@@ -2339,8 +2395,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
-            label.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
-            label.text = "     OVERRIDE     "
+            label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            label.text = "OVERRIDE"
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             label.isUserInteractionEnabled = true
@@ -2382,7 +2438,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             lateBreakfastContainer.addSubview(lateBreakfastSwitch)
 
             // Adjust the switch's transform to make it smaller
-            lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.75, y: 0.75)
+            lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
 
             // Create the horizontal stack view (HStack)
             let stackView = UIStackView(arrangedSubviews: [addButton, rssButton, lateBreakfastContainer])
@@ -2403,12 +2459,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 
                 // Align lateBreakfastLabel inside the container
-                lateBreakfastLabel.topAnchor.constraint(equalTo: lateBreakfastContainer.topAnchor, constant: 4),
-                lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
+                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 14),
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
+                //lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
 
                 // Align lateBreakfastSwitch inside the container
-                lateBreakfastSwitch.bottomAnchor.constraint(equalTo: lateBreakfastContainer.bottomAnchor),
-                lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
+                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 7),
+                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
+                //lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
             ])
         }
     }

@@ -123,11 +123,11 @@ class RSSFeedViewController: UIViewController {
             print("Failed to fetch food items: \(error)")
         }
     }
-    
+    // MARK: Adjust Fuzziness here
     private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
         return items.filter {
             let name = $0.name ?? ""
-            return name.fuzzyMatch(query) > 0.2 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+            return name.fuzzyMatch(query) > 0.15 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
         }
     }
 

@@ -61,19 +61,25 @@ class MealHistoryDetailViewController: UIViewController {
 
     @objc private func repeatMeal() {
         guard let mealHistory = mealHistory else {
-            //print("mealHistory is nil")
             return
         }
 
         // Find an existing instance of ComposeMealViewController in the navigation stack
         if let navigationController = navigationController,
            let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-            composeMealVC.populateWithMealHistory(mealHistory)
-            navigationController.popToViewController(composeMealVC, animated: true)
+            
+            composeMealVC.checkAndHandleExistingMeal(replacementAction: {
+                composeMealVC.addMealHistory(mealHistory)
+            }, additionAction: {
+                composeMealVC.addMealHistory(mealHistory)
+            }, completion: {
+                navigationController.popToViewController(composeMealVC, animated: true)
+            })
+            
         } else {
             // If no existing instance found, instantiate a new one
             let composeMealVC = ComposeMealViewController()
-            composeMealVC.populateWithMealHistory(mealHistory)
+            composeMealVC.addMealHistory(mealHistory)
             navigationController?.pushViewController(composeMealVC, animated: true)
         }
     }

@@ -43,6 +43,8 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         setupNavigationBar()
         tableView.reloadData()
         
+        setupCloseButton()
+        
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
@@ -95,6 +97,15 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         }
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Spara", style: .done, target: self, action: #selector(saveChanges))
+    }
+    
+    private func setupCloseButton() {
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
     }
     
     @objc private func saveChanges() {

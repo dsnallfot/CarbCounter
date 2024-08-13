@@ -92,70 +92,34 @@ class DataSharingViewController: UIViewController {
         
         present(alert, animated: true, completion: nil)
     }
-    /*
-     @objc private func exportData() {
-     let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
-     
-     alert.addAction(UIAlertAction(title: "Exportera allt", style: .default, handler: { _ in
-     Task { await self.exportAllCSVFiles() }
-     }))
-     alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
-     
-     present(alert, animated: true, completion: nil)
-     }*/
-    
-    /*
-     @objc private func importData() {
-     let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
-     
-     alert.addAction(UIAlertAction(title: "Importera allt", style: .default, handler: { _ in
-     Task { await self.importAllCSVFiles() }
-     }))
-     alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Food Items") }
-     }))
-     alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Favorite Meals") }
-     }))
-     alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Meal History") }
-     }))
-     alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Carb Ratio Schedule") }
-     }))
-     alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Start Dose Schedule") }
-     }))
-     alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
-     
-     present(alert, animated: true, completion: nil)
-     }*/
-    
+
     @objc private func importData() {
         let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
         
+        // Automatic import for all CSV files
         alert.addAction(UIAlertAction(title: "Importera hela databasen", style: .default, handler: { _ in
             Task { await self.importAllCSVFiles() }
         }))
         
+        // Present document picker for specific CSV imports
         alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Food Items") }
+            Task { await self.presentDocumentPicker(for: "Food Items") }
         }))
         
         alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Favorite Meals") }
+            Task { await self.presentDocumentPicker(for: "Favorite Meals") }
         }))
         
         alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Meal History") }
+            Task { await self.presentDocumentPicker(for: "Meal History") }
         }))
         
         alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Carb Ratio Schedule") }
+            Task { await self.presentDocumentPicker(for: "Carb Ratio Schedule") }
         }))
         
         alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Start Dose Schedule") }
+            Task { await self.presentDocumentPicker(for: "Start Dose Schedule") }
         }))
         
         // New option for importing user settings
@@ -397,15 +361,6 @@ class DataSharingViewController: UIViewController {
             pendingImportEntityName = entityName
         }
     }
-    /*
-     private func presentDocumentPicker(for entityName: String) async {
-     DispatchQueue.main.async {
-     let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
-     documentPicker.delegate = self
-     documentPicker.accessibilityHint = entityName
-     self.present(documentPicker, animated: true, completion: nil)
-     }
-     }*/
     
     private func presentDocumentPicker(for entityName: String) async {
         DispatchQueue.main.async {
@@ -758,7 +713,7 @@ class DataSharingViewController: UIViewController {
         let timestamp = dateFormatter.string(from: Date())
         let fileName = "UserDefaults_\(caregiverName)_\(timestamp).csv"
 
-        await saveCSV(data: csvString, fileName: fileName)
+        await saveUserDefaultsCSV(data: csvString, fileName: fileName)
         showAlert(title: "Export lyckades", message: "Användarinställningarna har exporterats.")
     }
 
@@ -830,23 +785,8 @@ class DataSharingViewController: UIViewController {
     
 }
 
-
-
 // Document Picker Delegate Methods
 extension DataSharingViewController: UIDocumentPickerDelegate {
-    /*func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let url = urls.first else { return }
-        
-        // Check if accessing the resource is successful
-        if url.startAccessingSecurityScopedResource() {
-            defer { url.stopAccessingSecurityScopedResource() }
-            if let entityName = controller.accessibilityHint {
-                Task { await parseCSV(at: url, for: entityName) }
-            }
-        } else {
-            print("Failed to access security-scoped resource.")
-        }
-    }*/
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         
@@ -917,6 +857,30 @@ extension DataSharingViewController {
                 
                 let fileManager = FileManager.default
                 let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
+                let destinationURL = iCloudURL?.appendingPathComponent(fileName)
+                
+                if let destinationURL = destinationURL {
+                    if fileManager.fileExists(atPath: destinationURL.path) {
+                        try fileManager.removeItem(at: destinationURL)
+                    }
+                    try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
+                    print("Export Successful: Data has been exported to iCloud successfully.")
+                } else {
+                    print("Export Failed: iCloud Drive URL is nil.")
+                }
+            } catch {
+                print("Failed to save file to iCloud: \(error)")
+            }
+        }
+    public func saveUserDefaultsCSV(data: String, fileName: String) async {
+            let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
+            let tempFilePath = tempDirectory.appendingPathComponent(fileName)
+            
+            do {
+                try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
+                
+                let fileManager = FileManager.default
+                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/Användarinställningar")
                 let destinationURL = iCloudURL?.appendingPathComponent(fileName)
                 
                 if let destinationURL = destinationURL {

@@ -156,7 +156,7 @@ class HomeViewController: UIViewController {
     @objc func showOngoingMeal() {
         let ongoingMealVC = OngoingMealViewController()
         let navigationController = UINavigationController(rootViewController: ongoingMealVC)
-        navigationController.modalPresentationStyle = .automatic // or .pageSheet or .formSheet for iPad
+        navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true, completion: nil)
     }
     
