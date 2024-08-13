@@ -92,70 +92,34 @@ class DataSharingViewController: UIViewController {
         
         present(alert, animated: true, completion: nil)
     }
-    /*
-     @objc private func exportData() {
-     let alert = UIAlertController(title: "Vill du exportera din data till iCloud?", message: "• Livsmedel\n• Favoritmåltider\n• Måltidshistorik\n• Carb ratio schema\n• Startdoser schema", preferredStyle: .actionSheet)
-     
-     alert.addAction(UIAlertAction(title: "Exportera allt", style: .default, handler: { _ in
-     Task { await self.exportAllCSVFiles() }
-     }))
-     alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
-     
-     present(alert, animated: true, completion: nil)
-     }*/
-    
-    /*
-     @objc private func importData() {
-     let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
-     
-     alert.addAction(UIAlertAction(title: "Importera allt", style: .default, handler: { _ in
-     Task { await self.importAllCSVFiles() }
-     }))
-     alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Food Items") }
-     }))
-     alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Favorite Meals") }
-     }))
-     alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Meal History") }
-     }))
-     alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Carb Ratio Schedule") }
-     }))
-     alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
-     Task { await self.importCSV(for: "Start Dose Schedule") }
-     }))
-     alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
-     
-     present(alert, animated: true, completion: nil)
-     }*/
-    
+
     @objc private func importData() {
         let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
         
+        // Automatic import for all CSV files
         alert.addAction(UIAlertAction(title: "Importera hela databasen", style: .default, handler: { _ in
             Task { await self.importAllCSVFiles() }
         }))
         
+        // Present document picker for specific CSV imports
         alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Food Items") }
+            Task { await self.presentDocumentPicker(for: "Food Items") }
         }))
         
         alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Favorite Meals") }
+            Task { await self.presentDocumentPicker(for: "Favorite Meals") }
         }))
         
         alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Meal History") }
+            Task { await self.presentDocumentPicker(for: "Meal History") }
         }))
         
         alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Carb Ratio Schedule") }
+            Task { await self.presentDocumentPicker(for: "Carb Ratio Schedule") }
         }))
         
         alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
-            Task { await self.importCSV(for: "Start Dose Schedule") }
+            Task { await self.presentDocumentPicker(for: "Start Dose Schedule") }
         }))
         
         // New option for importing user settings
@@ -397,15 +361,6 @@ class DataSharingViewController: UIViewController {
             pendingImportEntityName = entityName
         }
     }
-    /*
-     private func presentDocumentPicker(for entityName: String) async {
-     DispatchQueue.main.async {
-     let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
-     documentPicker.delegate = self
-     documentPicker.accessibilityHint = entityName
-     self.present(documentPicker, animated: true, completion: nil)
-     }
-     }*/
     
     private func presentDocumentPicker(for entityName: String) async {
         DispatchQueue.main.async {
