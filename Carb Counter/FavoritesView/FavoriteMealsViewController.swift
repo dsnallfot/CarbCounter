@@ -174,9 +174,13 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         print("Selected favorite meal: \(favoriteMeal.name ?? "Unknown")")
         
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-            composeMealVC.populateWithFavoriteMeal(favoriteMeal)
-            navigationController?.popViewController(animated: true)
-            //print("Navigated back to ComposeMealViewController and populated with favorite meal.")
+            composeMealVC.checkAndHandleExistingMeal(replacementAction: {
+                composeMealVC.addFavoriteMeal(favoriteMeal)
+            }, additionAction: {
+                composeMealVC.addFavoriteMeal(favoriteMeal)
+            }, completion: {
+                self.navigationController?.popViewController(animated: true)
+            })
         } else {
             print("ComposeMealViewController not found in navigation stack.")
         }
