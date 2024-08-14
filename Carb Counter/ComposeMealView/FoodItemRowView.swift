@@ -224,8 +224,8 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
             
-            let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
-            let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .plain, target: self, action: #selector(doneButtonTapped))
+            let nextButton = UIBarButtonItem(title: NSLocalizedString("Nästa", comment: "Nästa"), style: .plain, target: self, action: #selector(nextButtonTapped))
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             
             toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
@@ -241,7 +241,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             var message = ""
             
             if let notes = selectedFoodItem.notes, !notes.isEmpty {
-                message += "\nNot: \(notes)\n"
+                message += String(format: NSLocalizedString("\nNot: %@\n", comment: "\nNot: %@\n"), notes)
             }
             
             if selectedFoodItem.perPiece {
@@ -250,13 +250,13 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
                 let proteinPP = selectedFoodItem.proteinPP
                 
                 if carbsPP > 0 {
-                    message += "\nKolhydrater: \(carbsPP) g / st"
+                    message += String(format: NSLocalizedString("\nKolhydrater: %@ g / st", comment: "\nKolhydrater: %@ g / st"), carbsPP)
                 }
                 if fatPP > 0 {
-                    message += "\nFett: \(fatPP) g / st"
+                    message += String(format: NSLocalizedString("\nFett: %@ g / st", comment: "\nFett: %@ g / st"), fatPP)
                 }
                 if proteinPP > 0 {
-                    message += "\nProtein: \(proteinPP) g / st"
+                    message += String(format: NSLocalizedString("\nProtein: %@ g / st", comment: "\nProtein: %@ g / st"), proteinPP)
                 }
             } else {
                 let carbohydrates = selectedFoodItem.carbohydrates
@@ -264,18 +264,18 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
                 let protein = selectedFoodItem.protein
                 
                 if carbohydrates > 0 {
-                    message += "\nKolhydrater: \(carbohydrates) g / 100 g "
+                    message += String(format: NSLocalizedString("\nKolhydrater: %@ g / 100 g ", comment: "\nKolhydrater: %@ g / 100 g "), carbohydrates)
                 }
                 if fat > 0 {
-                    message += "\nFett: \(fat) g / 100 g "
+                    message += String(format: NSLocalizedString("\nFett: %@ g / 100 g ", comment: "\nFett: %@ g / 100 g "), fat)
                 }
                 if protein > 0 {
-                    message += "\nProtein: \(protein) g / 100 g "
+                    message += String(format: NSLocalizedString("\nProtein: %@ g / 100 g ", comment: "\nProtein: %@ g / 100 g "), protein)
                 }
             }
             
             if message.isEmpty {
-                message = "Ingen näringsinformation tillgänglig."
+                message = NSLocalizedString("Ingen näringsinformation tillgänglig.", comment: "Ingen näringsinformation tillgänglig.")
             } else {
                 // Remove the last newline character
                 message = String(message.dropLast())
@@ -286,7 +286,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             }
             
             let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
             alertController.addAction(okAction)
             if let viewController = self.getViewController() {
                 viewController.present(alertController, animated: true, completion: nil)
@@ -360,7 +360,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
                 foodItemLabelWidthConstraintWithoutInfo.isActive = true
             }
             
-            ppOr100g.text = item.perPiece ? "st" : "g"
+            ppOr100g.text = item.perPiece ? NSLocalizedString("st", comment: "st") : NSLocalizedString("g", comment: "g")
             calculateNutrients()
             delegate?.startEditing()
         }

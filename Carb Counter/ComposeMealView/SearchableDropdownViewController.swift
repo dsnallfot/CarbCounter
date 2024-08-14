@@ -12,7 +12,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Sök & välj ett eller flera livsmedel"
+        searchBar.placeholder = NSLocalizedString("Sök & välj ett eller flera livsmedel", comment: "Sök & välj ett eller flera livsmedel")
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.backgroundImage = UIImage() // Removes the default background image
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
@@ -33,7 +33,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
             cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
             let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
             toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
             textField.inputAccessoryView = toolbar
         }
@@ -48,7 +48,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }()
     
     let segmentedControl: UISegmentedControl = {
-        let items = ["Namn A-Ö", "Skolmat", "Styck", "Populära"]
+        let items = [NSLocalizedString("Namn A-Ö", comment: "Namn A-Ö"), NSLocalizedString("Skolmat", comment: "Skolmat"), NSLocalizedString("Styck", comment: "Styck"), NSLocalizedString("Populära", comment: "Populära")]
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -81,7 +81,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func setupNavigationBar() {
-        title = "Välj livsmedel"
+        title = NSLocalizedString("Välj livsmedel", comment: "Välj livsmedel")
         
         // Create the close button
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
@@ -91,7 +91,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         let addFoodItemButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(addNewButtonTapped))
         
         // Create the show meal button for the right side of the navigation bar
-        let showMealButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
+        let showMealButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .plain, target: self, action: #selector(doneButtonTapped))
         
         // Set both buttons on the left side of the navigation bar
         navigationItem.rightBarButtonItems = [showMealButton, addFoodItemButton]

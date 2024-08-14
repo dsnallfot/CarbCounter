@@ -312,26 +312,26 @@ class OngoingMealViewController: UIViewController {
             let proteinPP = selectedFoodItem.proteinPP
             
             if carbsPP > 0 {
-                message += "\nKolhydrater: \(carbsPP) g / st "
+                message += NSLocalizedString("\nKolhydrater: \(carbsPP) g / st ", comment: "\nKolhydrater: \(carbsPP) g / st ")
             }
             if fatPP > 0 {
-                message += "\nFett: \(fatPP) g / st "
+                message += NSLocalizedString("\nFett: \(fatPP) g / st ", comment: "\nFett: \(fatPP) g / st ")
             }
             if proteinPP > 0 {
-                message += "\nProtein: \(proteinPP) g / st "
+                message += NSLocalizedString("\nProtein: \(proteinPP) g / st ", comment: "\nProtein: \(proteinPP) g / st ")
             }
         } else {
             let carbohydrates = selectedFoodItem.carbohydrates
             let fat = selectedFoodItem.fat
             let protein = selectedFoodItem.protein
             if carbohydrates > 0 {
-                message += "\nKolhydrater: \(carbohydrates) g / 100 g "
+                message += NSLocalizedString("\nKolhydrater: \(carbohydrates) g / 100 g ", comment: "\nKolhydrater: \(carbohydrates) g / 100 g ")
             }
             if fat > 0 {
-                message += "\nFett: \(fat) g / 100 g "
+                message += NSLocalizedString("\nFett: \(fat) g / 100 g ", comment: "\nFett: \(fat) g / 100 g ")
             }
             if protein > 0 {
-                message += "\nProtein: \(protein) g / 100 g "
+                message += NSLocalizedString("\nProtein: \(protein) g / 100 g ", comment: "\nProtein: \(protein) g / 100 g ")
             }
         }
         if message.isEmpty {

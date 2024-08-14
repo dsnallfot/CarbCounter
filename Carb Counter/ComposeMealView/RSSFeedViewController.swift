@@ -18,7 +18,7 @@ class RSSFeedViewController: UIViewController {
         setupGradientView()
         setupCloseButton()
         
-        title = "Skolmaten Vecka"
+        title = NSLocalizedString("Skolmaten Vecka", comment: "Skolmaten Vecka")
         setupNavigationBar()
         setupTableView()
         fetchRSSFeed()
@@ -103,7 +103,7 @@ class RSSFeedViewController: UIViewController {
                 
                 if let firstItem = items.first, let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
                     DispatchQueue.main.async {
-                        self.title = "Skolmaten Vecka \(weekOfYear)"
+                        self.title = String(format: NSLocalizedString("Skolmaten Vecka %@", comment: "Skolmaten Vecka %@"), weekOfYear)
                         self.tableView.reloadData()
                     }
                 }
