@@ -115,8 +115,9 @@ class RSSFeedViewController: UIViewController {
     }
     
     private func fetchFoodItems() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let context = CoreDataStack.shared.context
         let request: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        
         do {
             foodItems = try context.fetch(request)
         } catch {
