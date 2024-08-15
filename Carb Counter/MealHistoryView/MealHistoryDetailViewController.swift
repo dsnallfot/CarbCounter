@@ -1,10 +1,3 @@
-//
-//  MealHistoryDetailViewController.swift
-//  Carb Counter
-//
-//  Created by Daniel Snällfot on 2024-06-24.
-//
-
 import UIKit
 
 class MealHistoryDetailViewController: UIViewController {
@@ -41,7 +34,7 @@ class MealHistoryDetailViewController: UIViewController {
     
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
-        actionButton.setTitle("Servera samma måltid igen", for: .normal)
+        actionButton.setTitle(NSLocalizedString("Servera samma måltid igen", comment: "Serve the same meal again"), for: .normal)
         actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
         actionButton.backgroundColor = .systemBlue
         actionButton.setTitleColor(.white, for: .normal)
@@ -91,7 +84,7 @@ class MealHistoryDetailViewController: UIViewController {
         dateFormatter.dateFormat = "HH:mm"
         let mealTimeStr = dateFormatter.string(from: mealHistory.mealDate ?? Date())
         
-        title = "Måltid \(mealTimeStr)"
+        title = String(format: NSLocalizedString("Måltid %@", comment: "Meal time format"), mealTimeStr)
         
         let summaryLabel = UILabel()
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -146,22 +139,22 @@ class MealHistoryDetailViewController: UIViewController {
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
-                String(format: "%.0f", mealHistory.totalNetCarbs)
-            summaryText += "Kolhydrater \(carbs) g"
+                String(format: "%.1f", mealHistory.totalNetCarbs)
+            summaryText += String(format: NSLocalizedString("Kolhydrater %@ g", comment: "Carbs amount format"), carbs)
         }
         if mealHistory.totalNetFat > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
             let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetFat) :
-                String(format: "%.0f", mealHistory.totalNetFat)
-            summaryText += "Fett \(fat) g"
+                String(format: "%.1f", mealHistory.totalNetFat)
+            summaryText += String(format: NSLocalizedString("Fett %@ g", comment: "Fat amount format"), fat)
         }
         if mealHistory.totalNetProtein > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
             let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetProtein) :
-                String(format: "%.0f", mealHistory.totalNetProtein)
-            summaryText += "Protein \(protein) g"
+                String(format: "%.1f", mealHistory.totalNetProtein)
+            summaryText += String(format: NSLocalizedString("Protein %@ g", comment: "Protein amount format"), protein)
         }
         
         return "★ \(summaryText)"
@@ -169,25 +162,24 @@ class MealHistoryDetailViewController: UIViewController {
     
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {
         var detailText = ""
-        let portionServedFormatted = foodEntry.entryPortionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryPortionServed) : String(format: "%.0f", foodEntry.entryPortionServed)
-        let notEatenFormatted = foodEntry.entryNotEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryNotEaten) : String(format: "%.0f", foodEntry.entryNotEaten)
+        let portionServedFormatted = foodEntry.entryPortionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryPortionServed) : String(format: "%.1f", foodEntry.entryPortionServed)
+        let notEatenFormatted = foodEntry.entryNotEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryNotEaten) : String(format: "%.1f", foodEntry.entryNotEaten)
         let eatenAmount = foodEntry.entryPortionServed - foodEntry.entryNotEaten
-        let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.0f", eatenAmount)
+        let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.1f", eatenAmount)
 
         if foodEntry.entryNotEaten > 0 {
             if foodEntry.entryPerPiece {
-                detailText = "Åt upp \(eatenAmountFormatted) st  [Serverades \(portionServedFormatted) st - Lämnade \(notEatenFormatted) st]"
+                detailText = String(format: NSLocalizedString("Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]", comment: "Ate up format (pieces)"), eatenAmountFormatted, portionServedFormatted, notEatenFormatted)
             } else {
-                detailText = "Åt upp \(eatenAmountFormatted) g  [Serverades \(portionServedFormatted) g - Lämnade \(notEatenFormatted) g]"
+                detailText = String(format: NSLocalizedString("Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]", comment: "Ate up format (grams)"), eatenAmountFormatted, portionServedFormatted, notEatenFormatted)
             }
         } else {
             if foodEntry.entryPerPiece {
-                detailText = "Åt upp \(portionServedFormatted) st"
+                detailText = String(format: NSLocalizedString("Åt upp %@ st", comment: "Ate up format (pieces)"), portionServedFormatted)
             } else {
-                detailText = "Åt upp \(portionServedFormatted) g"
+                detailText = String(format: NSLocalizedString("Åt upp %@ g", comment: "Ate up format (grams)"), portionServedFormatted)
             }
         }
-        
         return detailText
     }
 }

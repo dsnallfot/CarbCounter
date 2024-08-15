@@ -33,6 +33,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var bolusLabel: UILabel!
     @IBOutlet weak var bolusUnits: UITextField!
     @IBOutlet weak var bolusStack: UIStackView!
+    @IBOutlet weak var method: UITextField!
     @IBOutlet weak var plusSign: UIImageView!
     
     var startDose: Bool = false
@@ -132,6 +133,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        // Update the method UITextField based on the stored value in UserDefaults
+        if UserDefaultsRepository.method == "iOS Shortcuts" {
+            method.text = NSLocalizedString("ⓘ  iOS Genväg", comment: "ⓘ  iOS Genväg")
+        } else {
+            method.text = NSLocalizedString("ⓘ  Twilio SMS", comment: "ⓘ  Twilio SMS")
+        }
 
         updateSendMealButtonText(sendMealButton.currentTitle ?? NSLocalizedString("Skicka Måltid", comment: "Skicka Måltid"))
     }
@@ -807,22 +815,24 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let cleanedMealNotes = mealNotesValue
             let name = UserDefaultsRepository.caregiverName
             let secret = UserDefaultsRepository.remoteSecretCode
-            // Convert bolusValue to string and trim any leading or trailing whitespace
-            let trimmedBolusValue = "\(bolusValue)".trimmingCharacters(in: .whitespacesAndNewlines)
             
-            // Ensure that carbs, fats, and proteins are non-negative
-            let adjustedCarbs = max(carbs, 0)
-            let adjustedFats = max(fats, 0)
-            let adjustedProteins = max(proteins, 0)
+            // Determine the appropriate format for bolusValue based on the fractional part
+            let bolusDecimalPart = bolusValue.truncatingRemainder(dividingBy: 1)
+            let bolusFormat = bolusDecimalPart == 0 ? "%.1f" : "%.2f"
+            let trimmedBolusValue = String(format: bolusFormat, bolusValue).trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            // Ensure that carbs, fats, and proteins are non-negative and format them
+            let adjustedCarbs = String(format: "%.1f", max(carbs, 0))
+            let adjustedFats = String(format: "%.1f", max(fats, 0))
+            let adjustedProteins = String(format: "%.1f", max(proteins, 0))
             
             // Get selected date from mealDateTime and format to ISO 8601
             let selectedDate = mealDateTime.date
             let formattedDate = formatDateToISO8601(selectedDate)
 
-            // Construct and return the combinedString with bolus
-            return "Remote Måltid\nKolhydrater: \(adjustedCarbs)g\nFett: \(adjustedFats)g\nProtein: \(adjustedProteins)g\nNotering: \(cleanedMealNotes)\nDatum: \(formattedDate)\nInsulin: \(trimmedBolusValue)E\nInlagt av: \(name)\nHemlig kod: \(secret)"
+            // Construct and return the combined string with localized formatting
+            return String(format: NSLocalizedString("Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@", comment: "Remote meal details with carbs, fat, protein, note, date, insulin, entered by, and secret code"), adjustedCarbs, adjustedFats, adjustedProteins, cleanedMealNotes, formattedDate, trimmedBolusValue, name, secret)
         }
-        
         //Alert for meal without bolus
         func showMealConfirmationAlert(combinedString: String) {
             // Set isAlertShowing to true before showing the alert
@@ -944,10 +954,10 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         let method = UserDefaultsRepository.method
 
         // Extract values from the combinedString
-        let carbs = extractValue(from: combinedString, prefix: "Kolhydrater: ", suffix: "g")
-        let fats = extractValue(from: combinedString, prefix: "Fett: ", suffix: "g")
-        let proteins = extractValue(from: combinedString, prefix: "Protein: ", suffix: "g")
-        let bolus = extractValue(from: combinedString, prefix: "Insulin: ", suffix: "E")
+        let carbs = extractValue(from: combinedString, prefix: NSLocalizedString("Kolhydrater: ", comment: "Kolhydrater: "), suffix: NSLocalizedString("g", comment: "g"))
+        let fats = extractValue(from: combinedString, prefix: NSLocalizedString("Fett: ", comment: "Fett: "), suffix: NSLocalizedString("g", comment: "g"))
+        let proteins = extractValue(from: combinedString, prefix: NSLocalizedString("Protein: ", comment: "Protein: "), suffix: NSLocalizedString("g", comment: "g"))
+        let bolus = extractValue(from: combinedString, prefix: NSLocalizedString("Insulin: ", comment: "Insulin: "), suffix: NSLocalizedString("E", comment: "E"))
 
         if method == "iOS Shortcuts" {
             // Call the delegate method immediately for iOS Shortcuts

@@ -47,16 +47,16 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
                     gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
                 ])
         
-        title = "Startdoser"
+        title = NSLocalizedString("Startdoser", comment: "Startdoser")
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
         loadStartDoses()
         
         // Add Done button to the navigation bar
-        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = doneButton
         
         // Setup Clear button
-        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
         navigationItem.rightBarButtonItem = clearButton
         
@@ -110,12 +110,12 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     }
     
     @objc private func clearButtonTapped() {
-        let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .actionSheet)
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+        let alertController = UIAlertController(title: NSLocalizedString("Rensa", comment: "Rensa"), message: NSLocalizedString("Är du säker på att du vill rensa all data?", comment: "Är du säker på att du vill rensa all data?"), preferredStyle: .actionSheet)
+        let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { _ in
             CoreDataHelper.shared.clearAllStartDoses()
             self.loadStartDoses()
         }
-        let noAction = UIAlertAction(title: "Nej", style: .cancel, handler: nil)
+        let noAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
         
         alertController.addAction(yesAction)
         alertController.addAction(noAction)
@@ -223,9 +223,9 @@ class StartDoseCell: UITableViewCell {
         // Add toolbar with "Next" and "Done" buttons to the keyboard
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
-        let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
+        let nextButton = UIBarButtonItem(title: NSLocalizedString("Nästa", comment: "Nästa"), style: .plain, target: self, action: #selector(nextButtonTapped))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
         doseTextField.inputAccessoryView = toolbar
     }

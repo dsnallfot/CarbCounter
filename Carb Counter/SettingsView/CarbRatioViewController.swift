@@ -48,16 +48,16 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
                     gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
                 ])
         
-        title = "Carb Ratio"
+        title = NSLocalizedString("Carb Ratio", comment: "Carb Ratio")
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")
         loadCarbRatios()
 
         // Add Done button to the navigation bar
-        doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = doneButton
 
         // Setup Clear button
-        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
 
         // Setup Download button with SF Symbol
@@ -112,12 +112,12 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
 
     @objc private func clearButtonTapped() {
-        let alertController = UIAlertController(title: "Rensa", message: "Är du säker på att du vill rensa all data?", preferredStyle: .actionSheet)
-        let yesAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+        let alertController = UIAlertController(title: NSLocalizedString("Rensa", comment: "Rensa"), message: NSLocalizedString("Är du säker på att du vill rensa all data?", comment: "Är du säker på att du vill rensa all data?"), preferredStyle: .actionSheet)
+        let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { _ in
             CoreDataHelper.shared.clearAllCarbRatios()
             self.loadCarbRatios()
         }
-        let noAction = UIAlertAction(title: "Nej", style: .cancel, handler: nil)
+        let noAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
 
         alertController.addAction(yesAction)
         alertController.addAction(noAction)
@@ -127,13 +127,13 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
 
     @objc private func downloadButtonTapped() {
         let alertController = UIAlertController(
-            title: "Nightscout import",
-            message: "Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över.",
+            title: NSLocalizedString("Nightscout import", comment: "Nightscout import"),
+            message: NSLocalizedString("Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över.", comment: "Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över."),
             preferredStyle: .actionSheet
         )
 
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-        let confirmAction = UIAlertAction(title: "Ja", style: .destructive) { _ in
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+        let confirmAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { _ in
             self.downloadCarbRatiosFromNightscout()
         }
 
@@ -148,12 +148,12 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
             DispatchQueue.main.async {
                 if success {
                     self.loadCarbRatios()
-                    let alert = UIAlertController(title: "Lyckades", message: "Carb ratios importerade och mappede från Nightscout.", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    let alert = UIAlertController(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Carb ratios importerade och mappede från Nightscout.", comment: "Carb ratios importerade och mappede från Nightscout."), preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
                     self.present(alert, animated: true, completion: nil)
                 } else {
-                    let alert = UIAlertController(title: "Fel", message: "Kunde inte importera carb ratios från Nightscout.", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Fel"), message: NSLocalizedString("Kunde inte importera carb ratios från Nightscout.", comment: "Kunde inte importera carb ratios från Nightscout."), preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
                     self.present(alert, animated: true, completion: nil)
                 }
             }
@@ -264,9 +264,9 @@ class CarbRatioCell: UITableViewCell {
         ])
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
-            let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
+            let nextButton = UIBarButtonItem(title: NSLocalizedString("Nästa", comment: "Nästa"), style: .plain, target: self, action: #selector(nextButtonTapped))
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
             toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
             ratioTextField.inputAccessoryView = toolbar
             }

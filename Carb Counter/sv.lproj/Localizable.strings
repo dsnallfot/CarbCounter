@@ -76,8 +76,8 @@
 "Maxgräns" = "Maxgräns";
 "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..." = "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...";
 "Manuell registrering" = "Manuell registrering";
-"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio";
-"\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater";
+"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nRegistrera nu den angivna startdosen för måltiden i iAPS/Trio:\n\n• %@ g kolhydrater\n• %@ E insulin";
+"\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nSlutför nu registreringen av måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater";
 "\n• %@ g fett" = "\n• %@ g fett";
 "\n• %@ g protein" = "\n• %@ g protein";
 "\n• %@ E insulin" = "\n• %@ E insulin";
@@ -134,9 +134,22 @@
 "Klar" = "Klar";
 
 /* Meal View Controller */
+//Construct the combined string
+"Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@" = "Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@";
+
+//For parsing the combinedstring
+"Kolhydrater: " = "Kolhydrater: ";
+"g" = "g";
+"Fett: " = "Fett: ";
+"Protein: " = "Protein: ";
+"Insulin: " = "Insulin: ";
+"E" = "E";
+
 "Registrera Måltid" = "Registrera Måltid";
 "Registrera startdos" = "Registrera startdos";
 "Registrera hela måltiden" = "Registrera hela måltiden";
+"ⓘ  iOS Genväg" = "ⓘ  iOS Genväg";
+"ⓘ  Twilio SMS" = "ⓘ  Twilio SMS";
 "Skicka Måltid" = "Skicka Måltid";
 "Skicka Måltid och Bolus" = "Skicka Måltid och Bolus";
 "Nästa" = "Nästa";
@@ -244,6 +257,7 @@
 "skolmat " = "skolmat ";
 
 /* Scanner VC */
+"Scanna streckkod" = "Scanna streckkod";
 "Ogiltig URL" = "Ogiltig URL";
 "Fel: %@" = "Fel: %@";
 "Ingen data levererades" = "Ingen data levererades";
@@ -286,3 +300,130 @@
 "Mängd: %@ g" = "Mängd: %@ g";
 "Avbryt" = "Avbryt";
 
+/* Meal History */
+"Måltidshistorik" = "Måltidshistorik";
+"Historik" = "Historik";
+"Kh %.1f g" = "Kh %.1f g";
+"Fett %.1f g" = "Fett %.1f g";
+"Protein %.1f g" = "Protein %.1f g";
+"Radera måltidshistorik" = "Radera måltidshistorik";
+"Bekräfta att du vill radera denna måltid från historiken?" = "Bekräfta att du vill radera denna måltid från historiken?";
+"Avbryt" = "Avbryt";
+"Radera" = "Radera";
+"Meal history export triggered" = "Meal history export triggered";
+"Failed to delete meal history: %@" = "Failed to delete meal history: %@";
+"Servera samma måltid igen" = "Servera samma måltid igen";
+"Måltid %@" = "Måltid %@";
+"Kolhydrater %@ g" = "Kolhydrater %@ g";
+"Fett %@ g" = "Fett %@ g";
+"Protein %@ g" = "Protein %@ g";
+"Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]";
+"Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]";
+"Åt upp %@ st" = "Åt upp %@ st";
+"Åt upp %@ g" = "Åt upp %@ g";
+
+/* Settings */
+"Inställningar" = "Inställningar";
+"Tillbaka" = "Tillbaka";
+"Carb Ratio schema" = "Carb Ratio schema";
+"Startdoser schema" = "Startdoser schema";
+"Dela data" = "Dela data";
+"Fjärrstyrning" = "Fjärrstyrning";
+"Tillåt fjärrstyrning" = "Tillåt fjärrstyrning";
+"Tillåt datarensning" = "Tillåt datarensning";
+"Schema" = "Schema";
+"Fraktion" = "Fraktion";
+"Startdoser" = "Startdoser";
+"Startdos Fraktion" = "Startdos Fraktion";
+"Maxgräns Kolhydrater (g)" = "Maxgräns Kolhydrater (g)";
+"Maxgräns Kolhydrater" = "Maxgräns Kolhydrater";
+"Maxgräns Bolus (E)" = "Maxgräns Bolus (E)";
+"Maxgräns Bolus" = "Maxgräns Bolus";
+"Override-faktor" = "Override-faktor";
+"Override" = "Override";
+"Nightscout URL" = "Nightscout URL";
+"Nightscout Token" = "Nightscout Token";
+"Dabas API Secret" = "Dabas API Secret";
+"Skolmaten URL" = "Skolmaten URL";
+"Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater." = "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.";
+"Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
+"Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
+"När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:";
+"Ange exakt namn på den override du vill aktivera i iAPS/Trio" = "Ange exakt namn på den override du vill aktivera i iAPS/Trio";
+"Ange din Nightscout URL:" = "Ange din Nightscout URL:";
+"Ange din Nightscout Token:" = "Ange din Nightscout Token:";
+"Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online";
+"Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Ange URL till Skolmaten.se RSS-flöde som du vill använda:";
+"Spara" = "Spara";
+"Avbryt" = "Avbryt";
+
+/* Data Sharing VC */
+"Dela data" = "Dela data";
+"Tillåt delning av pågående måltid" = "Tillåt delning av pågående måltid";
+"Välj vilken data du vill exportera" = "Välj vilken data du vill exportera";
+"Hela databasen" = "Hela databasen";
+"Användarinställningar" = "Användarinställningar";
+"Avbryt" = "Avbryt";
+"Importera data" = "Importera data";
+"Välj vilken data du vill importera" = "Välj vilken data du vill importera";
+"Importera hela databasen" = "Importera hela databasen";
+"Livsmedel" = "Livsmedel";
+"Favoritmåltider" = "Favoritmåltider";
+"Måltidshistorik" = "Måltidshistorik";
+"Carb ratios schema" = "Carb ratios schema";
+"Startdoser schema" = "Startdoser schema";
+"Import lyckades" = "Import lyckades";
+"Användarinställningarna har importerats." = "Användarinställningarna har importerats.";
+"Export lyckades" = "Export lyckades";
+"Användarinställningarna har exporterats." = "Användarinställningarna har exporterats.";
+"Documents/CarbsCounter/Användarinställningar" = "Documents/CarbsCounter/Användarinställningar";
+"OK" = "OK";
+
+/* Carb ratio schedule */
+"Carb Ratio" = "Carb Ratio";
+"Klar" = "Klar";
+"Rensa" = "Rensa";
+"Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
+"Ja" = "Ja";
+"Nej" = "Nej";
+"Nightscout import" = "Nightscout import";
+"Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över." = "Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över.";
+"Avbryt" = "Avbryt";
+"Lyckades" = "Lyckades";
+"Carb ratios importerade och mappede från Nightscout." = "Carb ratios importerade och mappede från Nightscout.";
+"Fel" = "Fel";
+"Kunde inte importera carb ratios från Nightscout." = "Kunde inte importera carb ratios från Nightscout.";
+"Nästa" = "Nästa";
+
+/* Start dose schedule */
+"Startdoser" = "Startdoser";
+"Klar" = "Klar";
+"Rensa" = "Rensa";
+"Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
+"Ja" = "Ja";
+"Nej" = "Nej";
+"Nästa" = "Nästa";
+
+/* Remote */
+"SELECT REMOTE COMMANDS METHOD" = "VÄLJ METOD FÖR REMOTE KOMMANDON";
+"TWILIO SETTINGS" = "TWILIO INSTÄLLNINGAR";
+"REMOTE CONFIGURATION" = "REMOTE INSTÄLLNINGAR";
+"Entered By" = "Registrerat av";
+"Secret Code" = "Hemlig kod";
+"Använd genvägar" = "Använd genvägar";
+"Använd SMS API" = "Använd SMS API";
+"Fjärrstyrning" = "Fjärrstyrning";
+"Klar" = "Klar";
+"Twilio SID" = "Twilio SID";
+"Twilio Secret" = "Twilio Secret";
+"Twilio From #" = "Twilio från #";
+"Twilio To #" = "Twilio till #";
+
+/* Shortcuts */
+"Uppdatera registrerad mängd" = "Uppdatera registrerad mängd";
+"Uppdatera registrerad mängd kh, fett, protein och bolus." = "Uppdatera registrerad mängd kh, fett, protein och bolus.";
+"Kolhydrater (g)" = "Kolhydrater (g)";
+"Fett (g)" = "Fett (g)";
+"Protein (g)" = "Protein (g)";
+"Bolus (E)" = "Bolus (E)";
+"Startdos" = "Startdos";

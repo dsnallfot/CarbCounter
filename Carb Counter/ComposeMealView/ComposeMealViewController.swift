@@ -1785,7 +1785,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainDose = true
         
         if !allowShortcuts {
-            var alertMessage = NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater", comment: "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater")
+            var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater"), khValue)
             
             if let fat = Double(fatValue), fat > 0 {
                 alertMessage += String(format:NSLocalizedString("\n• %@ g fett", comment: "\n• %@ g fett"),fatValue)
