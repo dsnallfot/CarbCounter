@@ -250,13 +250,13 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
                 let proteinPP = selectedFoodItem.proteinPP
                 
                 if carbsPP > 0 {
-                    message += String(format: NSLocalizedString("\nKolhydrater: %@ g / st", comment: "\nKolhydrater: %@ g / st"), carbsPP)
+                    message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / st", comment: "\nKolhydrater: %.1f g / st"), carbsPP)
                 }
                 if fatPP > 0 {
-                    message += String(format: NSLocalizedString("\nFett: %@ g / st", comment: "\nFett: %@ g / st"), fatPP)
+                    message += String(format: NSLocalizedString("\nFett: %.1f g / st", comment: "\nFett: %.1f g / st"), fatPP)
                 }
                 if proteinPP > 0 {
-                    message += String(format: NSLocalizedString("\nProtein: %@ g / st", comment: "\nProtein: %@ g / st"), proteinPP)
+                    message += String(format: NSLocalizedString("\nProtein: %.1f g / st", comment: "\nProtein: %.1f g / st"), proteinPP)
                 }
             } else {
                 let carbohydrates = selectedFoodItem.carbohydrates
@@ -264,13 +264,13 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
                 let protein = selectedFoodItem.protein
                 
                 if carbohydrates > 0 {
-                    message += String(format: NSLocalizedString("\nKolhydrater: %@ g / 100 g ", comment: "\nKolhydrater: %@ g / 100 g "), carbohydrates)
+                    message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / 100 g ", comment: "\nKolhydrater: %.1f g / 100 g "), carbohydrates)
                 }
                 if fat > 0 {
-                    message += String(format: NSLocalizedString("\nFett: %@ g / 100 g ", comment: "\nFett: %@ g / 100 g "), fat)
+                    message += String(format: NSLocalizedString("\nFett: %.1f g / 100 g ", comment: "\nFett: %.1f g / 100 g "), fat)
                 }
                 if protein > 0 {
-                    message += String(format: NSLocalizedString("\nProtein: %@ g / 100 g ", comment: "\nProtein: %@ g / 100 g "), protein)
+                    message += String(format: NSLocalizedString("\nProtein: %.1f g / 100 g ", comment: "\nProtein: %.1f g / 100 g "), protein)
                 }
             }
             

@@ -7,7 +7,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk"]
+    let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk", "grönpeppar"]
     var offset = 0
     
     override func viewDidLoad() {
@@ -18,7 +18,7 @@ class RSSFeedViewController: UIViewController {
         setupGradientView()
         setupCloseButton()
         
-        title = NSLocalizedString("Skolmaten Vecka", comment: "Skolmaten Vecka")
+        title = NSLocalizedString("Skolmaten Vecka --", comment: "Skolmaten Vecka --")
         setupNavigationBar()
         setupTableView()
         fetchRSSFeed()
@@ -98,18 +98,27 @@ class RSSFeedViewController: UIViewController {
         NetworkManager.shared.fetchRSSFeed(url: schoolFoodURL) { data in
             guard let data = data else { return }
             let parser = RSSParser()
-            if let items = parser.parse(data: data) {
-                self.rssItems = items
-                
-                if let firstItem = items.first, let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
+            if let items = parser.parse(data: data), let firstItem = items.first {
+                if let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
                     DispatchQueue.main.async {
-                        self.title = "Skolmaten Vecka \(weekOfYear)" //String(format: NSLocalizedString("Skolmaten Vecka %@", comment: "Skolmaten Vecka %@"), weekOfYear)
+                        self.rssItems = items
+                        self.title = "Skolmaten Vecka \(weekOfYear)"
+                        self.tableView.reloadData()
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.title = "Skolmaten Vecka --"
+                        self.rssItems = []
                         self.tableView.reloadData()
                     }
                 }
-                
             } else {
-                print("Failed to parse RSS feed")
+                DispatchQueue.main.async {
+                    self.title = "Skolmaten Vecka --"
+                    self.rssItems = []
+                    self.tableView.reloadData()
+                    print("Failed to parse RSS feed or no items found")
+                }
             }
         }
     }
@@ -128,7 +137,7 @@ class RSSFeedViewController: UIViewController {
     private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
         return items.filter {
             let name = $0.name ?? ""
-            return name.fuzzyMatch(query) > 0.15 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+            return name.fuzzyMatch(query) > 0.2 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
         }
     }
 

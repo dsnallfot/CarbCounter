@@ -457,9 +457,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
+        // Clear existing food items if needed
         // clearAllFoodItems() // Uncomment if you want to reset the view before adding new items
+
+        // Sort the matched food items by carbohydrates in descending order
+        let sortedMatchedFoodItems = matchedFoodItems.sorted {
+            ($0.carbohydrates + $0.carbsPP) > ($1.carbohydrates + $1.carbsPP)
+        }
         
-        for matchedFoodItem in matchedFoodItems {
+        for matchedFoodItem in sortedMatchedFoodItems {
             if let existingFoodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
