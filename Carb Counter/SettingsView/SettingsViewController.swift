@@ -61,56 +61,6 @@ class SettingsViewController: UITableViewController {
         setupView()
         tableView.reloadData()
     }
-    /*
-        tableView.backgroundColor = .clear // Make sure the table view itself is clear
-                
-                // Create the solid background view
-                let solidBackgroundView = UIView()
-                solidBackgroundView.backgroundColor = .systemBackground
-                solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
-                
-                // Create the gradient view
-                let colors: [CGColor] = [
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-                ]
-                let gradientView = GradientView(colors: colors)
-                gradientView.translatesAutoresizingMaskIntoConstraints = false
-                
-                // Add the solid background view and gradient view as the table view's background view
-                let backgroundContainerView = UIView()
-                backgroundContainerView.addSubview(solidBackgroundView)
-                backgroundContainerView.addSubview(gradientView)
-                tableView.backgroundView = backgroundContainerView
-                
-                // Set up constraints for the solid background view
-                NSLayoutConstraint.activate([
-                    solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                    solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                    solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                    solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-                ])
-                
-                // Set up constraints for the gradient view
-                NSLayoutConstraint.activate([
-                    gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                    gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                    gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                    gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-                ])
-        title = "Inställningar"
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "switchCell")
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "valueCell")
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(updateToggleStates), name: .didImportUserDefaults, object: nil)
-
-
-        
-        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
-        navigationItem.leftBarButtonItem = closeButton
-    }*/
     
     @objc private func closeView() {
         dismiss(animated: true, completion: nil)
@@ -128,22 +78,6 @@ class SettingsViewController: UITableViewController {
     deinit {
         NotificationCenter.default.removeObserver(self, name: .didImportUserDefaults, object: nil)
     }
-    /*
-    @objc private func updateToggleStates() {
-        for case let cell as UITableViewCell in tableView.visibleCells {
-            if let toggleSwitch = cell.accessoryView as? UISwitch {
-                if cell.textLabel?.text == "Tillåt fjärrstyrning" {
-                    toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
-                } else if cell.textLabel?.text == "Tillåt datarensning" {
-                    toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
-                } else if cell.textLabel?.text == "Tillåt delning av pågående måltid" {
-                    toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
-                }
-            } else if let segmentedControl = cell.accessoryView as? UISegmentedControl, cell.textLabel?.text == "Startdoser" {
-                segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
-            }
-        }
-    }*/
     
     @objc private func cancelButtonTapped() {
         dismiss(animated: true, completion: nil)
@@ -152,7 +86,6 @@ class SettingsViewController: UITableViewController {
     @objc private func useStartDosePercentageSegmentChanged(_ sender: UISegmentedControl) {
         let isOn = sender.selectedSegmentIndex == 1
         UserDefaultsRepository.useStartDosePercentage = isOn
-        // Add any additional handling needed when the value changes
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -164,7 +97,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 12 // Increased to accommodate the new rows
+            return 12
         default:
             return 0
         }
@@ -206,7 +139,6 @@ class SettingsViewController: UITableViewController {
                 cell.accessoryView = toggleSwitch
                 cell.backgroundColor = .clear
             case 2:
-                // Define the segmented control and set its properties
                 let segmentedControl = UISegmentedControl(items: ["Schema", "Fraktion"])
                 segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
                 segmentedControl.addTarget(self, action: #selector(useStartDosePercentageSegmentChanged(_:)), for: .valueChanged)
@@ -260,7 +192,7 @@ class SettingsViewController: UITableViewController {
     }
 
     private func maskText(_ text: String?) -> String {
-        return text?.isEmpty == false ? String(repeating: "*", count: 20) : "" //text!.count) : ""
+        return text?.isEmpty == false ? String(repeating: "*", count: 20) : ""
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
