@@ -254,6 +254,68 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         
         return headerView
     }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let weekdayItems = rssItems.filter {
+            let calendar = Calendar(identifier: .iso8601)
+            return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
+        }
+        let courses = weekdayItems.flatMap { $0.courses }
+        let selectedCourse = courses[indexPath.row]
+        let parsedWords = parseCourseDescription(selectedCourse)
+        
+        var matchedFoodItems: Set<FoodItem> = []  // Using a set to avoid duplicates
+        
+        for word in parsedWords {
+            let matchedItems = fuzzySearch(query: word, in: foodItems)
+            var bestSPrefixMatch: (FoodItem, Double)?
+            var bestMatch: (FoodItem, Double)?
+            
+            for item in matchedItems {
+                if let itemName = item.name {
+                    let score = itemName.fuzzyMatch(word)
+                    if itemName.hasPrefix("Ⓢ") {
+                        if let currentBestSPrefixMatch = bestSPrefixMatch {
+                            if currentBestSPrefixMatch.1 < score {
+                                bestSPrefixMatch = (item, score)
+                            }
+                        } else {
+                            bestSPrefixMatch = (item, score)
+                        }
+                    } else {
+                        if let currentBestMatch = bestMatch {
+                            if currentBestMatch.1 < score {
+                                bestMatch = (item, score)
+                            }
+                        } else {
+                            bestMatch = (item, score)
+                        }
+                    }
+                }
+            }
+            
+            if let bestSPrefixMatch = bestSPrefixMatch {
+                matchedFoodItems.insert(bestSPrefixMatch.0)
+            } else if let bestMatch = bestMatch {
+                matchedFoodItems.insert(bestMatch.0)
+            }
+        }
+        
+        // Always add "Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
+        if let milkItem = foodItems.first(where: { $0.name == "Mjölk" }) {
+            matchedFoodItems.insert(milkItem)
+        }
+        if let mixedVegetablesItem = foodItems.first(where: { $0.name == "Ⓢ Blandade grönsaker (ej majs & ärtor)" }) {
+            matchedFoodItems.insert(mixedVegetablesItem)
+        }
+        
+        print("Matched food items: \(matchedFoodItems)")
+        
+        delegate?.didSelectFoodItems(Array(matchedFoodItems))
+        dismiss(animated: true, completion: nil)
+    }
 }
 
 protocol RSSFeedDelegate: AnyObject {
