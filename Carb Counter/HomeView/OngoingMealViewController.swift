@@ -28,7 +28,7 @@ class OngoingMealViewController: UIViewController {
     
     let takeoverButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Ta över registrering", for: .normal)
+        button.setTitle(NSLocalizedString("Ta över registrering", comment: "Ta över registrering"), for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
@@ -42,7 +42,7 @@ class OngoingMealViewController: UIViewController {
     
     let noDataLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ingen måltidregistrering pågår"
+        label.text = NSLocalizedString("Ingen måltidregistrering pågår", comment: "Ingen måltidregistrering pågår")
         label.textColor = .gray
         label.textAlignment = .center
         label.font = UIFont.italicSystemFont(ofSize: 16)
@@ -148,7 +148,7 @@ class OngoingMealViewController: UIViewController {
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
         navigationItem.leftBarButtonItem = closeButton
-        navigationItem.title = "Pågående måltid"
+        navigationItem.title = NSLocalizedString("Pågående måltid", comment: "Pågående måltid")
         
         setupTakeoverButton()
     }
@@ -312,30 +312,30 @@ class OngoingMealViewController: UIViewController {
             let proteinPP = selectedFoodItem.proteinPP
             
             if carbsPP > 0 {
-                message += "\nKolhydrater: \(carbsPP) g / st "
+                message += NSLocalizedString("\nKolhydrater: \(carbsPP) g / st ", comment: "\nKolhydrater: \(carbsPP) g / st ")
             }
             if fatPP > 0 {
-                message += "\nFett: \(fatPP) g / st "
+                message += NSLocalizedString("\nFett: \(fatPP) g / st ", comment: "\nFett: \(fatPP) g / st ")
             }
             if proteinPP > 0 {
-                message += "\nProtein: \(proteinPP) g / st "
+                message += NSLocalizedString("\nProtein: \(proteinPP) g / st ", comment: "\nProtein: \(proteinPP) g / st ")
             }
         } else {
             let carbohydrates = selectedFoodItem.carbohydrates
             let fat = selectedFoodItem.fat
             let protein = selectedFoodItem.protein
             if carbohydrates > 0 {
-                message += "\nKolhydrater: \(carbohydrates) g / 100 g "
+                message += NSLocalizedString("\nKolhydrater: \(carbohydrates) g / 100 g ", comment: "\nKolhydrater: \(carbohydrates) g / 100 g ")
             }
             if fat > 0 {
-                message += "\nFett: \(fat) g / 100 g "
+                message += NSLocalizedString("\nFett: \(fat) g / 100 g ", comment: "\nFett: \(fat) g / 100 g ")
             }
             if protein > 0 {
-                message += "\nProtein: \(protein) g / 100 g "
+                message += NSLocalizedString("\nProtein: \(protein) g / 100 g ", comment: "\nProtein: \(protein) g / 100 g ")
             }
         }
         if message.isEmpty {
-            message = "Ingen näringsinformation tillgänglig."
+            message = NSLocalizedString("Ingen näringsinformation tillgänglig.", comment: "Ingen näringsinformation tillgänglig.")
         } else {
             // Remove the last newline character
             message = String(message.dropLast())
@@ -358,14 +358,14 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let nameLabel = UILabel()
-        nameLabel.text = "LIVSMEDEL"
+        nameLabel.text = NSLocalizedString("LIVSMEDEL", comment: "LIVSMEDEL")
         nameLabel.textColor = .gray
         nameLabel.textAlignment = .left
         nameLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let portionLabel = UILabel()
-        portionLabel.text = "PORTION"
+        portionLabel.text = NSLocalizedString("PORTION", comment: "PORTION")
         portionLabel.textColor = .gray
         portionLabel.textAlignment = .right
         portionLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -373,7 +373,7 @@ class OngoingMealViewController: UIViewController {
         portionLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let notEatenLabel = UILabel()
-        notEatenLabel.text = "LÄMNAT"
+        notEatenLabel.text = NSLocalizedString("LÄMNAT", comment: "LÄMNAT")
         notEatenLabel.textColor = .gray
         notEatenLabel.textAlignment = .right
         notEatenLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -381,7 +381,7 @@ class OngoingMealViewController: UIViewController {
         notEatenLabel.setContentHuggingPriority(.required, for: .horizontal)
         
         let carbsLabel = UILabel()
-        carbsLabel.text = "KH"
+        carbsLabel.text = NSLocalizedString("KH", comment: "KH")
         carbsLabel.textColor = .gray
         carbsLabel.textAlignment = .right
         carbsLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -405,7 +405,7 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "REGISTRERADE KOLHYDRATER:"
+        titleLabel.text = NSLocalizedString("REGISTRERADE KOLHYDRATER:", comment: "REGISTRERADE KOLHYDRATER:")
         titleLabel.textColor = .label
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -434,7 +434,7 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = "TOT KOLHYDRATER I MÅLTIDEN:"
+        titleLabel.text = NSLocalizedString("TOT KOLHYDRATER I MÅLTIDEN:", comment: "TOT KOLHYDRATER I MÅLTIDEN:")
         titleLabel.textColor = .systemOrange
         titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)

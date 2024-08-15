@@ -12,35 +12,33 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Välj en favoritmåltid"
+        title = NSLocalizedString("Välj en favoritmåltid", comment: "Select a favorite meal")
         view.backgroundColor = .systemBackground
         
         // Create the gradient view
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Add the gradient view to the main view
-            view.addSubview(gradientView)
-            view.sendSubviewToBack(gradientView)
-            
-            // Set up constraints for the gradient view
-            NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
-         
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
         
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         
         // Set the back button title for the next view controller
         let backButton = UIBarButtonItem()
-        backButton.title = "Tillbaka"
+        backButton.title = NSLocalizedString("Tillbaka", comment: "Back")
         navigationItem.backBarButtonItem = backButton
         
         setupSearchBar()
@@ -63,7 +61,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func setupSearchBar() {
         searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Sök favoritmåltid"
+        searchBar.placeholder = NSLocalizedString("Sök favoritmåltid", comment: "Search favorite meal")
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.barTintColor = .clear
         searchBar.backgroundColor = .clear
@@ -82,7 +80,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = .clear//.systemBackground
+        tableView.backgroundColor = .clear
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
         
@@ -98,14 +96,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         if #available(iOS 13.0, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .clear//.systemBackground
+            appearance.backgroundColor = .clear
             appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
             appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
             
             navigationController?.navigationBar.standardAppearance = appearance
             navigationController?.navigationBar.scrollEdgeAppearance = appearance
         } else {
-            navigationController?.navigationBar.barTintColor = .clear//.systemBackground
+            navigationController?.navigationBar.barTintColor = .clear
             navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
         }
     }
@@ -126,7 +124,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
             }
         } catch {
             DispatchQueue.main.async {
-                print("Failed to fetch favorite meals: \(error)")
+                print(NSLocalizedString("Failed to fetch favorite meals: %@", comment: "Error message for fetching favorite meals"))
             }
         }
     }
@@ -140,7 +138,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
-        cell.backgroundColor = .clear // Set cell background to clear
+        cell.backgroundColor = .clear
         cell.textLabel?.numberOfLines = 2
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.detailTextLabel?.numberOfLines = 2
@@ -171,7 +169,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
-        print("Selected favorite meal: \(favoriteMeal.name ?? "Unknown")")
+        print("Selected favorite meal: \(favoriteMeal.name ?? NSLocalizedString("Unknown", comment: "Unknown"))")
         
         if let composeMealVC = navigationController?.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
             composeMealVC.checkAndHandleExistingMeal(replacementAction: {
@@ -182,7 +180,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
                 self.navigationController?.popViewController(animated: true)
             })
         } else {
-            print("ComposeMealViewController not found in navigation stack.")
+            print(NSLocalizedString("ComposeMealViewController not found in navigation stack.", comment: "Error message when ComposeMealViewController is not found"))
         }
     }
     
@@ -204,7 +202,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }
-    
+
     private func editFavoriteMeal(at indexPath: IndexPath) {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         let detailVC = FavoriteMealDetailViewController()
@@ -215,24 +213,27 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         present(navController, animated: true, completion: nil)
     }
-    
+
     private func confirmDeleteFavoriteMeal(at indexPath: IndexPath) {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         
-        let deleteAlert = UIAlertController(title: "Radera favoritmåltid", message: "Bekräfta att du vill radera: '\"\(favoriteMeal.name ?? "")\"'?", preferredStyle: .actionSheet)
-        let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { [weak self] _ in
+        let deleteAlert = UIAlertController(
+            title: NSLocalizedString("Radera favoritmåltid", comment: "Delete favorite meal"),
+            message: String(format: NSLocalizedString("Bekräfta att du vill radera: '%@'?", comment: "Confirm that you want to delete"), favoriteMeal.name ?? ""),
+            preferredStyle: .actionSheet)
+        let deleteAction = UIAlertAction(title: NSLocalizedString("Radera", comment: "Delete"), style: .destructive) { [weak self] _ in
             Task {
                 await self?.deleteFavoriteMeal(at: indexPath)
             }
         }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
         
         deleteAlert.addAction(deleteAction)
         deleteAlert.addAction(cancelAction)
         
         present(deleteAlert, animated: true, completion: nil)
     }
-    
+
     private func deleteFavoriteMeal(at indexPath: IndexPath) async {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         CoreDataStack.shared.context.delete(favoriteMeal)
@@ -244,11 +245,11 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         guard let dataSharingVC = dataSharingVC else { return }
         await dataSharingVC.exportFavoriteMealsToCSV()
-        print("Favorite meals export triggered")
+        print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
     }
-    
+
     // MARK: - UISearchBarDelegate
-    
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
             filteredFavoriteMeals = favoriteMeals
@@ -257,7 +258,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         }
         tableView.reloadData()
     }
-    
+
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         filteredFavoriteMeals = favoriteMeals

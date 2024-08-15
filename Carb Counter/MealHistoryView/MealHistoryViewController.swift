@@ -12,28 +12,29 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Måltidshistorik"
+        title = NSLocalizedString("Måltidshistorik", comment: "Title for Meal History screen")
         view.backgroundColor = .systemBackground
+        
         // Create the gradient view
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Add the gradient view to the main view
-            view.addSubview(gradientView)
-            view.sendSubviewToBack(gradientView)
-            
-            // Set up constraints for the gradient view
-            NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         
         setupDatePicker()
         setupTableView()
@@ -42,14 +43,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchMealHistories()
         
         // Set the back button title for the next view controller
         let backButton = UIBarButtonItem()
-        backButton.title = "Historik"
+        backButton.title = NSLocalizedString("Historik", comment: "Back button title for history")
         navigationItem.backBarButtonItem = backButton
     }
     
@@ -78,7 +79,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = .clear//.systemBackground
+        tableView.backgroundColor = .clear
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MealHistoryCell")
         view.addSubview(tableView)
         
@@ -91,23 +92,23 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func fetchMealHistories() {
-            let context = CoreDataStack.shared.context
-            let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
-            let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
-            fetchRequest.sortDescriptors = [sortDescriptor]
-            
-            do {
-                let mealHistories = try context.fetch(fetchRequest)
-                DispatchQueue.main.async {
-                    self.mealHistories = mealHistories
-                    self.filteredMealHistories = mealHistories
-                    self.tableView.reloadData()
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    print("Failed to fetch meal histories: \(error)")
-                }
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
+        let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        do {
+            let mealHistories = try context.fetch(fetchRequest)
+            DispatchQueue.main.async {
+                self.mealHistories = mealHistories
+                self.filteredMealHistories = mealHistories
+                self.tableView.reloadData()
             }
+        } catch {
+            DispatchQueue.main.async {
+                print("Failed to fetch meal histories: \(error.localizedDescription)")
+            }
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -124,25 +125,22 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let mealDateStr = dateFormatter.string(from: mealHistory.mealDate ?? Date())
         
         var detailText = ""
+        
         if mealHistory.totalNetCarbs > 0 {
-            let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.0f", mealHistory.totalNetCarbs) :
-                String(format: "%.0f", mealHistory.totalNetCarbs)
-            detailText += "Kh \(carbs) g"
+            let carbs = mealHistory.totalNetCarbs
+            detailText += String(format: NSLocalizedString("Kh %.1f g", comment: "Carbs amount format"), carbs)
         }
+        
         if mealHistory.totalNetFat > 0 {
             if !detailText.isEmpty { detailText += " • " }
-            let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.0f", mealHistory.totalNetFat) :
-                String(format: "%.0f", mealHistory.totalNetFat)
-            detailText += "Fett \(fat) g"
+            let fat = mealHistory.totalNetFat
+            detailText += String(format: NSLocalizedString("Fett %.1f g", comment: "Fat amount format"), fat)
         }
+        
         if mealHistory.totalNetProtein > 0 {
             if !detailText.isEmpty { detailText += " • " }
-            let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.0f", mealHistory.totalNetProtein) :
-                String(format: "%.0f", mealHistory.totalNetProtein)
-            detailText += "Protein \(protein) g"
+            let protein = mealHistory.totalNetProtein
+            detailText += String(format: NSLocalizedString("Protein %.1f g", comment: "Protein amount format"), protein)
         }
         
         // Collect food item names
@@ -150,8 +148,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let foodItemNamesStr = foodItemNames.joined(separator: " • ")
         
         // Update the cell text
-        //cell.textLabel?.text = "[\(mealDateStr)] \(detailText)"
-        //cell.detailTextLabel?.text = foodItemNamesStr
         cell.textLabel?.text = foodItemNamesStr
         cell.detailTextLabel?.text = "[\(mealDateStr)]  \(detailText)"
         cell.detailTextLabel?.textColor = .gray
@@ -165,11 +161,16 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: nil) { (action, view, completionHandler) in
-            let alert = UIAlertController(title: "Radera måltidshistorik", message: "Bekräfta att du vill radera denna måltid från historiken?", preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+            let alert = UIAlertController(
+                title: NSLocalizedString("Radera måltidshistorik", comment: "Delete meal history title"),
+                message: NSLocalizedString("Bekräfta att du vill radera denna måltid från historiken?", comment: "Delete meal history confirmation"),
+                preferredStyle: .actionSheet)
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel deletion"), style: .cancel, handler: { _ in
                 completionHandler(false) // Dismiss the swipe action
             }))
-            alert.addAction(UIAlertAction(title: "Radera", style: .destructive, handler: { _ in
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Radera", comment: "Confirm deletion"), style: .destructive, handler: { _ in
                 let mealHistory = self.filteredMealHistories[indexPath.row]
                 let context = CoreDataStack.shared.context
                 context.delete(mealHistory)
@@ -182,7 +183,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                     await dataSharingVC.exportMealHistoryToCSV()
                 }
                 
-                print("Meal history export triggered")
+                print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
                 
                 do {
                     try context.save()
@@ -190,11 +191,10 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                     self.filteredMealHistories.remove(at: indexPath.row)
                     tableView.deleteRows(at: [indexPath], with: .fade)
                 } catch {
-                    print("Failed to delete meal history: \(error)")
+                    print(String(format: NSLocalizedString("Failed to delete meal history: %@", comment: "Log message for failed meal history deletion"), error.localizedDescription))
                 }
                 completionHandler(true) // Perform the delete action
             }))
-            
             
             self.present(alert, animated: true, completion: nil)
         }

@@ -56,7 +56,8 @@ class RSSParser: NSObject, XMLParserDelegate {
         if elementName == "item" {
             // Parse the currentDate string to a Date object
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "E, d MMM yyyy HH:mm:ss Z" // Adjust the format based on your RSS feed's date format
+            dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz" // Adjust the format based on your RSS feed's date format
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             if let date = dateFormatter.date(from: currentDate) {
                 let courses = currentDescription.components(separatedBy: "<br/>").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 let rssItem = RSSItem(title: currentTitle, date: date, description: currentDescription, courses: courses.isEmpty ? ["Måltidsinformation saknas"] : courses)

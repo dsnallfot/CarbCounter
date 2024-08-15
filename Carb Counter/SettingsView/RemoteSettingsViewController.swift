@@ -2,9 +2,9 @@ import UIKit
 
 class RemoteSettingsViewController: UITableViewController {
 
-    let sectionHeaders = ["SELECT REMOTE COMMANDS METHOD", "TWILIO SETTINGS", "REMOTE CONFIGURATION"]
+    let sectionHeaders = [NSLocalizedString("SELECT REMOTE COMMANDS METHOD", comment: "SELECT REMOTE COMMANDS METHOD"), NSLocalizedString("TWILIO SETTINGS", comment: "TWILIO SETTINGS"), NSLocalizedString("REMOTE CONFIGURATION", comment: "REMOTE CONFIGURATION")]
     let twilioSettings = ["Twilio SID", "Twilio Secret", "Twilio From #", "Twilio To #"]
-    let remoteConfig = ["Entered By", "Secret Code"]
+    let remoteConfig = [NSLocalizedString("Entered By", comment: "Entered By"), NSLocalizedString("Secret Code", comment: "Secret Code")]
 
     private var method: String {
         get {
@@ -55,7 +55,7 @@ class RemoteSettingsViewController: UITableViewController {
                     gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
                 ])
         
-        title = "Fjärrstyrning"
+        title = NSLocalizedString("Fjärrstyrning", comment: "Fjärrstyrning")
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
         tableView.tableFooterView = UIView()
@@ -67,7 +67,7 @@ class RemoteSettingsViewController: UITableViewController {
             }
     
         // Add Done button to the navigation bar
-        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = doneButton
     }
     
@@ -102,7 +102,7 @@ class RemoteSettingsViewController: UITableViewController {
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
 
-            let segmentedControl = UISegmentedControl(items: ["Använd genvägar", "Använd SMS API"])
+            let segmentedControl = UISegmentedControl(items: [NSLocalizedString("Använd genvägar", comment: "Använd genvägar"), NSLocalizedString("Använd SMS API", comment: "Använd SMS API")])
             segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : 0
             segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
             segmentedControl.translatesAutoresizingMaskIntoConstraints = false

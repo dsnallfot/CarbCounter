@@ -10,7 +10,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Scanna streckkod"
+        title = NSLocalizedString("Scanna streckkod", comment: "Scanna streckkod")
 
         view.backgroundColor = UIColor.black
         captureSession = AVCaptureSession()
@@ -244,7 +244,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     func fetchFromOpenFoodFacts(code: String) {
         let urlString = "https://world.openfoodfacts.net/api/v2/product/\(code)?fields=product_name,nutriments"
         guard let url = URL(string: urlString) else {
-            showErrorAlert(message: "Invalid URL")
+            showErrorAlert(message: NSLocalizedString("Invalid URL", comment: "Error message for invalid URL"))
             isProcessingBarcode = false
             return
         }
@@ -258,17 +258,18 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
             if let error = error {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Fel: \(error.localizedDescription)")
+                    self.showErrorAlert(message: String(format: NSLocalizedString("Fel: %@", comment: "Error message format"), error.localizedDescription))
                 }
                 return
             }
 
             guard let data = data else {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Ingen data levererades")
-                                        }
-                                        return
-                                        }
+                    self.showErrorAlert(message: NSLocalizedString("Ingen data levererades", comment: "No data received error message"))
+                }
+                return
+            }
+
             do {
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     if let product = jsonResponse["product"] as? [String: Any],
@@ -285,30 +286,32 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         let adjustedFat = fat.roundToDecimal(1)
                         let adjustedProteins = proteins.roundToDecimal(1)
 
-                        let message = """
-                        Kolhydrater: \(adjustedCarbohydrates) g / 100 g
-                        Fett: \(adjustedFat) g / 100 g
-                        Protein: \(adjustedProteins) g / 100 g
+                        let message = String(format: NSLocalizedString("""
+                        Kolhydrater: %.1f g / 100 g
+                        Fett: %.1f g / 100 g
+                        Protein: %.1f g / 100 g
 
                         [Källa: Openfoodfacts]
-                        """
+                        """, comment: "Nutritional information displayed for a food product"),
+                        adjustedCarbohydrates, adjustedFat, adjustedProteins)
+
                         DispatchQueue.main.async {
                             self.showProductAlert(title: productName, message: message, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                         }
-                        print("Openfoodfacts produktmatchning OK")
+                        print(NSLocalizedString("Openfoodfacts produktmatchning OK", comment: "OpenFoodFacts product match success message"))
                     } else {
                         DispatchQueue.main.async {
-                            self.showErrorAlert(message: "Kunde inte hitta information om livsmedlet")
+                            self.showErrorAlert(message: NSLocalizedString("Kunde inte hitta information om livsmedlet", comment: "Error message for missing product information"))
                         }
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self.showErrorAlert(message: "Kunde inte tolka svar från servern")
+                        self.showErrorAlert(message: NSLocalizedString("Kunde inte tolka svar från servern", comment: "Error message for JSON parsing failure"))
                     }
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Fel vid tolkning JSON: (error.localizedDescription)")
+                    self.showErrorAlert(message: String(format: NSLocalizedString("Fel vid tolkning JSON: %@", comment: "Error message for JSON decoding failure"), error.localizedDescription))
                 }
             }
         }
@@ -325,58 +328,100 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         do {
             let existingItems = try context.fetch(fetchRequest)
             
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
             
             alert.addTextField { textField in
-                textField.placeholder = "Ange vikt per styck i gram (valfritt)"
+                textField.placeholder = NSLocalizedString("Ange vikt per styck i gram (valfritt)", comment: "Placeholder for inputting weight per piece in grams (optional)")
                 textField.keyboardType = .decimalPad
             }
             
-            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
-                DispatchQueue.main.async {
-                    self.resetBarcodeProcessingState()
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
-                let adjustedProductName = productName
-                if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
-                    let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
-                    let adjustedFat = (fat * weight / 100).roundToDecimal(1)
-                    let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
-                    isPerPiece = true // Update the flag
-                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
-                } else {
-                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
-                }
-            }))
-            
-            if let existingItem = existingItems.first {
-                let comparisonMessage = """
-                Befintlig data    ->    Ny data
-                Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
-                Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
-                Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
-                """
-                
-                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
-                duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
-                    self.navigateToAddFoodItem(foodItem: existingItem)
-                }))
-                duplicateAlert.addAction(UIAlertAction(title: "Uppdatera", style: .default, handler: { _ in
-                    self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
-                }))
-                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: { _ in
+            alert.addAction(UIAlertAction(
+                title: NSLocalizedString("Avbryt", comment: "Cancel button"),
+                style: .cancel,
+                handler: { _ in
                     DispatchQueue.main.async {
                         self.resetBarcodeProcessingState()
                     }
-                }))
+                })
+            )
+            
+            alert.addAction(UIAlertAction(
+                title: NSLocalizedString("Lägg till", comment: "Add button"),
+                style: .default,
+                handler: { _ in
+                    let adjustedProductName = productName
+                    if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
+                        let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
+                        let adjustedFat = (fat * weight / 100).roundToDecimal(1)
+                        let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
+                        isPerPiece = true // Update the flag
+                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
+                    } else {
+                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
+                    }
+                })
+            )
+            
+            if let existingItem = existingItems.first {
+                let comparisonMessage = String(
+                    format: NSLocalizedString("""
+                    Befintlig data    ->    Ny data
+                    Kh:       %@  ->  %@ g/100g
+                    Fett:    %@  ->  %@ g/100g
+                    Protein:  %@  ->  %@ g/100g
+                    """, comment: "Comparison of existing and new data for carbohydrates, fat, and protein"),
+                    formattedValue(existingItem.carbohydrates),
+                    formattedValue(carbohydrates),
+                    formattedValue(existingItem.fat),
+                    formattedValue(fat),
+                    formattedValue(existingItem.protein),
+                    formattedValue(proteins)
+                )
+                
+                let duplicateAlert = UIAlertController(
+                    title: productName,
+                    message: String(format: NSLocalizedString("""
+                    Finns redan inlagt i livsmedelslistan.
+                    Vill du behålla de befintliga näringsvärdena eller uppdatera dem?
+                    
+                    %@
+""", comment: "Message asking if user wants to keep existing nutritional values or update them"),
+                    comparisonMessage),
+                    preferredStyle: .alert
+                )
+                duplicateAlert.addAction(UIAlertAction(
+                    title: NSLocalizedString("Behåll befintliga", comment: "Keep existing data"),
+                    style: .default,
+                    handler: { _ in
+                        self.navigateToAddFoodItem(foodItem: existingItem)
+                    })
+                )
+                duplicateAlert.addAction(UIAlertAction(
+                    title: NSLocalizedString("Uppdatera", comment: "Update existing data"),
+                    style: .default,
+                    handler: { _ in
+                        self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                    })
+                )
+                duplicateAlert.addAction(UIAlertAction(
+                    title: NSLocalizedString("Avbryt", comment: "Cancel button"),
+                    style: .cancel,
+                    handler: { _ in
+                        DispatchQueue.main.async {
+                            self.resetBarcodeProcessingState()
+                        }
+                    })
+                )
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
                 present(alert, animated: true, completion: nil)
             }
         } catch {
-            showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
+            showErrorAlert(message: NSLocalizedString("Ett fel uppstod vid hämtning av livsmedelsdata.", comment: "Error message for fetching food item data"))
         }
     }
 

@@ -25,7 +25,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var contentView: UIView!
     var addButtonRowView: AddButtonRowView!
     private var scrollViewBottomConstraint: NSLayoutConstraint?
-    //private var contentViewBottomConstraint: NSLayoutConstraint?
     private var addButtonRowViewBottomConstraint: NSLayoutConstraint?
     
     ///Buttons
@@ -96,11 +95,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        initializeComposeMealViewController()
+    }
+    
+    private func initializeComposeMealViewController() {
         loadValuesFromUserDefaults()
         initializeUIElements()
         ComposeMealViewController.current = self
         ComposeMealViewController.shared = self
-        
+
         ///Create the gradient view
         let colors: [CGColor] = [
             UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -109,11 +112,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ]
         let gradientView = GradientView(colors: colors)
         gradientView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         // Add the gradient view to the main view
         view.addSubview(gradientView)
         view.sendSubviewToBack(gradientView)
-        
+
         // Set up constraints for the gradient view
         NSLayoutConstraint.activate([
             gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -121,24 +124,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
+
         // Add the "Plate" image on top of the gradient view
-            let plateImageView = UIImageView(image: UIImage(named: "Plate"))
-            plateImageView.contentMode = .scaleAspectFit
-            plateImageView.alpha = 0.08
-            plateImageView.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(plateImageView)
-            
-            // Set up constraints for the plate image view
-            NSLayoutConstraint.activate([
-                plateImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                plateImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 20),
-                plateImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9), // Adjust size as needed
-                plateImageView.heightAnchor.constraint(equalTo: plateImageView.widthAnchor)
-            ])
-        
-        title = "Måltid"
-        
+        let plateImageView = UIImageView(image: UIImage(named: "Plate"))
+        plateImageView.contentMode = .scaleAspectFit
+        plateImageView.alpha = 0.08
+        plateImageView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(plateImageView)
+
+        // Set up constraints for the plate image view
+        NSLayoutConstraint.activate([
+            plateImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            plateImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 20),
+            plateImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9), // Adjust size as needed
+            plateImageView.heightAnchor.constraint(equalTo: plateImageView.widthAnchor)
+        ])
+
+        title = NSLocalizedString("Måltid", comment: "Måltid")
+
         ///Setup the fixed header containing summary and headline
         let fixedHeaderContainer = UIView()
         fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -149,11 +152,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 143)
         ])
-        
+
         ///Reset lateBreakfast to false
         UserDefaultsRepository.lateBreakfast = false
         lateBreakfast = false
-        
+
         /// Ensure addButtonRowView is initialized
         addButtonRowView = AddButtonRowView()
         updatePlaceholderValuesForCurrentHour()
@@ -164,51 +167,51 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             scheduledCarbRatio /= lateBreakfastFactor
         }
         updateScheduledValuesUI()
-        
+
         setupSummaryView(in: fixedHeaderContainer)
         setupTreatmentView(in: fixedHeaderContainer)
         setupHeadline(in: fixedHeaderContainer)
         setupScrollView(below: fixedHeaderContainer)
         setupAddButtonRowView()
-        
+
         /// Initializing
-        clearAllButton = UIBarButtonItem(title: "Avsluta måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton = UIBarButtonItem(title: NSLocalizedString("Avsluta måltid", comment: "Avsluta måltid"), style: .plain, target: self, action: #selector(clearAllButtonTapped))
         clearAllButton.tintColor = .red
         navigationItem.rightBarButtonItem = clearAllButton
-        
+
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
-        
+
         ///Inital fetch
         self.fetchFoodItems()
         totalRegisteredLabel.delegate = self
         loadFoodItemsFromCoreData()
         NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
         allowShortcuts = UserDefaultsRepository.allowShortcuts
-        
+
         // Create buttons
         let calendarImage = UIImage(systemName: "calendar")
         let historyButton = UIButton(type: .system)
         historyButton.setImage(calendarImage, for: .normal)
         historyButton.addTarget(self, action: #selector(showMealHistory), for: .touchUpInside)
-        
-        let showFavoriteMealsImage = UIImage(systemName: "star")
+
+        let showFavoriteMealsImage = UIImage(systemName: "list.star")
         let showFavoriteMealsButton = UIButton(type: .system)
         showFavoriteMealsButton.setImage(showFavoriteMealsImage, for: .normal)
         showFavoriteMealsButton.addTarget(self, action: #selector(showFavoriteMeals), for: .touchUpInside)
-        
-        let saveFavoriteImage = UIImage(systemName: "plus.circle")
+
+        let saveFavoriteImage = UIImage(systemName: "star.circle")
         saveFavoriteButton = UIButton(type: .system)
         saveFavoriteButton.setImage(saveFavoriteImage, for: .normal)
         saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
         saveFavoriteButton.isEnabled = false
         saveFavoriteButton.tintColor = .gray
-        
+
         let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
         stackView.axis = .horizontal
         stackView.spacing = 20
-        
+
         let customView = UIView()
         customView.addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -218,20 +221,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             stackView.topAnchor.constraint(equalTo: customView.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: customView.bottomAnchor)
         ])
-        
+
         let customBarButtonItem = UIBarButtonItem(customView: customView)
         navigationItem.leftBarButtonItem = customBarButtonItem
-        
+
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
         addButtonRowView.lateBreakfastLabel.addGestureRecognizer(tapGesture)
-        
+
         // Register for keyboard notifications
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-            
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+
         NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelDidChange), for: .editingChanged)
         dataSharingVC = DataSharingViewController()
@@ -300,7 +303,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         if clearAllButton == nil {
-            clearAllButton = UIBarButtonItem(title: "Avsluta måltid", style: .plain, target: self, action: #selector(clearAllButtonTapped))
+            clearAllButton = UIBarButtonItem(title: NSLocalizedString("Avsluta måltid", comment: "Avsluta måltid"), style: .plain, target: self, action: #selector(clearAllButtonTapped))
             clearAllButton.tintColor = .red
             navigationItem.rightBarButtonItem = clearAllButton
             //print("Debug - Initialized clearAllButton")
@@ -308,7 +311,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         if saveFavoriteButton == nil {
             saveFavoriteButton = UIButton(type: .system)
-            saveFavoriteButton.setImage(UIImage(systemName: "plus.circle"), for: .normal)
+            saveFavoriteButton.setImage(UIImage(systemName: "star.circle"), for: .normal)
             saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
             saveFavoriteButton.isEnabled = false
             saveFavoriteButton.tintColor = .gray
@@ -434,20 +437,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     internal func checkAndHandleExistingMeal(replacementAction: @escaping () -> Void, additionAction: @escaping () -> Void, completion: @escaping () -> Void) {
         if !foodItemRows.isEmpty {
-            let alert = UIAlertController(title: "Lägg till eller ersätt?", message: "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?", preferredStyle: .alert)
+            let alert = UIAlertController(title: NSLocalizedString("Lägg till eller ersätt?", comment: "Lägg till eller ersätt?"), message: NSLocalizedString("\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?", comment: "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?"), preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Ersätt", style: .destructive, handler: { _ in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ersätt", comment: "Ersätt"), style: .destructive, handler: { _ in
                 self.clearAllFoodItems()
                 replacementAction()
                 completion()
             }))
             
-            alert.addAction(UIAlertAction(title: "Addera", style: .default, handler: { _ in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Addera", comment: "Addera"), style: .default, handler: { _ in
                 additionAction()
                 completion()
             }))
             
-            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler:  nil))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler:  nil))
             
             present(alert, animated: true, completion: nil)
         } else {
@@ -457,9 +460,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func populateWithMatchedFoodItems(_ matchedFoodItems: [FoodItem]) {
+        // Clear existing food items if needed
         // clearAllFoodItems() // Uncomment if you want to reset the view before adding new items
+
+        // Sort the matched food items by carbohydrates in descending order
+        let sortedMatchedFoodItems = matchedFoodItems.sorted {
+            ($0.carbohydrates + $0.carbsPP) > ($1.carbohydrates + $1.carbsPP)
+        }
         
-        for matchedFoodItem in matchedFoodItems {
+        for matchedFoodItem in sortedMatchedFoodItems {
             if let existingFoodItem = foodItems.first(where: { $0.name == matchedFoodItem.name }) {
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
@@ -618,9 +627,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         view.endEditing(true)
         
-        let alertController = UIAlertController(title: "Avsluta Måltid", message: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", preferredStyle: .actionSheet)
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-        let yesAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
+        let alertController = UIAlertController(title: NSLocalizedString("Avsluta Måltid", comment: "Avsluta Måltid"), message: NSLocalizedString("Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", comment: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras."), preferredStyle: .actionSheet)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+        let yesAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive) { _ in
             if self.saveMealToHistory {
                 self.saveMealHistory() // Save MealHistory if the flag is true
             }
@@ -667,20 +676,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateRemainsBolus()
         
         // Reset the totalNetCarbsLabel and other total labels
-        totalNetCarbsLabel.text = "0 g"
-        totalNetFatLabel.text = "0 g"
-        totalNetProteinLabel.text = "0 g"
-        totalBolusAmountLabel.text = "0 E"
-        totalStartAmountLabel.text = "0 g"
-        totalRemainsLabel.text = "0 g"
-        totalRemainsBolusLabel.text = "0 E"
+        totalNetCarbsLabel.text = NSLocalizedString("0 g", comment: "0 g")
+        totalNetFatLabel.text = NSLocalizedString("0 g", comment: "0 g")
+        totalNetProteinLabel.text = NSLocalizedString("0 g", comment: "0 g")
+        totalBolusAmountLabel.text = NSLocalizedString("0 E", comment: "0 E")
+        totalStartAmountLabel.text = NSLocalizedString("0 g", comment: "0 g")
+        totalRemainsLabel.text = NSLocalizedString("0 g", comment: "0 g")
+        totalRemainsBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
         
         // Reset the startBolus amount
-        totalStartBolusLabel.text = "0 E"
+        totalStartBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
         
         // Reset the remainsContainer color and label
         remainsContainer.backgroundColor = .systemGray
-        remainsLabel.text = "+ RESTERANDE"
+        remainsLabel.text = NSLocalizedString("+ RESTERANDE", comment: "+ RESTERANDE")
     }
     
     private func exportBlankCSV() {
@@ -833,8 +842,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let bolusContainer = createContainerView(backgroundColor: .systemBlue)
         summaryView.addSubview(bolusContainer)
         
-        let bolusLabel = createLabel(text: "BOLUS", fontSize: 9, weight: .bold, color: .white)
-        totalBolusAmountLabel = createLabel(text: "0.00 E", fontSize: 18, weight: .bold, color: .white)
+        let bolusLabel = createLabel(text: NSLocalizedString("BOLUS", comment: "BOLUS"), fontSize: 9, weight: .bold, color: .white)
+        totalBolusAmountLabel = createLabel(text: NSLocalizedString("0.00 E", comment: "0.00 E"), fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
@@ -846,8 +855,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let carbsContainer = createContainerView(backgroundColor: .systemOrange)
         summaryView.addSubview(carbsContainer)
         
-        let summaryLabel = createLabel(text: "KOLHYDRATER", fontSize: 9, weight: .bold, color: .white)
-        totalNetCarbsLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
+        let summaryLabel = createLabel(text: NSLocalizedString("KOLHYDRATER", comment: "KOLHYDRATER"), fontSize: 9, weight: .bold, color: .white)
+        totalNetCarbsLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
@@ -859,8 +868,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let fatContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(fatContainer)
         
-        let netFatLabel = createLabel(text: "FETT", fontSize: 9, weight: .bold, color: .white)
-        totalNetFatLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
+        let netFatLabel = createLabel(text: NSLocalizedString("FETT", comment: "FETT"), fontSize: 9, weight: .bold, color: .white)
+        totalNetFatLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(fatStack, in: fatContainer, padding: fatPadding)
@@ -872,8 +881,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let proteinContainer = createContainerView(backgroundColor: .systemBrown)
         summaryView.addSubview(proteinContainer)
         
-        let netProteinLabel = createLabel(text: "PROTEIN", fontSize: 9, weight: .bold, color: .white)
-        totalNetProteinLabel = createLabel(text: "0.0 g", fontSize: 18, weight: .semibold, color: .white)
+        let netProteinLabel = createLabel(text: NSLocalizedString("PROTEIN", comment: "PROTEIN"), fontSize: 9, weight: .bold, color: .white)
+        totalNetProteinLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
@@ -911,9 +920,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     func formatScheduledCarbRatio(_ value: Double) -> String {
         let roundedValue = round(value * 10) / 10.0
         if roundedValue == floor(roundedValue) {
-            return String(format: "%.0f g/E", roundedValue)
+            return String(format: NSLocalizedString("%.0f g/E", comment: "%.0f g/E"), roundedValue)
         } else {
-            return String(format: "%.1f g/E", roundedValue)
+            return String(format: NSLocalizedString("%.1f g/E", comment: "%.1f g/E"), roundedValue)
         }
     }
     
@@ -930,7 +939,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let crContainer = createContainerView(backgroundColor: .systemCyan)
         treatmentView.addSubview(crContainer)
         
-        crLabel = createLabel(text: "INSULINKVOT", fontSize: 9, weight: .bold, color: .white)
+        crLabel = createLabel(text: NSLocalizedString("INSULINKVOT", comment: "INSULINKVOT"), fontSize: 9, weight: .bold, color: .white)
         nowCRLabel = createLabel(text: formatScheduledCarbRatio(scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
         
         let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
@@ -949,9 +958,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         remainsContainer.addGestureRecognizer(remainsTapGesture)
         remainsContainer.isUserInteractionEnabled = true
         
-        remainsLabel = createLabel(text: "HELA DOSEN", fontSize: 9, weight: .bold, color: .white)
-        totalRemainsLabel = createLabel(text: "0g", fontSize: 12, weight: .semibold, color: .white)
-        totalRemainsBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
+        remainsLabel = createLabel(text: NSLocalizedString("HELA DOSEN", comment: "HELA DOSEN"), fontSize: 9, weight: .bold, color: .white)
+        totalRemainsLabel = createLabel(text: NSLocalizedString("0g", comment: "0g"), fontSize: 12, weight: .semibold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .semibold, color: .white)
         
         let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
         remainsValuesStack.axis = .horizontal
@@ -969,9 +978,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
         
-        let startAmountLabel = createLabel(text: "+ STARTDOS", fontSize: 9, weight: .bold, color: .white)
-        totalStartAmountLabel = createLabel(text: String(format: "%.0fg", scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
-        totalStartBolusLabel = createLabel(text: "0E", fontSize: 12, weight: .semibold, color: .white)
+        let startAmountLabel = createLabel(text: NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS"), fontSize: 9, weight: .bold, color: .white)
+        totalStartAmountLabel = createLabel(text: String(format: NSLocalizedString("%.0fg", comment: "%.0fg"), scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
+        totalStartBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .semibold, color: .white)
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
         startAmountValuesStack.spacing = 3
@@ -987,8 +996,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
-        let registeredLabel = createLabel(text: "REGGADE KH", fontSize: 9, weight: .bold, color: .white)
-        totalRegisteredLabel = createTextField(placeholder: "...", fontSize: 18, weight: .semibold, color: .white)
+        let registeredLabel = createLabel(text: NSLocalizedString("REGGADE KH", comment: "REGGADE KH"), fontSize: 9, weight: .bold, color: .white)
+        totalRegisteredLabel = createTextField(placeholder: NSLocalizedString("...", comment: "..."), fontSize: 18, weight: .semibold, color: .white)
         
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
@@ -1241,15 +1250,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return
         }
         guard !foodItemRows.isEmpty else {
-            let alert = UIAlertController(title: "Inga livsmedel", message: "Välj minst ett livsmedel för att spara en favorit.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            let alert = UIAlertController(title: NSLocalizedString("Inga livsmedel", comment: "Inga livsmedel"), message: NSLocalizedString("Välj minst ett livsmedel för att spara en favorit.", comment: "Välj minst ett livsmedel för att spara en favorit."), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
             present(alert, animated: true)
             return
         }
         
-        let nameAlert = UIAlertController(title: "Spara som favoritmåltid", message: "Ange ett namn på måltiden:", preferredStyle: .alert)
+        let nameAlert = UIAlertController(title: NSLocalizedString("Spara som favoritmåltid", comment: "Spara som favoritmåltid"), message: NSLocalizedString("Ange ett namn på måltiden:", comment: "Ange ett namn på måltiden:"), preferredStyle: .alert)
         nameAlert.addTextField { textField in
-            textField.placeholder = "Namn"
+            textField.placeholder = NSLocalizedString("Namn", comment: "Namn")
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
             textField.autocapitalizationType = .sentences
@@ -1261,9 +1270,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
         
-        let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
+        let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Spara"), style: .default) { [weak self] _ in
             guard let self = self else { return }
-            let mealName = nameAlert.textFields?.first?.text ?? "Min favoritmåltid"
+            let mealName = nameAlert.textFields?.first?.text ?? NSLocalizedString("Min favoritmåltid", comment: "Min favoritmåltid")
             
             let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
             favoriteMeals.name = mealName
@@ -1301,12 +1310,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Favorite meals export triggered")
             }
             
-            let confirmAlert = UIAlertController(title: "Lyckades", message: "Måltiden har sparats som favorit.", preferredStyle: .alert)
-            confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            let confirmAlert = UIAlertController(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."), preferredStyle: .alert)
+            confirmAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
             self.present(confirmAlert, animated: true)
         }
         
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
         
         nameAlert.addAction(saveAction)
         nameAlert.addAction(cancelAction)
@@ -1432,6 +1441,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Variables reset to 0.0 and saved to UserDefaults")
     }
     
+    @objc private func updateRSSButtonVisibility() {
+        // Clear all subviews from the main view
+        view.subviews.forEach { $0.removeFromSuperview() }
+
+        // Remove all observers to avoid duplicates
+        NotificationCenter.default.removeObserver(self)
+
+        // Reinitialize the entire view controller
+        initializeComposeMealViewController()
+    }
+    
     @objc private func didTakeoverRegistration(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             
@@ -1517,21 +1537,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
             let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
             
-            let alertTitle = "Aktivera override"
-            let alertMessage = "\nVill du aktivera overriden \n'\(overrideName)' i iAPS/Trio?"
+            let alertTitle = NSLocalizedString("Aktivera override", comment: "Aktivera override")
+            let alertMessage = String(format: NSLocalizedString("\nVill du aktivera overriden \n'%@' i iAPS/Trio?", comment: "Message asking if the user wants to activate the override in iAPS/Trio"), overrideName)
             
             let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let yesAction = UIAlertAction(title: "Ja", style: .default) { _ in
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+            let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in
                 self.sendOverrideRequest(combinedString: combinedString)
             }
             alertController.addAction(cancelAction)
             alertController.addAction(yesAction)
             present(alertController, animated: true, completion: nil)
         } else {
-            let alertController = UIAlertController(title: "Manuell aktivering", message: "\nKom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            let alertController = UIAlertController(title: NSLocalizedString("Manuell aktivering", comment: "Manuell aktivering"), message: String(format: NSLocalizedString("\nKom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", comment: "\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio"), overrideName), preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
             }
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
@@ -1573,15 +1593,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         switch result {
                         case .success:
                             AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: "Lyckades!", message: "\nKommandot levererades till iAPS/Trio", preferredStyle: .alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                            let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("\nKommandot levererades till iAPS/Trio", comment: "\nKommandot levererades till iAPS/Trio"), preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                                 self.dismiss(animated: true, completion: nil)
                             })
                             self.present(alertController, animated: true, completion: nil)
                         case .failure(let error):
                             AudioServicesPlaySystemSound(SystemSoundID(1053))
-                            let alertController = UIAlertController(title: "Fel", message: error.localizedDescription, preferredStyle: .alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                            let alertController = UIAlertController(title: NSLocalizedString("Fel", comment: "Fel"), message: error.localizedDescription, preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
                             self.present(alertController, animated: true, completion: nil)
                         }
                     }
@@ -1600,7 +1620,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         let fatValue = "0"
         let proteinValue = "0"
-        let bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
+        let bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "") ?? "0")
         let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis()
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
@@ -1610,7 +1630,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0"
+        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "") ?? "0"
         let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
         let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
@@ -1618,16 +1638,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
         let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         
-        let cr = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"
+        let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"
         
         let startDose = true
         let remainDose = false
         
         if !allowShortcuts {
             //Use alert when manually registering
-            let alertController = UIAlertController(title: "Manuell registrering", message: "\nRegistrera nu den angivna startdosen för måltiden \(khValue) g kh och \(bolusValue) E insulin i iAPS/Trio", preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            let alertController = UIAlertController(
+                title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
+                message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio", comment: "Prompt to register the specified start dose for the meal in iAPS/Trio"), khValue, bolusValue),
+                preferredStyle: .alert
+            )
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: true)
                 self.startDoseGiven = true
             }
@@ -1659,16 +1683,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         hideAllDeleteButtons()
         createEmojiString()
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
         if bolusRemainsValue < 0 {
-            let bolusText = totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let crText = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
+            let bolusText = totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
+            let crText = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
             if let bolusValue = Double(bolusText), let crValue = Double(crText) {
                 let khValue = bolusValue * crValue
                 let formattedKhValue = formatValue(String(format: "%.0f",khValue))
-                let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
-                let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: NSLocalizedString("\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!"), preferredStyle: .alert)
+                let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
                 alert.addAction(okAction)
                 present(alert, animated: true, completion: nil)
                 return
@@ -1678,8 +1702,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         else if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: "Varning", message: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!"), preferredStyle: .alert)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
             return
@@ -1693,7 +1717,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let totalProteinValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let proteinValue = formatValue("\(totalProteinValue - registeredProteinSoFar)")
         
-        let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: "") ?? "0")
+        let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "") ?? "0")
         
         var adjustedKhValue = khValue
         var adjustedBolusValue = self.zeroBolus ? "0.0" : bolusValue
@@ -1703,7 +1727,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
            let khValueDouble = Double(khValue),
            khValueDouble > maxCarbs {
             adjustedKhValue = String(format: "%.0f", maxCarbs)
-            if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"),
+            if let carbRatio = Double(nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"),
                let currentBolusValue = Double(bolusValue) {
                 let calculatedBolusValue = maxCarbs / carbRatio
                 adjustedBolusValue = self.zeroBolus ? "0.0" : String(format: "%.2f", min(calculatedBolusValue, currentBolusValue))
@@ -1719,8 +1743,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         if showAlert {
-            let maxCarbsAlert = UIAlertController(title: "Maxgräns", message: "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            let maxCarbsAlert = UIAlertController(title: NSLocalizedString("Maxgräns", comment: "Maxgräns"), message: NSLocalizedString("\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", comment: "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..."), preferredStyle: .alert)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
             }
             maxCarbsAlert.addAction(okAction)
@@ -1747,7 +1771,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0"
+        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "") ?? "0"
         let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
         let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
@@ -1755,26 +1779,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
         let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
         
-        let cr = nowCRLabel.text?.replacingOccurrences(of: " g/E", with: "") ?? "0"
+        let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"
         
         let startDose = true
         let remainDose = true
         
         if !allowShortcuts {
-            var alertMessage = "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• \(khValue) g kolhydrater"
+            var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater"), khValue)
             
             if let fat = Double(fatValue), fat > 0 {
-                alertMessage += "\n• \(fatValue) g fett"
+                alertMessage += String(format:NSLocalizedString("\n• %@ g fett", comment: "\n• %@ g fett"),fatValue)
             }
             if let protein = Double(proteinValue), protein > 0 {
-                alertMessage += "\n• \(proteinValue) g protein"
+                alertMessage += String(format:NSLocalizedString("\n• %@ g protein", comment: "\n• %@ g protein"), proteinValue)
             }
             
-            alertMessage += "\n• \(finalBolusValue) E insulin"
+            alertMessage += String(format:NSLocalizedString("\n• %@ E insulin", comment: "\n• %@ E insulin"), finalBolusValue)
             
-            let alertController = UIAlertController(title: "Manuell registrering", message: alertMessage, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            let alertController = UIAlertController(title: NSLocalizedString("Manuell registrering", comment: "Manuell registrering"), message: alertMessage, preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue, startDose: false)
                 self.remainingDoseGiven = true
             }
@@ -1974,7 +1998,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let totalBolus = totalNetCarbs / scheduledCarbRatio
         let roundedBolus = roundDownToNearest05(totalBolus)
-        totalBolusAmountLabel.text = formatNumber(roundedBolus) + " E"
+        totalBolusAmountLabel.text = formatNumber(roundedBolus) + NSLocalizedString(" E", comment: " E")
         
         if  UserDefaultsRepository.useStartDosePercentage {
             let startDoseFactor = UserDefaultsRepository.startDoseFactor
@@ -1982,18 +2006,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             totalStartAmountLabel.text = String(format: "%.0fg", totalStartAmount)
             let startBolus = totalStartAmount / scheduledCarbRatio
             let roundedStartBolus = roundDownToNearest05(startBolus)
-            totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
+            totalStartBolusLabel.text = formatNumber(roundedStartBolus) + NSLocalizedString("E", comment: "E")
         } else {
             if totalNetCarbs > 0 && totalNetCarbs <= scheduledStartDose {
                 totalStartAmountLabel.text = String(format: "%.0fg", totalNetCarbs)
                 let startBolus = totalNetCarbs / scheduledCarbRatio
                 let roundedStartBolus = roundDownToNearest05(startBolus)
-                totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
+                totalStartBolusLabel.text = formatNumber(roundedStartBolus) + NSLocalizedString("E", comment: "E")
             } else {
                 totalStartAmountLabel.text = String(format: "%.0fg", scheduledStartDose)
                 let startBolus = scheduledStartDose / scheduledCarbRatio
                 let roundedStartBolus = roundDownToNearest05(startBolus)
-                totalStartBolusLabel.text = formatNumber(roundedStartBolus) + "E"
+                totalStartBolusLabel.text = formatNumber(roundedStartBolus) + NSLocalizedString("E", comment: "E")
             }
         }
         
@@ -2017,7 +2041,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func updateRemainsBolus() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         let totalCarbsValue = Double(totalNetCarbs)
-        let remainsTextString = self.startDoseGiven ? "+ KVAR ATT GE" : "+ HELA DOSEN"
+        let remainsTextString = self.startDoseGiven ? NSLocalizedString("+ KVAR ATT GE", comment: "+ KVAR ATT GE") : NSLocalizedString("+ HELA DOSEN", comment: "+ HELA DOSEN")
         let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
         
         if let registeredText = totalRegisteredLabel.text, let registeredValue = Double(registeredText) {
@@ -2025,10 +2049,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
             
             let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
-            totalRemainsBolusLabel.text = String(format: "%.2fE", remainsBolus)
+            totalRemainsBolusLabel.text = String(format: NSLocalizedString("%.2fE", comment: "%.2fE"), remainsBolus)
             
             if remainsValue < -0.5 || remainsBolus < -0.05 {
-                remainsLabel.text = "ÖVERDOS!"
+                remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
             } else {
                 remainsLabel.text = remainsTextString
             }
@@ -2044,7 +2068,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
             
-            totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + "E"
+            totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + NSLocalizedString("E", comment: "E")
             
             remainsContainer?.backgroundColor = .systemGray
             remainsLabel?.text = remainsTextString
@@ -2085,28 +2109,28 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let font = UIFont.systemFont(ofSize: 9)
         
         foodItemLabel = UILabel()
-        foodItemLabel.text = "LIVSMEDEL"
+        foodItemLabel.text = NSLocalizedString("LIVSMEDEL", comment: "LIVSMEDEL")
         foodItemLabel.textAlignment = .left
         foodItemLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 140).isActive = true
         foodItemLabel.font = font
         foodItemLabel.textColor = .gray
         
         portionServedLabel = UILabel()
-        portionServedLabel.text = "PORTION"
+        portionServedLabel.text = NSLocalizedString("PORTION", comment: "PORTION")
         portionServedLabel.textAlignment = .left
         portionServedLabel.widthAnchor.constraint(equalToConstant: 69).isActive = true
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
-        notEatenLabel.text = "LÄMNAT"
+        notEatenLabel.text = NSLocalizedString("LÄMNAT", comment: "LÄMNAT")
         notEatenLabel.textAlignment = .left
         notEatenLabel.widthAnchor.constraint(equalToConstant: 44).isActive = true
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
-        netCarbsLabel.text = "KOLHYDR."
+        netCarbsLabel.text = NSLocalizedString("KOLHYDR.", comment: "KOLHYDR.")
         netCarbsLabel.textAlignment = .right
         netCarbsLabel.widthAnchor.constraint(equalToConstant: 52).isActive = true
         netCarbsLabel.font = font
@@ -2259,7 +2283,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         
         toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
         
@@ -2297,7 +2321,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let totalStartAmount = Double(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
         let startBolus = roundDownToNearest05(totalStartAmount / scheduledCarbRatio)
-        totalStartBolusLabel.text = String(format: "%.2fE", startBolus)
+        totalStartBolusLabel.text = String(format: NSLocalizedString("%.2fE", comment: "%.2fE"), startBolus)
         updateRemainsBolus()
     }
     
@@ -2358,7 +2382,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     class AddButtonRowView: UIView {
         let addButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("+ VÄLJ I LISTA", for: .normal)
+            button.setTitle(NSLocalizedString("+ VÄLJ I LISTA", comment: "+ VÄLJ I LISTA"), for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
@@ -2372,7 +2396,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
-            button.setTitle("+ SKOLMATEN", for: .normal)
+            button.setTitle(NSLocalizedString("+ SKOLMATEN", comment: "+ SKOLMATEN"), for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
@@ -2396,7 +2420,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
             label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-            label.text = "OVERRIDE"
+            label.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             label.isUserInteractionEnabled = true
@@ -2440,8 +2464,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Adjust the switch's transform to make it smaller
             lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
 
+            // Create an array to hold the arranged subviews for the stack view
+            var arrangedSubviews: [UIView] = [addButton, lateBreakfastContainer]
+
+            // Conditionally add the rssButton if schoolFoodURL is not empty
+            if let schoolFoodURL = UserDefaultsRepository.schoolFoodURL, !schoolFoodURL.isEmpty {
+                arrangedSubviews.insert(rssButton, at: 1) // Insert at index 1 to maintain the order
+            }
+
             // Create the horizontal stack view (HStack)
-            let stackView = UIStackView(arrangedSubviews: [addButton, rssButton, lateBreakfastContainer])
+            let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
             stackView.axis = .horizontal
             stackView.alignment = .fill
             stackView.distribution = .fillEqually
@@ -2457,16 +2489,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
                 stackView.heightAnchor.constraint(equalToConstant: 44),
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                
+
                 // Align lateBreakfastLabel inside the container
                 lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 14),
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
-                //lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
 
                 // Align lateBreakfastSwitch inside the container
                 lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 7),
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
-                //lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
             ])
         }
     }
@@ -2581,23 +2611,23 @@ extension ComposeMealViewController {
     }
     
     @objc private func showBolusInfo() {
-        presentPopover(title: "Bolus Total", message: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.", sourceView: totalBolusAmountLabel)
+        presentPopover(title: NSLocalizedString("Bolus Total", comment: "Bolus Total"), message: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden."), sourceView: totalBolusAmountLabel)
     }
     
     @objc private func showCarbsInfo() {
-        presentPopover(title: "Kolhydrater Totalt", message: "Den beräknade summan av alla kolhydrater i måltiden.", sourceView: totalNetCarbsLabel)
+        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.", comment: "Den beräknade summan av alla kolhydrater i måltiden."), sourceView: totalNetCarbsLabel)
     }
     
     @objc private func showFatInfo() {
-        presentPopover(title: "Fett Totalt", message: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", sourceView: totalNetFatLabel)
+        presentPopover(title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"), message: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning."), sourceView: totalNetFatLabel)
     }
     
     @objc private func showProteinInfo() {
-        presentPopover(title: "Protein Totalt", message: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", sourceView: totalNetProteinLabel)
+        presentPopover(title: NSLocalizedString("Protein Totalt", comment: "Protein Totalt"), message: NSLocalizedString("Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning."), sourceView: totalNetProteinLabel)
     }
     
     @objc private func showCRInfo() {
-        presentPopover(title: "Insulinkvot", message: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.", sourceView: nowCRLabel)
+        presentPopover(title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"), message: NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater."), sourceView: nowCRLabel)
     }
     
     @objc private func lateBreakfastLabelTapped() {
@@ -2605,9 +2635,9 @@ extension ComposeMealViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm"
             let formattedDate = formatter.string(from: startTime)
-            presentPopover(title: "Senaste override", message: "Aktiverades \(formattedDate)", sourceView: addButtonRowView.lateBreakfastLabel)
+            presentPopover(title: NSLocalizedString("Senaste override", comment: "Senaste override"), message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate), sourceView: addButtonRowView.lateBreakfastLabel)
         } else {
-            presentPopover(title: "Senaste override", message: "Ingen tidigare aktivering hittades.", sourceView: addButtonRowView.lateBreakfastLabel)
+            presentPopover(title: NSLocalizedString("Senaste override", comment: "Senaste override"), message: NSLocalizedString("Ingen tidigare aktivering hittades.", comment: "Ingen tidigare aktivering hittades."), sourceView: addButtonRowView.lateBreakfastLabel)
         }
     }
 }

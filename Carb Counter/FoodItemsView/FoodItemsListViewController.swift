@@ -8,12 +8,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     private let searchTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Sök efter livsmedel online"
+        textField.placeholder = NSLocalizedString("Sök efter livsmedel online", comment: "Sök efter livsmedel online")
         textField.borderStyle = .roundedRect
         textField.backgroundColor = .systemGray6
         textField.translatesAutoresizingMaskIntoConstraints = false
         
-        let placeholderText = "Sök efter livsmedel online"
+        let placeholderText = NSLocalizedString("Sök efter livsmedel online", comment: "Sök efter livsmedel online")
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.systemGray
         ]
@@ -79,7 +79,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         setupSegmentedControl()
         setupSearchBar()
         
-        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
         navigationItem.leftBarButtonItem = clearButton
         
@@ -88,7 +88,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         updateClearButtonVisibility()
         
         let backButton = UIBarButtonItem()
-        backButton.title = "Tillbaka"
+        backButton.title = NSLocalizedString("Tillbaka", comment: "Tillbaka")
         navigationItem.backBarButtonItem = backButton
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -164,11 +164,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     @objc private func clearButtonTapped() {
-        let firstAlertController = UIAlertController(title: "Rensa allt", message: "Vill du radera alla livsmedel från databasen?", preferredStyle: .actionSheet)
-        let continueAction = UIAlertAction(title: "Fortsätt", style: .destructive) { _ in
+        let firstAlertController = UIAlertController(title: NSLocalizedString("Rensa allt", comment: "Rensa allt"), message: NSLocalizedString("Vill du radera alla livsmedel från databasen?", comment: "Vill du radera alla livsmedel från databasen?"), preferredStyle: .actionSheet)
+        let continueAction = UIAlertAction(title: NSLocalizedString("Fortsätt", comment: "Fortsätt"), style: .destructive) { _ in
             self.showSecondClearAlert()
         }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
         
         firstAlertController.addAction(continueAction)
         firstAlertController.addAction(cancelAction)
@@ -177,11 +177,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func showSecondClearAlert() {
-        let secondAlertController = UIAlertController(title: "Rensa allt", message: "Är du helt säker? Åtgärden går inte att ångra.", preferredStyle: .actionSheet)
-        let clearAction = UIAlertAction(title: "Rensa", style: .destructive) { _ in
+        let secondAlertController = UIAlertController(title: NSLocalizedString("Rensa allt", comment: "Rensa allt"), message: NSLocalizedString("Är du helt säker? Åtgärden går inte att ångra.", comment: "Är du helt säker? Åtgärden går inte att ångra."), preferredStyle: .actionSheet)
+        let clearAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive) { _ in
             self.clearAllFoodItems()
         }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
         
         secondAlertController.addAction(clearAction)
         secondAlertController.addAction(cancelAction)
@@ -206,7 +206,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func setupNavigationBarButtons() {
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItemPlain))
         let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode.viewfinder"), style: .plain, target: self, action: #selector(navigateToScanner))
-        clearButton = UIBarButtonItem(title: "Rensa", style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
         
         navigationItem.rightBarButtonItems = [barcodeButton, addButton]
@@ -215,11 +215,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupNavigationBarTitle() {
-        title = "Livsmedel"
+        title = NSLocalizedString("Livsmedel", comment: "Livsmedel")
     }
     
     private func setupSegmentedControl() {
-        let items = ["Sök sparade", "Sök online"]
+        let items = [NSLocalizedString("Sök sparade", comment: "Sök sparade"), NSLocalizedString("Sök online", comment: "Sök online")]
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.addTarget(self, action: #selector(searchModeChanged(_:)), for: .valueChanged)
@@ -260,7 +260,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
             
             let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            let doneButton = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonTapped))
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
             
             toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
             
@@ -309,10 +309,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func updateSearchBarPlaceholder() {
-        let foodItemCount = foodItems.count
-        searchBar.placeholder = searchMode == .local ? "Sök bland \(foodItemCount) sparade livsmedel" : "Sök efter nya livsmedel online"
+        let foodItemCount = Double(foodItems.count)
+        searchBar.placeholder = searchMode == .local
+            ? String(format: NSLocalizedString("Sök bland %.0f sparade livsmedel", comment: "Sök bland %.0f sparade livsmedel"), foodItemCount)
+            : NSLocalizedString("Sök efter nya livsmedel online", comment: "Sök efter nya livsmedel online")
     }
-    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
         guard let searchText = searchBar.text, !searchText.isEmpty else {
@@ -363,7 +364,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         guard let dabasURL = URL(string: dabasURLString) else {
             self.searchOpenfoodfacts(for: searchText)
-            showErrorAlert(message: "Felaktig Dabas URL")
+            showErrorAlert(message: NSLocalizedString("Felaktig Dabas URL", comment: "Felaktig Dabas URL"))
             return
         }
         
@@ -371,7 +372,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             if let error = error {
                 self.searchOpenfoodfacts(for: searchText)
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Dabas API fel: \(error.localizedDescription)")
+                    self.showErrorAlert(message: String(format: NSLocalizedString("Dabas API fel: %@", comment: "Dabas API fel: %@"), error.localizedDescription))
                 }
                 return
             }
@@ -379,7 +380,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             guard let data = data else {
                 self.searchOpenfoodfacts(for: searchText)
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "Dabas API fel: Ingen data togs emot")
+                    self.showErrorAlert(message: NSLocalizedString("Dabas API fel: Ingen data togs emot", comment: "Dabas API fel: Ingen data togs emot"))
                 }
                 return
             }
@@ -412,7 +413,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Check if the search is within the allowed rate limit
         if let lastSearchTime = lastSearchTime, Date().timeIntervalSince(lastSearchTime) < 8 {
             DispatchQueue.main.async {
-                self.showAlert(title: "API Begränsning", message: "Vänta några sekunder innan nästa sökning")
+                self.showAlert(title: NSLocalizedString("API Begränsning", comment: "API Begränsning"), message: NSLocalizedString("Vänta några sekunder innan nästa sökning", comment: "Vänta några sekunder innan nästa sökning"))
             }
             return
         }
@@ -423,7 +424,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         print(openfoodURLString)
         
         guard let openfoodURL = URL(string: openfoodURLString) else {
-            showErrorAlert(message: "Felaktig OpenFoodFacts URL")
+            showErrorAlert(message: NSLocalizedString("Felaktig OpenFoodFacts URL", comment: "Felaktig OpenFoodFacts URL"))
             return
         }
         
@@ -433,14 +434,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let openfoodTask = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "OpenFoodFacts API fel: \(error.localizedDescription)")
+                    self.showErrorAlert(message: String(format: NSLocalizedString("OpenFoodFacts API fel: %@", comment: "OpenFoodFacts API fel: %@"), error.localizedDescription))
                 }
                 return
             }
             
             guard let data = data else {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "OpenFoodFacts API fel: Ingen data togs emot")
+                    self.showErrorAlert(message: NSLocalizedString("OpenFoodFacts API fel: Ingen data togs emot", comment: "OpenFoodFacts API fel: Ingen data togs emot"))
                 }
                 return
             }
@@ -450,7 +451,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 let jsonResponse = try JSONDecoder().decode(OpenFoodFactsResponse.self, from: data)
                 DispatchQueue.main.async {
                     if jsonResponse.count == 0 {
-                        self.showAlert(title: "Inga sökträffar", message: "OK")
+                        self.showAlert(title: NSLocalizedString("Inga sökträffar", comment: "Inga sökträffar"), message: NSLocalizedString("OK", comment: "OK"))
                     } else {
                         self.isUsingDabas = false
                         self.articles = jsonResponse.products.map { Article(from: $0) }
@@ -459,7 +460,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.showErrorAlert(message: "OpenFoodFacts API fel: \(error.localizedDescription)")
+                    self.showErrorAlert(message: String(format: NSLocalizedString("OpenFoodFacts API fel: %@", comment: "OpenFoodFacts API fel: %@"), error.localizedDescription))
                 }
             }
         }
@@ -484,7 +485,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
         present(alertController, animated: true, completion: nil)
     }
     
@@ -550,7 +551,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let deleteAction = UIContextualAction(style: .destructive, title: nil) { (_, _, completionHandler) in
             if self.searchMode == .local {
                 let foodItem = self.filteredFoodItems[indexPath.row]
-                self.showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? "detta livsmedel")
+                self.showDeleteConfirmationAlert(at: indexPath, foodItemName: foodItem.name ?? NSLocalizedString("detta livsmedel", comment: "detta livsmedel"))
             }
             completionHandler(true)
         }
@@ -565,11 +566,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
     
     private func showDeleteConfirmationAlert(at indexPath: IndexPath, foodItemName: String) {
-        let alert = UIAlertController(title: "Radera Livsmedel", message: "Bekräfta att du vill radera: '\(foodItemName)'?", preferredStyle: .actionSheet)
-        let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { _ in
+        let alert = UIAlertController(title: NSLocalizedString("Radera Livsmedel", comment: "Radera Livsmedel"), message: String(format: NSLocalizedString("Bekräfta att du vill radera: '%@'?", comment: "Bekräfta att du vill radera: '%@'?"), foodItemName), preferredStyle: .actionSheet)
+        let deleteAction = UIAlertAction(title: NSLocalizedString("Radera", comment: "Radera"), style: .destructive) { _ in
             self.deleteFoodItem(at: indexPath)
         }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
         alert.addAction(deleteAction)
         alert.addAction(cancelAction)
         present(alert, animated: true, completion: nil)
@@ -613,57 +614,69 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     fetchNutritionalInfo(for: gtin)
                 }
             } else {
-                let message = """
-                Kolhydrater: \(formattedValue(article.carbohydrates_100g ?? 0)) g / 100 g
-                Fett: \(formattedValue(article.fat_100g ?? 0)) g / 100 g
-                Protein: \(formattedValue(article.proteins_100g ?? 0)) g / 100 g
+                let message = String(format: NSLocalizedString("""
+                Kolhydrater: %@ g / 100 g
+                Fett: %@ g / 100 g
+                Protein: %@ g / 100 g
                 
                 [Källa: OpenFoodFacts]
-                """
-                self.showProductAlert(title: article.artikelbenamning ?? "Produkt", message: message, productName: article.artikelbenamning ?? "Produkt", carbohydrates: article.carbohydrates_100g ?? 0, fat: article.fat_100g ?? 0, proteins: article.proteins_100g ?? 0)
+                """, comment: "Nutritional information displayed for a food product"),
+                formattedValue(article.carbohydrates_100g ?? 0),
+                formattedValue(article.fat_100g ?? 0),
+                formattedValue(article.proteins_100g ?? 0))
+
+                let title = article.artikelbenamning ?? NSLocalizedString("Produkt", comment: "Default title for a product")
+                self.showProductAlert(
+                    title: title,
+                    message: message,
+                    productName: title,
+                    carbohydrates: article.carbohydrates_100g ?? 0,
+                    fat: article.fat_100g ?? 0,
+                    proteins: article.proteins_100g ?? 0
+                )
             }
         }
     }
     
     private func showLocalFoodItemDetails(_ foodItem: FoodItem) {
-        let title = "\(foodItem.emoji ?? "") \(foodItem.name ?? "")"
+        let title = "\(foodItem.emoji ?? "") \(foodItem.name ?? NSLocalizedString("Produkt", comment: "Default product name if none is provided"))"
         var message = ""
-        
+
         if let notes = foodItem.notes, !notes.isEmpty {
-            message += "\nNot: \(notes)\n"
+            message += "\n\(NSLocalizedString("Not:", comment: "Label for notes")) \(notes)\n"
         }
-        
+
         if foodItem.perPiece {
             if foodItem.carbsPP > 0 {
-                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbsPP)) g / st"
+                message += "\n\(NSLocalizedString("Kolhydrater:", comment: "Carbohydrates label")) \(String(format: "%.0f", foodItem.carbsPP)) \(NSLocalizedString("g / st", comment: "Per piece unit for carbohydrates"))"
             }
             if foodItem.fatPP > 0 {
-                message += "\nFett: \(String(format: "%.0f", foodItem.fatPP)) g / st"
+                message += "\n\(NSLocalizedString("Fett:", comment: "Fat label")) \(String(format: "%.0f", foodItem.fatPP)) \(NSLocalizedString("g / st", comment: "Per piece unit for fat"))"
             }
             if foodItem.proteinPP > 0 {
-                message += "\nProtein: \(String(format: "%.0f", foodItem.proteinPP)) g / st"
+                message += "\n\(NSLocalizedString("Protein:", comment: "Protein label")) \(String(format: "%.0f", foodItem.proteinPP)) \(NSLocalizedString("g / st", comment: "Per piece unit for protein"))"
             }
         } else {
             if foodItem.carbohydrates > 0 {
-                message += "\nKolhydrater: \(String(format: "%.0f", foodItem.carbohydrates)) g / 100 g"
+                message += "\n\(NSLocalizedString("Kolhydrater:", comment: "Carbohydrates label")) \(String(format: "%.0f", foodItem.carbohydrates)) \(NSLocalizedString("g / 100 g", comment: "Per 100 grams unit for carbohydrates"))"
             }
             if foodItem.fat > 0 {
-                message += "\nFett: \(String(format: "%.0f", foodItem.fat)) g / 100 g"
+                message += "\n\(NSLocalizedString("Fett:", comment: "Fat label")) \(String(format: "%.0f", foodItem.fat)) \(NSLocalizedString("g / 100 g", comment: "Per 100 grams unit for fat"))"
             }
             if foodItem.protein > 0 {
-                message += "\nProtein: \(String(format: "%.0f", foodItem.protein)) g / 100 g"
+                message += "\n\(NSLocalizedString("Protein:", comment: "Protein label")) \(String(format: "%.0f", foodItem.protein)) \(NSLocalizedString("g / 100 g", comment: "Per 100 grams unit for protein"))"
             }
         }
-        
-        message += "\n\n(Serverats: \(foodItem.count) ggr)"
-        
+
+        message += "\n\n\(NSLocalizedString("Serverats:", comment: "Label for number of times the food item has been served")) \(foodItem.count) \(NSLocalizedString("ggr", comment: "Abbreviation for times served"))"
+
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "+ Lägg till i måltid", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button"), style: .default, handler: { _ in
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
         
         present(alert, animated: true, completion: nil)
         tableView.deselectRow(at: IndexPath(row: self.filteredFoodItems.firstIndex(of: foodItem) ?? 0, section: 0), animated: true)
@@ -856,13 +869,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
             alert.addTextField { textField in
-                textField.placeholder = "Ange vikt per styck i gram (valfritt)"
+                textField.placeholder = NSLocalizedString("Ange vikt per styck i gram (valfritt)", comment: "Placeholder for inputting weight per piece in grams (optional)")
                 textField.keyboardType = .decimalPad
             }
             
-            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
             
-            alert.addAction(UIAlertAction(title: "Lägg till", style: .default, handler: { _ in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Lägg till", comment: "Add button"), style: .default, handler: { _ in
                 let adjustedProductName = productName
                 if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
                     let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
@@ -877,26 +890,30 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             
             if let existingItem = existingItems.first {
                 let comparisonMessage = """
-                Befintlig data    ->    Ny data
-                Kh:       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) g/100g
-                Fett:    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) g/100g
-                Protein:  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) g/100g
+                \(NSLocalizedString("Befintlig data", comment: "Existing data"))    ->    \(NSLocalizedString("Ny data", comment: "New data"))
+                \(NSLocalizedString("Kh:", comment: "Carbohydrates abbreviation"))       \(formattedValue(existingItem.carbohydrates))  ->  \(formattedValue(carbohydrates)) \(NSLocalizedString("g/100g", comment: "grams per 100 grams"))
+                \(NSLocalizedString("Fett:", comment: "Fat label"))    \(formattedValue(existingItem.fat))  ->  \(formattedValue(fat)) \(NSLocalizedString("g/100g", comment: "grams per 100 grams"))
+                \(NSLocalizedString("Protein:", comment: "Protein label"))  \(formattedValue(existingItem.protein))  ->  \(formattedValue(proteins)) \(NSLocalizedString("g/100g", comment: "grams per 100 grams"))
                 """
                 
-                let duplicateAlert = UIAlertController(title: productName, message: "Finns redan inlagt i livsmedelslistan. \n\nVill du behålla de befintliga näringsvärdena eller uppdatera dem?\n\n\(comparisonMessage)", preferredStyle: .alert)
-                duplicateAlert.addAction(UIAlertAction(title: "Behåll befintliga", style: .default, handler: { _ in
+                let duplicateAlert = UIAlertController(
+                    title: productName,
+                    message: "\(NSLocalizedString("Finns redan inlagt i livsmedelslistan.", comment: "Product already exists message")) \n\n\(NSLocalizedString("Vill du behålla de befintliga näringsvärdena eller uppdatera dem?", comment: "Message asking if user wants to keep existing nutritional values or update them"))\n\n\(comparisonMessage)",
+                    preferredStyle: .alert
+                )
+                duplicateAlert.addAction(UIAlertAction(title: NSLocalizedString("Behåll befintliga", comment: "Keep existing data"), style: .default, handler: { _ in
                     self.navigateToAddFoodItem(foodItem: existingItem)
                 }))
-                duplicateAlert.addAction(UIAlertAction(title: "Uppdatera", style: .default, handler: { _ in
+                duplicateAlert.addAction(UIAlertAction(title: NSLocalizedString("Uppdatera", comment: "Update existing data"), style: .default, handler: { _ in
                     self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
                 }))
-                duplicateAlert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+                duplicateAlert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
                 present(duplicateAlert, animated: true, completion: nil)
             } else {
                 present(alert, animated: true, completion: nil)
             }
         } catch {
-            showErrorAlert(message: "Ett fel uppstod vid hämtning av livsmedelsdata.")
+            showErrorAlert(message: NSLocalizedString("Ett fel uppstod vid hämtning av livsmedelsdata.", comment: "Error message for fetching food item data"))
         }
     }
     
@@ -909,8 +926,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "Fel", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Fel"), message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
     }
     

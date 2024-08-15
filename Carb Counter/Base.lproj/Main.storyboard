@@ -788,6 +788,18 @@
                                     <view autoresizesSubviews="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="MWZ-hX-P7t" userLabel="Bolus calculations">
                                         <rect key="frame" x="0.0" y="185.5" width="343" height="38"/>
                                         <subviews>
+                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Metod" adjustsFontSizeToFit="NO" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="BZf-0P-4ON">
+                                                <rect key="frame" x="18" y="12.5" width="100" height="13.5"/>
+                                                <accessibility key="accessibilityConfiguration">
+                                                    <accessibilityTraits key="traits" notEnabled="YES"/>
+                                                </accessibility>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="Xza-jx-Qi8"/>
+                                                </constraints>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="10"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="2Ma-eG-rjJ" userLabel="Calc stack">
                                                 <rect key="frame" x="159" y="3" width="176" height="32"/>
                                                 <subviews>
@@ -839,8 +851,10 @@
                                         </subviews>
                                         <constraints>
                                             <constraint firstItem="2Ma-eG-rjJ" firstAttribute="top" secondItem="MWZ-hX-P7t" secondAttribute="top" constant="3" id="Anh-Vt-Jll"/>
+                                            <constraint firstItem="BZf-0P-4ON" firstAttribute="leading" secondItem="MWZ-hX-P7t" secondAttribute="leading" constant="18" id="Og8-Fx-0Su"/>
                                             <constraint firstItem="2Ma-eG-rjJ" firstAttribute="centerY" secondItem="MWZ-hX-P7t" secondAttribute="centerY" id="P6Q-Xf-xey"/>
                                             <constraint firstAttribute="trailing" secondItem="2Ma-eG-rjJ" secondAttribute="trailing" constant="8" id="rQj-NV-3DQ"/>
+                                            <constraint firstItem="BZf-0P-4ON" firstAttribute="centerY" secondItem="MWZ-hX-P7t" secondAttribute="centerY" id="t4f-Ge-kMz"/>
                                         </constraints>
                                     </view>
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="opf-Hp-yIb" userLabel="Bolus">
@@ -965,6 +979,7 @@
                         <outlet property="mealDateTime" destination="nHQ-i4-fV2" id="1ru-MV-eS9"/>
                         <outlet property="mealNotes" destination="XNP-0Y-Zdb" id="qFV-Gd-JR5"/>
                         <outlet property="mealNotesLabel" destination="Icp-9G-Z9E" id="lVi-ds-Pzi"/>
+                        <outlet property="method" destination="BZf-0P-4ON" id="39J-N6-6AS"/>
                         <outlet property="notesEntryField" destination="XNP-0Y-Zdb" id="qEl-aS-Ajz"/>
                         <outlet property="plusSign" destination="lqb-3C-dZw" id="3XH-bN-tt8"/>
                         <outlet property="proteinEntryField" destination="YeI-Fv-Odz" id="cST-7d-T8x"/>
@@ -987,13 +1002,16 @@
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGrayColor">
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

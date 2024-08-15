@@ -1,0 +1,429 @@
+//Localizable.strings
+//Carb Counter
+
+//Created by Daniel Snällfot on 2024-08-13.
+
+
+/* Loading and home screen */
+"Räkna Kolhydrater" = "Räkna Kolhydrater";
+"Uppdaterar data" = "Uppdaterar data";
+
+/* Ongoing Meal Viewcontroller */
+"Ta över registrering" = "Ta över registrering";
+"Ingen måltidregistrering pågår" = "Ingen måltidregistrering pågår";
+"Pågående måltid" = "Pågående måltid";
+"Ingen näringsinformation tillgänglig." = "Ingen näringsinformation tillgänglig.";
+"LIVSMEDEL" = "LIVSMEDEL";
+"PORTION" = "PORTION";
+"LÄMNAT" = "LÄMNAT";
+"KH" = "KH";
+"REGISTRERADE KOLHYDRATER:" = "REGISTRERADE KOLHYDRATER:";
+"TOT KOLHYDRATER I MÅLTIDEN:" = "TOT KOLHYDRATER I MÅLTIDEN:";
+
+/* Compose meal view controller */
+"Lägg till eller ersätt?" = "Lägg till eller ersätt?";
+"\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?" = "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?";
+"Ersätt" = "Ersätt";
+"Addera" = "Addera";
+"Avbryt" = "Avbryt";
+"Måltid" = "Måltid";
+"Avsluta måltid" = "Avsluta måltid";
+"Avsluta Måltid" = "Avsluta Måltid";
+"Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras." = "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.";
+"Rensa" = "Rensa";
+"0 g" = "0 g";
+"0 E" = "0 E";
+"+ RESTERANDE" = "+ RESTERANDE";
+"BOLUS" = "BOLUS";
+"0.00 E" = "0.00 E";
+"KOLHYDRATER" = "KOLHYDRATER";
+"0.0 g" = "0.0 g";
+"FETT" = "FETT";
+"PROTEIN" = "PROTEIN";
+"INSULINKVOT" = "INSULINKVOT";
+"HELA DOSEN" = "HELA DOSEN";
+"0g" = "0g";
+"0E" = "0E";
+"+ STARTDOS" = "+ STARTDOS";
+"REGGADE KH" = "REGGADE KH";
+"..." = "...";
+"%.0f g/E" = "%.0f g/E";
+"%.1f g/E" = "%.1f g/E";
+"Inga livsmedel" = "Inga livsmedel";
+"Välj minst ett livsmedel för att spara en favorit." = "Välj minst ett livsmedel för att spara en favorit.";
+"OK" = "OK";
+"Spara som favoritmåltid" = "Spara som favoritmåltid";
+"Ange ett namn på måltiden:" = "Ange ett namn på måltiden:";
+"Namn" = "Namn";
+"Min favoritmåltid" = "Min favoritmåltid";
+"Spara" = "Spara";
+"Lyckades" = "Lyckades";
+"Måltiden har sparats som favorit." = "Måltiden har sparats som favorit.";
+"Lyckades!" = "Lyckades!";
+"\nKommandot levererades till iAPS/Trio" = "\nKommandot levererades till iAPS/Trio";
+"Fel" = "Fel";
+"OK" = "OK";
+"Manuell aktivering" = "Manuell aktivering";
+"\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio" = "\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio";
+"Aktivera override" = "Aktivera override";
+"\nVill du aktivera overriden \n'%@' i iAPS/Trio?" = "\nVill du aktivera overriden \n'%@' i iAPS/Trio?";
+"Ja" = "Ja";
+"Avbryt" = "Avbryt";
+"Klar" = "Klar";
+"+ VÄLJ I LISTA" = "+ VÄLJ I LISTA";
+"+ SKOLMATEN" = "+ SKOLMATEN";
+"OVERRIDE" = "OVERRIDE";
+"Maxgräns" = "Maxgräns";
+"\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..." = "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...";
+"Manuell registrering" = "Manuell registrering";
+"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nRegistrera nu den angivna startdosen för måltiden i iAPS/Trio:\n\n• %@ g kolhydrater\n• %@ E insulin";
+"\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nSlutför nu registreringen av måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater";
+"\n• %@ g fett" = "\n• %@ g fett";
+"\n• %@ g protein" = "\n• %@ g protein";
+"\n• %@ E insulin" = "\n• %@ E insulin";
+"Bolus Total" = "Bolus Total";
+"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden." = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.";
+"Kolhydrater Totalt" = "Kolhydrater Totalt";
+"Den beräknade summan av alla kolhydrater i måltiden." = "Den beräknade summan av alla kolhydrater i måltiden.";
+"Fett Totalt" = "Fett Totalt";
+"Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.";
+"Protein Totalt" = "Protein Totalt";
+"Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.";
+"Insulinkvot" = "Insulinkvot";
+"Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater." = "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.";
+"Senaste override" = "Senaste override";
+"Aktiverades %@" = "Aktiverades %@";
+"Ingen tidigare aktivering hittades." = "Ingen tidigare aktivering hittades.";
+"%.0f g/E" = "%.0f g/E"; // E (Enheter)
+"%.2fE" = "%.2fE";
+"%.1fE" = "%.1fE";
+"%.2fE" = "%.2fE";
+"+ KVAR ATT GE" = "+ KVAR ATT GE";
+"+ HELA DOSEN" = "+ HELA DOSEN";
+"ÖVERDOS!" = "ÖVERDOS!";
+"Varning" = "Varning";
+"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@g kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@g kolhydrater för att undvika ett lågt blodsocker!";
+"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!";
+"LIVSMEDEL" = "LIVSMEDEL";
+"PORTION" = "PORTION";
+"LÄMNAT" = "LÄMNAT";
+"KOLHYDR." = "KOLHYDR.";
+
+/* Food Item Row View */
+"Klar" = "Klar";
+"Nästa" = "Nästa";
+"Not: %@" = "Not: %@";
+"Kolhydrater: %.1f g / st" = "Kolhydrater: %.1f g / st";
+"Fett: %.1f g / st" = "Fett: %.1f g / st";
+"Protein: %.1f g / st" = "Protein: %.1f g / st";
+"Kolhydrater: %.1f g / 100 g " = "Kolhydrater: %.1f g / 100 g";
+"Fett: %.1f g / 100 g " = "Fett: %.1f g / 100 g";
+"Protein: %.1fg / 100 g " = "Protein: %.1f g / 100 g";
+"Ingen näringsinformation tillgänglig." = "Ingen näringsinformation tillgänglig.";
+"OK" = "OK";
+"st" = "st";
+"g" = "g";
+
+/* Searchable dropdown View Controller*/
+"Sök & välj ett eller flera livsmedel" = "Sök & välj ett eller flera livsmedel";
+"Namn A-Ö" = "Namn A-Ö";
+"Skolmat" = "Skolmat";
+"Styck" = "Styck";
+"Populära" = "Populära";
+"Välj livsmedel" = "Välj livsmedel";
+"Klar" = "Klar";
+
+/* Meal View Controller */
+//Construct the combined string
+"Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@" = "Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@";
+
+//For parsing the combinedstring
+"Kolhydrater: " = "Kolhydrater: ";
+"g" = "g";
+"Fett: " = "Fett: ";
+"Protein: " = "Protein: ";
+"Insulin: " = "Insulin: ";
+"E" = "E";
+
+"Registrera Måltid" = "Registrera Måltid";
+"Registrera startdos" = "Registrera startdos";
+"Registrera hela måltiden" = "Registrera hela måltiden";
+"ⓘ  iOS Genväg" = "ⓘ  iOS Genväg";
+"ⓘ  Twilio SMS" = "ⓘ  Twilio SMS";
+"Skicka Måltid" = "Skicka Måltid";
+"Skicka Måltid och Bolus" = "Skicka Måltid och Bolus";
+"Nästa" = "Nästa";
+"Klar" = "Klar";
+"Återstår att registrera" = "Återstår att registrera";
+"Kolhydrater" = "Kolhydrater";
+"Fett" = "Fett";
+"Protein" = "Protein";
+"Bolus" = "Bolus";
+"%@ g (av %@ g)" = "%@ g (av %@ g)";
+"%@ E (av %@ E)" = "%@ E (av %@ E)";
+"⛔️ Maxgräns kolhydrater %@ g" = "⛔️ Maxgräns kolhydrater %@ g";
+"⛔️ Maxgräns fett/protein %@ g" = "⛔️ Maxgräns fett/protein %@ g";
+"⛔️ Maxgräns bolus %@ E" = "⛔️ Maxgräns bolus %@ E";
+"Fel" = "Fel";
+"Bolus är inmatad i fel format" = "Bolus är inmatad i fel format";
+"Ändra" = "Ändra";
+"Kolhydrater är inmatade i fel format" = "Kolhydrater är inmatade i fel format";
+"Fett är inmatat i fel format" = "Fett är inmatat i fel format";
+"Protein är inmatat i fel format" = "Protein är inmatat i fel format";
+"Lyckades!" = "Lyckades!";
+"Meddelandet levererades" = "Meddelandet levererades";
+"OK" = "OK";
+"Bekräfta måltid" = "Bekräfta måltid";
+"Vill du registrera denna måltid?" = "Vill du registrera denna måltid?";
+"Ja" = "Ja";
+"Avbryt" = "Avbryt";
+"Bekräfta måltid och bolus" = "Bekräfta måltid och bolus";
+"Vill du registrera denna måltid och ge %.2f E bolus?" = "Vill du registrera denna måltid och ge %.2f E bolus?";
+
+/* Food Items List VC */
+"Sök efter livsmedel online" = "Sök efter livsmedel online";
+"Rensa" = "Rensa";
+"Tillbaka" = "Tillbaka";
+"Livsmedel" = "Livsmedel";
+"Sök sparade" = "Sök sparade";
+"Sök online" = "Sök online";
+"Sök bland %.0f sparade livsmedel" = "Sök bland %.0f sparade livsmedel";
+"Sök efter nya livsmedel online" = "Sök efter nya livsmedel online";
+"Ange vikt per styck i gram (valfritt)" = "Ange vikt per styck i gram (valfritt)";
+"Avbryt" = "Avbryt";
+"Lägg till" = "Lägg till";
+"Befintlig data" = "Befintlig data";
+"Ny data" = "Ny data";
+"Kh:" = "Kh:";
+"g/100g" = "g/100g";
+"Fett:" = "Fett:";
+"Protein:" = "Protein:";
+"Finns redan inlagt i livsmedelslistan." = "Finns redan inlagt i livsmedelslistan.";
+"Vill du behålla de befintliga näringsvärdena eller uppdatera dem?" = "Vill du behålla de befintliga näringsvärdena eller uppdatera dem?";
+"Behåll befintliga" = "Behåll befintliga";
+"Uppdatera" = "Uppdatera";
+"Ett fel uppstod vid hämtning av livsmedelsdata." = "Ett fel uppstod vid hämtning av livsmedelsdata.";
+"Fel" = "Fel";
+"OK" = "OK";
+"Radera Livsmedel" = "Radera Livsmedel";
+"Bekräfta att du vill radera: '%@'?" = "Bekräfta att du vill radera: '%@'?";
+"Radera" = "Radera";
+"+ Lägg till i måltid" = "+ Lägg till i måltid";
+"Produkt" = "Produkt";
+"Not:" = "Not:";
+"Kolhydrater:" = "Kolhydrater:";
+"g / st" = "g / st";
+"g / 100 g" = "g / 100 g";
+"Serverats:" = "Serverats:";
+"ggr" = "ggr";
+"Klar" = "Klar";
+"API Begränsning" = "API Begränsning";
+"Vänta några sekunder innan nästa sökning" = "Vänta några sekunder innan nästa sökning";
+"Felaktig Dabas URL" = "Felaktig Dabas URL";
+"Dabas API fel: Ingen data togs emot" = "Dabas API fel: Ingen data togs emot";
+"OpenFoodFacts API fel: Ingen data togs emot" = "OpenFoodFacts API fel: Ingen data togs emot";
+"Inga sökträffar" = "Inga sökträffar";
+"Kolhydrater: %@ g / 100 g" = "Kolhydrater: %@ g / 100 g";
+"Fett: %@ g / 100 g" = "Fett: %@ g / 100 g";
+"Protein: %@ g / 100 g" = "Protein: %@ g / 100 g";
+"Källa: OpenFoodFacts" = "Källa: OpenFoodFacts";
+"Kunde inte hitta information om livsmedlet" = "Kunde inte hitta information om livsmedlet";
+"Källa: Dabas" = "Källa: Dabas";
+"Dabas API fel: Kunde inte tolka svar från servern" = "Dabas API fel: Kunde inte tolka svar från servern";
+"Ett fel uppstod vid hämtning av livsmedelsdata." = "Ett fel uppstod vid hämtning av livsmedelsdata.";
+
+/* Add Food Items VC */
+"Nästa" = "Nästa";
+"Klar" = "Klar";
+"Per 100g" = "Per 100g";
+"Per Styck" = "Per Styck";
+"  Ändra till per 100g   ←" = "  Ändra till per 100g   ←";
+"→   Ändra till per st  " = "→   Ändra till per st  ";
+"g/st" = "g/st";
+"g/100g" = "g/100g";
+"Spara ändringar" = "Spara ändringar";
+"Inga ändringar" = "Inga ändringar";
+"Spara" = "Spara";
+"Ändra livsmedel" = "Ändra livsmedel";
+"Lägg till nytt livsmedel" = "Lägg till nytt livsmedel";
+"S: " = "S: ";
+"Skolmat: " = "Skolmat: ";
+"Skola: " = "Skola: ";
+"Skola " = "Skola ";
+"Skolmat " = "Skolmat ";
+"skolmat: " = "skolmat: ";
+"skola: " = "skola: ";
+"skola " = "skola ";
+"skolmat " = "skolmat ";
+
+/* Scanner VC */
+"Scanna streckkod" = "Scanna streckkod";
+"Ogiltig URL" = "Ogiltig URL";
+"Fel: %@" = "Fel: %@";
+"Ingen data levererades" = "Ingen data levererades";
+"Kolhydrater: %.1f g / 100 g" = "Kolhydrater: %.1f g / 100 g";
+"Fett: %.1f g / 100 g" = "Fett: %.1f g / 100 g";
+"Protein: %.1f g / 100 g" = "Protein: %.1f g / 100 g";
+"Källa: Openfoodfacts" = "Källa: Openfoodfacts";
+"Openfoodfacts produktmatchning OK" = "Openfoodfacts produktmatchning OK";
+"Kunde inte hitta information om livsmedlet" = "Kunde inte hitta information om livsmedlet";
+"Kunde inte tolka svar från servern" = "Kunde inte tolka svar från servern";
+"Fel vid tolkning JSON: %@" = "Fel vid tolkning JSON: %@";
+"Ange vikt per styck i gram (valfritt)" = "Ange vikt per styck i gram (valfritt)";
+"Avbryt" = "Avbryt";
+"Lägg till" = "Lägg till";
+"Befintlig data    ->    Ny data" = "Befintlig data    ->    Ny data";
+"Kh:" = "Kh:";
+"Fett:" = "Fett:";
+"Protein:" = "Protein:";
+"g/100g" = "g/100g";
+"Finns redan inlagt i livsmedelslistan." = "Finns redan inlagt i livsmedelslistan.";
+"Vill du behålla de befintliga näringsvärdena eller uppdatera dem?" = "Vill du behålla de befintliga näringsvärdena eller uppdatera dem?";
+"Behåll befintliga" = "Behåll befintliga";
+"Uppdatera" = "Uppdatera";
+"Ett fel uppstod vid hämtning av livsmedelsdata." = "Ett fel uppstod vid hämtning av livsmedelsdata.";
+
+/* Favoritemeals VC */
+"Välj en favoritmåltid" = "Välj en favoritmåltid";
+"Tillbaka" = "Tillbaka";
+"Sök favoritmåltid" = "Sök favoritmåltid";
+"Radera favoritmåltid" = "Radera favoritmåltid";
+"Bekräfta att du vill radera: '\"%@\"'?" = "Bekräfta att du vill radera: '\"%@\"'?";
+"Radera" = "Radera";
+"Avbryt" = "Avbryt";
+"Ändra favoritmåltid" = "Ändra favoritmåltid";
+"Spara" = "Spara";
+"Klar" = "Klar";
+"Ändra mängd" = "Ändra mängd";
+"Ange en ny mängd för %@:" = "Ange en ny mängd för %@:";
+"Mängd: %@ st" = "Mängd: %@ st";
+"Mängd: %@ g" = "Mängd: %@ g";
+"Avbryt" = "Avbryt";
+
+/* Meal History */
+"Måltidshistorik" = "Måltidshistorik";
+"Historik" = "Historik";
+"Kh %.1f g" = "Kh %.1f g";
+"Fett %.1f g" = "Fett %.1f g";
+"Protein %.1f g" = "Protein %.1f g";
+"Radera måltidshistorik" = "Radera måltidshistorik";
+"Bekräfta att du vill radera denna måltid från historiken?" = "Bekräfta att du vill radera denna måltid från historiken?";
+"Avbryt" = "Avbryt";
+"Radera" = "Radera";
+"Meal history export triggered" = "Meal history export triggered";
+"Failed to delete meal history: %@" = "Failed to delete meal history: %@";
+"Servera samma måltid igen" = "Servera samma måltid igen";
+"Måltid %@" = "Måltid %@";
+"Kolhydrater %@ g" = "Kolhydrater %@ g";
+"Fett %@ g" = "Fett %@ g";
+"Protein %@ g" = "Protein %@ g";
+"Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]";
+"Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]";
+"Åt upp %@ st" = "Åt upp %@ st";
+"Åt upp %@ g" = "Åt upp %@ g";
+
+/* Settings */
+"Inställningar" = "Inställningar";
+"Tillbaka" = "Tillbaka";
+"Carb Ratio schema" = "Carb Ratio schema";
+"Startdoser schema" = "Startdoser schema";
+"Dela data" = "Dela data";
+"Fjärrstyrning" = "Fjärrstyrning";
+"Tillåt fjärrstyrning" = "Tillåt fjärrstyrning";
+"Tillåt datarensning" = "Tillåt datarensning";
+"Schema" = "Schema";
+"Fraktion" = "Fraktion";
+"Startdoser" = "Startdoser";
+"Startdos Fraktion" = "Startdos Fraktion";
+"Maxgräns Kolhydrater (g)" = "Maxgräns Kolhydrater (g)";
+"Maxgräns Kolhydrater" = "Maxgräns Kolhydrater";
+"Maxgräns Bolus (E)" = "Maxgräns Bolus (E)";
+"Maxgräns Bolus" = "Maxgräns Bolus";
+"Override-faktor" = "Override-faktor";
+"Override" = "Override";
+"Nightscout URL" = "Nightscout URL";
+"Nightscout Token" = "Nightscout Token";
+"Dabas API Secret" = "Dabas API Secret";
+"Skolmaten URL" = "Skolmaten URL";
+"Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater." = "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.";
+"Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
+"Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
+"När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:";
+"Ange exakt namn på den override du vill aktivera i iAPS/Trio" = "Ange exakt namn på den override du vill aktivera i iAPS/Trio";
+"Ange din Nightscout URL:" = "Ange din Nightscout URL:";
+"Ange din Nightscout Token:" = "Ange din Nightscout Token:";
+"Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online";
+"Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Ange URL till Skolmaten.se RSS-flöde som du vill använda:";
+"Spara" = "Spara";
+"Avbryt" = "Avbryt";
+
+/* Data Sharing VC */
+"Dela data" = "Dela data";
+"Tillåt delning av pågående måltid" = "Tillåt delning av pågående måltid";
+"Välj vilken data du vill exportera" = "Välj vilken data du vill exportera";
+"Hela databasen" = "Hela databasen";
+"Användarinställningar" = "Användarinställningar";
+"Avbryt" = "Avbryt";
+"Importera data" = "Importera data";
+"Välj vilken data du vill importera" = "Välj vilken data du vill importera";
+"Importera hela databasen" = "Importera hela databasen";
+"Livsmedel" = "Livsmedel";
+"Favoritmåltider" = "Favoritmåltider";
+"Måltidshistorik" = "Måltidshistorik";
+"Carb ratios schema" = "Carb ratios schema";
+"Startdoser schema" = "Startdoser schema";
+"Import lyckades" = "Import lyckades";
+"Användarinställningarna har importerats." = "Användarinställningarna har importerats.";
+"Export lyckades" = "Export lyckades";
+"Användarinställningarna har exporterats." = "Användarinställningarna har exporterats.";
+"Documents/CarbsCounter/Användarinställningar" = "Documents/CarbsCounter/Användarinställningar";
+"OK" = "OK";
+
+/* Carb ratio schedule */
+"Carb Ratio" = "Carb Ratio";
+"Klar" = "Klar";
+"Rensa" = "Rensa";
+"Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
+"Ja" = "Ja";
+"Nej" = "Nej";
+"Nightscout import" = "Nightscout import";
+"Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över." = "Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över.";
+"Avbryt" = "Avbryt";
+"Lyckades" = "Lyckades";
+"Carb ratios importerade och mappede från Nightscout." = "Carb ratios importerade och mappede från Nightscout.";
+"Fel" = "Fel";
+"Kunde inte importera carb ratios från Nightscout." = "Kunde inte importera carb ratios från Nightscout.";
+"Nästa" = "Nästa";
+
+/* Start dose schedule */
+"Startdoser" = "Startdoser";
+"Klar" = "Klar";
+"Rensa" = "Rensa";
+"Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
+"Ja" = "Ja";
+"Nej" = "Nej";
+"Nästa" = "Nästa";
+
+/* Remote */
+"SELECT REMOTE COMMANDS METHOD" = "VÄLJ METOD FÖR REMOTE KOMMANDON";
+"TWILIO SETTINGS" = "TWILIO INSTÄLLNINGAR";
+"REMOTE CONFIGURATION" = "REMOTE INSTÄLLNINGAR";
+"Entered By" = "Registrerat av";
+"Secret Code" = "Hemlig kod";
+"Använd genvägar" = "Använd genvägar";
+"Använd SMS API" = "Använd SMS API";
+"Fjärrstyrning" = "Fjärrstyrning";
+"Klar" = "Klar";
+"Twilio SID" = "Twilio SID";
+"Twilio Secret" = "Twilio Secret";
+"Twilio From #" = "Twilio från #";
+"Twilio To #" = "Twilio till #";
+
+/* Shortcuts */
+"Uppdatera registrerad mängd" = "Uppdatera registrerad mängd";
+"Uppdatera registrerad mängd kh, fett, protein och bolus." = "Uppdatera registrerad mängd kh, fett, protein och bolus.";
+"Kolhydrater (g)" = "Kolhydrater (g)";
+"Fett (g)" = "Fett (g)";
+"Protein (g)" = "Protein (g)";
+"Bolus (E)" = "Bolus (E)";
+"Startdos" = "Startdos";

@@ -7,7 +7,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg", "kokosmjölk"]
+    let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk", "grönpeppar"]
     var offset = 0
     
     override func viewDidLoad() {
@@ -18,7 +18,7 @@ class RSSFeedViewController: UIViewController {
         setupGradientView()
         setupCloseButton()
         
-        title = "Skolmaten Vecka"
+        title = NSLocalizedString("Skolmaten Vecka --", comment: "Skolmaten Vecka --")
         setupNavigationBar()
         setupTableView()
         fetchRSSFeed()
@@ -98,25 +98,35 @@ class RSSFeedViewController: UIViewController {
         NetworkManager.shared.fetchRSSFeed(url: schoolFoodURL) { data in
             guard let data = data else { return }
             let parser = RSSParser()
-            if let items = parser.parse(data: data) {
-                self.rssItems = items
-                
-                if let firstItem = items.first, let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
+            if let items = parser.parse(data: data), let firstItem = items.first {
+                if let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
                     DispatchQueue.main.async {
+                        self.rssItems = items
                         self.title = "Skolmaten Vecka \(weekOfYear)"
                         self.tableView.reloadData()
                     }
+                } else {
+                    DispatchQueue.main.async {
+                        self.title = "Skolmaten Vecka --"
+                        self.rssItems = []
+                        self.tableView.reloadData()
+                    }
                 }
-                
             } else {
-                print("Failed to parse RSS feed")
+                DispatchQueue.main.async {
+                    self.title = "Skolmaten Vecka --"
+                    self.rssItems = []
+                    self.tableView.reloadData()
+                    print("Failed to parse RSS feed or no items found")
+                }
             }
         }
     }
     
     private func fetchFoodItems() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let context = CoreDataStack.shared.context
         let request: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        
         do {
             foodItems = try context.fetch(request)
         } catch {
@@ -127,7 +137,7 @@ class RSSFeedViewController: UIViewController {
     private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
         return items.filter {
             let name = $0.name ?? ""
-            return name.fuzzyMatch(query) > 0.15 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+            return name.fuzzyMatch(query) > 0.2 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
         }
     }
 
@@ -205,6 +215,46 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = .clear
+        
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .left
+        label.font = UIFont.boldSystemFont(ofSize: 16)
+        
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.locale = Locale(identifier: "sv_SE")
+        guard let year = rssItems.first?.date.year else { return nil }
+        guard let date = calendar.date(from: DateComponents(weekday: section + 2, weekOfYear: calendar.component(.weekOfYear, from: rssItems.first?.date ?? Date()), yearForWeekOfYear: year)) else { return nil }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE dd MMM yyyy"
+        formatter.locale = Locale(identifier: "sv_SE")
+        var dateText = formatter.string(from: date).capitalized
+        
+        // Offset the date by "value: -X" days for testing
+        if let offsetDate = calendar.date(byAdding: .day, value: -0, to: date), calendar.isDateInToday(offsetDate) {
+            label.textColor = .orange
+            dateText = "Dagens lunch • \(dateText)" // Add the prefix if the date is today
+        } else {
+            label.textColor = .gray // Default color for other days
+        }
+        
+        label.text = dateText
+        
+        headerView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
+        ])
+        
+        return headerView
+    }
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -253,8 +303,8 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
             }
         }
         
-        // Always add "Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
-        if let milkItem = foodItems.first(where: { $0.name == "Mjölk" }) {
+        // Always add "Ⓢ Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
+        if let milkItem = foodItems.first(where: { $0.name == "Ⓢ Mjölk" }) {
             matchedFoodItems.insert(milkItem)
         }
         if let mixedVegetablesItem = foodItems.first(where: { $0.name == "Ⓢ Blandade grönsaker (ej majs & ärtor)" }) {

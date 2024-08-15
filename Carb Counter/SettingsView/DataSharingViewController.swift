@@ -34,7 +34,7 @@ class DataSharingViewController: UIViewController {
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        title = "Dela data"
+        title = NSLocalizedString("Dela data", comment: "Dela data")
         view.backgroundColor = .systemBackground
         
         setupNavigationBarButtons()
@@ -53,7 +53,7 @@ class DataSharingViewController: UIViewController {
         toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
         
         let toggleLabel = UILabel()
-        toggleLabel.text = "Tillåt delning av pågående måltid"
+        toggleLabel.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Tillåt delning av pågående måltid")
         toggleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
@@ -78,56 +78,56 @@ class DataSharingViewController: UIViewController {
     
     //Manual exporting and importing
     @objc private func exportData() {
-        let alert = UIAlertController(title: "Välj vilken data du vill exportera", message: nil, preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: NSLocalizedString("Välj vilken data du vill exportera", comment: "Välj vilken data du vill exportera"), message: nil, preferredStyle: .actionSheet)
         
-        alert.addAction(UIAlertAction(title: "Hela databasen", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Hela databasen", comment: "Hela databasen"), style: .default, handler: { _ in
             Task { await self.exportAllCSVFiles() }
         }))
         
-        alert.addAction(UIAlertAction(title: "Användarinställningar", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Användarinställningar", comment: "Användarinställningar"), style: .default, handler: { _ in
             Task { await self.exportUserDefaultsToCSV() }
         }))
         
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel))
         
         present(alert, animated: true, completion: nil)
     }
 
     @objc private func importData() {
-        let alert = UIAlertController(title: "Importera data", message: "Välj vilken data du vill importera", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: NSLocalizedString("Importera data", comment: "Importera data"), message: NSLocalizedString("Välj vilken data du vill importera", comment: "Välj vilken data du vill importera"), preferredStyle: .actionSheet)
         
         // Automatic import for all CSV files
-        alert.addAction(UIAlertAction(title: "Importera hela databasen", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Importera hela databasen", comment: "Importera hela databasen"), style: .default, handler: { _ in
             Task { await self.importAllCSVFiles() }
         }))
         
         // Present document picker for specific CSV imports
-        alert.addAction(UIAlertAction(title: "Livsmedel", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Livsmedel", comment: "Livsmedel"), style: .default, handler: { _ in
             Task { await self.presentDocumentPicker(for: "Food Items") }
         }))
         
-        alert.addAction(UIAlertAction(title: "Favoritmåltider", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Favoritmåltider", comment: "Favoritmåltider"), style: .default, handler: { _ in
             Task { await self.presentDocumentPicker(for: "Favorite Meals") }
         }))
         
-        alert.addAction(UIAlertAction(title: "Måltidshistorik", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Måltidshistorik", comment: "Måltidshistorik"), style: .default, handler: { _ in
             Task { await self.presentDocumentPicker(for: "Meal History") }
         }))
         
-        alert.addAction(UIAlertAction(title: "Carb ratios schema", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Carb ratios schema", comment: "Carb ratios schema"), style: .default, handler: { _ in
             Task { await self.presentDocumentPicker(for: "Carb Ratio Schedule") }
         }))
         
-        alert.addAction(UIAlertAction(title: "Startdoser schema", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Startdoser schema", comment: "Startdoser schema"), style: .default, handler: { _ in
             Task { await self.presentDocumentPicker(for: "Start Dose Schedule") }
         }))
         
         // New option for importing user settings
-        alert.addAction(UIAlertAction(title: "Användarinställningar", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Användarinställningar", comment: "Användarinställningar"), style: .default, handler: { _ in
             Task { await self.importUserDefaultsFromCSV() }
         }))
         
-        alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel))
         
         present(alert, animated: true, completion: nil)
     }
@@ -666,7 +666,7 @@ class DataSharingViewController: UIViewController {
     
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
         alertController.addAction(okAction)
         present(alertController, animated: true, completion: nil)
     }
@@ -714,7 +714,7 @@ class DataSharingViewController: UIViewController {
         let fileName = "UserDefaults_\(caregiverName)_\(timestamp).csv"
 
         await saveUserDefaultsCSV(data: csvString, fileName: fileName)
-        showAlert(title: "Export lyckades", message: "Användarinställningarna har exporterats.")
+        showAlert(title: NSLocalizedString("Export lyckades", comment: "Export lyckades"), message: NSLocalizedString("Användarinställningarna har exporterats.", comment: "Användarinställningarna har exporterats."))
     }
 
 
@@ -798,7 +798,7 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
                         let csvData = try String(contentsOf: url, encoding: .utf8)
                         let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
                         parseUserDefaultsCSV(rows)
-                        showAlert(title: "Import lyckades", message: "Användarinställningarna har importerats.")
+                        showAlert(title: NSLocalizedString("Import lyckades", comment: "Import lyckades"), message: NSLocalizedString("Användarinställningarna har importerats.", comment: "Användarinställningarna har importerats."))
                     }
                 } else {
                     Task { await parseCSV(at: url, for: entityName) }
@@ -880,7 +880,7 @@ extension DataSharingViewController {
                 try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
                 
                 let fileManager = FileManager.default
-                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/Användarinställningar")
+                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent(NSLocalizedString("Documents/CarbsCounter/Användarinställningar", comment: "Documents/CarbsCounter/Användarinställningar"))
                 let destinationURL = iCloudURL?.appendingPathComponent(fileName)
                 
                 if let destinationURL = destinationURL {

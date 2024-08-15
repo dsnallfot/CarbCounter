@@ -77,10 +77,11 @@ class HomeViewController: UIViewController {
     private func setupUI() {
         // Create and setup the title label
         let titleLabel = UILabel()
-        titleLabel.text = "Räkna Kolhydrater"
+        titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
         titleLabel.textAlignment = .center
         titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
         
         // Create and setup the container view for the image
         let imageContainerView = UIView()
