@@ -103,7 +103,7 @@ class RSSFeedViewController: UIViewController {
                 
                 if let firstItem = items.first, let weekOfYear = Calendar(identifier: .iso8601).dateComponents([.weekOfYear], from: firstItem.date).weekOfYear {
                     DispatchQueue.main.async {
-                        self.title = String(format: NSLocalizedString("Skolmaten Vecka %@", comment: "Skolmaten Vecka %@"), weekOfYear)
+                        self.title = "Skolmaten Vecka \(weekOfYear)" //String(format: NSLocalizedString("Skolmaten Vecka %@", comment: "Skolmaten Vecka %@"), weekOfYear)
                         self.tableView.reloadData()
                     }
                 }
