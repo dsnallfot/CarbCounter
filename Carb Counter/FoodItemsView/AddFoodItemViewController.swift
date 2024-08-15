@@ -110,8 +110,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         // Add toolbar with "Next" and "Done" buttons
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
-        let nextButton = UIBarButtonItem(title: "Nästa", style: .plain, target: self, action: #selector(nextButtonTapped))
-        let doneButton = UIBarButtonItem(title: "Klar", style: .plain, target: self, action: #selector(doneButtonTapped))
+        let nextButton = UIBarButtonItem(title: NSLocalizedString("Nästa", comment: "Button title for proceeding to the next step"), style: .plain, target: self, action: #selector(nextButtonTapped))
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Button title for finishing the process"), style: .plain, target: self, action: #selector(doneButtonTapped))
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         toolbar.setItems([nextButton, flexibleSpace, doneButton], animated: false)
         
@@ -274,7 +274,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func setupSegmentedControl() {
         // Initialize with default labels
-        let initialItems = ["Per 100g", "Per Styck"]
+        let initialItems = [
+            NSLocalizedString("Per 100g", comment: "Segment label for per 100 grams"),
+            NSLocalizedString("Per Styck", comment: "Segment label for per piece")
+        ]
         segmentedControl = UISegmentedControl(items: initialItems)
         segmentedControl.selectedSegmentIndex = isPerPiece ? 1 : 0
         segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
@@ -286,20 +289,20 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
-    
+
     private func updateSegmentedControlLabels() {
         if foodItem != nil { // Check if we are in "Ändra livsmedel" mode
             if isPerPiece {
-                segmentedControl.setTitle("  Ändra till per 100g   ←", forSegmentAt: 0)
-                segmentedControl.setTitle("Per Styck", forSegmentAt: 1)
+                segmentedControl.setTitle(NSLocalizedString("  Ändra till per 100g   ←", comment: "Change to per 100g"), forSegmentAt: 0)
+                segmentedControl.setTitle(NSLocalizedString("Per Styck", comment: "Per piece label"), forSegmentAt: 1)
             } else {
-                segmentedControl.setTitle("Per 100g", forSegmentAt: 0)
-                segmentedControl.setTitle("→   Ändra till per st  ", forSegmentAt: 1)
+                segmentedControl.setTitle(NSLocalizedString("Per 100g", comment: "Per 100 grams label"), forSegmentAt: 0)
+                segmentedControl.setTitle(NSLocalizedString("→   Ändra till per st  ", comment: "Change to per piece"), forSegmentAt: 1)
             }
         } else {
             // Default labels for "Lägg till nytt livsmedel" mode
-            segmentedControl.setTitle("Per 100g", forSegmentAt: 0)
-            segmentedControl.setTitle("Per Styck", forSegmentAt: 1)
+            segmentedControl.setTitle(NSLocalizedString("Per 100g", comment: "Per 100 grams label"), forSegmentAt: 0)
+            segmentedControl.setTitle(NSLocalizedString("Per Styck", comment: "Per piece label"), forSegmentAt: 1)
         }
     }
     
@@ -312,16 +315,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func updateUnitsLabels() {
         if isPerPiece {
-            carbsUnits.text = "g/st"
-            fatUnits.text = "g/st"
-            proteinUnits.text = "g/st"
+            carbsUnits.text = NSLocalizedString("g/st", comment: "Grams per piece unit")
+            fatUnits.text = NSLocalizedString("g/st", comment: "Grams per piece unit")
+            proteinUnits.text = NSLocalizedString("g/st", comment: "Grams per piece unit")
         } else {
-            carbsUnits.text = "g/100g"
-            fatUnits.text = "g/100g"
-            proteinUnits.text = "g/100g"
+            carbsUnits.text = NSLocalizedString("g/100g", comment: "Grams per 100 grams unit")
+            fatUnits.text = NSLocalizedString("g/100g", comment: "Grams per 100 grams unit")
+            proteinUnits.text = NSLocalizedString("g/100g", comment: "Grams per 100 grams unit")
         }
     }
-    
     private func clearOppositeFields() {
         if isPerPiece {
             carbsTextField.text = ""
@@ -358,19 +360,19 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         if foodItem != nil {
             // Edit mode
             if saveButton.isEnabled {
-                updateButtonTitle(saveButton, withTitle: "Spara ändringar")
+                updateButtonTitle(saveButton, withTitle: NSLocalizedString("Spara ändringar", comment: "Save changes button title"))
             } else {
-                updateButtonTitle(saveButton, withTitle: "Inga ändringar")
+                updateButtonTitle(saveButton, withTitle: NSLocalizedString("Inga ändringar", comment: "No changes button title"))
             }
         } else {
             // New mode
-            updateButtonTitle(saveButton, withTitle: "Spara")
+            updateButtonTitle(saveButton, withTitle: NSLocalizedString("Spara", comment: "Save button title"))
         }
     }
-    
+
     private func setupUI() {
         if let foodItem = foodItem {
-            title = "Ändra livsmedel"
+            title = NSLocalizedString("Ändra livsmedel", comment: "Edit food item screen title")
             nameTextField.text = foodItem.name
             notesTextField.text = foodItem.notes
             emojiTextField.text = foodItem.emoji
@@ -388,7 +390,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 proteinTextField.text = formattedValue(foodItem.protein)
             }
         } else {
-            title = "Lägg till nytt livsmedel"
+            title = NSLocalizedString("Lägg till nytt livsmedel", comment: "Add new food item screen title")
             if isUpdateMode, let data = prePopulatedData {
                 nameTextField.text = data.name
                 carbsTextField.text = formattedValue(data.carbohydrates)
@@ -420,15 +422,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         if let foodItem = foodItem {
             // Update existing food item
             foodItem.name = (nameTextField.text ?? "")
-                .replacingOccurrences(of: "S: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skolmat: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skola: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skola ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skolmat ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skolmat: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skola: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skola ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skolmat ", with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("S: ", comment: "Prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skolmat: ", comment: "Prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skola: ", comment: "Prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skola ", comment: "Prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skolmat ", comment: "Prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skolmat: ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skola: ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skola ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skolmat ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
             foodItem.notes = notesTextField.text ?? ""
             foodItem.emoji = emojiTextField.text ?? ""
             if isPerPiece {
@@ -454,15 +456,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
             newFoodItem.name = ((nameTextField.text ?? "")
-                .replacingOccurrences(of: "S: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skolmat: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skola: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skola ", with: "Ⓢ ")
-                .replacingOccurrences(of: "Skolmat ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skolmat: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skola: ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skola ", with: "Ⓢ ")
-                .replacingOccurrences(of: "skolmat ", with: "Ⓢ ")) + (isPerPiece ? " ①" : "")
+                .replacingOccurrences(of: NSLocalizedString("S: ", comment: "Prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skolmat: ", comment: "Prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skola: ", comment: "Prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skola ", comment: "Prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("Skolmat ", comment: "Prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skolmat: ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skola: ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skola ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
+                .replacingOccurrences(of: NSLocalizedString("skolmat ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")) + (isPerPiece ? " ①" : "")
             newFoodItem.notes = notesTextField.text ?? ""
             newFoodItem.emoji = emojiTextField.text ?? ""
             
