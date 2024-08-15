@@ -388,7 +388,8 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     Finns redan inlagt i livsmedelslistan.
                     Vill du behålla de befintliga näringsvärdena eller uppdatera dem?
                     
-                    %@""", comment: "Message asking if user wants to keep existing nutritional values or update them"),
+                    %@
+""", comment: "Message asking if user wants to keep existing nutritional values or update them"),
                     comparisonMessage),
                     preferredStyle: .alert
                 )

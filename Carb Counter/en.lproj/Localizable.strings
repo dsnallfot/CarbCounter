@@ -268,3 +268,21 @@
 "Behåll befintliga" = "Keep existing";
 "Uppdatera" = "Update";
 "Ett fel uppstod vid hämtning av livsmedelsdata." = "An error occurred while fetching food data.";
+
+/* Favoritemeals VC */
+"Välj en favoritmåltid" = "Select a favorite meal";
+"Tillbaka" = "Back";
+"Sök favoritmåltid" = "Search favorite meal";
+"Radera favoritmåltid" = "Delete favorite meal";
+"Bekräfta att du vill radera: '\"%@\"'?" = "Confirm that you want to delete: '\"%@\"'?";
+"Radera" = "Delete";
+"Avbryt" = "Cancel";
+"Ändra favoritmåltid" = "Edit favorite meal";
+"Spara" = "Save";
+"Klar" = "Done";
+"Ändra mängd" = "Edit amount";
+"Ange en ny mängd för %@:" = "Enter a new amount for %@:";
+"Mängd: %@ st" = "Amount: %@ pcs";
+"Mängd: %@ g" = "Amount: %@ grams";
+"Avbryt" = "Cancel";
+

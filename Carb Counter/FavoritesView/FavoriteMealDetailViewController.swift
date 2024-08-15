@@ -16,28 +16,28 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Ändra favoritmåltid"
+        title = NSLocalizedString("Ändra favoritmåltid", comment: "Edit favorite meal")
         view.backgroundColor = .systemBackground
         // Create the gradient view
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Add the gradient view to the main view
-            view.addSubview(gradientView)
-            view.sendSubviewToBack(gradientView)
-            
-            // Set up constraints for the gradient view
-            NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+        
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         
         setupView()
         setupNavigationBar()
@@ -66,7 +66,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.backgroundColor = .clear//.systemBackground
+        tableView.backgroundColor = .clear
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -85,25 +85,25 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         if #available(iOS 13.0, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .clear//.systemBackground
+            appearance.backgroundColor = .clear
             appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
             appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
             
             navigationController?.navigationBar.standardAppearance = appearance
             navigationController?.navigationBar.scrollEdgeAppearance = appearance
         } else {
-            navigationController?.navigationBar.barTintColor = .clear//.systemBackground
+            navigationController?.navigationBar.barTintColor = .clear
             navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
         }
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Spara", style: .done, target: self, action: #selector(saveChanges))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Spara", comment: "Save"), style: .done, target: self, action: #selector(saveChanges))
     }
     
     private func setupCloseButton() {
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
         navigationItem.leftBarButtonItem = closeButton
     }
-
+    
     @objc private func closeButtonTapped() {
         dismiss(animated: true, completion: nil)
     }
@@ -123,7 +123,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         doneToolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneButtonAction))
+        let done: UIBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done"), style: .done, target: self, action: #selector(doneButtonAction))
         
         let items = [flexSpace, done]
         doneToolbar.items = items
@@ -145,7 +145,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as UITableViewCell
         cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
-        cell.backgroundColor = .clear // Set cell background to clear
+        cell.backgroundColor = .clear
         
         let items = getItems()
         let item = items[indexPath.row]
@@ -160,20 +160,20 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             }
             
             if let perPiece = item["perPiece"] as? Bool, perPiece {
-                cell.detailTextLabel?.text = "Mängd: \(formattedPortion) st"
+                cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ st", comment: "Amount: %@ pieces"), formattedPortion)
             } else {
-                cell.detailTextLabel?.text = "Mängd: \(formattedPortion) g"
+                cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ g", comment: "Amount: %@ grams"), formattedPortion)
             }
         } else {
             if let perPiece = item["perPiece"] as? Bool, perPiece {
-                cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") st"
+                cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ st", comment: "Amount: %@ pieces"), item["portionServed"] as? String ?? "")
             } else {
-                cell.detailTextLabel?.text = "Mängd: \(item["portionServed"] as? String ?? "") g"
+                cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ g", comment: "Amount: %@ grams"), item["portionServed"] as? String ?? "")
             }
         }
         // Apply custom font to detailTextLabel
-            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-            cell.detailTextLabel?.textColor = .gray
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        cell.detailTextLabel?.textColor = .gray
         
         return cell
     }
@@ -184,7 +184,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         var items = getItems()
         let item = items[indexPath.row]
         
-        let editAlert = UIAlertController(title: "Ändra mängd", message: "Ange en ny mängd för \(item["name"] as? String ?? ""):", preferredStyle: .alert)
+        let editAlert = UIAlertController(title: NSLocalizedString("Ändra mängd", comment: "Edit amount"), message: String(format: NSLocalizedString("Ange en ny mängd för %@:", comment: "Enter a new amount for %@:"), item["name"] as? String ?? ""), preferredStyle: .alert)
         editAlert.addTextField { textField in
             if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
                 if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
@@ -200,16 +200,16 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             textField.spellCheckingType = .no
             self.addDoneButtonOnKeyboard(to: textField)
         }
-        let saveAction = UIAlertAction(title: "Spara", style: .default) { [weak self] _ in
+        let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Save"), style: .default) { [weak self] _ in
             guard let self = self, let newPortion = editAlert.textFields?.first?.text else { return }
             items[indexPath.row]["portionServed"] = newPortion
             self.favoriteMeal.items = self.updateItems(items: items)
             
             CoreDataStack.shared.saveContext()
-
+            
             // Ensure dataSharingVC is instantiated
             guard let dataSharingVC = self.dataSharingVC else { return }
-
+            
             // Call the desired function
             Task {
                 await dataSharingVC.exportFavoriteMealsToCSV()
@@ -218,7 +218,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             
             self.tableView.reloadData()
         }
-        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
         
         editAlert.addAction(saveAction)
         editAlert.addAction(cancelAction)
@@ -248,7 +248,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         doneToolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Klar", style: .done, target: self, action: #selector(doneEditingTextField))
+        let done: UIBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done"), style: .done, target: self, action: #selector(doneEditingTextField))
         
         let items = [flexSpace, done]
         doneToolbar.items = items

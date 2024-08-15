@@ -268,3 +268,21 @@
 "Behåll befintliga" = "Behåll befintliga";
 "Uppdatera" = "Uppdatera";
 "Ett fel uppstod vid hämtning av livsmedelsdata." = "Ett fel uppstod vid hämtning av livsmedelsdata.";
+
+/* Favoritemeals VC */
+"Välj en favoritmåltid" = "Välj en favoritmåltid";
+"Tillbaka" = "Tillbaka";
+"Sök favoritmåltid" = "Sök favoritmåltid";
+"Radera favoritmåltid" = "Radera favoritmåltid";
+"Bekräfta att du vill radera: '\"%@\"'?" = "Bekräfta att du vill radera: '\"%@\"'?";
+"Radera" = "Radera";
+"Avbryt" = "Avbryt";
+"Ändra favoritmåltid" = "Ändra favoritmåltid";
+"Spara" = "Spara";
+"Klar" = "Klar";
+"Ändra mängd" = "Ändra mängd";
+"Ange en ny mängd för %@:" = "Ange en ny mängd för %@:";
+"Mängd: %@ st" = "Mängd: %@ st";
+"Mängd: %@ g" = "Mängd: %@ g";
+"Avbryt" = "Avbryt";
+
