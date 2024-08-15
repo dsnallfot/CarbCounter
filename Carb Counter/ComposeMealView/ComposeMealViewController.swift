@@ -193,12 +193,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         historyButton.setImage(calendarImage, for: .normal)
         historyButton.addTarget(self, action: #selector(showMealHistory), for: .touchUpInside)
         
-        let showFavoriteMealsImage = UIImage(systemName: "star")
+        let showFavoriteMealsImage = UIImage(systemName: "list.star")
         let showFavoriteMealsButton = UIButton(type: .system)
         showFavoriteMealsButton.setImage(showFavoriteMealsImage, for: .normal)
         showFavoriteMealsButton.addTarget(self, action: #selector(showFavoriteMeals), for: .touchUpInside)
         
-        let saveFavoriteImage = UIImage(systemName: "plus.circle")
+        let saveFavoriteImage = UIImage(systemName: "star.circle")
         saveFavoriteButton = UIButton(type: .system)
         saveFavoriteButton.setImage(saveFavoriteImage, for: .normal)
         saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
@@ -308,7 +308,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         if saveFavoriteButton == nil {
             saveFavoriteButton = UIButton(type: .system)
-            saveFavoriteButton.setImage(UIImage(systemName: "plus.circle"), for: .normal)
+            saveFavoriteButton.setImage(UIImage(systemName: "star.circle"), for: .normal)
             saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
             saveFavoriteButton.isEnabled = false
             saveFavoriteButton.tintColor = .gray
