@@ -3,7 +3,65 @@ import UIKit
 class SettingsViewController: UITableViewController {
     
     override func viewDidLoad() {
-        super.viewDidLoad()
+            super.viewDidLoad()
+            setupView()
+            
+            NotificationCenter.default.addObserver(self, selector: #selector(updateToggleStates), name: .didImportUserDefaults, object: nil)
+            
+            let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
+            navigationItem.leftBarButtonItem = closeButton
+        }
+    
+    private func setupView() {
+            tableView.backgroundColor = .clear
+            let solidBackgroundView = UIView()
+            solidBackgroundView.backgroundColor = .systemBackground
+            solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+            
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            let backgroundContainerView = UIView()
+            backgroundContainerView.addSubview(solidBackgroundView)
+            backgroundContainerView.addSubview(gradientView)
+            tableView.backgroundView = backgroundContainerView
+            
+            NSLayoutConstraint.activate([
+                solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+            ])
+            
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+            ])
+            
+            title = "Inställningar"
+            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "switchCell")
+            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "valueCell")
+        }
+
+    @objc private func updateToggleStates() {
+        // Remove all subviews from the tableView and reset the data
+        for subview in view.subviews {
+            subview.removeFromSuperview()
+        }
+
+        // Re-initialize the view and reload the data
+        setupView()
+        tableView.reloadData()
+    }
+    /*
         tableView.backgroundColor = .clear // Make sure the table view itself is clear
                 
                 // Create the solid background view
@@ -52,7 +110,7 @@ class SettingsViewController: UITableViewController {
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
         navigationItem.leftBarButtonItem = closeButton
-    }
+    }*/
     
     @objc private func closeView() {
         dismiss(animated: true, completion: nil)
@@ -70,7 +128,7 @@ class SettingsViewController: UITableViewController {
     deinit {
         NotificationCenter.default.removeObserver(self, name: .didImportUserDefaults, object: nil)
     }
-    
+    /*
     @objc private func updateToggleStates() {
         for case let cell as UITableViewCell in tableView.visibleCells {
             if let toggleSwitch = cell.accessoryView as? UISwitch {
@@ -85,7 +143,7 @@ class SettingsViewController: UITableViewController {
                 segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
             }
         }
-    }
+    }*/
     
     @objc private func cancelButtonTapped() {
         dismiss(animated: true, completion: nil)
