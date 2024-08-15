@@ -165,7 +165,7 @@
 "Ja" = "Ja";
 "Avbryt" = "Avbryt";
 "Bekräfta måltid och bolus" = "Bekräfta måltid och bolus";
-"Vill du registrera denna måltid och ge %@ E bolus?" = "Vill du registrera denna måltid och ge %@ E bolus?";
+"Vill du registrera denna måltid och ge %.2f E bolus?" = "Vill du registrera denna måltid och ge %.2f E bolus?";
 
 /* Food Items List VC */
 "Sök efter livsmedel online" = "Sök efter livsmedel online";

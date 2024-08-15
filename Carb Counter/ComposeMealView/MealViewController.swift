@@ -847,7 +847,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let method = UserDefaultsRepository.method
             isAlertShowing = true
             
-            let confirmationAlert = UIAlertController(title: NSLocalizedString("Bekräfta måltid och bolus", comment: "Bekräfta måltid och bolus"), message: String(format: NSLocalizedString("Vill du registrera denna måltid och ge %@ E bolus?", comment: "Vill du registrera denna måltid och ge %@ E bolus?"), bolusValue), preferredStyle: .alert)
+            let confirmationAlert = UIAlertController(title: NSLocalizedString("Bekräfta måltid och bolus", comment: "Bekräfta måltid och bolus"), message: String(format: NSLocalizedString("Vill du registrera denna måltid och ge %.2f E bolus?", comment: "Vill du registrera denna måltid och ge %.2f E bolus?"), bolusValue), preferredStyle: .alert)
             
             let confirmAction: UIAlertAction
             
@@ -980,12 +980,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 AudioServicesPlaySystemSound(SystemSoundID(1322))
                 let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("Meddelandet levererades", comment: "Meddelandet levererades"), preferredStyle: .alert)
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: { _ in
-                    // Call updateRegisteredAmount after successful SMS API call
-                    if let composeMealVC = self.findComposeMealViewController() {
-                                        composeMealVC.updateRegisteredAmount(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: startDose)
-                                    } else {
-                                        print("ComposeMealViewController not found")
-                                    }
+                    self.delegate?.didUpdateMealValues(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: self.startDose)
                                     print("Dismissing MealViewController after successful SMS API call")
                                     self.dismiss(animated: true, completion: nil)
                                 }))
@@ -1000,7 +995,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     }
 
     
-    // Function to find ComposeMealViewController in the navigation stack
+    /*// Function to find ComposeMealViewController in the navigation stack
     private func findComposeMealViewController() -> ComposeMealViewController? {
         if let navController = self.presentingViewController as? UINavigationController {
             for vc in navController.viewControllers {
@@ -1010,7 +1005,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             }
         }
         return nil
-    }
+    }*/
 
     // Helper function to extract values from combinedString
     func extractValue(from text: String, prefix: String, suffix: String) -> String {
