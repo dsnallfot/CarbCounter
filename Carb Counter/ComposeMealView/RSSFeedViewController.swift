@@ -7,7 +7,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    let excludedWords = ["med", "samt", "olika", "och", "serveras", "het", "i", "pålägg", "kokosmjölk"]
+    let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk"]
     var offset = 0
     
     override func viewDidLoad() {
