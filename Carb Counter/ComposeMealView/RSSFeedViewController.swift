@@ -303,8 +303,8 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
             }
         }
         
-        // Always add "Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
-        if let milkItem = foodItems.first(where: { $0.name == "Mjölk" }) {
+        // Always add "Ⓢ Mjölk" and "Ⓢ Blandade grönsaker (ej majs & ärtor)" if they exist
+        if let milkItem = foodItems.first(where: { $0.name == "Ⓢ Mjölk" }) {
             matchedFoodItems.insert(milkItem)
         }
         if let mixedVegetablesItem = foodItems.first(where: { $0.name == "Ⓢ Blandade grönsaker (ej majs & ärtor)" }) {

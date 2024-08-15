@@ -25,7 +25,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var contentView: UIView!
     var addButtonRowView: AddButtonRowView!
     private var scrollViewBottomConstraint: NSLayoutConstraint?
-    //private var contentViewBottomConstraint: NSLayoutConstraint?
     private var addButtonRowViewBottomConstraint: NSLayoutConstraint?
     
     ///Buttons
@@ -96,7 +95,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadValuesFromUserDefaults()
+        initializeComposeMealViewController()
+    }
+        /*loadValuesFromUserDefaults()
         initializeUIElements()
         ComposeMealViewController.current = self
         ComposeMealViewController.shared = self
@@ -232,6 +233,149 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
+        addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
+        totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelDidChange), for: .editingChanged)
+        dataSharingVC = DataSharingViewController()
+    }*/
+    
+    private func initializeComposeMealViewController() {
+        loadValuesFromUserDefaults()
+        initializeUIElements()
+        ComposeMealViewController.current = self
+        ComposeMealViewController.shared = self
+
+        ///Create the gradient view
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Add the gradient view to the main view
+        view.addSubview(gradientView)
+        view.sendSubviewToBack(gradientView)
+
+        // Set up constraints for the gradient view
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        // Add the "Plate" image on top of the gradient view
+        let plateImageView = UIImageView(image: UIImage(named: "Plate"))
+        plateImageView.contentMode = .scaleAspectFit
+        plateImageView.alpha = 0.08
+        plateImageView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(plateImageView)
+
+        // Set up constraints for the plate image view
+        NSLayoutConstraint.activate([
+            plateImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            plateImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 20),
+            plateImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9), // Adjust size as needed
+            plateImageView.heightAnchor.constraint(equalTo: plateImageView.widthAnchor)
+        ])
+
+        title = NSLocalizedString("Måltid", comment: "Måltid")
+
+        ///Setup the fixed header containing summary and headline
+        let fixedHeaderContainer = UIView()
+        fixedHeaderContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(fixedHeaderContainer)
+        NSLayoutConstraint.activate([
+            fixedHeaderContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            fixedHeaderContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            fixedHeaderContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 143)
+        ])
+
+        ///Reset lateBreakfast to false
+        UserDefaultsRepository.lateBreakfast = false
+        lateBreakfast = false
+
+        /// Ensure addButtonRowView is initialized
+        addButtonRowView = AddButtonRowView()
+        updatePlaceholderValuesForCurrentHour()
+        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
+        lateBreakfast = UserDefaultsRepository.lateBreakfast
+        addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
+        if lateBreakfast {
+            scheduledCarbRatio /= lateBreakfastFactor
+        }
+        updateScheduledValuesUI()
+
+        setupSummaryView(in: fixedHeaderContainer)
+        setupTreatmentView(in: fixedHeaderContainer)
+        setupHeadline(in: fixedHeaderContainer)
+        setupScrollView(below: fixedHeaderContainer)
+        setupAddButtonRowView()
+
+        /// Initializing
+        clearAllButton = UIBarButtonItem(title: NSLocalizedString("Avsluta måltid", comment: "Avsluta måltid"), style: .plain, target: self, action: #selector(clearAllButtonTapped))
+        clearAllButton.tintColor = .red
+        navigationItem.rightBarButtonItem = clearAllButton
+
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
+
+        ///Inital fetch
+        self.fetchFoodItems()
+        totalRegisteredLabel.delegate = self
+        loadFoodItemsFromCoreData()
+        NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
+        allowShortcuts = UserDefaultsRepository.allowShortcuts
+
+        // Create buttons
+        let calendarImage = UIImage(systemName: "calendar")
+        let historyButton = UIButton(type: .system)
+        historyButton.setImage(calendarImage, for: .normal)
+        historyButton.addTarget(self, action: #selector(showMealHistory), for: .touchUpInside)
+
+        let showFavoriteMealsImage = UIImage(systemName: "list.star")
+        let showFavoriteMealsButton = UIButton(type: .system)
+        showFavoriteMealsButton.setImage(showFavoriteMealsImage, for: .normal)
+        showFavoriteMealsButton.addTarget(self, action: #selector(showFavoriteMeals), for: .touchUpInside)
+
+        let saveFavoriteImage = UIImage(systemName: "star.circle")
+        saveFavoriteButton = UIButton(type: .system)
+        saveFavoriteButton.setImage(saveFavoriteImage, for: .normal)
+        saveFavoriteButton.addTarget(self, action: #selector(saveFavoriteMeals), for: .touchUpInside)
+        saveFavoriteButton.isEnabled = false
+        saveFavoriteButton.tintColor = .gray
+
+        let stackView = UIStackView(arrangedSubviews: [historyButton, showFavoriteMealsButton, saveFavoriteButton])
+        stackView.axis = .horizontal
+        stackView.spacing = 20
+
+        let customView = UIView()
+        customView.addSubview(stackView)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: customView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: customView.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: customView.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: customView.bottomAnchor)
+        ])
+
+        let customBarButtonItem = UIBarButtonItem(customView: customView)
+        navigationItem.leftBarButtonItem = customBarButtonItem
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
+        addButtonRowView.lateBreakfastLabel.addGestureRecognizer(tapGesture)
+
+        // Register for keyboard notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         totalRegisteredLabel.addTarget(self, action: #selector(totalRegisteredLabelDidChange), for: .editingChanged)
         dataSharingVC = DataSharingViewController()
@@ -1438,6 +1582,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Variables reset to 0.0 and saved to UserDefaults")
     }
     
+    @objc private func updateRSSButtonVisibility() {
+        // Clear all subviews from the main view
+        view.subviews.forEach { $0.removeFromSuperview() }
+
+        // Remove all observers to avoid duplicates
+        NotificationCenter.default.removeObserver(self)
+
+        // Reinitialize the entire view controller
+        initializeComposeMealViewController()
+    }
+    
     @objc private func didTakeoverRegistration(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             
@@ -2450,8 +2605,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Adjust the switch's transform to make it smaller
             lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
 
+            // Create an array to hold the arranged subviews for the stack view
+            var arrangedSubviews: [UIView] = [addButton, lateBreakfastContainer]
+
+            // Conditionally add the rssButton if schoolFoodURL is not empty
+            if let schoolFoodURL = UserDefaultsRepository.schoolFoodURL, !schoolFoodURL.isEmpty {
+                arrangedSubviews.insert(rssButton, at: 1) // Insert at index 1 to maintain the order
+            }
+
             // Create the horizontal stack view (HStack)
-            let stackView = UIStackView(arrangedSubviews: [addButton, rssButton, lateBreakfastContainer])
+            let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
             stackView.axis = .horizontal
             stackView.alignment = .fill
             stackView.distribution = .fillEqually
@@ -2467,16 +2630,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
                 stackView.heightAnchor.constraint(equalToConstant: 44),
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                
+
                 // Align lateBreakfastLabel inside the container
                 lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 14),
                 lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
-                //lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
 
                 // Align lateBreakfastSwitch inside the container
                 lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 7),
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
-                //lateBreakfastSwitch.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
             ])
         }
     }

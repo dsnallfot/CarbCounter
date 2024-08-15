@@ -215,6 +215,7 @@ class UserDefaultsRepository {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "schoolFoodURL")
+            NotificationCenter.default.post(name: .schoolFoodURLChanged, object: nil)
         }
     }
     
@@ -238,4 +239,5 @@ class UserDefaultsRepository {
 
 extension Notification.Name {
     static let allowViewingOngoingMealsChanged = Notification.Name("allowViewingOngoingMealsChanged")
+    static let schoolFoodURLChanged = Notification.Name("schoolFoodURLChanged")
 }
