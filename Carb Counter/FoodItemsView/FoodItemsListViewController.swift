@@ -671,18 +671,63 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         message += "\n\n\(NSLocalizedString("Serverats:", comment: "Label for number of times the food item has been served")) \(foodItem.count) \(NSLocalizedString("ggr", comment: "Abbreviation for times served"))"
 
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        
+
         alert.addAction(UIAlertAction(title: NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button"), style: .default, handler: { _ in
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
+        // Check if UserDefaultsRepository.allowDataClearing is true, then add the reset button
+        if UserDefaultsRepository.allowDataClearing {
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Nollställ räknare", comment: "Reset counter button"), style: .destructive, handler: { _ in
+                foodItem.count = 0
+                self.saveFoodItemChanges(for: foodItem) // Save the changes to Core Data
+            }))
+        }
+
         alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
-        
+
         present(alert, animated: true, completion: nil)
         tableView.deselectRow(at: IndexPath(row: self.filteredFoodItems.firstIndex(of: foodItem) ?? 0, section: 0), animated: true)
     }
 
+    private func saveFoodItemChanges(for foodItem: FoodItem) {
+        let context = CoreDataStack.shared.context
+        
+        do {
+            try context.save()
+            print("Food item count reset and saved successfully.")
+            
+            // Notify that food items have changed
+            NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
+            
+            // Ensure dataSharingVC is instantiated
+            guard let dataSharingVC = dataSharingVC else {
+                print("dataSharingVC not available, unable to export food items.")
+                return
+            }
+
+            // Call the export function
+            Task {
+                await dataSharingVC.exportFoodItemsToCSV()
+                print("Food items export triggered")
+            }
+        } catch {
+            print("Failed to save food item: \(error)")
+        }
+    }
+
     
+    private func fetchAllFoodItems() -> [FoodItem] {
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Failed to fetch food items: \(error)")
+            return []
+        }
+    }
+
     private func addToComposeMealViewController(foodItem: FoodItem) {
         guard let tabBarController = tabBarController else {
             print("Tab bar controller not found")
