@@ -1220,13 +1220,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodEntry.entryProteinPP = foodItem.proteinPP
                 foodEntry.entryPerPiece = foodItem.perPiece
                 mealHistory.addToFoodEntries(foodEntry)
+                
+                // Increment the count property
+                foodItem.count += 1
             }
         }
         
         do {
             try context.save()
             print("MealHistory saved successfully!")
-            
         } catch {
             print("Failed to save MealHistory: \(error)")
         }
@@ -1243,6 +1245,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveMealToHistory = false // Reset the flag after saving
         mealDate = nil // Reset mealDate to nil after saving
     }
+
     
     @objc private func saveFavoriteMeals() {
         guard saveFavoriteButton != nil else {
