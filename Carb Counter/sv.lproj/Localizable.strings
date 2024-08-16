@@ -353,7 +353,7 @@
 "Ange din Nightscout URL:" = "Ange din Nightscout URL:";
 "Ange din Nightscout Token:" = "Ange din Nightscout Token:";
 "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online";
-"Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Ange URL till Skolmaten.se RSS-flöde som du vill använda:";
+"Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Ange URL till din skolas rss-flöde på 'skolmaten.se'\n\nNär du nger en URL så dyker en ny knapp '+ Skolmaten' upp i Måltidsvyn där du kan välja måltider från lunchmenyn:";
 "Spara" = "Spara";
 "Avbryt" = "Avbryt";
 
