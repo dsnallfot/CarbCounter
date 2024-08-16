@@ -190,7 +190,19 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         filteredFoodItems = foodItems
         sortFoodItems()
         tableView.reloadData()
-        completeSelection()
+
+        let context = CoreDataStack.shared.context
+
+        do {
+            try context.save()
+        } catch {
+        }
+        
+        searchBar.resignFirstResponder()
+        onDoneButtonTapped?(selectedFoodItems)
+        clearSelection()
+        tableView.reloadData()
+        dismiss(animated: true, completion: nil)
     }
     
     @objc private func cancelButtonTapped() {
@@ -269,23 +281,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
-    func completeSelection() {
-        let context = CoreDataStack.shared.context
-        for item in selectedFoodItems {
-            item.count += 1
-        }
-        do {
-            try context.save()
-        } catch {
-            print("Failed to update food item count: \(error)")
-        }
-        searchBar.resignFirstResponder()
-        onDoneButtonTapped?(selectedFoodItems)
-        clearSelection()
-        tableView.reloadData()
-        dismiss(animated: true, completion: nil)
-    }
+
 
     private func clearSelection() {
         selectedFoodItems.removeAll()
