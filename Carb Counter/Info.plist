@@ -9,6 +9,17 @@
 			<string>UpdateRegisteredAmountIntent</string>
 		</dict>
 	</array>
+    <key>UIApplicationShortcutItems</key>
+    <array>
+        <dict>
+            <key>UIApplicationShortcutItemIconSymbolName</key>
+            <string>barcode.viewfinder</string>
+            <key>UIApplicationShortcutItemTitle</key>
+            <string>Scanna streckkod</string>
+            <key>UIApplicationShortcutItemType</key>
+            <string>com.dsnallfot.CarbsCounter.scanBarcode</string>
+        </dict>
+    </array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
