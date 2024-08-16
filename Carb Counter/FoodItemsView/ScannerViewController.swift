@@ -384,13 +384,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 
                 let duplicateAlert = UIAlertController(
                     title: productName,
-                    message: String(format: NSLocalizedString("""
-                    Finns redan inlagt i livsmedelslistan.
-                    Vill du behålla de befintliga näringsvärdena eller uppdatera dem?
-                    
-                    %@
-""", comment: "Message asking if user wants to keep existing nutritional values or update them"),
-                    comparisonMessage),
+                    message: "\(NSLocalizedString("Finns redan inlagt i livsmedelslistan.", comment: "Product already exists message")) \n\n\(NSLocalizedString("Vill du behålla de befintliga näringsvärdena eller uppdatera dem?", comment: "Message asking if user wants to keep existing nutritional values or update them"))\n\n\(comparisonMessage)",
                     preferredStyle: .alert
                 )
                 duplicateAlert.addAction(UIAlertAction(
