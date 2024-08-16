@@ -76,7 +76,7 @@
 "Maxgräns" = "Maximum limit";
 "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..." = "\nThe meal registration exceeds the set maximum limits for carbohydrates and/or bolus. \n\nThe dosage will therefore be adjusted down to the allowed maximum level in the next step...";
 "Manuell registrering" = "Manual registration";
-"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nNow register the specified start dose for the meal %@ g CHO and %@ U insulin in iAPS/Trio";
+"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nNow register the specified start dose for the meal %@ g carbs and %@ U insulin in iAPS/Trio";
 "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nNow register the carbohydrates that have not yet been registered in iAPS/Trio, and give a bolus according to the summary below:\n\n• %@ g carbohydrates";
 "\n• %@ g fett" = "\n• %@ g fat";
 "\n• %@ g protein" = "\n• %@ g protein";
@@ -346,14 +346,14 @@
 "Dabas API Secret" = "Dabas API Secret";
 "Skolmaten URL" = "Skolmaten.se RSS";
 "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater." = "Enter the fraction of the total amount of carbohydrates in the meal to be used as a start dose when Start Dose ‘Fraction’ is selected.\n\nExample: If the meal contains 58 g of carbohydrates and the start dose fraction is set to 0.5, the start dose will be calculated based on 29 g of carbohydrates.";
-"Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Enter the maximum limit for how many carbohydrates can be registered at one time. \n\nIf you try to register a larger amount of carbohydrates, that value will automatically be adjusted down to this specified maximum setting:";
-"Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Enter the maximum limit for how much bolus can be given at one time. \n\nIf you try to give a larger bolus, that value will automatically be adjusted down to this specified maximum setting:";
-"När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "When, for example, breakfast is eaten later than usual, after the scheduled insulin ratios have switched from breakfast ratios to daily ratios, the ratios need to be temporarily strengthened. \n\nThis setting specifies how much the current insulin ratio should be adjusted when the ‘Override’ button is activated in the meal view:";
+"Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Enter the maximum amount of carbohydrates that can be registered at one time. \n\nIf you try to register a larger amount of carbohydrates, that value will automatically be capped to this specified maximum setting:";
+"Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Enter the maximum amount of bolus that can be given at one time. \n\nIf you try to give a larger bolus, that value will automatically be capped to this specified maximum setting:";
+"När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "When, for example, breakfast is eaten later than usual, after the scheduled carb ratios have switched from breakfast ratios to daily ratios, they might need to be temporarily adjusted. \n\nThis setting specifies how much the current insulin ratio should be adjusted when the ‘Override’ button is activated in the meal view:";
 "Ange exakt namn på den override du vill aktivera i iAPS/Trio" = "Enter the exact name of the override you want to activate in iAPS/Trio";
-"Ange din Nightscout URL:" = "Enter your Nightscout URL:";
-"Ange din Nightscout Token:" = "Enter your Nightscout Token:";
+"Ange din Nightscout URL:" = "Enter your Nightscout URL to be able to fetch Carb Ratios from your Nightscout profile:";
+"Ange din Nightscout Token:" = "Enter your Nightscout Token (If applicable):";
 "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "If you want to use the Swedish food database Dabas, enter your API Secret.\n\nIf you do not enter an API secret, OpenFoodFacts is used by default for EAN scanning and online food searches";
-"Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Enter the URL to the Skolmaten.se RSS feed you want to use:";
+"Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Enter the URL to your schools rss-feed from the swedish 'skolmaten.se' Rplatform.\n\nWhen you enter and URL a new button will show up on the 'Meal' screen where you can select from the skolmaten.se menu:";
 "Spara" = "Save";
 "Avbryt" = "Cancel";
 
@@ -370,8 +370,8 @@
 "Livsmedel" = "Food items";
 "Favoritmåltider" = "Favorite meals";
 "Måltidshistorik" = "Meal history";
-"Carb ratios schema" = "Carb ratio schedule";
-"Startdoser schema" = "Start dose schedule";
+"Carb ratios schema" = "Carb Ratio Schedule";
+"Startdoser schema" = "Start Dose Schedule";
 "Import lyckades" = "Import successful";
 "Användarinställningarna har importerats." = "User settings have been imported.";
 "Export lyckades" = "Export successful";
@@ -380,7 +380,7 @@
 "OK" = "OK";
 
 /* Carb ratio schedule */
-"Carb Ratio" = "Carb Ratio";
+"Carb Ratio" = "Carb Ratios";
 "Klar" = "Done";
 "Rensa" = "Clear";
 "Är du säker på att du vill rensa all data?" = "Are you sure you want to clear all data?";
