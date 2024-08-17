@@ -276,7 +276,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Create a new UIView for the popup
             let popupView = UIView()
 
-            popupView.backgroundColor = UIColor.white//(red: 90/255, green: 104/255, blue: 125/255, alpha: 1.0)
+            popupView.backgroundColor = UIColor.white // Background color of the popup
             popupView.layer.cornerRadius = 10
             popupView.translatesAutoresizingMaskIntoConstraints = false
             
@@ -341,10 +341,16 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 rowStackView.distribution = .fill
                 rowStackView.spacing = 2
                 
+                // SF Symbol ImageView
+                let imageView = UIImageView()
+                imageView.translatesAutoresizingMaskIntoConstraints = false
+                imageView.widthAnchor.constraint(equalToConstant: 20).isActive = true
+                imageView.heightAnchor.constraint(equalToConstant: 20).isActive = true
+                
                 let label = UILabel()
                 label.text = metric
                 label.textAlignment = .left
-                label.font = UIFont.systemFont(ofSize: 15) // Set font size to 15
+                label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
                 label.textColor = UIColor.black
                 
                 let spacer = UIView()
@@ -354,30 +360,40 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 let valueLabel = UILabel()
                 valueLabel.text = values[index] as? String
                 valueLabel.textAlignment = .right
-                valueLabel.font = UIFont.systemFont(ofSize: 15) // Set font size to 15
+                valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
                 valueLabel.textColor = UIColor.black
                 
-                // Change text color based on conditions
+                // Change text color and add exclamation mark symbol based on conditions
                 if NightscoutManager.shared.evBGWarning && (metric == "Min / Max BG" || metric == "Prognos BG") {
                     label.textColor = UIColor.red
-                    label.font = UIFont.boldSystemFont(ofSize: 15)
+                    label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
                     valueLabel.textColor = UIColor.red
-                    valueLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                    valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                    imageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                    imageView.tintColor = UIColor.red
                 } else if NightscoutManager.shared.minBGWarning && metric == "Min / Max BG" {
                     label.textColor = UIColor.orange
-                    label.font = UIFont.boldSystemFont(ofSize: 15)
+                    label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
                     valueLabel.textColor = UIColor.orange
-                    valueLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                    valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                    imageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                    imageView.tintColor = UIColor.orange
                 }
 
                 // Check if latestBG is less than latestThreshold and change color to red
                 if metric == NSLocalizedString("Blodsocker", comment: "Blodsocker") && NightscoutManager.shared.latestBG < NightscoutManager.shared.latestThreshold {
                     label.textColor = UIColor.red
-                    label.font = UIFont.boldSystemFont(ofSize: 15)
+                    label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
                     valueLabel.textColor = UIColor.red
-                    valueLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                    valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                    imageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                    imageView.tintColor = UIColor.red
                 }
                 
+                // Add the imageView to the rowStackView if there is a warning
+                if imageView.image != nil {
+                    rowStackView.addArrangedSubview(imageView)
+                }
                 rowStackView.addArrangedSubview(label)
                 rowStackView.addArrangedSubview(spacer)
                 rowStackView.addArrangedSubview(valueLabel)
@@ -387,7 +403,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 // Add a divider line between rows
                 if index < metrics.count {
                     let divider = UIView()
-                    divider.backgroundColor = UIColor.darkGray
+                    divider.backgroundColor = UIColor.lightGray
                     divider.translatesAutoresizingMaskIntoConstraints = false
                     stackView.addArrangedSubview(divider)
                     
@@ -846,11 +862,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     // Action method to handle tap on bolusStack
     @objc func bolusStackTapped() {
-        if NightscoutManager.shared.evBGWarning {
+        if NightscoutManager.shared.evBGWarning && bolusEntryField.text == "" {
             // Show a warning alert specific to evBGWarning
             let alert = UIAlertController(
                 title: NSLocalizedString("Blodsockervarning!", comment: "Blodsockervarning!"),
-                message: NSLocalizedString("Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden", comment: "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden"),
+                message: NSLocalizedString("Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden.\n\nVill du trots detta ge en bolus till måltiden redan nu?", comment: "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden.\n\nVill du trots detta ge en bolus till måltiden redan nu?"),
                 preferredStyle: .alert
             )
             
@@ -861,7 +877,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
             
             self.present(alert, animated: true, completion: nil)
-        } else if NightscoutManager.shared.minBGWarning {
+        } else if NightscoutManager.shared.minBGWarning && bolusEntryField.text == "" {
             // Show a different warning alert specific to minBGWarning
             let alert = UIAlertController(
                 title: NSLocalizedString("Blodsockervarning", comment: "Blodsockervarning"),
