@@ -172,6 +172,16 @@ class UserDefaultsRepository {
         }
     }
     
+    static var useMmol: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "useMmol")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "useMmol")
+        }
+    }
+
+    
     static var nightscoutURL: String? {
         get {
             return UserDefaults.standard.string(forKey: "nightscoutURL")

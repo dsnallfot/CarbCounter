@@ -1651,6 +1651,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startDose = true
         let remainDose = false
         
+        // Fetch device status from Nightscout
+        NightscoutManager.shared.fetchDeviceStatus()
+        
         if !allowShortcuts {
             //Use alert when manually registering
             let alertController = UIAlertController(
@@ -1791,6 +1794,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let startDose = true
         let remainDose = true
+        
+        // Fetch device status from Nightscout
+        NightscoutManager.shared.fetchDeviceStatus()
         
         if !allowShortcuts {
             var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater"), khValue)
