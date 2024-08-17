@@ -119,6 +119,8 @@ class SettingsViewController: UITableViewController {
             return cell
         } else {
             let cell = UITableViewCell(style: .value1, reuseIdentifier: "valueCell")
+            cell.backgroundColor = .clear
+            
             switch indexPath.row {
             case 0:
                 let toggleSwitch = UISwitch()
@@ -126,64 +128,83 @@ class SettingsViewController: UITableViewController {
                 toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
                 toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
-                cell.backgroundColor = .clear
+                
+                // Add gesture recognizer for the label
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(remoteControlLabelTapped))
+                cell.textLabel?.isUserInteractionEnabled = true
+                cell.textLabel?.addGestureRecognizer(tapGesture)
+                
             case 1:
                 let toggleSwitch = UISwitch()
                 cell.textLabel?.text = NSLocalizedString("Tillåt datarensning", comment: "Allow data clearing label")
                 toggleSwitch.isOn = UserDefaultsRepository.allowDataClearing
                 toggleSwitch.addTarget(self, action: #selector(dataClearingSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
-                cell.backgroundColor = .clear
+                
+                // Add gesture recognizer for the label
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dataClearingLabelTapped))
+                cell.textLabel?.isUserInteractionEnabled = true
+                cell.textLabel?.addGestureRecognizer(tapGesture)
+                
             case 2:
                 let segmentedControl = UISegmentedControl(items: [NSLocalizedString("Schema", comment: "Schedule label"), NSLocalizedString("Fraktion", comment: "Fraction label")])
                 segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
                 segmentedControl.addTarget(self, action: #selector(useStartDosePercentageSegmentChanged(_:)), for: .valueChanged)
-                
                 cell.textLabel?.text = NSLocalizedString("Startdoser", comment: "Start doses label")
                 cell.accessoryView = segmentedControl
-                cell.backgroundColor = .clear
-                
             case 3:
                 cell.textLabel?.text = NSLocalizedString("Startdos Fraktion", comment: "Start dose fraction label")
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.startDoseFactor)
-                cell.backgroundColor = .clear
             case 4:
                 cell.textLabel?.text = NSLocalizedString("Maxgräns Kolhydrater", comment: "Max carbs limit label")
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxCarbs)) g"
-                cell.backgroundColor = .clear
             case 5:
                 cell.textLabel?.text = NSLocalizedString("Maxgräns Bolus", comment: "Max bolus limit label")
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
-                cell.backgroundColor = .clear
             case 6:
                 cell.textLabel?.text = NSLocalizedString("Override-faktor", comment: "Override factor label")
                 cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
-                cell.backgroundColor = .clear
             case 7:
                 cell.textLabel?.text = NSLocalizedString("Override", comment: "Override label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
-                cell.backgroundColor = .clear
             case 8:
                 cell.textLabel?.text = NSLocalizedString("Nightscout URL", comment: "Nightscout URL label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
-                cell.backgroundColor = .clear
             case 9:
                 cell.textLabel?.text = NSLocalizedString("Nightscout Token", comment: "Nightscout Token label")
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
-                cell.backgroundColor = .clear
             case 10:
                 cell.textLabel?.text = NSLocalizedString("Dabas API Secret", comment: "Dabas API Secret label")
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
-                cell.backgroundColor = .clear
             case 11:
                 cell.textLabel?.text = NSLocalizedString("Skolmaten URL", comment: "School food URL label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.schoolFoodURL
-                cell.backgroundColor = .clear
             default:
                 break
             }
             return cell
         }
+    }
+    
+    @objc private func remoteControlLabelTapped() {
+        let title = NSLocalizedString("Tillåt fjärrstyrning", comment: "Allow remote control title")
+        let message = NSLocalizedString("Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio.", comment: "Remote control tooltip message")
+        
+        showTooltipAlert(title: title, message: message)
+    }
+
+    @objc private func dataClearingLabelTapped() {
+        let title = NSLocalizedString("Tillåt datarensning", comment: "Allow data clearing title")
+        let message = NSLocalizedString("Aktivera denna inställning om/när du vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy", comment: "Data clearing tooltip message")
+        
+        showTooltipAlert(title: title, message: message)
+    }
+    
+    private func showTooltipAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK button title"), style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     
     private func maskText(_ text: String?) -> String {
@@ -212,7 +233,13 @@ class SettingsViewController: UITableViewController {
             var message = ""
             var value: Double = 0.0
             var userDefaultSetter: ((Double) -> Void)?
+            
             switch indexPath.row {
+            case 2:
+                title = NSLocalizedString("Startdoser", comment: "Start doses label")
+                message = NSLocalizedString("Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).", comment: "Startdos text")
+                showSimpleAlert(title: title, message: message)
+                return
             case 3:
                 title = NSLocalizedString("Startdos Fraktion", comment: "Start dose fraction title")
                 message = NSLocalizedString("Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.", comment: "Start dose fraction message")
@@ -297,6 +324,13 @@ class SettingsViewController: UITableViewController {
             
             present(alert, animated: true, completion: nil)
         }
+    }
+    
+    private func showSimpleAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK button title"), style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     
     private func showEditAlert(title: String, message: String, currentValue: String, completion: @escaping (String) -> Void) {

@@ -68,18 +68,14 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         overlayView.backgroundColor = UIColor.clear
         view.addSubview(overlayView)
         
-        setupCloseButton()
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+                navigationItem.leftBarButtonItem = closeButton
 
     }
     
-    private func setupCloseButton() {
-        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
-        navigationItem.leftBarButtonItem = closeButton
-    }
-    
     @objc private func closeButtonTapped() {
-        dismiss(animated: true, completion: nil)
-    }
+            dismiss(animated: true, completion: nil)
+        }
 
     func resetBarcodeProcessingState() {
         DispatchQueue.global(qos: .background).async {
@@ -450,7 +446,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
             addFoodItemVC.foodItem = foodItem
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            presentAddFoodItemViewController(addFoodItemVC)
         }
     }
 
@@ -460,7 +456,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
             addFoodItemVC.isPerPiece = isPerPiece // Pass the flag
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            presentAddFoodItemViewController(addFoodItemVC)
         }
     }
 
@@ -471,8 +467,14 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             addFoodItemVC.foodItem = existingItem
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
             addFoodItemVC.isUpdateMode = true
-            navigationController?.pushViewController(addFoodItemVC, animated: true)
+            presentAddFoodItemViewController(addFoodItemVC)
         }
+    }
+
+    private func presentAddFoodItemViewController(_ viewController: UIViewController) {
+        let navigationController = UINavigationController(rootViewController: viewController)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true, completion: nil)
     }
 
     override var prefersStatusBarHidden: Bool {

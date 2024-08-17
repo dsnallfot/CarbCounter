@@ -272,8 +272,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         guard let dataSharingVC = dataSharingVC else { return }
         
         // Call the desired function
-        print("Data import triggered")
+
         Task {
+            print("Data import triggered")
             await
             dataSharingVC.importAllCSVFiles()
         }
@@ -1229,17 +1230,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         do {
             try context.save()
             print("MealHistory saved successfully!")
+            
+            // Ensure dataSharingVC is instantiated
+            guard let dataSharingVC = dataSharingVC else { return }
+            
+            // Call the desired functions asynchronously
+            Task {
+                print("Meal history export triggered")
+                await dataSharingVC.exportMealHistoryToCSV()
+                
+                print("Food items export triggered")
+                await dataSharingVC.exportFoodItemsToCSV()
+            }
+            
         } catch {
             print("Failed to save MealHistory: \(error)")
-        }
-        
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-        Task {
-            await dataSharingVC.exportMealHistoryToCSV()
-            print("Meal history export triggered")
         }
         
         saveMealToHistory = false // Reset the flag after saving
@@ -1309,8 +1314,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             // Call the desired function
             Task {
-                await dataSharingVC.exportFavoriteMealsToCSV()
                 print("Favorite meals export triggered")
+                await dataSharingVC.exportFavoriteMealsToCSV()
             }
             
             let confirmAlert = UIAlertController(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."), preferredStyle: .alert)

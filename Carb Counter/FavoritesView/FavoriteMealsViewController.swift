@@ -244,8 +244,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.deleteRows(at: [indexPath], with: .automatic)
         
         guard let dataSharingVC = dataSharingVC else { return }
-        await dataSharingVC.exportFavoriteMealsToCSV()
         print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
+        await dataSharingVC.exportFavoriteMealsToCSV()
     }
 
     // MARK: - UISearchBarDelegate

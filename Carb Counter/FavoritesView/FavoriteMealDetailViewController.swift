@@ -212,9 +212,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             
             // Call the desired function
             Task {
+                print("Favorite meals export triggered")
                 await dataSharingVC.exportFavoriteMealsToCSV()
             }
-            print("Favorite meals export triggered")
             
             self.tableView.reloadData()
         }

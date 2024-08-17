@@ -1,73 +1,92 @@
+import AVFoundation
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     private var backgroundEnterTime: Date?
+    private var shouldOpenScanner = false
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-            guard let windowScene = (scene as? UIWindowScene) else { return }
+        guard let windowScene = (scene as? UIWindowScene) else { return }
 
-            window = UIWindow(windowScene: windowScene)
-            
-            // Set the LoadingViewController as the initial view controller
-            let loadingVC = LoadingViewController()
-            window?.rootViewController = loadingVC
-            window?.makeKeyAndVisible()
-            
-            // Simulate some delay to show the loading screen
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-                self?.showMainViewController()
-            }
-        }
-    
-    private func showMainViewController() {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let mainVC = storyboard.instantiateInitialViewController()
+        window = UIWindow(windowScene: windowScene)
         
-        // Ensure that ComposeMealViewController is accessible globally
-                if let tabBarController = mainVC as? UITabBarController {
-                    if let composeMealVC = tabBarController.viewControllers?.compactMap({ $0 as? ComposeMealViewController }).first {
-                        ComposeMealViewController.shared = composeMealVC
-                    }
-                }
-            
-            // Add a transition animation
-            let transition = CATransition()
-            transition.type = .fade
-            transition.duration = 0.5
-            window?.layer.add(transition, forKey: kCATransition)
-            
-            window?.rootViewController = mainVC
+        // Check if the app was launched from a quick action
+        if let shortcutItem = connectionOptions.shortcutItem {
+            handleShortcutItem(shortcutItem)
         }
+        
+        // Set the LoadingViewController as the initial view controller
+        let loadingVC = LoadingViewController()
+        window?.rootViewController = loadingVC
+        window?.makeKeyAndVisible()
+        
+        // Simulate some delay to show the loading screen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            self?.showMainViewController()
+        }
+    }
+
+    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        handleShortcutItem(shortcutItem)
+        completionHandler(true)
+    }
+
+    private func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
+        if shortcutItem.type == "com.dsnallfot.CarbsCounter.scanBarcode" {
+            shouldOpenScanner = true
+        }
+    }
+
+    private func showMainViewController() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let mainVC = storyboard.instantiateInitialViewController()
     
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
-    }
-
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-        /*if let backgroundEnterTime = backgroundEnterTime {
-            let timeInterval = Date().timeIntervalSince(backgroundEnterTime)
-            if timeInterval > 300 { // Check if app was in background for more than 5 minutes (300 seconds)
-                resetToHomeViewController()
+        // Ensure that ComposeMealViewController is accessible globally
+        if let tabBarController = mainVC as? UITabBarController {
+            if let composeMealVC = tabBarController.viewControllers?.compactMap({ $0 as? ComposeMealViewController }).first {
+                ComposeMealViewController.shared = composeMealVC
             }
-            self.backgroundEnterTime = nil
-        }*/
+        }
+        
+        // Add a transition animation
+        let transition = CATransition()
+        transition.type = .fade
+        transition.duration = 0.5
+        window?.layer.add(transition, forKey: kCATransition)
+        
+        window?.rootViewController = mainVC
+
+        // If the quick action was triggered, open the ScannerViewController
+        if shouldOpenScanner {
+            openScannerViewController()
+            shouldOpenScanner = false
+        }
     }
 
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-        // This may occur due to temporary interruptions (ex. an incoming phone call).
+    private func openScannerViewController() {
+        let scannerVC = ScannerViewController()
+        let navigationController = UINavigationController(rootViewController: scannerVC)
+        navigationController.modalPresentationStyle = .pageSheet
+
+        if let tabBarController = window?.rootViewController as? UITabBarController,
+           let selectedVC = tabBarController.selectedViewController {
+            selectedVC.present(navigationController, animated: true, completion: nil)
+        }
     }
+
+    // ... (other methods)
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
+        
+        // Check if we should open the scanner when returning from background
+        if shouldOpenScanner {
+            openScannerViewController()
+            shouldOpenScanner = false
+        }
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
@@ -82,9 +101,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         (UIApplication.shared.delegate as? CoreDataStack)?.saveContext()
     }
 
-    private func resetToHomeViewController() {
-        if let tabBarController = window?.rootViewController as? UITabBarController {
-            tabBarController.selectedIndex = 0
-        }
-    }
+    // ... (other methods)
 }

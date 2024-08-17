@@ -508,8 +508,9 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
 
         // Call the desired function
         Task {
-            await dataSharingVC.exportFoodItemsToCSV()
             print("Food items export triggered")
+            await dataSharingVC.exportFoodItemsToCSV()
+
         }
         
         if let navigationController = navigationController, navigationController.viewControllers.count > 1 {

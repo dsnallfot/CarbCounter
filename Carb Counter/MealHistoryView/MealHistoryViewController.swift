@@ -180,10 +180,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 
                 // Call the desired function
                 Task {
+                    print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
                     await dataSharingVC.exportMealHistoryToCSV()
                 }
-                
-                print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
                 
                 do {
                     try context.save()

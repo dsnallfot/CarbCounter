@@ -3,7 +3,7 @@ import UIKit
 class RemoteSettingsViewController: UITableViewController {
 
     let sectionHeaders = [NSLocalizedString("SELECT REMOTE COMMANDS METHOD", comment: "SELECT REMOTE COMMANDS METHOD"), NSLocalizedString("TWILIO SETTINGS", comment: "TWILIO SETTINGS"), NSLocalizedString("REMOTE CONFIGURATION", comment: "REMOTE CONFIGURATION")]
-    let twilioSettings = ["Twilio SID", "Twilio Secret", "Twilio From #", "Twilio To #"]
+    let twilioSettings = ["Twilio SID", "Twilio Secret", NSLocalizedString("Twilio From #", comment: "Twilio From #"), NSLocalizedString("Twilio To #", comment: "Twilio To #")]
     let remoteConfig = [NSLocalizedString("Entered By", comment: "Entered By"), NSLocalizedString("Secret Code", comment: "Secret Code")]
 
     private var method: String {
@@ -142,9 +142,9 @@ class RemoteSettingsViewController: UITableViewController {
                 cell.textField.text = UserDefaultsRepository.twilioFromNumberString
             case "Twilio To #":
                 cell.textField.text = UserDefaultsRepository.twilioToNumberString
-            case "Entered By":
+            case NSLocalizedString("Entered By", comment: "Entered By"):
                 cell.textField.text = UserDefaultsRepository.caregiverName
-            case "Secret Code":
+            case NSLocalizedString("Secret Code", comment: "Secret Code"):
                 cell.textField.text = UserDefaultsRepository.remoteSecretCode
                 cell.textField.addTarget(self, action: #selector(limitTextFieldLength(_:)), for: .editingChanged)
             default:
@@ -190,9 +190,9 @@ extension RemoteSettingsViewController: UITextFieldDelegate {
             UserDefaultsRepository.twilioFromNumberString = textField.text ?? ""
         case "Twilio To #":
             UserDefaultsRepository.twilioToNumberString = textField.text ?? ""
-        case "Entered By":
+        case NSLocalizedString("Entered By", comment: "Entered By"):
             UserDefaultsRepository.caregiverName = textField.text ?? ""
-        case "Secret Code":
+        case NSLocalizedString("Secret Code", comment: "Secret Code"):
             UserDefaultsRepository.remoteSecretCode = textField.text ?? ""
         default:
             break

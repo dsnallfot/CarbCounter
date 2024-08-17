@@ -97,8 +97,9 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         
         // Call the desired function
         Task {
-            await dataSharingVC.exportCarbRatioScheduleToCSV()
             print("Carb ratios export triggered")
+            await dataSharingVC.exportCarbRatioScheduleToCSV()
+
         }
     }
 

@@ -95,8 +95,9 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         
         // Call the desired function
         Task {
-            await dataSharingVC.exportStartDoseScheduleToCSV()
             print("Startdoses export triggered")
+            await dataSharingVC.exportStartDoseScheduleToCSV()
+
         }
     }
     
