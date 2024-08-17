@@ -84,6 +84,11 @@ class SettingsViewController: UITableViewController {
         UserDefaultsRepository.useStartDosePercentage = isOn
     }
     
+    @objc private func unitsSegmentChanged(_ sender: UISegmentedControl) {
+        let isOn = sender.selectedSegmentIndex == 1
+        UserDefaultsRepository.useMmol = isOn
+    }
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
@@ -93,7 +98,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 12
+            return 13
         default:
             return 0
         }
@@ -168,15 +173,21 @@ class SettingsViewController: UITableViewController {
                 cell.textLabel?.text = NSLocalizedString("Override", comment: "Override label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
             case 8:
+                let segmentedControl = UISegmentedControl(items: [NSLocalizedString("mg/dl", comment: "mg/dl"), NSLocalizedString("mmol", comment: "mmol")])
+                segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useMmol ? 1 : 0
+                segmentedControl.addTarget(self, action: #selector(unitsSegmentChanged(_:)), for: .valueChanged)
+                cell.textLabel?.text = NSLocalizedString("Blodsocker enhet", comment: "Blodsocker enhet")
+                cell.accessoryView = segmentedControl
+            case 9:
                 cell.textLabel?.text = NSLocalizedString("Nightscout URL", comment: "Nightscout URL label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
-            case 9:
+            case 10:
                 cell.textLabel?.text = NSLocalizedString("Nightscout Token", comment: "Nightscout Token label")
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
-            case 10:
+            case 11:
                 cell.textLabel?.text = NSLocalizedString("Dabas API Secret", comment: "Dabas API Secret label")
                 cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
-            case 11:
+            case 12:
                 cell.textLabel?.text = NSLocalizedString("Skolmaten URL", comment: "School food URL label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.schoolFoodURL
             default:
@@ -269,6 +280,11 @@ class SettingsViewController: UITableViewController {
                 }
                 return
             case 8:
+                title = NSLocalizedString("Blodsocker enhet", comment: "Blodsocker enhet")
+                message = NSLocalizedString("Välj om du vill vill använda mmol eller mg/dl som enhet för blodsockervärden i appen", comment: "Blodsocker enhet text")
+                showSimpleAlert(title: title, message: message)
+                return
+            case 9:
                 title = NSLocalizedString("Nightscout URL", comment: "Nightscout URL title")
                 message = NSLocalizedString("Ange din Nightscout URL:", comment: "Nightscout URL message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutURL ?? "") { newValue in
@@ -276,7 +292,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 9:
+            case 10:
                 title = NSLocalizedString("Nightscout Token", comment: "Nightscout Token title")
                 message = NSLocalizedString("Ange din Nightscout Token:", comment: "Nightscout Token message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutToken ?? "") { newValue in
@@ -284,7 +300,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 10:
+            case 11:
                 title = NSLocalizedString("Dabas API Secret", comment: "Dabas API Secret title")
                 message = NSLocalizedString("Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online", comment: "Dabas API Secret message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in
@@ -292,7 +308,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 11:
+            case 12:
                 title = NSLocalizedString("Skolmaten URL", comment: "School food URL title")
                 message = NSLocalizedString("Ange URL till Skolmaten.se RSS-flöde som du vill använda:", comment: "School food URL message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.schoolFoodURL ?? "") { newValue in
