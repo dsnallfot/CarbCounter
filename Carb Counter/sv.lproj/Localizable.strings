@@ -154,13 +154,13 @@
 "Skicka Måltid och Bolus" = "Skicka Måltid och Bolus";
 "Nästa" = "Nästa";
 "Klar" = "Klar";
-"Återstår att registrera" = "Återstår att registrera";
+"Återstår att registrera" = "Kvar att registrera";
 "Kolhydrater" = "Kolhydrater";
 "Fett" = "Fett";
 "Protein" = "Protein";
 "Bolus" = "Bolus";
-"%@ g (av %@ g)" = "%@ g (av %@ g)";
-"%@ E (av %@ E)" = "%@ E (av %@ E)";
+"%@ g (av %@ g)" = "%@ g  (av tot %@ g)";
+"%@ E (av %@ E)" = "%@ E  (av tot %@ E)";
 "⛔️ Maxgräns kolhydrater %@ g" = "⛔️ Maxgräns kolhydrater %@ g";
 "⛔️ Maxgräns fett/protein %@ g" = "⛔️ Maxgräns fett/protein %@ g";
 "⛔️ Maxgräns bolus %@ E" = "⛔️ Maxgräns bolus %@ E";
@@ -346,6 +346,9 @@
 "Nightscout Token" = "Nightscout Token";
 "Dabas API Secret" = "Dabas API Secret";
 "Skolmaten URL" = "Skolmaten URL";
+"Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan)." = "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).";
+"Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio." = "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio.";
+"Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy" = "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy";
 "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater." = "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.";
 "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
 "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";

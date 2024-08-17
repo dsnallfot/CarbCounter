@@ -515,30 +515,24 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     //}
     
     public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String) {
-        // Log the values to the console (optional)
-        /*print("KH Value: \(khValue)")
-        print("Fat Value: \(fatValue)")
-        print("Protein Value: \(proteinValue)")
-        print("Bolus Value: \(bolusValue)")
-        print("Emojis: \(emojis)")
-        print("Method: \(method)")
-        print("Startdose: \(startDose)")
-        print("Remainingdose: \(remainDose)")
-        print("bolusSoFar: \(bolusSoFar)")
-        print("bolusTotal: \(bolusTotal)")
-        print("carbsSoFar: \(carbsSoFar)")
-        print("carbsTotal: \(carbsTotal)")
-        print("fatSoFar: \(fatSoFar)")
-        print("fatTotal: \(fatTotal)")
-        print("proteinSoFar: \(proteinSoFar)")
-        print("proteinTotal: \(proteinTotal)")
-        print("CR: \(cr)")*/
+        
+        // Convert values to Double and replace negative values with 0
+        let khValueSafe = max(Double(khValue) ?? 0, 0)
+        let fatValueSafe = max(Double(fatValue) ?? 0, 0)
+        let proteinValueSafe = max(Double(proteinValue) ?? 0, 0)
+        let bolusValueSafe = max(Double(bolusValue) ?? 0, 0)
+        
+        // Format carbs, fat and protein values to remove .0 if present
+        let khValueString = formatNumber(khValueSafe)
+        let fatValueString = formatNumber(fatValueSafe)
+        let proteinValueString = formatNumber(proteinValueSafe)
+        let bolusValueString = String(bolusValueSafe)
 
-        // Populate the UI elements with the passed values
-        self.carbsEntryField.text = khValue
-        self.fatEntryField.text = fatValue
-        self.proteinEntryField.text = proteinValue
-        self.bolusCalculated.text = bolusValue
+        // Populate the UI elements with the formatted values
+        self.carbsEntryField.text = khValueString
+        self.fatEntryField.text = fatValueString
+        self.proteinEntryField.text = proteinValueString
+        self.bolusCalculated.text = bolusValueString
 
         // Optionally populate the notes entry field with the emojis or any default text
         self.notesEntryField.text = emojis
@@ -558,7 +552,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Convert the cr string to a Decimal and set the CR property
         if let crDecimal = Decimal(string: cr) {
             self.CR = crDecimal
-            //print("CR successfully converted to Decimal: \(self.CR)")
         } else {
             print("Failed to convert CR to Decimal")
             // Handle the error as needed, e.g., show an alert to the user or set a default value
@@ -570,6 +563,16 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         } else {
             self.title = NSLocalizedString("Registrera startdos", comment: "Registrera startdos")
             bolusStackTapped()
+        }
+    }
+
+    private func formatNumber(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            // If the value is a whole number (X.0), show it without decimals
+            return String(format: "%.0f", value)
+        } else {
+            // Otherwise, show it with one decimal place
+            return String(format: "%.1f", value)
         }
     }
     

@@ -129,8 +129,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         guard let dataSharingVC = dataSharingVC else { return }
         
         // Call the desired function
-        print("Data import triggered")
+
         Task {
+            print("Data import triggered")
             await dataSharingVC.importAllCSVFiles()
         }
         
@@ -708,8 +709,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
             // Call the export function
             Task {
-                await dataSharingVC.exportFoodItemsToCSV()
                 print("Food items export triggered")
+                await dataSharingVC.exportFoodItemsToCSV()
             }
         } catch {
             print("Failed to save food item: \(error)")
@@ -767,8 +768,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Call the desired function
         Task {
-            await dataSharingVC.exportFoodItemsToCSV()
             print("Food items export triggered")
+            await dataSharingVC.exportFoodItemsToCSV()
+
         }
     }
     

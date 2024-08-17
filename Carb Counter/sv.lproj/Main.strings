@@ -1,6 +1,6 @@
 
 /* Class = "UITextField"; text = "Förslag bolus:"; ObjectID = "1fh-wh-zY3"; */
-"1fh-wh-zY3.text" = "Förslag bolus:";
+"1fh-wh-zY3.text" = "Beräknad bolus:";
 
 /* Class = "UILabel"; text = "⌚️ Tid"; ObjectID = "7Og-yn-C4M"; */
 "7Og-yn-C4M.text" = "⌚️ Tid";
