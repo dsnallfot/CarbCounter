@@ -154,6 +154,14 @@
 "Skicka Måltid och Bolus" = "Send Meal and Bolus";
 "Nästa" = "Next";
 "Klar" = "Done";
+
+//popup
+"Blodsocker" = "Blood Glucose";
+"Min / Max BG" = "Min / Max BG";
+"Prognos BG" = "Eventual BG";
+"Uppdaterades" = "Last updated";
+"%@ E" = "%@ U";
+
 "Återstår att registrera" = "Remaining to register";
 "Kolhydrater" = "Carbohydrates";
 "Fett" = "Fat";
@@ -161,6 +169,7 @@
 "Bolus" = "Bolus";
 "%@ g (av %@ g)" = "%@ g (of %@ g)";
 "%@ E (av %@ E)" = "%@ U (of %@ U)";
+
 "⛔️ Maxgräns kolhydrater %@ g" = "⛔️ Max carbs %@ g";
 "⛔️ Maxgräns fett/protein %@ g" = "⛔️ Max fat/protein %@ g";
 "⛔️ Maxgräns bolus %@ E" = "⛔️ Max bolus %@ U";

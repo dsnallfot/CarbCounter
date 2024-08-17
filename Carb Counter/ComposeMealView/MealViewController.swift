@@ -39,8 +39,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     var startDose: Bool = false
     
     var CR: Decimal = 0.0
-    var minGuardBG: Decimal = 0.0
-    var lowThreshold: Decimal = 0.0
     
     var bolusSoFar = ""
     var bolusTotal = ""
@@ -104,6 +102,19 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         setupDatePickerLimits()
         self.focusCarbsEntryField()
         
+        // Observe minBGWarning changes
+            NightscoutManager.shared.minBGWarningDidChange = { [weak self] newMinBGWarning in
+                DispatchQueue.main.async {
+                    self?.updateNavigationBarButton()
+                }
+            }
+        // Observe evBGWarning changes
+            NightscoutManager.shared.evBGWarningDidChange = { [weak self] newEvBGWarning in
+                DispatchQueue.main.async {
+                    self?.updateNavigationBarButton()
+                }
+            }
+        
         // Disable autocomplete and spell checking
         carbsEntryField.autocorrectionType = .no
         carbsEntryField.spellCheckingType = .no
@@ -134,6 +145,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        // Check and update the warning status
+        NightscoutManager.shared.checkMinBGWarning()
+        NightscoutManager.shared.checkEvBGWarning()
+            
+            // Update the navigation bar button based on bgWarning
+            updateNavigationBarButton()
+        
         // Update the method UITextField based on the stored value in UserDefaults
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             method.text = NSLocalizedString("ⓘ  iOS Genväg", comment: "ⓘ  iOS Genväg")
@@ -161,6 +179,37 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             action: #selector(infoButtonTapped)
         )
         navigationItem.rightBarButtonItem = infoButton
+    }
+    
+    private func updateNavigationBarButton() {
+        let buttonImage: UIImage?
+        let buttonTintColor: UIColor
+        let plusSignColor: UIColor
+        
+        if NightscoutManager.shared.evBGWarning {
+            buttonImage = UIImage(systemName: "exclamationmark.triangle.fill")
+            buttonTintColor = UIColor.red
+            plusSignColor = UIColor.red
+        } else if NightscoutManager.shared.minBGWarning {
+            buttonImage = UIImage(systemName: "exclamationmark.triangle.fill")
+            buttonTintColor = UIColor.orange
+            plusSignColor = UIColor.orange
+        } else {
+            buttonImage = UIImage(systemName: "info.circle.fill")
+            buttonTintColor = UIColor.label
+            plusSignColor = UIColor.label
+        }
+        
+        let infoButton = UIBarButtonItem(
+            image: buttonImage,
+            style: .plain,
+            target: self,
+            action: #selector(infoButtonTapped)
+        )
+        
+        infoButton.tintColor = buttonTintColor
+        navigationItem.rightBarButtonItem = infoButton
+        plusSign.tintColor = plusSignColor
     }
     
     
@@ -221,6 +270,122 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         }
     }
     
+    
+    func showPopupView() {
+        if popupView == nil {
+            // Create a new UIView for the popup
+            let popupView = UIView()
+
+            popupView.backgroundColor = UIColor(red: 90/255, green: 104/255, blue: 125/255, alpha: 1.0)
+
+            popupView.layer.cornerRadius = 10
+            popupView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the popup view to the main view
+            view.addSubview(popupView)
+            
+            // Set up initial constraints for the popup view
+            let initialTopConstraint = popupView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -270)
+            NSLayoutConstraint.activate([
+                popupView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+                popupView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+                initialTopConstraint,
+                popupView.heightAnchor.constraint(equalToConstant: 270)
+            ])
+            
+            // Add content to the popup view
+            let stackView = UIStackView()
+            stackView.axis = .vertical
+            stackView.alignment = .fill
+            stackView.distribution = .equalSpacing
+            stackView.spacing = 2
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+            popupView.addSubview(stackView)
+            
+            // Add stack view constraints
+            NSLayoutConstraint.activate([
+                stackView.leadingAnchor.constraint(equalTo: popupView.leadingAnchor, constant: 20),
+                stackView.trailingAnchor.constraint(equalTo: popupView.trailingAnchor, constant: -20),
+                stackView.topAnchor.constraint(equalTo: popupView.topAnchor, constant: 20),
+                stackView.bottomAnchor.constraint(equalTo: popupView.bottomAnchor, constant: -20)
+            ])
+            
+            let bgunits: String
+            if UserDefaultsRepository.useMmol {
+                bgunits = "mmol/L"
+            } else {
+                bgunits = "mg/dl"
+            }
+            
+            // Add metrics to the popup
+            let metrics = [NSLocalizedString("Blodsocker", comment: "Blodsocker"), "IOB", "COB", NSLocalizedString("Min / Max BG", comment: "Min / Max BG"), NSLocalizedString("Prognos BG", comment: "Prognos BG"), NSLocalizedString("Uppdaterades", comment: "Uppdaterades")]
+            let values = [
+                "\(NightscoutManager.shared.latestBG) \(bgunits)",
+                String(format: NSLocalizedString("%@ E", comment: "%@ E"), String(NightscoutManager.shared.latestIOB)),
+                "\(NightscoutManager.shared.latestCOB) g",
+                "\(NightscoutManager.shared.latestLowestBG) / \(NightscoutManager.shared.latestMaxBG) \(bgunits)",
+                "\(NightscoutManager.shared.latestEventualBG) \(bgunits)",
+                "\(NightscoutManager.shared.latestLocalTimestamp)"
+            ] as [Any]
+            
+            for (index, metric) in metrics.enumerated() {
+                let rowStackView = UIStackView()
+                rowStackView.axis = .horizontal
+                rowStackView.alignment = .center
+                rowStackView.distribution = .fill
+                rowStackView.spacing = 2
+                
+                let label = UILabel()
+                label.text = metric
+                label.textAlignment = .left
+                label.font = UIFont.systemFont(ofSize: 15) // Set font size to 14
+                
+                let spacer = UIView()
+                spacer.translatesAutoresizingMaskIntoConstraints = false
+                spacer.widthAnchor.constraint(equalToConstant: 20).isActive = true
+                
+                let valueLabel = UILabel()
+                valueLabel.text = values[index] as? String
+                valueLabel.textAlignment = .right
+                valueLabel.font = UIFont.systemFont(ofSize: 15) // Set font size to 14
+                
+                rowStackView.addArrangedSubview(label)
+                rowStackView.addArrangedSubview(spacer)
+                rowStackView.addArrangedSubview(valueLabel)
+                
+                stackView.addArrangedSubview(rowStackView)
+                
+                // Add a divider line between rows
+                if index < metrics.count {
+                    let divider = UIView()
+                    divider.backgroundColor = UIColor.darkGray
+                    divider.translatesAutoresizingMaskIntoConstraints = false
+                    stackView.addArrangedSubview(divider)
+                    
+                    NSLayoutConstraint.activate([
+                        divider.heightAnchor.constraint(equalToConstant: 1)
+                    ])
+                }
+            }
+
+            // Store the popup view
+            self.popupView = popupView
+            
+            // Animate the popup view
+            view.layoutIfNeeded()
+            UIView.animate(withDuration: 0.3, animations: {
+                initialTopConstraint.constant = 10
+                self.view.layoutIfNeeded()
+            })
+
+            // Add tap gesture recognizer to dismiss the popup view
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissPopupView))
+            view.addGestureRecognizer(tapGesture)
+        }
+    }
+    
+    
+    /*
     func showPopupView() {
         // Calculate remaining values and format strings
         let bolusSoFarValue = Double(bolusSoFar) ?? 0.0
@@ -369,7 +534,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissPopupView))
             view.addGestureRecognizer(tapGesture)
         }
-    }
+    }*/
 
         
     @objc func dismissPopupView() {
@@ -562,7 +727,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             self.title = NSLocalizedString("Registrera hela måltiden", comment: "Registrera hela måltiden")
         } else {
             self.title = NSLocalizedString("Registrera startdos", comment: "Registrera startdos")
-            bolusStackTapped()
+            if NightscoutManager.shared.evBGWarning || NightscoutManager.shared.minBGWarning {
+                print("BG warning - bolus not pre-populated")
+            } else {
+                bolusStackTapped()
+            }
         }
     }
 
@@ -648,17 +817,54 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     // Action method to handle tap on bolusStack
     @objc func bolusStackTapped() {
-            if isBolusEntryFieldPopulated {
-                // If bolusEntryField is already populated, make it empty
-                bolusEntryField.text = ""
-                isBolusEntryFieldPopulated = false
-            } else {
-                // If bolusEntryField is empty, populate it with the value from bolusCalculated
-                bolusEntryField.text = bolusCalculated.text
-                isBolusEntryFieldPopulated = true
-            }
-            sendMealorMealandBolus() // Update the state after the tap action
+        if NightscoutManager.shared.evBGWarning {
+            // Show a warning alert specific to evBGWarning
+            let alert = UIAlertController(
+                title: "Blodsockervarning!",
+                message: "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Ja", style: .destructive, handler: { _ in
+                self.toggleBolusEntryField()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+            
+            self.present(alert, animated: true, completion: nil)
+        } else if NightscoutManager.shared.minBGWarning {
+            // Show a different warning alert specific to minBGWarning
+            let alert = UIAlertController(
+                title: "Blodsockervarning",
+                message: "Den senaste prognosen visar att blodsockret väntas landa inom målområdet längre fram, men kan bli lågt innan det vänder upp igen.\n\nÄr du säker på att du vill ge en bolus till måltiden?",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Ja", style: .destructive, handler: { _ in
+                self.toggleBolusEntryField()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Avbryt", style: .cancel, handler: nil))
+            
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            // No warnings, proceed as usual
+            toggleBolusEntryField()
         }
+    }
+
+    private func toggleBolusEntryField() {
+        if isBolusEntryFieldPopulated {
+            // If bolusEntryField is already populated, make it empty
+            bolusEntryField.text = ""
+            isBolusEntryFieldPopulated = false
+        } else {
+            // If bolusEntryField is empty, populate it with the value from bolusCalculated
+            bolusEntryField.text = bolusCalculated.text
+            isBolusEntryFieldPopulated = true
+        }
+        sendMealorMealandBolus() // Update the state after the tap action
+    }
     
     @IBAction func sendRemoteMealPressed(_ sender: Any) {
         // Disable the button to prevent multiple taps

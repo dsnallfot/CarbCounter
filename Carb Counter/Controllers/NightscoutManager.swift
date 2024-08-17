@@ -7,6 +7,7 @@ class NightscoutManager {
     public var latestCOB: Double = 0
     public var latestIOB: Double = 0
     public var latestCR: Double = 0
+    public var latestISF: Double = 0
     public var latestThreshold: Double = 0
     public var latestAutosens: Double = 0
     public var latestMinGuardBG: Double = 0
@@ -16,7 +17,21 @@ class NightscoutManager {
     public var latestMinBG: Double = 0
     public var latestMaxBG: Double = 0
     public var latestTimestamp: String = ""
-
+    public var latestLowestBG: Double = 0
+    public var latestLocalTimestamp: String = ""
+    public var minBGWarning: Bool = false {
+            didSet {
+                minBGWarningDidChange?(minBGWarning)
+            }
+        }
+    var minBGWarningDidChange: ((Bool) -> Void)?
+    public var evBGWarning: Bool = false {
+            didSet {
+                evBGWarningDidChange?(evBGWarning)
+            }
+        }
+    var evBGWarningDidChange: ((Bool) -> Void)?
+    
     private init() {}
 
     func fetchAndMapCarbRatio(completion: @escaping (Bool) -> Void) {
@@ -146,12 +161,12 @@ class NightscoutManager {
                         self.latestEventualBG = round((suggested["eventualBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
                         self.latestCOB = round((suggested["COB"] as? Double ?? 0) * 10) / 10.0
                         self.latestIOB = round((suggested["IOB"] as? Double ?? 0) * 100) / 100.0
+                        self.latestISF = round((suggested["ISF"] as? Double ?? 0) * 10) / 10.0
                         self.latestCR = round((suggested["CR"] as? Double ?? 0) * 10) / 10.0
                         self.latestThreshold = round((suggested["threshold"] as? Double ?? 0) * 10) / 10.0
                         self.latestAutosens = round((suggested["sensitivityRatio"] as? Double ?? 0) * 10) / 10.0
                         self.latestInsulinRequired = round((suggested["insulinReq"] as? Double ?? 0) * 100) / 100.0
                         self.latestCarbsRequired = round(suggested["carbsReq"] as? Double ?? 0)
-                        self.latestTimestamp = suggested["timestamp"] as? String ?? "---"
 
                         // Extracting PredBGs to calculate min and max BG, and rounding them
                         if let predBGs = suggested["predBGs"] as? [String: [Double]] {
@@ -165,11 +180,26 @@ class NightscoutManager {
                             self.latestMaxBG = round((allBGs.max() ?? 0) * conversionFactor * 10) / 10.0
                         }
 
+                        // Calculate latestLowestBG
+                        self.latestLowestBG = min(self.latestMinBG, self.latestMinGuardBG != 0 ? self.latestMinGuardBG : self.latestMinBG)
+
+                        // Convert and format the timestamp to local time
+                        if let timestamp = suggested["timestamp"] as? String {
+                            self.latestLocalTimestamp = self.convertToLocalTime(timestamp)
+                        } else {
+                            self.latestLocalTimestamp = "---"
+                        }
+                        
+                        self.checkMinBGWarning()
+                        self.checkEvBGWarning()
+                        
+
                         // Logging the extracted values
                         print("latestBG: \(self.latestBG)")
                         print("latestCOB: \(self.latestCOB)")
                         print("latestIOB: \(self.latestIOB)")
                         print("latestCR: \(self.latestCR)")
+                        print("latestISF: \(self.latestISF)")
                         print("latestThreshold: \(self.latestThreshold)")
                         print("latestAutosens: \(self.latestAutosens)")
                         print("latestMinGuardBG: \(self.latestMinGuardBG)")
@@ -178,7 +208,8 @@ class NightscoutManager {
                         print("latestCarbsRequired: \(self.latestCarbsRequired)")
                         print("latestMinBG: \(self.latestMinBG)")
                         print("latestMaxBG: \(self.latestMaxBG)")
-                        print("latestTimestamp: \(self.latestTimestamp)")
+                        print("latestLowestBG: \(self.latestLowestBG)")
+                        print("latestLocalTimestamp: \(self.latestLocalTimestamp)")
                     } else {
                         print("Device status JSON structure is not as expected")
                     }
@@ -187,5 +218,30 @@ class NightscoutManager {
                 }
             }
             task.resume()
+        }
+    
+    func checkMinBGWarning() {
+        let newMinBGWarning = NightscoutManager.shared.latestLowestBG < NightscoutManager.shared.latestThreshold
+        NightscoutManager.shared.minBGWarning = newMinBGWarning
+    }
+    
+    func checkEvBGWarning() {
+        let newEvBgWarning = NightscoutManager.shared.latestEventualBG < NightscoutManager.shared.latestThreshold
+        NightscoutManager.shared.evBGWarning = newEvBgWarning
+    }
+        
+        // Convert UTC timestamp to local time and format it
+        private func convertToLocalTime(_ utcTimestamp: String) -> String {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            
+            if let date = formatter.date(from: utcTimestamp) {
+                let localFormatter = DateFormatter()
+                localFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                localFormatter.timeZone = TimeZone.current
+                return localFormatter.string(from: date)
+            } else {
+                return "---"
+            }
         }
     }

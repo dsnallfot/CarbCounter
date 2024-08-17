@@ -154,6 +154,14 @@
 "Skicka Måltid och Bolus" = "Skicka Måltid och Bolus";
 "Nästa" = "Nästa";
 "Klar" = "Klar";
+
+//popup
+"Blodsocker" = "Blodsocker";
+"Min / Max BG" = "Min / Max BG";
+"Prognos BG" = "Prognos BG";
+"Uppdaterades" = "Uppdaterades";
+"%@ E" = "%@ E";
+
 "Återstår att registrera" = "Kvar att registrera";
 "Kolhydrater" = "Kolhydrater";
 "Fett" = "Fett";
