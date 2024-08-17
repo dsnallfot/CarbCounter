@@ -162,6 +162,11 @@
 "Uppdaterades" = "Last updated";
 "%@ E" = "%@ U";
 
+"Blodsockervarning!" = "Blood Glucose Warning!";
+"Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden" = "The latest forecast shows that blood glucose is or is expected to become low shortly.\n\nIt might be best to start eating and wait a little while before administering a bolus to the meal.";
+"Blodsockervarning" = "Blood Glucose Warning";
+"Den senaste prognosen visar att blodsockret väntas landa inom målområdet längre fram, men kan bli lågt innan det vänder upp igen.\n\nÄr du säker på att du vill ge en bolus till måltiden?" = "The latest forecast shows that blood glucose is expected to land within the target range later on, but may become low before it rises again.\n\nAre you sure you want to administer a bolus to the meal?";
+
 "Återstår att registrera" = "Remaining to register";
 "Kolhydrater" = "Carbohydrates";
 "Fett" = "Fat";

@@ -820,8 +820,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         if NightscoutManager.shared.evBGWarning {
             // Show a warning alert specific to evBGWarning
             let alert = UIAlertController(
-                title: "Blodsockervarning!",
-                message: "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden",
+                title: NSLocalizedString("Blodsockervarning!", comment: "Blodsockervarning!"),
+                message: NSLocalizedString("Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden", comment: "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden"),
                 preferredStyle: .alert
             )
             
@@ -835,8 +835,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         } else if NightscoutManager.shared.minBGWarning {
             // Show a different warning alert specific to minBGWarning
             let alert = UIAlertController(
-                title: "Blodsockervarning",
-                message: "Den senaste prognosen visar att blodsockret väntas landa inom målområdet längre fram, men kan bli lågt innan det vänder upp igen.\n\nÄr du säker på att du vill ge en bolus till måltiden?",
+                title: NSLocalizedString("Blodsockervarning", comment: "Blodsockervarning"),
+                message: NSLocalizedString("Den senaste prognosen visar att blodsockret väntas landa inom målområdet längre fram, men kan bli lågt innan det vänder upp igen.\n\nÄr du säker på att du vill ge en bolus till måltiden?", comment: "Den senaste prognosen visar att blodsockret väntas landa inom målområdet längre fram, men kan bli lågt innan det vänder upp igen.\n\nÄr du säker på att du vill ge en bolus till måltiden?"),
                 preferredStyle: .alert
             )
             
