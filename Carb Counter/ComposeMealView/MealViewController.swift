@@ -276,8 +276,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Create a new UIView for the popup
             let popupView = UIView()
 
-            popupView.backgroundColor = UIColor(red: 90/255, green: 104/255, blue: 125/255, alpha: 1.0)
-
+            popupView.backgroundColor = UIColor.white//(red: 90/255, green: 104/255, blue: 125/255, alpha: 1.0)
             popupView.layer.cornerRadius = 10
             popupView.translatesAutoresizingMaskIntoConstraints = false
             
@@ -318,7 +317,14 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             }
             
             // Add metrics to the popup
-            let metrics = [NSLocalizedString("Blodsocker", comment: "Blodsocker"), "IOB", "COB", NSLocalizedString("Min / Max BG", comment: "Min / Max BG"), NSLocalizedString("Prognos BG", comment: "Prognos BG"), NSLocalizedString("Uppdaterades", comment: "Uppdaterades")]
+            let metrics = [
+                NSLocalizedString("Blodsocker", comment: "Blodsocker"),
+                "IOB",
+                "COB",
+                NSLocalizedString("Min / Max BG", comment: "Min / Max BG"),
+                NSLocalizedString("Prognos BG", comment: "Prognos BG"),
+                NSLocalizedString("Uppdaterades", comment: "Uppdaterades")
+            ]
             let values = [
                 "\(NightscoutManager.shared.latestBG) \(bgunits)",
                 String(format: NSLocalizedString("%@ E", comment: "%@ E"), String(NightscoutManager.shared.latestIOB)),
@@ -338,7 +344,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 let label = UILabel()
                 label.text = metric
                 label.textAlignment = .left
-                label.font = UIFont.systemFont(ofSize: 15) // Set font size to 14
+                label.font = UIFont.systemFont(ofSize: 15) // Set font size to 15
+                label.textColor = UIColor.black
                 
                 let spacer = UIView()
                 spacer.translatesAutoresizingMaskIntoConstraints = false
@@ -347,7 +354,29 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 let valueLabel = UILabel()
                 valueLabel.text = values[index] as? String
                 valueLabel.textAlignment = .right
-                valueLabel.font = UIFont.systemFont(ofSize: 15) // Set font size to 14
+                valueLabel.font = UIFont.systemFont(ofSize: 15) // Set font size to 15
+                valueLabel.textColor = UIColor.black
+                
+                // Change text color based on conditions
+                if NightscoutManager.shared.evBGWarning && (metric == "Min / Max BG" || metric == "Prognos BG") {
+                    label.textColor = UIColor.red
+                    label.font = UIFont.boldSystemFont(ofSize: 15)
+                    valueLabel.textColor = UIColor.red
+                    valueLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                } else if NightscoutManager.shared.minBGWarning && metric == "Min / Max BG" {
+                    label.textColor = UIColor.orange
+                    label.font = UIFont.boldSystemFont(ofSize: 15)
+                    valueLabel.textColor = UIColor.orange
+                    valueLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                }
+
+                // Check if latestBG is less than latestThreshold and change color to red
+                if metric == NSLocalizedString("Blodsocker", comment: "Blodsocker") && NightscoutManager.shared.latestBG < NightscoutManager.shared.latestThreshold {
+                    label.textColor = UIColor.red
+                    label.font = UIFont.boldSystemFont(ofSize: 15)
+                    valueLabel.textColor = UIColor.red
+                    valueLabel.font = UIFont.boldSystemFont(ofSize: 15)
+                }
                 
                 rowStackView.addArrangedSubview(label)
                 rowStackView.addArrangedSubview(spacer)
