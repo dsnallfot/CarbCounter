@@ -276,7 +276,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Create a new UIView for the popup
             let popupView = UIView()
 
-            popupView.backgroundColor = UIColor.white // Background color of the popup
+            popupView.backgroundColor = UIColor.white
             popupView.layer.cornerRadius = 10
             popupView.translatesAutoresizingMaskIntoConstraints = false
             
@@ -311,9 +311,16 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             
             let bgunits: String
             if UserDefaultsRepository.useMmol {
-                bgunits = "mmol/L"
+                bgunits = ""//mmol/L"
             } else {
-                bgunits = "mg/dl"
+                bgunits = ""//mg/dl"
+            }
+            
+            let plusSign: String
+            if NightscoutManager.shared.latestDelta >= 0 {
+                plusSign = "+"
+            } else {
+                plusSign = ""
             }
             
             // Add metrics to the popup
@@ -326,7 +333,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 NSLocalizedString("Uppdaterades", comment: "Uppdaterades")
             ]
             let values = [
-                "\(NightscoutManager.shared.latestBG) \(bgunits)",
+                "\(NightscoutManager.shared.latestBG) (\(plusSign)\(NightscoutManager.shared.latestDelta)) \(bgunits)",
                 String(format: NSLocalizedString("%@ E", comment: "%@ E"), String(NightscoutManager.shared.latestIOB)),
                 "\(NightscoutManager.shared.latestCOB) g",
                 "\(NightscoutManager.shared.latestLowestBG) / \(NightscoutManager.shared.latestMaxBG) \(bgunits)",
@@ -351,7 +358,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 label.text = metric
                 label.textAlignment = .left
                 label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-                label.textColor = UIColor.black
+                label.textColor = UIColor.darkGray
                 
                 let spacer = UIView()
                 spacer.translatesAutoresizingMaskIntoConstraints = false
@@ -361,7 +368,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 valueLabel.text = values[index] as? String
                 valueLabel.textAlignment = .right
                 valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-                valueLabel.textColor = UIColor.black
+                valueLabel.textColor = UIColor.darkGray
                 
                 // Change text color and add exclamation mark symbol based on conditions
                 if NightscoutManager.shared.evBGWarning && (metric == "Min / Max BG" || metric == "Prognos BG") {
