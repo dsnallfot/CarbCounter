@@ -84,7 +84,7 @@
 "Bolus Total" = "Bolus Total";
 "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden." = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.";
 "Kolhydrater Totalt" = "Kolhydrater Totalt";
-"Den beräknade summan av alla kolhydrater i måltiden." = "Den beräknade summan av alla kolhydrater i måltiden.";
+"Den beräknade summan av alla kolhydrater i måltiden." = "Den beräknade summan av alla kolhydrater i måltiden.\n\nOm denna summering visar sig bli lägre än mängden kolhydrater i den schemalagda startdosen, kommer startdosen att justeras ner.";
 "Fett Totalt" = "Fett Totalt";
 "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.";
 "Protein Totalt" = "Protein Totalt";
@@ -326,7 +326,7 @@
 /* Settings */
 "Inställningar" = "Inställningar";
 "Tillbaka" = "Tillbaka";
-"Carb Ratio schema" = "Carb Ratio schema";
+"Carb Ratio schema" = "Insulinkvoter schema";
 "Startdoser schema" = "Startdoser schema";
 "Dela data" = "Dela data";
 "Fjärrstyrning" = "Fjärrstyrning";
@@ -384,19 +384,19 @@
 "OK" = "OK";
 
 /* Carb ratio schedule */
-"Carb Ratio" = "Carb Ratio";
+"Carb Ratio" = "Insulinkvoter";
 "Klar" = "Klar";
 "Rensa" = "Rensa";
 "Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
 "Ja" = "Ja";
 "Nej" = "Nej";
 "Nightscout import" = "Nightscout import";
-"Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över." = "Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över.";
+"Vill du ladda ner Carb Ratios från Nightscout?\n\nObservera att dina nuvarande data skrivs över." = "Vill du ladda ner dina Insulinkvoter från Nightscout?\n\nObservera att dina nuvarande data skrivs över.";
 "Avbryt" = "Avbryt";
 "Lyckades" = "Lyckades";
-"Carb ratios importerade och mappede från Nightscout." = "Carb ratios importerade och mappede från Nightscout.";
+"Carb ratios importerade och mappede från Nightscout." = "Insulinkvoter importerade och mappede från Nightscout.";
 "Fel" = "Fel";
-"Kunde inte importera carb ratios från Nightscout." = "Kunde inte importera carb ratios från Nightscout.";
+"Kunde inte importera carb ratios från Nightscout." = "Kunde inte importera Insulinkvoter från Nightscout.";
 "Nästa" = "Nästa";
 
 /* Start dose schedule */

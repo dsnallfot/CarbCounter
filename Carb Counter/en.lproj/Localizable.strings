@@ -84,7 +84,7 @@
 "Bolus Total" = "Total Bolus";
 "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden." = "The estimated amount of insulin required to cover the carbohydrates in the meal.";
 "Kolhydrater Totalt" = "Total Carbohydrates";
-"Den beräknade summan av alla kolhydrater i måltiden." = "The estimated sum of all carbohydrates in the meal.";
+"Den beräknade summan av alla kolhydrater i måltiden." = "The estimated sum of all carbohydrates in the meal.\n\nIf this sum of carbs in the meal is less than the current scheduled start dose carb amount, the calculated start dose will be adjusted accordingly.";
 "Fett Totalt" = "Total Fat";
 "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "The estimated sum of all fat in the meal. \n\nFat also requires insulin, but with a few hours delay.";
 "Protein Totalt" = "Total Protein";
