@@ -333,11 +333,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 NSLocalizedString("Uppdaterades", comment: "Uppdaterades")
             ]
             let values = [
-                "\(NightscoutManager.shared.latestBG) (\(plusSign)\(NightscoutManager.shared.latestDelta)) \(bgunits)",
+                "\(NightscoutManager.shared.latestBGString) (\(plusSign)\(NightscoutManager.shared.latestDeltaString)) \(bgunits)",
                 String(format: NSLocalizedString("%@ E", comment: "%@ E"), String(NightscoutManager.shared.latestIOB)),
                 "\(NightscoutManager.shared.latestCOB) g",
-                "\(NightscoutManager.shared.latestLowestBG) / \(NightscoutManager.shared.latestMaxBG) \(bgunits)",
-                "\(NightscoutManager.shared.latestEventualBG) \(bgunits)",
+                "\(NightscoutManager.shared.latestLowestBGString) / \(NightscoutManager.shared.latestMaxBGString) \(bgunits)",
+                "\(NightscoutManager.shared.latestEventualBGString) \(bgunits)",
                 "\(NightscoutManager.shared.latestLocalTimestamp)"
             ] as [Any]
             

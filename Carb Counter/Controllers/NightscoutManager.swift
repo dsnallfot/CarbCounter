@@ -4,7 +4,9 @@ class NightscoutManager {
     static let shared = NightscoutManager()
     
     public var latestBG: Double = 0
+    public var latestBGString: String = ""
     public var latestDelta: Double = 0
+    public var latestDeltaString: String = ""
     public var latestCOB: Double = 0
     public var latestIOB: Double = 0
     //public var latestCR: Double = 0
@@ -12,13 +14,18 @@ class NightscoutManager {
     public var latestThreshold: Double = 0
     //public var latestAutosens: Double = 0
     public var latestMinGuardBG: Double = 0
+    public var latestMinGuardBGString: String = ""
     public var latestEventualBG: Double = 0
+    public var latestEventualBGString: String = ""
     //public var latestInsulinRequired: Double = 0
     //public var latestCarbsRequired: Double = 0
     public var latestMinBG: Double = 0
+    public var latestMinBGString: String = ""
     public var latestMaxBG: Double = 0
+    public var latestMaxBGString: String = ""
     public var latestTimestamp: String = ""
     public var latestLowestBG: Double = 0
+    public var latestLowestBGString: String = ""
     public var latestLocalTimestamp: String = ""
     public var minBGWarning: Bool = false {
             didSet {
@@ -159,6 +166,12 @@ class NightscoutManager {
                     // Check if we need to convert to mmol/L
                     let useMmol = UserDefaultsRepository.useMmol
                     let conversionFactor = useMmol ? 0.0555 : 1.0
+                    let decimalPlaces = useMmol ? 1 : 0
+
+                    // Format the value as a string with the appropriate number of decimal places
+                    func formatValue(_ value: Double) -> String {
+                        return String(format: "%.\(decimalPlaces)f", value)
+                    }
 
                     // Extract and convert the latest and previous BG values
                     let latestBG = round((latestSuggested["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
@@ -167,20 +180,23 @@ class NightscoutManager {
                     // Calculate the latestDelta
                     self.latestDelta = round((latestBG - previousBG) * 10) / 10.0
 
-                    // Set the latestBG to the instance variable
+                    // Set the latestBG to the instance variable and format the string
                     self.latestBG = latestBG
+                    self.latestBGString = formatValue(latestBG)
+
+                    self.latestDeltaString = formatValue(self.latestDelta)
 
                     // Continue with the existing code for other calculations
                     self.latestMinGuardBG = round((latestSuggested["minGuardBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
                     self.latestEventualBG = round((latestSuggested["eventualBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+
+                    self.latestMinGuardBGString = formatValue(self.latestMinGuardBG)
+                    self.latestEventualBGString = formatValue(self.latestEventualBG)
+
                     self.latestCOB = round((latestSuggested["COB"] as? Double ?? 0) * 10) / 10.0
                     self.latestIOB = round((latestSuggested["IOB"] as? Double ?? 0) * 100) / 100.0
-                    //self.latestISF = round((latestSuggested["ISF"] as? Double ?? 0) * 10) / 10.0
-                    //self.latestCR = round((latestSuggested["CR"] as? Double ?? 0) * 10) / 10.0
-                    self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * 10) / 10.0
-                    //self.latestAutosens = round((latestSuggested["sensitivityRatio"] as? Double ?? 0) * 10) / 10.0
-                    //self.latestInsulinRequired = round((latestSuggested["insulinReq"] as? Double ?? 0) * 100) / 100.0
-                    //self.latestCarbsRequired = round(latestSuggested["carbsReq"] as? Double ?? 0)
+
+                    self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * conversionFactor * 10) / 10.0
 
                     // Extracting PredBGs to calculate min and max BG, and rounding them
                     if let predBGs = latestSuggested["predBGs"] as? [String: [Double]] {
@@ -192,10 +208,14 @@ class NightscoutManager {
 
                         self.latestMinBG = round((allBGs.min() ?? 0) * conversionFactor * 10) / 10.0
                         self.latestMaxBG = round((allBGs.max() ?? 0) * conversionFactor * 10) / 10.0
+
+                        self.latestMinBGString = formatValue(self.latestMinBG)
+                        self.latestMaxBGString = formatValue(self.latestMaxBG)
                     }
 
                     // Calculate latestLowestBG
                     self.latestLowestBG = min(self.latestMinBG, self.latestMinGuardBG != 0 ? self.latestMinGuardBG : self.latestMinBG)
+                    self.latestLowestBGString = formatValue(self.latestLowestBG)
 
                     // Convert and format the timestamp to local time
                     if let timestamp = latestSuggested["timestamp"] as? String {
@@ -209,21 +229,17 @@ class NightscoutManager {
 
                     // Logging the extracted values
                     print("latestBG: \(self.latestBG)")
+                    print("latestBGString: \(self.latestBGString)")
                     print("latestDelta: \(self.latestDelta)")
-                    print("latestCOB: \(self.latestCOB)")
-                    print("latestIOB: \(self.latestIOB)")
-                    //print("latestCR: \(self.latestCR)")
-                    //print("latestISF: \(self.latestISF)")
-                    print("latestThreshold: \(self.latestThreshold)")
-                    //print("latestAutosens: \(self.latestAutosens)")
+                    print("latestDeltaString: \(self.latestDeltaString)")
                     print("latestMinGuardBG: \(self.latestMinGuardBG)")
+                    print("latestMinGuardBGString: \(self.latestMinGuardBGString)")
                     print("latestEventualBG: \(self.latestEventualBG)")
-                    //print("latestInsulinRequired: \(self.latestInsulinRequired)")
-                    //print("latestCarbsRequired: \(self.latestCarbsRequired)")
+                    print("latestEventualBGString: \(self.latestEventualBGString)")
                     print("latestMinBG: \(self.latestMinBG)")
+                    print("latestMinBGString: \(self.latestMinBGString)")
                     print("latestMaxBG: \(self.latestMaxBG)")
-                    print("latestLowestBG: \(self.latestLowestBG)")
-                    print("latestLocalTimestamp: \(self.latestLocalTimestamp)")
+                    print("latestMaxBGString: \(self.latestMaxBGString)")
                 } else {
                     print("Device status JSON structure is not as expected")
                 }
