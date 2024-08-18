@@ -508,7 +508,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nvq-Wb-yth" userLabel="Carbs">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="nGc-RD-cUd">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0YQ-7b-NEo">
@@ -697,7 +697,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AUX-cq-9ke" userLabel="Notes">
                                         <rect key="frame" x="0.0" y="92.5" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ABR-oy-nFE">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="39"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eXo-9i-ROd">
@@ -744,7 +744,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xi8-BJ-sG2" userLabel="Tid">
                                         <rect key="frame" x="0.0" y="139" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="4yn-a5-OOJ">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="phY-ht-nVS">
@@ -860,7 +860,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="opf-Hp-yIb" userLabel="Bolus">
                                         <rect key="frame" x="0.0" y="231.5" width="343" height="38.5"/>
                                         <view key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="VBV-QD-xlj">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="39"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NWG-6j-sB3">
@@ -964,6 +964,8 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="bolusCalcStack" destination="2Ma-eG-rjJ" id="6jw-Zf-2MT"/>
+                        <outlet property="bolusCalcText" destination="1fh-wh-zY3" id="3LC-0J-B2K"/>
+                        <outlet property="bolusCalcUnitText" destination="GZh-9c-WQ6" id="Lgd-5F-0PH"/>
                         <outlet property="bolusCalculated" destination="QiM-g0-oiq" id="6ep-Xo-ZoH"/>
                         <outlet property="bolusEntryField" destination="dgh-UO-7vg" id="k0Z-mj-HbO"/>
                         <outlet property="bolusLabel" destination="7Ry-Bf-akX" id="zzA-yh-SSq"/>

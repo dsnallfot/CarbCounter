@@ -19,7 +19,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var bolusEntryField: UITextField!
     @IBOutlet weak var bolusRow: UIView!
     @IBOutlet weak var bolusCalcStack: UIStackView!
+    @IBOutlet weak var bolusCalcText: UITextField!
     @IBOutlet weak var bolusCalculated: UITextField!
+    @IBOutlet weak var bolusCalcUnitText: UITextField!
     @IBOutlet weak var sendMealButton: UIButton!
     @IBOutlet weak var carbLabel: UILabel!
     @IBOutlet weak var carbGrams: UITextField!
@@ -210,6 +212,10 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         infoButton.tintColor = buttonTintColor
         navigationItem.rightBarButtonItem = infoButton
         plusSign.tintColor = plusSignColor
+        bolusCalcText.textColor = plusSignColor
+        bolusCalculated.textColor = plusSignColor
+        bolusCalcUnitText.textColor = plusSignColor
+
     }
     
     
@@ -263,13 +269,50 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     }
     
     func togglePopupView() {
-        if popupView == nil {
-            showPopupView()
+        // Calculate time ago in minutes
+        let timeAgo = calculateTimeAgo()
+        
+        if timeAgo > 5 {
+            // Re-fetch the device status if timeAgo is greater than 5 minutes
+            NightscoutManager.shared.fetchDeviceStatus {
+                DispatchQueue.main.async {
+                    // Once the fetch is complete, toggle the popup view
+                    if self.popupView == nil {
+                        self.showPopupView()
+                    } else {
+                        self.dismissPopupView()
+                    }
+                }
+            }
         } else {
-            dismissPopupView()
+            // If no need to fetch, just toggle the popup view
+            if popupView == nil {
+                showPopupView()
+            } else {
+                dismissPopupView()
+            }
         }
     }
     
+    private func calculateTimeAgo() -> Int {
+        let utcFormatter = ISO8601DateFormatter()
+        utcFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        // Convert the latestTimestamp string back to a Date object
+        if let latestDate = utcFormatter.date(from: NightscoutManager.shared.latestTimestamp) {
+            // Get the current date and time
+            let now = Date()
+            
+            // Calculate the difference in seconds between now and latestDate
+            let timeInterval = now.timeIntervalSince(latestDate)
+            
+            // Convert the time interval to minutes
+            let minutesAgo = Int(timeInterval / 60)
+            return minutesAgo
+        }
+        
+        return 0 // Return 0 if the conversion fails
+    }
     
     func showPopupView() {
         if popupView == nil {
@@ -309,6 +352,10 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 stackView.bottomAnchor.constraint(equalTo: popupView.bottomAnchor, constant: -20)
             ])
             
+            // Calculate time ago in minutes
+            let timeAgo = calculateTimeAgo()
+            let timeAgoString = timeAgo == 0 ? "< 1" : "\(timeAgo)"
+            
             let bgunits: String
             if UserDefaultsRepository.useMmol {
                 bgunits = ""//mmol/L"
@@ -333,12 +380,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 NSLocalizedString("Uppdaterades", comment: "Uppdaterades")
             ]
             let values = [
-                "\(NightscoutManager.shared.latestBG) (\(plusSign)\(NightscoutManager.shared.latestDelta)) \(bgunits)",
+                "\(NightscoutManager.shared.latestBGString) (\(plusSign)\(NightscoutManager.shared.latestDeltaString)) \(bgunits)",
                 String(format: NSLocalizedString("%@ E", comment: "%@ E"), String(NightscoutManager.shared.latestIOB)),
-                "\(NightscoutManager.shared.latestCOB) g",
-                "\(NightscoutManager.shared.latestLowestBG) / \(NightscoutManager.shared.latestMaxBG) \(bgunits)",
-                "\(NightscoutManager.shared.latestEventualBG) \(bgunits)",
-                "\(NightscoutManager.shared.latestLocalTimestamp)"
+                "\(NightscoutManager.shared.latestCOBString) g",
+                "\(NightscoutManager.shared.latestLowestBGString) / \(NightscoutManager.shared.latestMaxBGString) \(bgunits)",
+                "\(NightscoutManager.shared.latestEventualBGString) \(bgunits)",
+                //"\(NightscoutManager.shared.latestLocalTimestamp) (\(timeAgo) min sedan)",
+                String(format: NSLocalizedString("%@  (%@ min sedan)", comment: "%@  (%@ min sedan)"), String(NightscoutManager.shared.latestLocalTimestamp), timeAgoString)
             ] as [Any]
             
             for (index, metric) in metrics.enumerated() {
@@ -387,7 +435,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                     imageView.tintColor = UIColor.orange
                 }
 
-                // Check if latestBG is less than latestThreshold and change color to red
                 if metric == NSLocalizedString("Blodsocker", comment: "Blodsocker") && NightscoutManager.shared.latestBG < NightscoutManager.shared.latestThreshold {
                     label.textColor = UIColor.red
                     label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
@@ -395,6 +442,31 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                     valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .bold)
                     imageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
                     imageView.tintColor = UIColor.red
+                }
+                
+                if metric == NSLocalizedString("Uppdaterades", comment: "Uppdaterades") {
+                    if timeAgo > 10 {
+                        label.textColor = UIColor.red
+                        label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                        valueLabel.textColor = UIColor.red
+                        valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                        imageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                        imageView.tintColor = UIColor.red
+                    } else if timeAgo > 5 {
+                        label.textColor = UIColor.orange
+                        label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                        valueLabel.textColor = UIColor.orange
+                        valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+                        imageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                        imageView.tintColor = UIColor.orange
+                    } else {
+                        // Reset to default appearance if timeAgo <= 5
+                        label.textColor = UIColor.darkGray
+                        label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+                        valueLabel.textColor = UIColor.darkGray
+                        valueLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+                        imageView.image = nil // No warning image
+                    }
                 }
                 
                 // Add the imageView to the rowStackView if there is a warning
@@ -1300,6 +1372,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         sendMealButton.isEnabled = !isButtonDisabled
     }
 
+    /*
     // Function to hide both the bolusRow and bolusCalcStack
     func hideBolusRow() {
         bolusRow.isHidden = true
@@ -1320,6 +1393,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     func showBolusCalcRow() {
         bolusCalcStack.isHidden = false
     }
+    */
     
     @IBAction func doneButtonTapped(_ sender: Any) {
         dismiss(animated: true, completion: nil)

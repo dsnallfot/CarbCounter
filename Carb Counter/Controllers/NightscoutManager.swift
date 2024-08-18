@@ -4,21 +4,29 @@ class NightscoutManager {
     static let shared = NightscoutManager()
     
     public var latestBG: Double = 0
+    public var latestBGString: String = ""
     public var latestDelta: Double = 0
+    public var latestDeltaString: String = ""
     public var latestCOB: Double = 0
+    public var latestCOBString: String = ""
     public var latestIOB: Double = 0
     //public var latestCR: Double = 0
     //public var latestISF: Double = 0
     public var latestThreshold: Double = 0
     //public var latestAutosens: Double = 0
     public var latestMinGuardBG: Double = 0
+    public var latestMinGuardBGString: String = ""
     public var latestEventualBG: Double = 0
+    public var latestEventualBGString: String = ""
     //public var latestInsulinRequired: Double = 0
     //public var latestCarbsRequired: Double = 0
     public var latestMinBG: Double = 0
+    public var latestMinBGString: String = ""
     public var latestMaxBG: Double = 0
+    public var latestMaxBGString: String = ""
     public var latestTimestamp: String = ""
     public var latestLowestBG: Double = 0
+    public var latestLowestBGString: String = ""
     public var latestLocalTimestamp: String = ""
     public var minBGWarning: Bool = false {
             didSet {
@@ -119,16 +127,18 @@ class NightscoutManager {
         task.resume()
     }
     
-    func fetchDeviceStatus() {
+    func fetchDeviceStatus(completion: @escaping () -> Void) {
         guard let nightscoutURL = UserDefaultsRepository.nightscoutURL,
               let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
             print("Nightscout URL or Token is missing")
+            completion()
             return
         }
 
         let urlString = "\(nightscoutURL)/api/v1/devicestatus?token=\(nightscoutToken)&count=2"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
+            completion()
             return
         }
 
@@ -138,11 +148,13 @@ class NightscoutManager {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching device status: \(error)")
+                completion()
                 return
             }
 
             guard let data = data else {
                 print("No data returned for device status")
+                completion()
                 return
             }
 
@@ -159,6 +171,12 @@ class NightscoutManager {
                     // Check if we need to convert to mmol/L
                     let useMmol = UserDefaultsRepository.useMmol
                     let conversionFactor = useMmol ? 0.0555 : 1.0
+                    let decimalPlaces = useMmol ? 1 : 0
+
+                    // Format the value as a string with the appropriate number of decimal places
+                    func formatValue(_ value: Double) -> String {
+                        return String(format: "%.\(decimalPlaces)f", value)
+                    }
 
                     // Extract and convert the latest and previous BG values
                     let latestBG = round((latestSuggested["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
@@ -167,20 +185,24 @@ class NightscoutManager {
                     // Calculate the latestDelta
                     self.latestDelta = round((latestBG - previousBG) * 10) / 10.0
 
-                    // Set the latestBG to the instance variable
+                    // Set the latestBG to the instance variable and format the string
                     self.latestBG = latestBG
+                    self.latestBGString = formatValue(latestBG)
+
+                    self.latestDeltaString = formatValue(self.latestDelta)
 
                     // Continue with the existing code for other calculations
                     self.latestMinGuardBG = round((latestSuggested["minGuardBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
                     self.latestEventualBG = round((latestSuggested["eventualBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
-                    self.latestCOB = round((latestSuggested["COB"] as? Double ?? 0) * 10) / 10.0
+
+                    self.latestMinGuardBGString = formatValue(self.latestMinGuardBG)
+                    self.latestEventualBGString = formatValue(self.latestEventualBG)
+
+                    self.latestCOB = latestSuggested["COB"] as? Double ?? 0
+                    self.latestCOBString = String(format: "%.0f", self.latestCOB)
                     self.latestIOB = round((latestSuggested["IOB"] as? Double ?? 0) * 100) / 100.0
-                    //self.latestISF = round((latestSuggested["ISF"] as? Double ?? 0) * 10) / 10.0
-                    //self.latestCR = round((latestSuggested["CR"] as? Double ?? 0) * 10) / 10.0
+
                     self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * 10) / 10.0
-                    //self.latestAutosens = round((latestSuggested["sensitivityRatio"] as? Double ?? 0) * 10) / 10.0
-                    //self.latestInsulinRequired = round((latestSuggested["insulinReq"] as? Double ?? 0) * 100) / 100.0
-                    //self.latestCarbsRequired = round(latestSuggested["carbsReq"] as? Double ?? 0)
 
                     // Extracting PredBGs to calculate min and max BG, and rounding them
                     if let predBGs = latestSuggested["predBGs"] as? [String: [Double]] {
@@ -192,12 +214,18 @@ class NightscoutManager {
 
                         self.latestMinBG = round((allBGs.min() ?? 0) * conversionFactor * 10) / 10.0
                         self.latestMaxBG = round((allBGs.max() ?? 0) * conversionFactor * 10) / 10.0
+
+                        self.latestMinBGString = formatValue(self.latestMinBG)
+                        self.latestMaxBGString = formatValue(self.latestMaxBG)
                     }
 
                     // Calculate latestLowestBG
                     self.latestLowestBG = min(self.latestMinBG, self.latestMinGuardBG != 0 ? self.latestMinGuardBG : self.latestMinBG)
+                    self.latestLowestBGString = formatValue(self.latestLowestBG)
 
                     // Convert and format the timestamp to local time
+                    self.latestTimestamp = latestSuggested["timestamp"] as? String ?? ""
+                    
                     if let timestamp = latestSuggested["timestamp"] as? String {
                         self.latestLocalTimestamp = self.convertToLocalTime(timestamp)
                     } else {
@@ -209,26 +237,33 @@ class NightscoutManager {
 
                     // Logging the extracted values
                     print("latestBG: \(self.latestBG)")
+                    print("latestBGString: \(self.latestBGString)")
                     print("latestDelta: \(self.latestDelta)")
-                    print("latestCOB: \(self.latestCOB)")
-                    print("latestIOB: \(self.latestIOB)")
-                    //print("latestCR: \(self.latestCR)")
-                    //print("latestISF: \(self.latestISF)")
-                    print("latestThreshold: \(self.latestThreshold)")
-                    //print("latestAutosens: \(self.latestAutosens)")
+                    print("latestDeltaString: \(self.latestDeltaString)")
                     print("latestMinGuardBG: \(self.latestMinGuardBG)")
+                    print("latestMinGuardBGString: \(self.latestMinGuardBGString)")
                     print("latestEventualBG: \(self.latestEventualBG)")
-                    //print("latestInsulinRequired: \(self.latestInsulinRequired)")
-                    //print("latestCarbsRequired: \(self.latestCarbsRequired)")
+                    print("latestEventualBGString: \(self.latestEventualBGString)")
                     print("latestMinBG: \(self.latestMinBG)")
+                    print("latestMinBGString: \(self.latestMinBGString)")
                     print("latestMaxBG: \(self.latestMaxBG)")
-                    print("latestLowestBG: \(self.latestLowestBG)")
+                    print("latestMaxBGString: \(self.latestMaxBGString)")
+                    print("latestThreshold: \(self.latestThreshold)")
+                    print("latestIOB: \(self.latestIOB)")
+                    print("latestCOB: \(self.latestCOB)")
+                    print("latestCOBString: \(self.latestCOBString)")
+                    print("latestTimestamp: \(self.latestTimestamp)")
                     print("latestLocalTimestamp: \(self.latestLocalTimestamp)")
+                    
+                    // Call completion after processing the data
+                    completion()
                 } else {
                     print("Device status JSON structure is not as expected")
+                    completion()
                 }
             } catch {
                 print("Error parsing device status JSON: \(error)")
+                completion()
             }
         }
         task.resume()
@@ -244,18 +279,18 @@ class NightscoutManager {
         NightscoutManager.shared.evBGWarning = newEvBgWarning
     }
         
-        // Convert UTC timestamp to local time and format it
-        private func convertToLocalTime(_ utcTimestamp: String) -> String {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            
-            if let date = formatter.date(from: utcTimestamp) {
-                let localFormatter = DateFormatter()
-                localFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                localFormatter.timeZone = TimeZone.current
-                return localFormatter.string(from: date)
-            } else {
-                return "---"
-            }
+    // Convert UTC timestamp to local time and format it to HH:mm:ss
+    private func convertToLocalTime(_ utcTimestamp: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: utcTimestamp) {
+            let localFormatter = DateFormatter()
+            localFormatter.timeStyle = .medium // This will automatically adjust based on the device's settings
+            localFormatter.timeZone = TimeZone.current
+            return localFormatter.string(from: date)
+        } else {
+            return "---"
         }
+    }
     }

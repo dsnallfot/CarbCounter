@@ -1651,11 +1651,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startDose = true
         let remainDose = false
         
-        // Fetch device status from Nightscout
-        NightscoutManager.shared.fetchDeviceStatus()
-        
         if !allowShortcuts {
-            //Use alert when manually registering
+            // Use alert when manually registering
             let alertController = UIAlertController(
                 title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
                 message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio", comment: "Prompt to register the specified start dose for the meal in iAPS/Trio"), khValue, bolusValue),
@@ -1676,13 +1673,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let navigationController = UINavigationController(rootViewController: mealVC)
                 navigationController.modalPresentationStyle = .pageSheet
                 
-                /*if #available(iOS 15.0, *) {
-                 navigationController.sheetPresentationController?.detents = [.medium(), .large()]
-                 }*/
-                
                 present(navigationController, animated: true, completion: {
                     mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr)
                 })
+            }
+        }
+        
+        // Fetch device status from Nightscout after all UI actions
+        NightscoutManager.shared.fetchDeviceStatus {
+            // Optionally, you can handle UI updates or further actions after fetching here
+            DispatchQueue.main.async {
+                print("Device status has been updated.")
             }
         }
     }
@@ -1693,6 +1694,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         hideAllDeleteButtons()
         createEmojiString()
+        
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
@@ -1701,7 +1703,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let crText = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
             if let bolusValue = Double(bolusText), let crValue = Double(crText) {
                 let khValue = bolusValue * crValue
-                let formattedKhValue = formatValue(String(format: "%.0f",khValue))
+                let formattedKhValue = formatValue(String(format: "%.0f", khValue))
                 let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: NSLocalizedString("\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!"), preferredStyle: .alert)
                 let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
                 alert.addAction(okAction)
@@ -1710,24 +1712,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 print("Invalid input for calculation")
             }
-        }
-        else if remainsValue < 0 {
+        } else if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
             let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!"), preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
             return
-            
         }
-        let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         
+        let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
         let totalFatValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let fatValue = formatValue("\(totalFatValue - registeredFatSoFar)")
-        
         let totalProteinValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let proteinValue = formatValue("\(totalProteinValue - registeredProteinSoFar)")
-        
         let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "") ?? "0")
         
         var adjustedKhValue = khValue
@@ -1795,9 +1793,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startDose = true
         let remainDose = true
         
-        // Fetch device status from Nightscout
-        NightscoutManager.shared.fetchDeviceStatus()
-        
         if !allowShortcuts {
             var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater"), khValue)
             
@@ -1834,6 +1829,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(navigationController, animated: true, completion: {
                     mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr)
                 })
+            }
+        }
+        
+        // Fetch device status from Nightscout after all UI actions
+        NightscoutManager.shared.fetchDeviceStatus {
+            // Optionally, you can handle UI updates or further actions after fetching here
+            DispatchQueue.main.async {
+                print("Device status has been updated.")
             }
         }
     }
