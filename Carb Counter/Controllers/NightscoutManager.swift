@@ -8,6 +8,7 @@ class NightscoutManager {
     public var latestDelta: Double = 0
     public var latestDeltaString: String = ""
     public var latestCOB: Double = 0
+    public var latestCOBString: String = ""
     public var latestIOB: Double = 0
     //public var latestCR: Double = 0
     //public var latestISF: Double = 0
@@ -126,16 +127,18 @@ class NightscoutManager {
         task.resume()
     }
     
-    func fetchDeviceStatus() {
+    func fetchDeviceStatus(completion: @escaping () -> Void) {
         guard let nightscoutURL = UserDefaultsRepository.nightscoutURL,
               let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
             print("Nightscout URL or Token is missing")
+            completion()
             return
         }
 
         let urlString = "\(nightscoutURL)/api/v1/devicestatus?token=\(nightscoutToken)&count=2"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
+            completion()
             return
         }
 
@@ -145,11 +148,13 @@ class NightscoutManager {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching device status: \(error)")
+                completion()
                 return
             }
 
             guard let data = data else {
                 print("No data returned for device status")
+                completion()
                 return
             }
 
@@ -193,7 +198,8 @@ class NightscoutManager {
                     self.latestMinGuardBGString = formatValue(self.latestMinGuardBG)
                     self.latestEventualBGString = formatValue(self.latestEventualBG)
 
-                    self.latestCOB = round((latestSuggested["COB"] as? Double ?? 0) * 10) / 10.0
+                    self.latestCOB = latestSuggested["COB"] as? Double ?? 0
+                    self.latestCOBString = String(format: "%.0f", self.latestCOB)
                     self.latestIOB = round((latestSuggested["IOB"] as? Double ?? 0) * 100) / 100.0
 
                     self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * 10) / 10.0
@@ -218,6 +224,8 @@ class NightscoutManager {
                     self.latestLowestBGString = formatValue(self.latestLowestBG)
 
                     // Convert and format the timestamp to local time
+                    self.latestTimestamp = latestSuggested["timestamp"] as? String ?? ""
+                    
                     if let timestamp = latestSuggested["timestamp"] as? String {
                         self.latestLocalTimestamp = self.convertToLocalTime(timestamp)
                     } else {
@@ -243,12 +251,19 @@ class NightscoutManager {
                     print("latestThreshold: \(self.latestThreshold)")
                     print("latestIOB: \(self.latestIOB)")
                     print("latestCOB: \(self.latestCOB)")
+                    print("latestCOBString: \(self.latestCOBString)")
+                    print("latestTimestamp: \(self.latestTimestamp)")
                     print("latestLocalTimestamp: \(self.latestLocalTimestamp)")
+                    
+                    // Call completion after processing the data
+                    completion()
                 } else {
                     print("Device status JSON structure is not as expected")
+                    completion()
                 }
             } catch {
                 print("Error parsing device status JSON: \(error)")
+                completion()
             }
         }
         task.resume()
@@ -264,18 +279,18 @@ class NightscoutManager {
         NightscoutManager.shared.evBGWarning = newEvBgWarning
     }
         
-        // Convert UTC timestamp to local time and format it
-        private func convertToLocalTime(_ utcTimestamp: String) -> String {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            
-            if let date = formatter.date(from: utcTimestamp) {
-                let localFormatter = DateFormatter()
-                localFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                localFormatter.timeZone = TimeZone.current
-                return localFormatter.string(from: date)
-            } else {
-                return "---"
-            }
+    // Convert UTC timestamp to local time and format it to HH:mm:ss
+    private func convertToLocalTime(_ utcTimestamp: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: utcTimestamp) {
+            let localFormatter = DateFormatter()
+            localFormatter.timeStyle = .medium // This will automatically adjust based on the device's settings
+            localFormatter.timeZone = TimeZone.current
+            return localFormatter.string(from: date)
+        } else {
+            return "---"
         }
+    }
     }

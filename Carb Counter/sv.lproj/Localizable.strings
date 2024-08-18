@@ -161,6 +161,7 @@
 "Prognos BG" = "Prognos BG";
 "Uppdaterades" = "Uppdaterades";
 "%@ E" = "%@ E";
+"%@  (%@ min sedan)" = "%@  (%@ min sedan)";
 
 "Blodsockervarning!" = "Blodsockervarning!";
 "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden.\n\nVill du trots detta ge en bolus till måltiden redan nu?" = "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden.\n\nVill du trots detta ge en bolus till måltiden redan nu?";

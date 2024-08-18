@@ -159,8 +159,9 @@
 "Blodsocker" = "Blood Glucose";
 "Min / Max BG" = "Min / Max BG";
 "Prognos BG" = "Eventual BG";
-"Uppdaterades" = "Last updated";
+"Uppdaterades" = "Updated";
 "%@ E" = "%@ U";
+"%@  (%@ min sedan)" = "%@  (%@ min ago)";
 
 "Blodsockervarning!" = "Blood Glucose Warning!";
 "Den senaste prognosen visar att blodsockret är eller förväntas bli lågt inom kort.\n\nDet är troligtvis bäst att börja äta och avvakta en liten stund innan du ger en bolus till måltiden.\n\nVill du trots detta ge en bolus till måltiden redan nu?" = "The latest forecast indicates that your blood sugar is or is expected to become low soon.\n\nIt's likely best to start eating and wait a little while before administering any bolus for the meal.\n\nDo you still want to give a bolus for the meal now?";
