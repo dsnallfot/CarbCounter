@@ -240,6 +240,9 @@ class NightscoutManager {
                     print("latestMinBGString: \(self.latestMinBGString)")
                     print("latestMaxBG: \(self.latestMaxBG)")
                     print("latestMaxBGString: \(self.latestMaxBGString)")
+                    print("latestIOB: \(self.latestIOB)")
+                    print("latestCOB: \(self.latestCOB)")
+                    print("latestLocalTimestamp: \(self.latestLocalTimestamp)")
                 } else {
                     print("Device status JSON structure is not as expected")
                 }
