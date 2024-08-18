@@ -19,7 +19,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var bolusEntryField: UITextField!
     @IBOutlet weak var bolusRow: UIView!
     @IBOutlet weak var bolusCalcStack: UIStackView!
+    @IBOutlet weak var bolusCalcText: UITextField!
     @IBOutlet weak var bolusCalculated: UITextField!
+    @IBOutlet weak var bolusCalcUnitText: UITextField!
     @IBOutlet weak var sendMealButton: UIButton!
     @IBOutlet weak var carbLabel: UILabel!
     @IBOutlet weak var carbGrams: UITextField!
@@ -210,6 +212,10 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         infoButton.tintColor = buttonTintColor
         navigationItem.rightBarButtonItem = infoButton
         plusSign.tintColor = plusSignColor
+        bolusCalcText.textColor = plusSignColor
+        bolusCalculated.textColor = plusSignColor
+        bolusCalcUnitText.textColor = plusSignColor
+
     }
     
     
@@ -1300,6 +1306,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         sendMealButton.isEnabled = !isButtonDisabled
     }
 
+    /*
     // Function to hide both the bolusRow and bolusCalcStack
     func hideBolusRow() {
         bolusRow.isHidden = true
@@ -1320,6 +1327,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     func showBolusCalcRow() {
         bolusCalcStack.isHidden = false
     }
+    */
     
     @IBAction func doneButtonTapped(_ sender: Any) {
         dismiss(animated: true, completion: nil)
