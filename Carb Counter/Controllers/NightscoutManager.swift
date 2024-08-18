@@ -196,7 +196,7 @@ class NightscoutManager {
                     self.latestCOB = round((latestSuggested["COB"] as? Double ?? 0) * 10) / 10.0
                     self.latestIOB = round((latestSuggested["IOB"] as? Double ?? 0) * 100) / 100.0
 
-                    self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+                    self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * 10) / 10.0
 
                     // Extracting PredBGs to calculate min and max BG, and rounding them
                     if let predBGs = latestSuggested["predBGs"] as? [String: [Double]] {
@@ -240,6 +240,7 @@ class NightscoutManager {
                     print("latestMinBGString: \(self.latestMinBGString)")
                     print("latestMaxBG: \(self.latestMaxBG)")
                     print("latestMaxBGString: \(self.latestMaxBGString)")
+                    print("latestThreshold: \(self.latestThreshold)")
                     print("latestIOB: \(self.latestIOB)")
                     print("latestCOB: \(self.latestCOB)")
                     print("latestLocalTimestamp: \(self.latestLocalTimestamp)")
