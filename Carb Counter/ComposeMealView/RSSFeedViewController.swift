@@ -7,7 +7,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk", "grönpeppar"]
+    //let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk", "grönpeppar"]
     var offset = 0
     
     override func viewDidLoad() {
@@ -137,34 +137,46 @@ class RSSFeedViewController: UIViewController {
     private func fuzzySearch(query: String, in items: [FoodItem]) -> [FoodItem] {
         return items.filter {
             let name = $0.name ?? ""
-            return name.fuzzyMatch(query) > 0.2 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+            return name.fuzzyMatch(query) > 0.3 || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
         }
+    }
+    private var excludedWords: [String] {
+        return UserDefaultsRepository.excludeWords?.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() } ?? []
     }
 
     private func parseCourseDescription(_ description: String) -> [String] {
-        let separators = CharacterSet(charactersIn: ", ")
-        let components = description.components(separatedBy: separators)
+        let excludedWords = self.excludedWords  // Dynamically fetch excluded words
+        let words = description.components(separatedBy: .whitespacesAndNewlines)
         
         var parsedComponents: [String] = []
         var currentComponent = ""
-        
-        for component in components {
-            let trimmedComponent = component.trimmingCharacters(in: .whitespacesAndNewlines)
-            if excludedWords.contains(trimmedComponent.lowercased()) {
+        var containsExcludedWord = false
+
+        for word in words {
+            let trimmedWord = word.trimmingCharacters(in: .whitespacesAndNewlines)
+            if excludedWords.contains(trimmedWord.lowercased()) {
+                // Treat excluded words like commas (start a new component)
                 if !currentComponent.isEmpty {
                     parsedComponents.append(currentComponent.trimmingCharacters(in: .whitespacesAndNewlines))
                     currentComponent = ""
                 }
+                containsExcludedWord = true
             } else {
                 if !currentComponent.isEmpty {
                     currentComponent += " "
                 }
-                currentComponent += trimmedComponent
+                currentComponent += trimmedWord
             }
         }
         
+        // Add the last component if it's not empty
         if !currentComponent.isEmpty {
             parsedComponents.append(currentComponent.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+
+        // If no excluded words were found, split components by spaces
+        if !containsExcludedWord {
+            parsedComponents = parsedComponents.flatMap { $0.components(separatedBy: " ") }
         }
         
         return parsedComponents
@@ -269,37 +281,27 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         var matchedFoodItems: Set<FoodItem> = []  // Using a set to avoid duplicates
         
         for word in parsedWords {
-            let matchedItems = fuzzySearch(query: word, in: foodItems)
+            // Match only against food items with the prefix Ⓢ
+            let matchedItems = fuzzySearch(query: word, in: foodItems.filter { $0.name?.hasPrefix("Ⓢ") == true })
+            
             var bestSPrefixMatch: (FoodItem, Double)?
-            var bestMatch: (FoodItem, Double)?
             
             for item in matchedItems {
-                if let itemName = item.name {
+                if let itemName = item.name?.replacingOccurrences(of: "Ⓢ ", with: "") {
                     let score = itemName.fuzzyMatch(word)
-                    if itemName.hasPrefix("Ⓢ") {
-                        if let currentBestSPrefixMatch = bestSPrefixMatch {
-                            if currentBestSPrefixMatch.1 < score {
-                                bestSPrefixMatch = (item, score)
-                            }
-                        } else {
+                    if let currentBestSPrefixMatch = bestSPrefixMatch {
+                        if currentBestSPrefixMatch.1 < score {
                             bestSPrefixMatch = (item, score)
                         }
                     } else {
-                        if let currentBestMatch = bestMatch {
-                            if currentBestMatch.1 < score {
-                                bestMatch = (item, score)
-                            }
-                        } else {
-                            bestMatch = (item, score)
-                        }
+                        bestSPrefixMatch = (item, score)
                     }
                 }
             }
             
+            // Add the best match with the Ⓢ prefix to the set of matched food items
             if let bestSPrefixMatch = bestSPrefixMatch {
                 matchedFoodItems.insert(bestSPrefixMatch.0)
-            } else if let bestMatch = bestMatch {
-                matchedFoodItems.insert(bestMatch.0)
             }
         }
         

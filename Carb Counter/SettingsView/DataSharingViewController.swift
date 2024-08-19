@@ -693,6 +693,7 @@ class DataSharingViewController: UIViewController {
         userDefaultsData["lateBreakfast"] = UserDefaultsRepository.lateBreakfast.description
 
         userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
+        userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = UserDefaultsRepository.nightscoutURL ?? ""
@@ -701,6 +702,7 @@ class DataSharingViewController: UIViewController {
         userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
+        userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
 
         let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
 
@@ -760,6 +762,8 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.lateBreakfast = Bool(values[1]) ?? false
             case "lateBreakfastOverrideName":
                 UserDefaultsRepository.lateBreakfastOverrideName = values[1]
+            case "useMmol":
+                UserDefaultsRepository.useMmol = Bool(values[1]) ?? false
             case "lateBreakfastStartTime":
                 if let date = ISO8601DateFormatter().date(from: values[1]) {
                     UserDefaultsRepository.lateBreakfastStartTime = date
@@ -776,6 +780,8 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.allowViewingOngoingMeals = Bool(values[1]) ?? true
             case "schoolFoodURL":
                 UserDefaultsRepository.schoolFoodURL = values[1]
+            case "excludeWords":
+                UserDefaultsRepository.excludeWords = values[1]
             default:
                 break
             }

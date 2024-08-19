@@ -245,6 +245,14 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "savedSearchText")
         }
         }
+    static var excludeWords: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "excludeWords")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "excludeWords")
+        }
+    }
 }
 
 extension Notification.Name {
