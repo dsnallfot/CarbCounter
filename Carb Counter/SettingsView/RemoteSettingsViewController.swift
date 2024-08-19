@@ -138,9 +138,9 @@ class RemoteSettingsViewController: UITableViewController {
                 cell.textField.text = UserDefaultsRepository.twilioSIDString
             case "Twilio Secret":
                 cell.textField.text = UserDefaultsRepository.twilioSecretString
-            case "Twilio From #":
+            case NSLocalizedString("Twilio From #", comment: "Twilio From #"):
                 cell.textField.text = UserDefaultsRepository.twilioFromNumberString
-            case "Twilio To #":
+            case NSLocalizedString("Twilio To #", comment: "Twilio To #"):
                 cell.textField.text = UserDefaultsRepository.twilioToNumberString
             case NSLocalizedString("Entered By", comment: "Entered By"):
                 cell.textField.text = UserDefaultsRepository.caregiverName
@@ -186,9 +186,9 @@ extension RemoteSettingsViewController: UITextFieldDelegate {
             UserDefaultsRepository.twilioSIDString = textField.text ?? ""
         case "Twilio Secret":
             UserDefaultsRepository.twilioSecretString = textField.text ?? ""
-        case "Twilio From #":
+        case NSLocalizedString("Twilio From #", comment: "Twilio From #"):
             UserDefaultsRepository.twilioFromNumberString = textField.text ?? ""
-        case "Twilio To #":
+        case NSLocalizedString("Twilio To #", comment: "Twilio To #"):
             UserDefaultsRepository.twilioToNumberString = textField.text ?? ""
         case NSLocalizedString("Entered By", comment: "Entered By"):
             UserDefaultsRepository.caregiverName = textField.text ?? ""
