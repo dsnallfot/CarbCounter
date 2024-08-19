@@ -98,7 +98,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 13
+            return 14
         default:
             return 0
         }
@@ -190,6 +190,9 @@ class SettingsViewController: UITableViewController {
             case 12:
                 cell.textLabel?.text = NSLocalizedString("Skolmaten URL", comment: "School food URL label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.schoolFoodURL
+            case 13:
+                cell.textLabel?.text = NSLocalizedString("Exkludera sökord", comment: "Exkludera sökord")
+                cell.detailTextLabel?.text = UserDefaultsRepository.excludeWords
             default:
                 break
             }
@@ -313,6 +316,14 @@ class SettingsViewController: UITableViewController {
                 message = NSLocalizedString("Ange URL till Skolmaten.se RSS-flöde som du vill använda:", comment: "School food URL message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.schoolFoodURL ?? "") { newValue in
                     UserDefaultsRepository.schoolFoodURL = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                }
+                return
+            case 13:
+                title = NSLocalizedString("Exkludera sökord", comment: "Exkludera sökord")
+                message = NSLocalizedString("För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken", comment: "Exkludera sökord-text")
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.excludeWords ?? "") { newValue in
+                    UserDefaultsRepository.excludeWords = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return

@@ -78,6 +78,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var registeredProteinSoFar = Double(0.0)
     var registeredBolusSoFar = Double(0.0)
     var registeredCarbsSoFar = Double(0.0)
+    var hourChangeTimer: Timer?
     
     ///Meal monitoring
     var exportTimer: Timer?
@@ -245,6 +246,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         view.endEditing(true)
         
         updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
+        startHourChangeTimer() // Start timer while in this view to check if its a new hour and update CR/Startdoses if they are changed from the last hour to the new hour
         
         lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor // Fetch factor for calculating late breakfast CR
         
@@ -289,6 +291,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             scheduledCarbRatio *= lateBreakfastFactor // Reset scheduledCarbRatio when leaving view
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
+        hourChangeTimer?.invalidate()
+        hourChangeTimer = nil
     }
     
     ///function to initialize UI elements
@@ -319,6 +323,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             //print("Debug - Initialized saveFavoriteButton")
         }
     }
+
+    private func startHourChangeTimer() {
+        hourChangeTimer = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(checkForHourChange), userInfo: nil, repeats: true)
+    }
+
+    @objc private func checkForHourChange() {
+        let currentHour = Calendar.current.component(.hour, from: Date())
+        if lastCheckedHour != currentHour {
+            lastCheckedHour = currentHour
+            updatePlaceholderValuesForCurrentHour()
+            updateScheduledValuesUI()
+        }
+    }
+
+    private var lastCheckedHour: Int = Calendar.current.component(.hour, from: Date())
     
     private func formatNumberWithoutTrailingZero(_ number: Double) -> String {
         let formattedNumber = String(format: "%.1f", number)
