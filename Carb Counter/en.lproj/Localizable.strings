@@ -132,6 +132,12 @@
 "Populära" = "Popular";
 "Välj livsmedel" = "Select Food Items";
 "Klar" = "Done";
+"Kh %.0fg/st" = "Carbs %.0fg/pc";
+"Fett %.0fg/st" = "Fat %.0fg/pc";
+"Protein %.0fg/st" = "Protein %.0fg/pc";
+"Kh %.0fg/100g" = "Carbs %.0fg/100g";
+"Fett %.0fg/100g" = "Fat %.0fg/100g";
+"Protein %.0fg/100g" = "Protein %.0fg/100g";
 
 /* Meal View Controller */
 //Construct the combined string

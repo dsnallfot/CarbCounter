@@ -49,23 +49,23 @@ class FoodItemTableViewCell: UITableViewCell {
         
         if foodItem.perPiece {
             if foodItem.carbsPP > 0 {
-                details.append("Kh \(String(format: "%.0f", foodItem.carbsPP))g/st")
+                details.append(String(format: NSLocalizedString("Kh %.0fg/st", comment: "Carbohydrates per piece"), foodItem.carbsPP))
             }
             if foodItem.fatPP > 0 {
-                details.append("Fett \(String(format: "%.0f", foodItem.fatPP))g/st")
+                details.append(String(format: NSLocalizedString("Fett %.0fg/st", comment: "Fat per piece"), foodItem.fatPP))
             }
             if foodItem.proteinPP > 0 {
-                details.append("Protein \(String(format: "%.0f", foodItem.proteinPP))g/st")
+                details.append(String(format: NSLocalizedString("Protein %.0fg/st", comment: "Protein per piece"), foodItem.proteinPP))
             }
         } else {
             if foodItem.carbohydrates > 0 {
-                details.append("Kh \(String(format: "%.0f", foodItem.carbohydrates))g/100g")
+                details.append(String(format: NSLocalizedString("Kh %.0fg/100g", comment: "Carbohydrates per 100 grams"), foodItem.carbohydrates))
             }
             if foodItem.fat > 0 {
-                details.append("Fett \(String(format: "%.0f", foodItem.fat))g/100g")
+                details.append(String(format: NSLocalizedString("Fett %.0fg/100g", comment: "Fat per 100 grams"), foodItem.fat))
             }
             if foodItem.protein > 0 {
-                details.append("Protein \(String(format: "%.0f", foodItem.protein))g/100g")
+                details.append(String(format: NSLocalizedString("Protein %.0fg/100g", comment: "Protein per 100 grams"), foodItem.protein))
             }
         }
         
