@@ -76,7 +76,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
-    // ... (other methods)
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        // Called when the scene has moved from an inactive state to an active state.
+        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        if let backgroundEnterTime = backgroundEnterTime {
+            let timeInterval = Date().timeIntervalSince(backgroundEnterTime)
+            if timeInterval > 900 { // Check if app was in background for more than 15 minutes (900 seconds)
+                resetToHomeViewController()
+            }
+            self.backgroundEnterTime = nil
+        }
+    }
+    
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Called as the scene transitions from the background to the foreground.
@@ -101,5 +112,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         (UIApplication.shared.delegate as? CoreDataStack)?.saveContext()
     }
 
-    // ... (other methods)
+    private func resetToHomeViewController() {
+        if let tabBarController = window?.rootViewController as? UITabBarController {
+            
+            // Add a transition animation
+            let transition = CATransition()
+            transition.type = .fade
+            transition.duration = 0.5
+            window?.layer.add(transition, forKey: kCATransition)
+            
+            // Reset to the first tab (home)
+            tabBarController.selectedIndex = 0
+        }
+    }
 }

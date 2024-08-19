@@ -248,13 +248,52 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .default, reuseIdentifier: "cell")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        
         let foodItem = filteredFoodItems[indexPath.row]
+        
+        // Configure the cell with the food item's name and details
         cell.textLabel?.text = foodItem.name
+        cell.detailTextLabel?.text = generateDetailsText(for: foodItem)
+        
+        // Apply custom formatting
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        cell.detailTextLabel?.textColor = .gray
+        
         cell.accessoryType = selectedFoodItems.contains(foodItem) ? .checkmark : .none
         cell.backgroundColor = .clear
         cell.contentView.backgroundColor = .clear
+        
         return cell
+    }
+
+    private func generateDetailsText(for foodItem: FoodItem) -> String {
+        var details = [String]()
+        
+        if foodItem.perPiece {
+            if foodItem.carbsPP > 0 {
+                details.append(String(format: NSLocalizedString("Kh %.0fg/st", comment: "Carbohydrates per piece"), foodItem.carbsPP))
+            }
+            if foodItem.fatPP > 0 {
+                details.append(String(format: NSLocalizedString("Fett %.0fg/st", comment: "Fat per piece"), foodItem.fatPP))
+            }
+            if foodItem.proteinPP > 0 {
+                details.append(String(format: NSLocalizedString("Protein %.0fg/st", comment: "Protein per piece"), foodItem.proteinPP))
+            }
+        } else {
+            if foodItem.carbohydrates > 0 {
+                details.append(String(format: NSLocalizedString("Kh %.0fg/100g", comment: "Carbohydrates per 100 grams"), foodItem.carbohydrates))
+            }
+            if foodItem.fat > 0 {
+                details.append(String(format: NSLocalizedString("Fett %.0fg/100g", comment: "Fat per 100 grams"), foodItem.fat))
+            }
+            if foodItem.protein > 0 {
+                details.append(String(format: NSLocalizedString("Protein %.0fg/100g", comment: "Protein per 100 grams"), foodItem.protein))
+            }
+        }
+        
+        return details.joined(separator: " • ")
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
