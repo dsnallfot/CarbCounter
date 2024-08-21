@@ -2649,7 +2649,22 @@ extension ComposeMealViewController {
     
     @objc private func showBolusInfo() {
         let bolusRemains = String(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? NSLocalizedString("0 E", comment: "0 E"))
-        presentPopover(title: NSLocalizedString("Bolus Total", comment: "Bolus Total"), message: String(format: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %.2f E\n• Kvar att registrera: %@", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %.2f E\n• Kvar att registrera: %@"), totalBolusAmountLabel.text ?? "0 E", registeredBolusSoFar, bolusRemains), sourceView: totalBolusAmountLabel)
+        
+        // Format registeredBolusSoFar based on its value
+        let formattedRegisteredBolus: String
+        if registeredBolusSoFar.truncatingRemainder(dividingBy: 1) == 0 {
+            formattedRegisteredBolus = String(format: "%.0f", registeredBolusSoFar)
+        } else if registeredBolusSoFar * 10 == floor(registeredBolusSoFar * 10) {
+            formattedRegisteredBolus = String(format: "%.1f", registeredBolusSoFar)
+        } else {
+            formattedRegisteredBolus = String(format: "%.2f", registeredBolusSoFar)
+        }
+        
+        presentPopover(
+            title: NSLocalizedString("Bolus Total", comment: "Bolus Total"),
+            message: String(format: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@"), totalBolusAmountLabel.text ?? "0 E", formattedRegisteredBolus, bolusRemains),
+            sourceView: totalBolusAmountLabel
+        )
     }
     
     @objc private func showCarbsInfo() {

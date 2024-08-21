@@ -84,7 +84,7 @@
 "\n• %@ E insulin" = "\n• %@ U insulin";
 "0 E" = "0 U";
 "Bolus Total" = "Total Bolus";
-"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %.2f E\n• Kvar att registrera: %@" = "The estimated amount of insulin required to cover the carbohydrates in the meal.\n\nCurrent status for this meal:\n• Totalt required amount: %@\n• Registered so far: %.2f U\n• Remains to register: %@";
+"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "The estimated amount of insulin required to cover the carbohydrates in the meal.\n\nCurrent status for this meal:\n• Totalt required amount: %@\n• Registered so far: %@ U\n• Remains to register: %@";
 "Kolhydrater Totalt" = "Total Carbohydrates";
 "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@" = "The estimated sum of all carbohydrates in the meal.\n\nIf this sum of carbs in the meal is less than the current scheduled start dose carb amount, the calculated start dose will be adjusted accordingly.\n\nCurrent status for this meal:\n• Totalt amount carbs: %@\n• Registered so far: %.0f g\n• Remains to register: %@ g";
 "Fett Totalt" = "Total Fat";

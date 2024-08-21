@@ -84,7 +84,7 @@
 "\n• %@ E insulin" = "\n• %@ E insulin";
 "0 E" = "0 E";
 "Bolus Total" = "Bolus Total";
-"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %.2f E\n• Kvar att registrera: %@" = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %.2f E\n• Kvar att registrera: %@";
+"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@";
 "Kolhydrater Totalt" = "Kolhydrater Totalt";
 "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@" = "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@";
 "Fett Totalt" = "Fett Totalt";
