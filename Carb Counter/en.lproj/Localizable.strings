@@ -33,6 +33,7 @@
 "Rensa" = "Clear";
 "0 g" = "0 g";
 "0 E" = "0 U"; 
+" E" = " U";
 "+ RESTERANDE" = "+ REMAINING";
 "BOLUS" = "BOLUS";
 "0.00 E" = "0.00 U";
@@ -81,14 +82,15 @@
 "\n• %@ g fett" = "\n• %@ g fat";
 "\n• %@ g protein" = "\n• %@ g protein";
 "\n• %@ E insulin" = "\n• %@ U insulin";
+"0 E" = "0 U";
 "Bolus Total" = "Total Bolus";
-"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden." = "The estimated amount of insulin required to cover the carbohydrates in the meal.";
+"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %.2f E\n• Kvar att registrera: %@" = "The estimated amount of insulin required to cover the carbohydrates in the meal.\n\nCurrent status for this meal:\n• Totalt required amount: %@\n• Registered so far: %.2f U\n• Remains to register: %@";
 "Kolhydrater Totalt" = "Total Carbohydrates";
-"Den beräknade summan av alla kolhydrater i måltiden." = "The estimated sum of all carbohydrates in the meal.\n\nIf this sum of carbs in the meal is less than the current scheduled start dose carb amount, the calculated start dose will be adjusted accordingly.";
+"Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@" = "The estimated sum of all carbohydrates in the meal.\n\nIf this sum of carbs in the meal is less than the current scheduled start dose carb amount, the calculated start dose will be adjusted accordingly.\n\nCurrent status for this meal:\n• Totalt amount carbs: %@\n• Registered so far: %.0f g\n• Remains to register: %@ g";
 "Fett Totalt" = "Total Fat";
-"Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "The estimated sum of all fat in the meal. \n\nFat also requires insulin, but with a few hours delay.";
+"Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "The estimated sum of all fat in the meal. \n\nFat also requires insulin, but with a few hours delay.\n\nCurrent status for this meal:\n• Totalt amount fat: %@\n• Registered so far: %.0f g\n• Remains to register: %@ g";
 "Protein Totalt" = "Total Protein";
-"Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning." = "The estimated sum of all protein in the meal. \n\nProtein also requires insulin, but with a few hours delay.";
+"Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "The estimated sum of all protein in the meal. \n\nProtein also requires insulin, but with a few hours delay.\n\nCurrent status for this meal:\n• Totalt amount protein: %@\n• Registered so far: %.0f g\n• Remains to register: %@ g";
 "Insulinkvot" = "Insulin Ratio";
 "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater." = "Also called Carb Ratio (CR)\n\nThe value corresponds to how much carbohydrates 1 U insulin covers.\n\n Example:\nCR 25 means that 2 U insulin is needed for 50 g carbohydrates.";
 "Senaste override" = "Last override";
