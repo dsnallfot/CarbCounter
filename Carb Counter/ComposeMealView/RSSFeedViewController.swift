@@ -176,8 +176,11 @@ class RSSFeedViewController: UIViewController {
 
         // If no excluded words were found, split components by spaces
         if !containsExcludedWord {
-            parsedComponents = parsedComponents.flatMap { $0.components(separatedBy: " ") }
+            parsedComponents = parsedComponents.flatMap { $0.components(separatedBy: .whitespacesAndNewlines) }
         }
+
+        // Additional step: Remove any empty components that may have been created
+        parsedComponents = parsedComponents.filter { !$0.isEmpty }
         
         return parsedComponents
     }

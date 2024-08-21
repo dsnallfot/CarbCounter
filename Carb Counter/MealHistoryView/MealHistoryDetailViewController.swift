@@ -139,21 +139,21 @@ class MealHistoryDetailViewController: UIViewController {
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
-                String(format: "%.1f", mealHistory.totalNetCarbs)
+                String(format: "%.0f", mealHistory.totalNetCarbs)
             summaryText += String(format: NSLocalizedString("Kolhydrater %@ g", comment: "Carbs amount format"), carbs)
         }
         if mealHistory.totalNetFat > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
             let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetFat) :
-                String(format: "%.1f", mealHistory.totalNetFat)
+                String(format: "%.0f", mealHistory.totalNetFat)
             summaryText += String(format: NSLocalizedString("Fett %@ g", comment: "Fat amount format"), fat)
         }
         if mealHistory.totalNetProtein > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
             let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetProtein) :
-                String(format: "%.1f", mealHistory.totalNetProtein)
+                String(format: "%.0f", mealHistory.totalNetProtein)
             summaryText += String(format: NSLocalizedString("Protein %@ g", comment: "Protein amount format"), protein)
         }
         

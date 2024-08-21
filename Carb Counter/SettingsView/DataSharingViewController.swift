@@ -679,20 +679,16 @@ class DataSharingViewController: UIViewController {
         userDefaultsData["twilioSIDString"] = UserDefaultsRepository.twilioSIDString
         userDefaultsData["twilioSecretString"] = UserDefaultsRepository.twilioSecretString
         userDefaultsData["twilioFromNumberString"] = UserDefaultsRepository.twilioFromNumberString
-        userDefaultsData["twilioToNumberString"] = UserDefaultsRepository.twilioToNumberString
-        userDefaultsData["caregiverName"] = UserDefaultsRepository.caregiverName
+        //userDefaultsData["twilioToNumberString"] = UserDefaultsRepository.twilioToNumberString
         userDefaultsData["remoteSecretCode"] = UserDefaultsRepository.remoteSecretCode
-        userDefaultsData["allowShortcuts"] = UserDefaultsRepository.allowShortcuts.description
-        userDefaultsData["allowDataClearing"] = UserDefaultsRepository.allowDataClearing.description
 
         userDefaultsData["useStartDosePercentage"] = UserDefaultsRepository.useStartDosePercentage.description
         userDefaultsData["startDoseFactor"] = String(UserDefaultsRepository.startDoseFactor)
         userDefaultsData["maxCarbs"] = String(UserDefaultsRepository.maxCarbs)
         userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
         userDefaultsData["lateBreakfastFactor"] = String(UserDefaultsRepository.lateBreakfastFactor)
-        userDefaultsData["lateBreakfast"] = UserDefaultsRepository.lateBreakfast.description
-
         userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
+
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
@@ -738,16 +734,10 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.twilioSecretString = values[1]
             case "twilioFromNumberString":
                 UserDefaultsRepository.twilioFromNumberString = values[1]
-            case "twilioToNumberString":
-                UserDefaultsRepository.twilioToNumberString = values[1]
-            case "caregiverName":
-                UserDefaultsRepository.caregiverName = values[1]
+            //case "twilioToNumberString":
+            //    UserDefaultsRepository.twilioToNumberString = values[1]
             case "remoteSecretCode":
                 UserDefaultsRepository.remoteSecretCode = values[1]
-            case "allowShortcuts":
-                UserDefaultsRepository.allowShortcuts = Bool(values[1]) ?? false
-            case "allowDataClearing":
-                UserDefaultsRepository.allowDataClearing = Bool(values[1]) ?? false
             case "useStartDosePercentage":
                 UserDefaultsRepository.useStartDosePercentage = Bool(values[1]) ?? false
             case "startDoseFactor":
@@ -758,8 +748,6 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.maxBolus = Double(values[1]) ?? 1.0
             case "lateBreakfastFactor":
                 UserDefaultsRepository.lateBreakfastFactor = Double(values[1]) ?? 1.0
-            case "lateBreakfast":
-                UserDefaultsRepository.lateBreakfast = Bool(values[1]) ?? false
             case "lateBreakfastOverrideName":
                 UserDefaultsRepository.lateBreakfastOverrideName = values[1]
             case "useMmol":

@@ -1638,7 +1638,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
 
     @objc private func startAmountContainerTapped() {
-        if mealDate == nil {
+        //if mealDate == nil {
+        if registeredCarbsSoFar == 0 && registeredFatSoFar == 0 && registeredProteinSoFar == 0 {
             mealDate = Date()
         }
         hideAllDeleteButtons()
@@ -2647,23 +2648,44 @@ extension ComposeMealViewController {
     }
     
     @objc private func showBolusInfo() {
-        presentPopover(title: NSLocalizedString("Bolus Total", comment: "Bolus Total"), message: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden."), sourceView: totalBolusAmountLabel)
+        let bolusRemains = String(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? NSLocalizedString("0 E", comment: "0 E"))
+        
+        // Format registeredBolusSoFar based on its value
+        let formattedRegisteredBolus: String
+        if registeredBolusSoFar.truncatingRemainder(dividingBy: 1) == 0 {
+            formattedRegisteredBolus = String(format: "%.0f", registeredBolusSoFar)
+        } else if registeredBolusSoFar * 10 == floor(registeredBolusSoFar * 10) {
+            formattedRegisteredBolus = String(format: "%.1f", registeredBolusSoFar)
+        } else {
+            formattedRegisteredBolus = String(format: "%.2f", registeredBolusSoFar)
+        }
+        
+        presentPopover(
+            title: NSLocalizedString("Bolus Total", comment: "Bolus Total"),
+            message: String(format: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@"), totalBolusAmountLabel.text ?? "0 E", formattedRegisteredBolus, bolusRemains),
+            sourceView: totalBolusAmountLabel
+        )
     }
     
     @objc private func showCarbsInfo() {
-        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.", comment: "Den beräknade summan av alla kolhydrater i måltiden."), sourceView: totalNetCarbsLabel)
+        let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g"))
+        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", registeredCarbsSoFar, carbsRemains), sourceView: totalNetCarbsLabel)
     }
     
     @objc private func showFatInfo() {
-        presentPopover(title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"), message: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning."), sourceView: totalNetFatLabel)
+        let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let fatRemaining = String(format: "%.0f", fatTotalValue - registeredFatSoFar)
+        presentPopover(title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining), sourceView: totalNetFatLabel)
     }
     
     @objc private func showProteinInfo() {
-        presentPopover(title: NSLocalizedString("Protein Totalt", comment: "Protein Totalt"), message: NSLocalizedString("Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning."), sourceView: totalNetProteinLabel)
+        let proteinTotalValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let proteinRemaining = String(format: "%.0f", proteinTotalValue - registeredProteinSoFar)
+        presentPopover(title: NSLocalizedString("Protein Totalt", comment: "Protein Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetProteinLabel.text ?? "0 g", registeredProteinSoFar, proteinRemaining), sourceView: totalNetProteinLabel)
     }
     
     @objc private func showCRInfo() {
-        presentPopover(title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"), message: NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater."), sourceView: nowCRLabel)
+        presentPopover(title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"), message: String(format:NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.")), sourceView: nowCRLabel)
     }
     
     @objc private func lateBreakfastLabelTapped() {

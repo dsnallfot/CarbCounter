@@ -128,19 +128,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs
-            detailText += String(format: NSLocalizedString("Kh %.1f g", comment: "Carbs amount format"), carbs)
+            detailText += String(format: NSLocalizedString("Kh %.0f g", comment: "Carbs amount format"), carbs)
         }
         
         if mealHistory.totalNetFat > 0 {
             if !detailText.isEmpty { detailText += " • " }
             let fat = mealHistory.totalNetFat
-            detailText += String(format: NSLocalizedString("Fett %.1f g", comment: "Fat amount format"), fat)
+            detailText += String(format: NSLocalizedString("Fett %.0f g", comment: "Fat amount format"), fat)
         }
         
         if mealHistory.totalNetProtein > 0 {
             if !detailText.isEmpty { detailText += " • " }
             let protein = mealHistory.totalNetProtein
-            detailText += String(format: NSLocalizedString("Protein %.1f g", comment: "Protein amount format"), protein)
+            detailText += String(format: NSLocalizedString("Protein %.0f g", comment: "Protein amount format"), protein)
         }
         
         // Collect food item names
