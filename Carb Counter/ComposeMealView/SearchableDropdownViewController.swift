@@ -271,25 +271,43 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     private func generateDetailsText(for foodItem: FoodItem) -> String {
         var details = [String]()
         
+        // Start the first detail with "ⓘ" if the food item has notes
+        var firstDetail: String? = nil
+        if let notes = foodItem.notes, !notes.isEmpty {
+            firstDetail = "ⓘ"
+        }
+        
         if foodItem.perPiece {
             if foodItem.carbsPP > 0 {
-                details.append(String(format: NSLocalizedString("Kh %.0fg/st", comment: "Carbohydrates per piece"), foodItem.carbsPP))
+                let carbsDetail = String(format: NSLocalizedString("Kh %.0fg/st", comment: "Carbohydrates per piece"), foodItem.carbsPP)
+                details.append(firstDetail != nil ? "\(firstDetail!) \(carbsDetail)" : carbsDetail)
+                firstDetail = nil
             }
             if foodItem.fatPP > 0 {
-                details.append(String(format: NSLocalizedString("Fett %.0fg/st", comment: "Fat per piece"), foodItem.fatPP))
+                let fatDetail = String(format: NSLocalizedString("Fett %.0fg/st", comment: "Fat per piece"), foodItem.fatPP)
+                details.append(firstDetail != nil ? "\(firstDetail!) \(fatDetail)" : fatDetail)
+                firstDetail = nil
             }
             if foodItem.proteinPP > 0 {
-                details.append(String(format: NSLocalizedString("Protein %.0fg/st", comment: "Protein per piece"), foodItem.proteinPP))
+                let proteinDetail = String(format: NSLocalizedString("Protein %.0fg/st", comment: "Protein per piece"), foodItem.proteinPP)
+                details.append(firstDetail != nil ? "\(firstDetail!) \(proteinDetail)" : proteinDetail)
+                firstDetail = nil
             }
         } else {
             if foodItem.carbohydrates > 0 {
-                details.append(String(format: NSLocalizedString("Kh %.0fg/100g", comment: "Carbohydrates per 100 grams"), foodItem.carbohydrates))
+                let carbsDetail = String(format: NSLocalizedString("Kh %.0fg/100g", comment: "Carbohydrates per 100 grams"), foodItem.carbohydrates)
+                details.append(firstDetail != nil ? "\(firstDetail!) \(carbsDetail)" : carbsDetail)
+                firstDetail = nil
             }
             if foodItem.fat > 0 {
-                details.append(String(format: NSLocalizedString("Fett %.0fg/100g", comment: "Fat per 100 grams"), foodItem.fat))
+                let fatDetail = String(format: NSLocalizedString("Fett %.0fg/100g", comment: "Fat per 100 grams"), foodItem.fat)
+                details.append(firstDetail != nil ? "\(firstDetail!) \(fatDetail)" : fatDetail)
+                firstDetail = nil
             }
             if foodItem.protein > 0 {
-                details.append(String(format: NSLocalizedString("Protein %.0fg/100g", comment: "Protein per 100 grams"), foodItem.protein))
+                let proteinDetail = String(format: NSLocalizedString("Protein %.0fg/100g", comment: "Protein per 100 grams"), foodItem.protein)
+                details.append(firstDetail != nil ? "\(firstDetail!) \(proteinDetail)" : proteinDetail)
+                firstDetail = nil
             }
         }
         
