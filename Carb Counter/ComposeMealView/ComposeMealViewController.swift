@@ -1218,6 +1218,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
         mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
+        mealHistory.totalNetBolus = registeredBolusSoFar
         
         for row in foodItemRows {
             if let foodItem = row.selectedFoodItem {

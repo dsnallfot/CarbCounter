@@ -252,7 +252,7 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         // Offset the date by "value: -X" days for testing
         if let offsetDate = calendar.date(byAdding: .day, value: -0, to: date), calendar.isDateInToday(offsetDate) {
             label.textColor = .orange
-            dateText = "Dagens lunch • \(dateText)" // Add the prefix if the date is today
+            dateText = "Dagens lunch | \(dateText)" // Add the prefix if the date is today
         } else {
             label.textColor = .gray // Default color for other days
         }

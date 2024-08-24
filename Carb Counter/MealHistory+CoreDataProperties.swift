@@ -20,6 +20,7 @@ extension MealHistory {
     @NSManaged public var totalNetCarbs: Double
     @NSManaged public var totalNetFat: Double
     @NSManaged public var totalNetProtein: Double
+    @NSManaged public var totalNetBolus: Double
     @NSManaged public var foodEntries: NSSet?
 }
 

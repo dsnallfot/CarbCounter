@@ -57,6 +57,7 @@
     <entity name="MealHistory" representedClassName="MealHistory" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="mealDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="totalNetBolus" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="totalNetCarbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="totalNetFat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="totalNetProtein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

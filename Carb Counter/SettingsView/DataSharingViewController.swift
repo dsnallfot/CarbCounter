@@ -321,7 +321,7 @@ class DataSharingViewController: UIViewController {
     }
     
     private func createCSV(from mealHistories: [MealHistory]) -> String {
-        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;foodEntries\n"
+        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;totalNetBolus;foodEntries\n"
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Use the same format for export and import
@@ -332,6 +332,7 @@ class DataSharingViewController: UIViewController {
             let totalNetCarbs = mealHistory.totalNetCarbs
             let totalNetFat = mealHistory.totalNetFat
             let totalNetProtein = mealHistory.totalNetProtein
+            let totalNetBolus = mealHistory.totalNetBolus
             
             let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
                 [
@@ -347,7 +348,7 @@ class DataSharingViewController: UIViewController {
                 ].map { "\($0)" }.joined(separator: ",")
             }.joined(separator: "|") ?? ""
             
-            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(foodEntries)\n"
+            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(foodEntries)\n"
         }
         
         return csvString
@@ -566,7 +567,7 @@ class DataSharingViewController: UIViewController {
     // Parse Meal History CSV
     public func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 6 else {
+        guard columns.count == 7 else {
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
@@ -589,8 +590,9 @@ class DataSharingViewController: UIViewController {
                         mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
                         mealHistory.totalNetFat = Double(values[3]) ?? 0.0
                         mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
+                        mealHistory.totalNetBolus = Double(values[5]) ?? 0.0
                         
-                        let foodEntriesValues = values[5].components(separatedBy: "|")
+                        let foodEntriesValues = values[6].components(separatedBy: "|")
                         for foodEntryValue in foodEntriesValues {
                             let foodEntryParts = foodEntryValue.components(separatedBy: ",")
                             if foodEntryParts.count == 9 {

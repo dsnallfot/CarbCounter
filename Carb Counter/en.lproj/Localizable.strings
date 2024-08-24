@@ -326,9 +326,10 @@
 /* Meal History */
 "Måltidshistorik" = "Meal History";
 "Historik" = "History";
-"Kh %.1f g" = "Carbs %.1f g";
-"Fett %.1f g" = "Fat %.1f g";
-"Protein %.1f g" = "Protein %.1f g";
+"KH %.0f g" = "Carbs %.0f g";
+"Fett %.0f g" = "Fat %.0f g";
+"Protein %.0f g" = "Prot. %.0f g";
+"Bolus %.2f E" = "Bolus %.2f U";
 "Radera måltidshistorik" = "Delete meal history";
 "Bekräfta att du vill radera denna måltid från historiken?" = "Confirm that you want to delete this meal from history?";
 "Avbryt" = "Cancel";
@@ -337,9 +338,10 @@
 "Failed to delete meal history: %@" = "Failed to delete meal history: %@";
 "Servera samma måltid igen" = "Serve the same meal again";
 "Måltid %@" = "Meal %@";
-"Kolhydrater %@ g" = "Carbs %@ g";
+"KH %@ g" = "Carbs %@ g";
 "Fett %@ g" = "Fat %@ g";
 "Protein %@ g" = "Protein %@ g";
+"Bolus %@ E" = "Bolus %@ U";
 "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Ate %@ pcs  [Served %@ pcs - Left %@ pcs]";
 "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Ate %@ g  [Served %@ g - Left %@ g]";
 "Åt upp %@ st" = "Ate %@ pcs";
