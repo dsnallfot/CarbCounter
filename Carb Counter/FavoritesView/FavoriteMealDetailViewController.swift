@@ -115,7 +115,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         
         delegate?.favoriteMealDetailViewControllerDidSave(self)
         
-        navigationController?.popViewController(animated: true)
+        dismiss(animated: true, completion: nil)
+        
+        //navigationController?.popViewController(animated: true)
     }
     
     private func addDoneButtonOnKeyboard() {
