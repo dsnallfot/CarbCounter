@@ -608,7 +608,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
     internal func addMealHistory(_ mealHistory: MealHistory) {
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
-            if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
+            var foodItem: FoodItem?
+            
+            // First, try to match by entryId
+            if let entryId = foodEntry.entryId {
+                foodItem = foodItems.first(where: { $0.id == entryId })
+                if foodItem == nil {
+                    print("Warning: Food item with id \(entryId) not found in foodItems. Attempting to match by name.")
+                }
+            }
+            
+            // If no match by entryId, fall back to matching by entryName
+            if foodItem == nil, let entryName = foodEntry.entryName {
+                foodItem = foodItems.first(where: { $0.name == entryName })
+            }
+            
+            // Proceed if a matching foodItem is found
+            if let foodItem = foodItem {
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -628,9 +644,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self?.updateHeadlineVisibility()
                 }
                 rowView.calculateNutrients()
-                
             } else {
-                print("Food item not found for name: \(foodEntry.entryName ?? "")")
+                print("Food item not found for entryId: \(foodEntry.entryId?.uuidString ?? "nil") or name: \(foodEntry.entryName ?? "nil")")
             }
         }
         
@@ -1231,7 +1246,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         for row in foodItemRows {
             if let foodItem = row.selectedFoodItem {
                 let foodEntry = FoodItemEntry(context: context)
-                foodEntry.entryId = UUID()
+                foodEntry.entryId = foodItem.id
                 foodEntry.entryName = foodItem.name
                 foodEntry.entryCarbohydrates = foodItem.carbohydrates
                 foodEntry.entryFat = foodItem.fat
