@@ -582,7 +582,7 @@ class DataSharingViewController: UIViewController {
             
             for row in rows[1...] {
                 let values = row.components(separatedBy: ";")
-                if values.count == 6, !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
+                if values.count == 7, !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                     if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
                         let mealHistory = MealHistory(context: context)
                         mealHistory.id = id
@@ -614,7 +614,7 @@ class DataSharingViewController: UIViewController {
             }
             try context.save()
         } catch {
-            print("Import Failed: Error fetching or saving data: (error)")
+            print("Import Failed: Error fetching or saving data: \(error)")
         }
     }
     
