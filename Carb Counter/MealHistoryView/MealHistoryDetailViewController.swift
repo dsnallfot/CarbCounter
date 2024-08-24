@@ -89,7 +89,7 @@ class MealHistoryDetailViewController: UIViewController {
         let summaryLabel = UILabel()
         summaryLabel.translatesAutoresizingMaskIntoConstraints = false
         summaryLabel.numberOfLines = 0
-        summaryLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        summaryLabel.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         summaryLabel.text = formatSummary(mealHistory)
         view.addSubview(summaryLabel)
         
@@ -140,7 +140,7 @@ class MealHistoryDetailViewController: UIViewController {
             let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
                 String(format: "%.0f", mealHistory.totalNetCarbs) :
                 String(format: "%.0f", mealHistory.totalNetCarbs)
-            summaryText += String(format: NSLocalizedString("Kolhydrater %@ g", comment: "Carbs amount format"), carbs)
+            summaryText += String(format: NSLocalizedString("KH %@ g", comment: "Carbs amount format"), carbs)
         }
         if mealHistory.totalNetFat > 0 {
             if !summaryText.isEmpty { summaryText += " • " }
@@ -156,8 +156,15 @@ class MealHistoryDetailViewController: UIViewController {
                 String(format: "%.0f", mealHistory.totalNetProtein)
             summaryText += String(format: NSLocalizedString("Protein %@ g", comment: "Protein amount format"), protein)
         }
+        if mealHistory.totalNetBolus > 0 {
+            if !summaryText.isEmpty { summaryText += " • " }
+            let bolus = mealHistory.totalNetBolus.truncatingRemainder(dividingBy: 1) == 0 ?
+                String(format: "%.2f", mealHistory.totalNetBolus) :
+                String(format: "%.2f", mealHistory.totalNetBolus)
+            summaryText += String(format: NSLocalizedString("Bolus %@ E", comment: "Bolus amount format"), bolus)
+        }
         
-        return "★ \(summaryText)"
+        return "\(summaryText)"
     }
     
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {

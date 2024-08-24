@@ -548,35 +548,43 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
             
             for item in items {
-                if let name = item["name"] as? String,
-                   let portionServedString = item["portionServed"] as? String,
-                   let portionServed = Double(portionServedString) {
-                    if let foodItem = foodItems.first(where: { $0.name == name }) {
-                        let rowView = FoodItemRowView()
-                        rowView.foodItems = foodItems
-                        rowView.delegate = self
-                        rowView.translatesAutoresizingMaskIntoConstraints = false
-                        stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
-                        foodItemRows.append(rowView)
-                        rowView.setSelectedFoodItem(foodItem)
-                        rowView.portionServedTextField.text = formattedValue(portionServed)
-                        rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-                        
-                        rowView.onDelete = { [weak self] in
-                            self?.removeFoodItemRow(rowView)
-                        }
-                        
-                        rowView.onValueChange = { [weak self] in
-                            self?.updateTotalNutrients()
-                            self?.updateHeadlineVisibility()
-                        }
-                        rowView.calculateNutrients()
-                        
-                    } else {
-                        print("Error: Food item with name \(name) not found in foodItems.")
+                var foodItem: FoodItem?
+                
+                if let idString = item["id"] as? String, let id = UUID(uuidString: idString) {
+                    // Try to find FoodItem by id
+                    foodItem = foodItems.first(where: { $0.id == id })
+                    if foodItem == nil {
+                        print("Warning: Food item with id \(id) not found in foodItems. Attempting to match by name.")
                     }
+                }
+                
+                if foodItem == nil, let name = item["name"] as? String {
+                    // Fallback to finding FoodItem by name if id is not available or not found
+                    foodItem = foodItems.first(where: { $0.name == name })
+                }
+                
+                if let foodItem = foodItem, let portionServedString = item["portionServed"] as? String, let portionServed = Double(portionServedString) {
+                    let rowView = FoodItemRowView()
+                    rowView.foodItems = foodItems
+                    rowView.delegate = self
+                    rowView.translatesAutoresizingMaskIntoConstraints = false
+                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
+                    foodItemRows.append(rowView)
+                    rowView.setSelectedFoodItem(foodItem)
+                    rowView.portionServedTextField.text = formattedValue(portionServed)
+                    rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+                    
+                    rowView.onDelete = { [weak self] in
+                        self?.removeFoodItemRow(rowView)
+                    }
+                    
+                    rowView.onValueChange = { [weak self] in
+                        self?.updateTotalNutrients()
+                        self?.updateHeadlineVisibility()
+                    }
+                    rowView.calculateNutrients()
                 } else {
-                    print("Error: Invalid item format. Name or Portion Served missing.")
+                    print("Error: Food item with \(item["id"] != nil ? "id \(item["id"]!)" : "name \(item["name"] ?? "unknown")") not found in foodItems, or portion served data is missing.")
                 }
             }
         } catch {
@@ -600,7 +608,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
     internal func addMealHistory(_ mealHistory: MealHistory) {
         for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
-            if let foodItem = foodItems.first(where: { $0.name == foodEntry.entryName }) {
+            var foodItem: FoodItem?
+            
+            // First, try to match by entryId
+            if let entryId = foodEntry.entryId {
+                foodItem = foodItems.first(where: { $0.id == entryId })
+                if foodItem == nil {
+                    print("Warning: Food item with id \(entryId) not found in foodItems. Attempting to match by name.")
+                }
+            }
+            
+            // If no match by entryId, fall back to matching by entryName
+            if foodItem == nil, let entryName = foodEntry.entryName {
+                foodItem = foodItems.first(where: { $0.name == entryName })
+            }
+            
+            // Proceed if a matching foodItem is found
+            if let foodItem = foodItem {
                 let rowView = FoodItemRowView()
                 rowView.foodItems = foodItems
                 rowView.delegate = self
@@ -620,9 +644,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self?.updateHeadlineVisibility()
                 }
                 rowView.calculateNutrients()
-                
             } else {
-                print("Food item not found for name: \(foodEntry.entryName ?? "")")
+                print("Food item not found for entryId: \(foodEntry.entryId?.uuidString ?? "nil") or name: \(foodEntry.entryName ?? "nil")")
             }
         }
         
@@ -1218,11 +1241,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
         mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
+        mealHistory.totalNetBolus = registeredBolusSoFar
         
         for row in foodItemRows {
             if let foodItem = row.selectedFoodItem {
                 let foodEntry = FoodItemEntry(context: context)
-                foodEntry.entryId = UUID()
+                foodEntry.entryId = foodItem.id
                 foodEntry.entryName = foodItem.name
                 foodEntry.entryCarbohydrates = foodItem.carbohydrates
                 foodEntry.entryFat = foodItem.fat
@@ -1309,6 +1333,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             for row in self.foodItemRows {
                 if let foodItem = row.selectedFoodItem {
                     let item: [String: Any] = [
+                        "id": foodItem.id?.uuidString ?? "",  // Save the UUID string of the FoodItem
                         "name": foodItem.name ?? "",
                         "portionServed": row.portionServedTextField.text ?? "",
                         "perPiece": foodItem.perPiece

@@ -128,28 +128,34 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs
-            detailText += String(format: NSLocalizedString("Kh %.0f g", comment: "Carbs amount format"), carbs)
+            detailText += String(format: NSLocalizedString("KH %.0f g", comment: "Carbs amount format"), carbs)
         }
         
         if mealHistory.totalNetFat > 0 {
-            if !detailText.isEmpty { detailText += " • " }
+            if !detailText.isEmpty { detailText += " | " }
             let fat = mealHistory.totalNetFat
             detailText += String(format: NSLocalizedString("Fett %.0f g", comment: "Fat amount format"), fat)
         }
         
         if mealHistory.totalNetProtein > 0 {
-            if !detailText.isEmpty { detailText += " • " }
+            if !detailText.isEmpty { detailText += " | " }
             let protein = mealHistory.totalNetProtein
             detailText += String(format: NSLocalizedString("Protein %.0f g", comment: "Protein amount format"), protein)
         }
         
+        if mealHistory.totalNetBolus > 0 {
+            if !detailText.isEmpty { detailText += " | " }
+            let bolus = mealHistory.totalNetBolus
+            detailText += String(format: NSLocalizedString("Bolus %.2f E", comment: "Bolus amount format"), bolus)
+        }
+        
         // Collect food item names
         let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName } ?? []
-        let foodItemNamesStr = foodItemNames.joined(separator: " • ")
+        let foodItemNamesStr = foodItemNames.joined(separator: " | ")
         
         // Update the cell text
         cell.textLabel?.text = foodItemNamesStr
-        cell.detailTextLabel?.text = "[\(mealDateStr)]  \(detailText)"
+        cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
         cell.detailTextLabel?.textColor = .gray
         
         return cell

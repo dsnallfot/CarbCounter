@@ -87,6 +87,6 @@ class FoodItemTableViewCell: UITableViewCell {
             }
         }
         
-        detailsLabel.text = details.joined(separator: " • ")
+        detailsLabel.text = details.joined(separator: " | ")
     }
 }

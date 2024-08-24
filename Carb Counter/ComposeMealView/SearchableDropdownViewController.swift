@@ -311,7 +311,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
             }
         }
         
-        return details.joined(separator: " • ")
+        return details.joined(separator: " | ")
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

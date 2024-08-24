@@ -113,9 +113,21 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         
         CoreDataStack.shared.saveContext()
         
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = self.dataSharingVC else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
+        
+        // Call the desired function
+        Task {
+            print("Favorite meals export triggered")
+            await dataSharingVC.exportFavoriteMealsToCSV()
+        }
+        
         delegate?.favoriteMealDetailViewControllerDidSave(self)
         
-        navigationController?.popViewController(animated: true)
+        dismiss(animated: true, completion: nil)
     }
     
     private func addDoneButtonOnKeyboard() {
