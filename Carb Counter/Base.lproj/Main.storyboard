@@ -479,7 +479,7 @@
         <scene sceneID="0Ey-gn-Il5">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="PIw-SW-IeR" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Hem" image="house" catalog="system" selectedImage="house" id="Xuu-Go-pzw"/>
+                    <tabBarItem key="tabBarItem" title="Hem" image="house" catalog="system" selectedImage="house.fill" id="Xuu-Go-pzw"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="LVP-dw-4Tk">
                         <rect key="frame" x="0.0" y="20" width="375" height="44"/>
@@ -508,7 +508,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nvq-Wb-yth" userLabel="Carbs">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="nGc-RD-cUd">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0YQ-7b-NEo">
@@ -697,7 +697,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AUX-cq-9ke" userLabel="Notes">
                                         <rect key="frame" x="0.0" y="92.5" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ABR-oy-nFE">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="39"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eXo-9i-ROd">
@@ -744,7 +744,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xi8-BJ-sG2" userLabel="Tid">
                                         <rect key="frame" x="0.0" y="139" width="343" height="38.5"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="4yn-a5-OOJ">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="phY-ht-nVS">
@@ -860,7 +860,7 @@
                                     <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="opf-Hp-yIb" userLabel="Bolus">
                                         <rect key="frame" x="0.0" y="231.5" width="343" height="38.5"/>
                                         <view key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="VBV-QD-xlj">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="38.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="39"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NWG-6j-sB3">
@@ -998,7 +998,8 @@
     <resources>
         <image name="fork.knife" catalog="system" width="94" height="128"/>
         <image name="house" catalog="system" width="128" height="104"/>
-        <image name="list.bullet" catalog="system" width="98" height="128"/>
+        <image name="house.fill" catalog="system" width="128" height="104"/>
+        <image name="list.bullet" catalog="system" width="128" height="87"/>
         <image name="plus.app.fill" catalog="system" width="128" height="114"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
