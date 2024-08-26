@@ -146,7 +146,12 @@ class RSSFeedViewController: UIViewController {
 
     private func parseCourseDescription(_ description: String) -> [String] {
         let excludedWords = self.excludedWords  // Dynamically fetch excluded words
-        let words = description.components(separatedBy: .whitespacesAndNewlines)
+
+        // Remove commas from the description
+        let cleanedDescription = description.replacingOccurrences(of: ",", with: "")
+        
+        // Split the cleaned description into words
+        let words = cleanedDescription.components(separatedBy: .whitespacesAndNewlines)
         
         var parsedComponents: [String] = []
         var currentComponent = ""
