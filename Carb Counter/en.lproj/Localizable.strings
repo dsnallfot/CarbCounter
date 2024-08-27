@@ -461,3 +461,7 @@
 "Protein (g)" = "Protein (g)";
 "Bolus (E)" = "Bolus (E)";
 "Startdos" = "Start Dose";
+
+/* Quick actions */
+"SCAN_BARCODE_KEY" = "Scan barcode";
+"ADD_FOOD_KEY" = "Add food item";

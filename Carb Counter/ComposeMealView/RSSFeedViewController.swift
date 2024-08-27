@@ -7,7 +7,7 @@ class RSSFeedViewController: UIViewController {
     var tableView: UITableView!
     var rssItems: [RSSItem] = []
     var foodItems: [FoodItem] = []
-    //let excludedWords = ["med", "samt", "olika", "och pålägg", "kalla", "serveras", "het", "i", "pålägg", "kokosmjölk", "grönpeppar"]
+    private let hardcodedExcludedWords = ["och", "med", ".", "serveras", "olika", "samt", "i"]
     var offset = 0
     
     override func viewDidLoad() {
@@ -141,12 +141,23 @@ class RSSFeedViewController: UIViewController {
         }
     }
     private var excludedWords: [String] {
-        return UserDefaultsRepository.excludeWords?.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() } ?? []
+        // Fetch user-defined excluded words from UserDefaults
+        let userDefinedWords = UserDefaultsRepository.excludeWords?.components(separatedBy: ",").map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        } ?? []
+
+        // Combine both hardcoded and user-defined words, ensuring no duplicates
+        return Array(Set(hardcodedExcludedWords.map { $0.lowercased() } + userDefinedWords))
     }
 
     private func parseCourseDescription(_ description: String) -> [String] {
         let excludedWords = self.excludedWords  // Dynamically fetch excluded words
-        let words = description.components(separatedBy: .whitespacesAndNewlines)
+
+        // Remove commas from the description
+        let cleanedDescription = description.replacingOccurrences(of: ",", with: " .")
+        
+        // Split the cleaned description into words
+        let words = cleanedDescription.components(separatedBy: .whitespacesAndNewlines)
         
         var parsedComponents: [String] = []
         var currentComponent = ""
@@ -280,6 +291,7 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         let courses = weekdayItems.flatMap { $0.courses }
         let selectedCourse = courses[indexPath.row]
         let parsedWords = parseCourseDescription(selectedCourse)
+        print("Food items for matching: \(parsedWords)")
         
         var matchedFoodItems: Set<FoodItem> = []  // Using a set to avoid duplicates
         
