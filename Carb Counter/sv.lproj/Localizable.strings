@@ -461,3 +461,7 @@
 "Protein (g)" = "Protein (g)";
 "Bolus (E)" = "Bolus (E)";
 "Startdos" = "Startdos";
+
+/* Quick actions */
+"SCAN_BARCODE_KEY" = "Scanna streckkod";
+"ADD_FOOD_KEY" = "Lägg till livsmedel";
