@@ -2693,8 +2693,11 @@ extension ComposeMealViewController {
     }
     
     @objc private func showCarbsInfo() {
-        let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g"))
-        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", registeredCarbsSoFar, carbsRemains), sourceView: totalNetCarbsLabel)
+        let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g")).replacingOccurrences(of: "g", with: " g")
+        // Use "0" if totalRegisteredLabel.text is empty or nil
+        let carbsRegistered = (totalRegisteredLabel.text?.isEmpty ?? true) ? "0" : totalRegisteredLabel.text!
+            
+        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
     }
     
     @objc private func showFatInfo() {
