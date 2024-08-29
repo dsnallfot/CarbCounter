@@ -222,8 +222,8 @@ class OngoingMealViewController: UIViewController {
         if foodItemRows.isEmpty {
             stackView.addArrangedSubview(noDataLabel)
         } else {
-            addTotalCarbsRow()
-            addTotalRegisteredCarbsRow()
+            addCarbsRow()
+            addBolusRow()
             addSpacingView()
             addHeaderRow()
             for row in foodItemRows {
@@ -396,33 +396,8 @@ class OngoingMealViewController: UIViewController {
         stackView.addArrangedSubview(rowView)
     }
     
-    private func addTotalRegisteredCarbsRow() {
+    private func addCarbsRow() {
         guard let latestregisteredCarbsSoFar = foodItemRows.last?.registeredCarbsSoFar else { return }
-        
-        let rowView = UIStackView()
-        rowView.axis = .horizontal
-        rowView.spacing = 8
-        rowView.translatesAutoresizingMaskIntoConstraints = false
-        
-        let titleLabel = UILabel()
-        titleLabel.text = NSLocalizedString("REGISTRERADE KOLHYDRATER:", comment: "REGISTRERADE KOLHYDRATER:")
-        titleLabel.textColor = .label
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        
-        let totalCarbsLabel = UILabel()
-        totalCarbsLabel.text = String(format: "%.0f", latestregisteredCarbsSoFar) + " g"
-        totalCarbsLabel.textColor = .label
-        totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-        totalCarbsLabel.textAlignment = .right
-        totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        
-        rowView.addArrangedSubview(titleLabel)
-        rowView.addArrangedSubview(totalCarbsLabel)
-        stackView.addArrangedSubview(rowView)
-    }
-    
-    private func addTotalCarbsRow() {
         let totalCarbs = foodItemRows.reduce(0) { total, row in
             let netCarbs = calculateNetCarbs(for: row.foodItemID, portionServed: row.portionServed, notEaten: row.notEaten)
             return total + netCarbs
@@ -434,20 +409,85 @@ class OngoingMealViewController: UIViewController {
         rowView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
-        titleLabel.text = NSLocalizedString("TOT KOLHYDRATER I MÅLTIDEN:", comment: "TOT KOLHYDRATER I MÅLTIDEN:")
+        titleLabel.text = NSLocalizedString("Reg KH", comment: "Reg KH")
         titleLabel.textColor = .systemOrange
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        titleLabel.font = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: .subheadline).pointSize, weight: .semibold)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
-        let totalCarbsLabel = UILabel()
-        totalCarbsLabel.text = String(format: "%.0f", totalCarbs) + " g"
-        totalCarbsLabel.textColor = .systemOrange
-        totalCarbsLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-        totalCarbsLabel.textAlignment = .right
-        totalCarbsLabel.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        let detailLabel = UILabel()
+        let localizedCarbsDetailFormat = NSLocalizedString("(av totalt %.0f g i måltiden)", comment: "Detail label text showing the total carbs in the meal")
+        detailLabel.text = String(format: localizedCarbsDetailFormat, totalCarbs)
+        detailLabel.textColor = .gray
+        detailLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        detailLabel.textAlignment = .left
+        detailLabel.widthAnchor.constraint(equalToConstant: 185).isActive = true
+        
+        let regCarbsLabel = UILabel()
+        let localizedCarbsText = NSLocalizedString("%.0f g", comment: "Registered carbs label text")
+        regCarbsLabel.text = String(format: localizedCarbsText, latestregisteredCarbsSoFar)
+        regCarbsLabel.textColor = .systemOrange
+        regCarbsLabel.font = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: .subheadline).pointSize, weight: .semibold)
+        regCarbsLabel.textAlignment = .right
+        regCarbsLabel.widthAnchor.constraint(equalToConstant: 55).isActive = true
         
         rowView.addArrangedSubview(titleLabel)
-        rowView.addArrangedSubview(totalCarbsLabel)
+        rowView.addArrangedSubview(detailLabel)
+        rowView.addArrangedSubview(regCarbsLabel)
+        stackView.addArrangedSubview(rowView)
+    }
+    
+    private func roundToNearest(_ value: Double, increment: Double) -> Double {
+        return (value / increment).rounded() * increment
+    }
+    
+    private func addBolusRow() {
+        guard let latestRegisteredBolusSoFar = foodItemRows.last?.registeredBolusSoFar else { return }
+        
+        // Calculate total carbs
+        let totalCarbs = foodItemRows.reduce(0) { total, row in
+            let netCarbs = calculateNetCarbs(for: row.foodItemID, portionServed: row.portionServed, notEaten: row.notEaten)
+            return total + netCarbs
+        }
+        
+        // Retrieve scheduled carb ratio from UserDefaults
+        let scheduledCarbRatio = UserDefaultsRepository.scheduledCarbRatio
+        
+        // Calculate total bolus (total carbs / scheduled carb ratio)
+        var totalBolus = totalCarbs / scheduledCarbRatio
+        
+        // Round totalBolus to nearest 0.05 increment
+        totalBolus = roundToNearest(totalBolus, increment: 0.05)
+        
+        let rowView = UIStackView()
+        rowView.axis = .horizontal
+        rowView.spacing = 8
+        rowView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let titleLabel = UILabel()
+        titleLabel.text = NSLocalizedString("Reg Bolus", comment: "Reg Bolus")
+        titleLabel.textColor = .systemBlue
+        titleLabel.font = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: .subheadline).pointSize, weight: .semibold)
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        
+        let detailLabel = UILabel()
+        let localizedBolusDetailFormat = NSLocalizedString("(av tot behov %.2f E)", comment: "Detail label text showing the total bolus needed")
+        detailLabel.text = String(format: localizedBolusDetailFormat, totalBolus)
+        detailLabel.textColor = .gray
+        detailLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        detailLabel.textAlignment = .left
+        detailLabel.widthAnchor.constraint(equalToConstant: 185).isActive = true
+        
+        let regBolusLabel = UILabel()
+        let localizedBolusText = NSLocalizedString("%.2f E", comment: "Registered bolus label text")
+        regBolusLabel.text = String(format: localizedBolusText, latestRegisteredBolusSoFar)
+        regBolusLabel.textColor = .systemBlue
+        regBolusLabel.font = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: .subheadline).pointSize, weight: .semibold)
+        regBolusLabel.textAlignment = .right
+        regBolusLabel.widthAnchor.constraint(equalToConstant: 55).isActive = true
+        
+        rowView.addArrangedSubview(titleLabel)
+        rowView.addArrangedSubview(detailLabel)
+        rowView.addArrangedSubview(regBolusLabel)
         stackView.addArrangedSubview(rowView)
     }
     
