@@ -326,14 +326,15 @@
 "Mängd: %@ st" = "Mängd: %@ st";
 "Mängd: %@ g" = "Mängd: %@ g";
 "Avbryt" = "Avbryt";
+"Är du säker på att du vill radera alla favoriter?" = "Är du säker på att du vill radera alla favoriter?";
 
 /* Meal History */
 "Måltidshistorik" = "Måltidshistorik";
 "Historik" = "Historik";
-"KH %.0f g" = "Kolh. %.0f g";
-"Fett %.0f g" = "Fett %.0f g";
-"Protein %.0f g" = "Prot. %.0f g";
-"Bolus %.2f E" = "Bolus %.2f E";
+"KH %.0f g" = "Kh. %.0fg";
+"Fett %.0f g" = "Fett %.0fg";
+"Protein %.0f g" = "Prot %.0fg";
+"Bolus %.2f E" = "Bolus %.2fE";
 "Radera måltidshistorik" = "Radera måltidshistorik";
 "Bekräfta att du vill radera denna måltid från historiken?" = "Bekräfta att du vill radera denna måltid från historiken?";
 "Avbryt" = "Avbryt";
@@ -342,10 +343,10 @@
 "Failed to delete meal history: %@" = "Failed to delete meal history: %@";
 "Servera samma måltid igen" = "Servera samma måltid igen";
 "Måltid %@" = "Måltid %@";
-"KH %@ g" = "Kolh. %@ g";
-"Fett %@ g" = "Fett %@ g";
-"Protein %@ g" = "Protein %@ g";
-"Bolus %@ E" = "Bolus %@ E";
+"KH %@ g" = "Kolh. %@g";
+"Fett %@ g" = "Fett %@g";
+"Protein %@ g" = "Protein %@g";
+"Bolus %@ E" = "Bolus %@E";
 "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]";
 "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]";
 "Åt upp %@ st" = "Åt upp %@ st";

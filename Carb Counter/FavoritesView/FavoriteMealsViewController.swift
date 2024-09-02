@@ -5,6 +5,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     var tableView: UITableView!
     var searchBar: UISearchBar!
+    var clearButton: UIBarButtonItem!
     var favoriteMeals: [FavoriteMeals] = []
     var filteredFavoriteMeals: [FavoriteMeals] = []
     
@@ -41,6 +42,13 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         backButton.title = NSLocalizedString("Tillbaka", comment: "Back")
         navigationItem.backBarButtonItem = backButton
         
+        // Setup Clear button
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
+        
+        // Listen for changes to allowDataClearing setting
+        NotificationCenter.default.addObserver(self, selector: #selector(updateButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+        
         setupSearchBar()
         setupTableView()
         setupNavigationBar()
@@ -49,9 +57,22 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         dataSharingVC = DataSharingViewController()
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func updateButtonVisibility() {
+        if UserDefaultsRepository.allowDataClearing {
+            navigationItem.rightBarButtonItems = [clearButton]
+        } else {
+            navigationItem.rightBarButtonItems = nil // Remove the clear button if not allowed
+        }
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchFavoriteMeals()
+        updateButtonVisibility()
     }
     
     func favoriteMealDetailViewControllerDidSave(_ controller: FavoriteMealDetailViewController) {
@@ -106,6 +127,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
             navigationController?.navigationBar.barTintColor = .clear
             navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.label]
         }
+        
+        updateButtonVisibility()
     }
     
     private func fetchFavoriteMeals() {
@@ -264,5 +287,36 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         filteredFavoriteMeals = favoriteMeals
         tableView.reloadData()
         searchBar.resignFirstResponder()
+    }
+    
+    @objc private func clearButtonTapped() {
+        let alertController = UIAlertController(
+            title: NSLocalizedString("Rensa", comment: "Rensa"),
+            message: NSLocalizedString("Är du säker på att du vill radera alla favoriter?", comment: "Är du säker på att du vill radera alla favoriter?"),
+            preferredStyle: .actionSheet
+        )
+
+        let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { [weak self] _ in
+            // Clear all favorites
+            CoreDataHelper.shared.clearAllFavorites()
+            
+            // Refresh the table view
+            self?.fetchFavoriteMeals()
+
+            // Export favorite meals to CSV
+            guard let dataSharingVC = self?.dataSharingVC else { return }
+            print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
+            
+            Task {
+                await dataSharingVC.exportFavoriteMealsToCSV()
+            }
+        }
+
+        let noAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
+
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+
+        present(alertController, animated: true, completion: nil)
     }
 }

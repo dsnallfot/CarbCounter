@@ -174,4 +174,16 @@ class CoreDataHelper {
             print("Failed to clear start doses: \(error)")
         }
     }
+    
+    // Clear all favorite meals entries
+    func clearAllFavorites() {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FavoriteMeals.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("Failed to clear favorites: \(error)")
+        }
+    }
 }
