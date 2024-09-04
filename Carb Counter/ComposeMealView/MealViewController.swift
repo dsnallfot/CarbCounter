@@ -63,7 +63,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    
         view.backgroundColor = .systemBackground
         
         // Create the gradient view
@@ -116,6 +116,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                     self?.updateNavigationBarButton()
                 }
             }
+        
+        // Register observers for shortcut callback notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(handleShortcutSuccess), name: NSNotification.Name("ShortcutSuccess"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleShortcutError), name: NSNotification.Name("ShortcutError"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleShortcutCancel), name: NSNotification.Name("ShortcutCancel"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleShortcutPasscode), name: NSNotification.Name("ShortcutPasscode"), object: nil)
+
         
         // Disable autocomplete and spell checking
         carbsEntryField.autocorrectionType = .no
@@ -217,8 +224,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         bolusCalcUnitText.textColor = plusSignColor
 
     }
-    
-    
+ 
     func setupDatePickerLimits() {
             let now = Date()
             let oneDayInterval: TimeInterval = 23 * 60 * 60 + 59 * 60
@@ -1140,8 +1146,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         let bolus = extractValue(from: combinedString, prefix: NSLocalizedString("Insulin: ", comment: "Insulin: "), suffix: NSLocalizedString("E", comment: "E"))
 
         if method == "iOS Shortcuts" {
-            // Call the delegate method immediately for iOS Shortcuts
-            delegate?.didUpdateMealValues(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: self.startDose)
+            // Don't call the delegate here; wait until the success callback is triggered
             handleShortcutsRequest(combinedString: combinedString, carbs: carbs, fats: fats, proteins: proteins, bolus: bolus, startDose: self.startDose)
         } else {
             handleTwilioRequest(combinedString: combinedString, carbs: carbs, fats: fats, proteins: proteins, bolus: bolus, startDose: self.startDose)
@@ -1154,12 +1159,84 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             print("Failed to encode URL string")
             return
         }
-        let urlString = "shortcuts://run-shortcut?name=CarbCounter&input=text&text=\(encodedString)"
+        
+        // Define your custom callback URLs
+        let successCallback = "carbcounter://completed" // Add completed for future use when the shortcut has run, but for instance the passcode was wrong. NOTE: not to mixed up with carbcounter://success that should be returned by the carbcounter shortcut to proceed with the meal registration)
+        let errorCallback = "carbcounter://error"
+        let cancelCallback = "carbcounter://cancel"
+        
+        // Encode the callback URLs
+        guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("Failed to encode callback URLs")
+            return
+        }
+        
+        // Construct the final URL with x-callback-url
+        let urlString = "shortcuts://x-callback-url/run-shortcut?name=CarbCounter&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)"
+        
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
-        print("Dismissing MealViewController")
-        self.dismiss(animated: true, completion: nil)
+        
+        print("Waiting for shortcut completion...")
+    }
+    
+    @objc private func handleShortcutSuccess() {
+        print("Shortcut succeeded, updating meal values...")
+        
+        // Play a success sound
+        AudioServicesPlaySystemSound(SystemSoundID(1322))
+        
+        // Only now call the delegate method after successful completion
+        delegate?.didUpdateMealValues(khValue: carbsEntryField.text ?? "", fatValue: fatEntryField.text ?? "", proteinValue: proteinEntryField.text ?? "", bolusValue: bolusEntryField.text ?? "", startDose: self.startDose)
+        
+        // Show success alert with "Lyckades"
+        showAlert(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Måltidsregistreringen skickades", comment: "Måltidsregistreringen skickades"), completion: {
+            self.dismiss(animated: true, completion: nil)  // Dismiss the view controller after showing the alert
+        })
+    }
+
+    @objc private func handleShortcutError() {
+        print("Shortcut failed, showing error alert...")
+        
+        // Play a error sound
+        AudioServicesPlaySystemSound(SystemSoundID(1053))
+        
+        showAlert(title: NSLocalizedString("Misslyckades", comment: "Misslyckades"), message: NSLocalizedString("Ett fel uppstod när genvägen skulle köras. Du kan försöka igen.", comment: "Ett fel uppstod när genvägen skulle köras. Du kan försöka igen."), completion: {
+            self.handleAlertDismissal()  // Re-enable the send button after error handling
+        })
+    }
+
+    @objc private func handleShortcutCancel() {
+        print("Shortcut was cancelled, showing cancellation alert...")
+        
+        // Play a error sound
+        AudioServicesPlaySystemSound(SystemSoundID(1053))
+        
+        showAlert(title: NSLocalizedString("Avbröts", comment: "Avbröts"), message: NSLocalizedString("Genvägen avbröts innan den körts färdigt. Du kan försöka igen.", comment: "Genvägen avbröts innan den körts färdigt. Du kan försöka igen.") , completion: {
+            self.handleAlertDismissal()  // Re-enable the send button after cancellation
+        })
+    }
+    
+    @objc private func handleShortcutPasscode() {
+        print("Shortcut was cancelled due to wrong passcode, showing passcode alert...")
+        
+        // Play a error sound
+        AudioServicesPlaySystemSound(SystemSoundID(1053))
+        
+        showAlert(title: NSLocalizedString("Fel lösenkod", comment: "Fel lösenkod"), message: NSLocalizedString("Genvägen avbröts pga fel lösenkod. Du kan försöka igen.", comment: "Genvägen avbröts pga fel lösenkod. Du kan försöka igen.") , completion: {
+            self.handleAlertDismissal()  // Re-enable the send button after cancellation
+        })
+    }
+
+    private func showAlert(title: String, message: String, completion: @escaping () -> Void) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+            completion()  // Call the completion handler after dismissing the alert
+        }))
+        present(alert, animated: true, completion: nil)
     }
 
     // Handle the Twilio SMS request case
@@ -1168,7 +1245,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             switch result {
             case .success:
                 AudioServicesPlaySystemSound(SystemSoundID(1322))
-                let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("Meddelandet levererades", comment: "Meddelandet levererades"), preferredStyle: .alert)
+                let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("Måltidsregistreringen skickades", comment: "Måltidsregistreringen skickades"), preferredStyle: .alert)
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: { _ in
                     self.delegate?.didUpdateMealValues(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: self.startDose)
                                     print("Dismissing MealViewController after successful SMS API call")

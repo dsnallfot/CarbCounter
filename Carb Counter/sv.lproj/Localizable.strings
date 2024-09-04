@@ -167,6 +167,13 @@
 "Nästa" = "Nästa";
 "Klar" = "Klar";
 
+"Misslyckades" = "Misslyckades";
+"Ett fel uppstod när genvägen skulle köras. Du kan försöka igen." = "Ett fel uppstod när genvägen skulle köras. Du kan försöka igen.";
+"Avbröts" = "Avbröts";
+"Genvägen avbröts innan den körts färdigt. Du kan försöka igen." = "Genvägen avbröts innan den körts färdigt. Du kan försöka igen.";
+"Fel lösenkod" = "Fel lösenkod";
+"Genvägen avbröts pga fel lösenkod. Du kan försöka igen." = "Genvägen avbröts pga fel lösenkod. Du kan försöka igen.";
+
 //popup
 "Blodsocker" = "Blodsocker";
 "Min / Max BG" = "Min / Max BG";
@@ -197,7 +204,7 @@
 "Fett är inmatat i fel format" = "Fett är inmatat i fel format";
 "Protein är inmatat i fel format" = "Protein är inmatat i fel format";
 "Lyckades!" = "Lyckades!";
-"Meddelandet levererades" = "Meddelandet levererades";
+"Måltidsregistreringen skickades" = "Måltidsregistreringen skickades";
 "OK" = "OK";
 "Bekräfta måltid" = "Bekräfta måltid";
 "Vill du registrera denna måltid?" = "Vill du registrera denna måltid?";

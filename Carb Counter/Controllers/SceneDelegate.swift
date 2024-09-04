@@ -45,6 +45,38 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             shouldOpenAddFood = true
         }
     }
+    
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let urlContext = URLContexts.first else { return }
+        
+        let url = urlContext.url
+        print("Received URL in SceneDelegate: \(url.absoluteString)")
+        
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let host = components.host else {
+            print("Invalid URL or missing host")
+            return
+        }
+
+        print("URL Host: \(host)")
+
+        switch host {
+        case "success":
+            NotificationCenter.default.post(name: NSNotification.Name("ShortcutSuccess"), object: nil)
+            print("Posted success notification")
+        case "error":
+            NotificationCenter.default.post(name: NSNotification.Name("ShortcutError"), object: nil)
+            print("Posted error notification")
+        case "cancel":
+            NotificationCenter.default.post(name: NSNotification.Name("ShortcutCancel"), object: nil)
+            print("Posted cancel notification")
+        case "passcode":
+            NotificationCenter.default.post(name: NSNotification.Name("ShortcutPasscode"), object: nil)
+            print("Posted passcode notification")
+        default:
+            print("Unhandled URL scheme host: \(host)")
+        }
+    }
 
     private func showMainViewController() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)

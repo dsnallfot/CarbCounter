@@ -167,6 +167,13 @@
 "Nästa" = "Next";
 "Klar" = "Done";
 
+"Misslyckades" = "Error";
+"Ett fel uppstod när genvägen skulle köras. Du kan försöka igen." = "An error prevented the shortcut from running. You may try again.";
+"Avbröts" = "Cancelled";
+"Genvägen avbröts innan den körts färdigt. Du kan försöka igen." = "The shortcut was cancelled before it was completed. You may try again.";
+"Fel lösenkod" = "Wrong passcode";
+"Genvägen avbröts pga fel lösenkod. Du kan försöka igen." = "The shortcut was cancelled due to wrong passcode. You may try again.";
+
 //popup
 "Blodsocker" = "Blood Glucose";
 "Min / Max BG" = "Min / Max BG";
@@ -197,7 +204,7 @@
 "Fett är inmatat i fel format" = "Fat is entered in the wrong format";
 "Protein är inmatat i fel format" = "Protein is entered in the wrong format";
 "Lyckades!" = "Success!";
-"Meddelandet levererades" = "The message was delivered";
+"Måltidsregistreringen skickades" = "The meal registration was sent";
 "OK" = "OK";
 "Bekräfta måltid" = "Confirm meal";
 "Vill du registrera denna måltid?" = "Do you want to register this meal?";
