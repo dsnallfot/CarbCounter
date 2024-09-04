@@ -17,8 +17,12 @@
 "PORTION" = "PORTION";
 "LÄMNAT" = "LÄMNAT";
 "KH" = "KH";
-"REGISTRERADE KOLHYDRATER:" = "REGISTRERADE KOLHYDRATER:";
-"TOT KOLHYDRATER I MÅLTIDEN:" = "TOT KOLHYDRATER I MÅLTIDEN:";
+"Reg KH" = "Reg KH";
+"Reg Bolus" = "Reg Bolus";
+"(av tot behov %.2f E)" = "(av tot behov %.2f E)";
+"%.2f E" = "%.2f E";
+"(av totalt %.0f g i måltiden)" = "(av totalt %.0f g i måltiden)";
+"%.0f g" = "%.0f g";
 
 /* Compose meal view controller */
 "Lägg till eller ersätt?" = "Lägg till eller ersätt?";
@@ -86,7 +90,7 @@
 "Bolus Total" = "Bolus Total";
 "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@";
 "Kolhydrater Totalt" = "Kolhydrater Totalt";
-"Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@" = "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@";
+"Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@" = "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@";
 "Fett Totalt" = "Fett Totalt";
 "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
 "Protein Totalt" = "Protein Totalt";
@@ -163,6 +167,13 @@
 "Nästa" = "Nästa";
 "Klar" = "Klar";
 
+"Misslyckades" = "Misslyckades";
+"Ett fel uppstod när genvägen skulle köras. Du kan försöka igen." = "Ett fel uppstod när genvägen skulle köras. Du kan försöka igen.";
+"Avbröts" = "Avbröts";
+"Genvägen avbröts innan den körts färdigt. Du kan försöka igen." = "Genvägen avbröts innan den körts färdigt. Du kan försöka igen.";
+"Fel lösenkod" = "Fel lösenkod";
+"Genvägen avbröts pga fel lösenkod. Du kan försöka igen." = "Genvägen avbröts pga fel lösenkod. Du kan försöka igen.";
+
 //popup
 "Blodsocker" = "Blodsocker";
 "Min / Max BG" = "Min / Max BG";
@@ -193,7 +204,7 @@
 "Fett är inmatat i fel format" = "Fett är inmatat i fel format";
 "Protein är inmatat i fel format" = "Protein är inmatat i fel format";
 "Lyckades!" = "Lyckades!";
-"Meddelandet levererades" = "Meddelandet levererades";
+"Måltidsregistreringen skickades" = "Måltidsregistreringen skickades";
 "OK" = "OK";
 "Bekräfta måltid" = "Bekräfta måltid";
 "Vill du registrera denna måltid?" = "Vill du registrera denna måltid?";
@@ -322,14 +333,15 @@
 "Mängd: %@ st" = "Mängd: %@ st";
 "Mängd: %@ g" = "Mängd: %@ g";
 "Avbryt" = "Avbryt";
+"Är du säker på att du vill radera alla favoriter?" = "Är du säker på att du vill radera alla favoriter?";
 
 /* Meal History */
 "Måltidshistorik" = "Måltidshistorik";
 "Historik" = "Historik";
-"KH %.0f g" = "Kolh. %.0f g";
-"Fett %.0f g" = "Fett %.0f g";
-"Protein %.0f g" = "Prot. %.0f g";
-"Bolus %.2f E" = "Bolus %.2f E";
+"KH %.0f g" = "Kh. %.0fg";
+"Fett %.0f g" = "Fett %.0fg";
+"Protein %.0f g" = "Prot %.0fg";
+"Bolus %.2f E" = "Bolus %.2fE";
 "Radera måltidshistorik" = "Radera måltidshistorik";
 "Bekräfta att du vill radera denna måltid från historiken?" = "Bekräfta att du vill radera denna måltid från historiken?";
 "Avbryt" = "Avbryt";
@@ -338,10 +350,10 @@
 "Failed to delete meal history: %@" = "Failed to delete meal history: %@";
 "Servera samma måltid igen" = "Servera samma måltid igen";
 "Måltid %@" = "Måltid %@";
-"KH %@ g" = "Kolh. %@ g";
-"Fett %@ g" = "Fett %@ g";
-"Protein %@ g" = "Protein %@ g";
-"Bolus %@ E" = "Bolus %@ E";
+"KH %@ g" = "Kolh. %@g";
+"Fett %@ g" = "Fett %@g";
+"Protein %@ g" = "Protein %@g";
+"Bolus %@ E" = "Bolus %@E";
 "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]";
 "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]";
 "Åt upp %@ st" = "Åt upp %@ st";
