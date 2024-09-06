@@ -701,6 +701,7 @@ class DataSharingViewController: UIViewController {
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
         userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
+        userDefaultsData["topUps"] = UserDefaultsRepository.topUps ?? ""
 
         let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
 
@@ -772,6 +773,8 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.schoolFoodURL = values[1]
             case "excludeWords":
                 UserDefaultsRepository.excludeWords = values[1]
+            case "topUps":
+                UserDefaultsRepository.topUps = values[1]
             default:
                 break
             }

@@ -386,6 +386,7 @@
 "Dabas API Secret" = "Dabas API Secret";
 "Skolmaten URL" = "Skolmaten.se RSS";
 "Exkludera sökord" = "Excluded search terms";
+"Lägg till top-ups" = "Add carb top-ups";
 "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan)." = "Select whether you want to use scheduled start doses (set under ‘Start Dose Schedule’ above) or if you want to use ‘Start Dose Fraction’ (according to the setting below).";
 "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio." = "Enable 'Allow Remote Control' if you want to send meal commands via iOS shortcuts or Twilio SMS directly from Carb Counter to iAPS/Trio on your own or another iPhone.\n\nIf ‘Allow Remote Control’ is off, you must manually register carbohydrates, fat, protein, and insulin in iAPS/Trio.";
 "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy" = "Enable this setting if/when you want to be able to quickly delete all data related to food items, carb ratios, and start doses.\n\nWhen the setting is enabled, ‘Clear’ buttons will appear in the navigation bar in the respective view.";
@@ -400,6 +401,7 @@
 "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "If you want to use the Swedish food database Dabas, enter your API Secret.\n\nIf you do not enter an API secret, OpenFoodFacts is used by default for EAN scanning and online food searches";
 "Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Enter the URL to your schools rss-feed from the swedish 'skolmaten.se' Rplatform.\n\nWhen you enter and URL a new button will show up on the 'Meal' screen where you can select from the skolmaten.se menu:";
 "För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken" = "To improve matching between skolmaten.se lunch menus, and the local food item database, you may choose to exclude some search terms. Separate the temrs with commas.";
+"Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med kommatecken" = "Add foods that are often used to top up with carbohydrates when fewer carbohydrates have been consumed than insulin has been dosed for. Separate the foods with commas.";
 "Spara" = "Save";
 "Avbryt" = "Cancel";
 

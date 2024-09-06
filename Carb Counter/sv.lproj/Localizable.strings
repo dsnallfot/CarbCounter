@@ -386,6 +386,7 @@
 "Dabas API Secret" = "Dabas API Secret";
 "Skolmaten URL" = "Skolmaten URL";
 "Exkludera sökord" = "Exkludera sökord";
+"Lägg till top-ups" = "Lägg till top-ups";
 "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan)." = "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).";
 "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio." = "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio.";
 "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy" = "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy";
@@ -400,6 +401,7 @@
 "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online";
 "Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Ange URL till din skolas rss-flöde på 'skolmaten.se'\n\nNär du nger en URL så dyker en ny knapp '+ Skolmaten' upp i Måltidsvyn där du kan välja måltider från lunchmenyn:";
 "För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken" = "För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken";
+"Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med kommatecken" = "Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med kommatecken";
 "Spara" = "Spara";
 "Avbryt" = "Avbryt";
 

@@ -253,6 +253,14 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "excludeWords")
         }
     }
+    static var topUps: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "topUps")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "topUps")
+        }
+    }
 }
 
 extension Notification.Name {

@@ -98,7 +98,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return 4
         case 1:
-            return 14
+            return 15
         default:
             return 0
         }
@@ -193,6 +193,9 @@ class SettingsViewController: UITableViewController {
             case 13:
                 cell.textLabel?.text = NSLocalizedString("Exkludera sökord", comment: "Exkludera sökord")
                 cell.detailTextLabel?.text = UserDefaultsRepository.excludeWords
+            case 14:
+                cell.textLabel?.text = NSLocalizedString("Lägg till top-ups", comment: "Lägg till top-ups")
+                cell.detailTextLabel?.text = UserDefaultsRepository.topUps
             default:
                 break
             }
@@ -324,6 +327,14 @@ class SettingsViewController: UITableViewController {
                 message = NSLocalizedString("För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken", comment: "Exkludera sökord-text")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.excludeWords ?? "") { newValue in
                     UserDefaultsRepository.excludeWords = newValue
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                }
+                return
+            case 14:
+                title = NSLocalizedString("Lägg till top-ups", comment: "Lägg till top-ups")
+                message = NSLocalizedString("Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med kommatecken", comment: "Lägg till top-ups-text")
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.topUps ?? "") { newValue in
+                    UserDefaultsRepository.topUps = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return

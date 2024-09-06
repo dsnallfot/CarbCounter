@@ -119,47 +119,64 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "MealHistoryCell")
         cell.backgroundColor = .clear // Set cell background to clear
         let mealHistory = filteredMealHistories[indexPath.row]
-        
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMM HH:mm"
         let mealDateStr = dateFormatter.string(from: mealHistory.mealDate ?? Date())
-        
+
         var detailText = ""
-        
+
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs
             detailText += String(format: NSLocalizedString("KH %.0f g", comment: "Carbs amount format"), carbs)
         }
-        
+
         if mealHistory.totalNetFat > 0 {
             if !detailText.isEmpty { detailText += " | " }
             let fat = mealHistory.totalNetFat
             detailText += String(format: NSLocalizedString("Fett %.0f g", comment: "Fat amount format"), fat)
         }
-        
+
         if mealHistory.totalNetProtein > 0 {
             if !detailText.isEmpty { detailText += " | " }
             let protein = mealHistory.totalNetProtein
             detailText += String(format: NSLocalizedString("Protein %.0f g", comment: "Protein amount format"), protein)
         }
-        
+
         if mealHistory.totalNetBolus > 0 {
             if !detailText.isEmpty { detailText += " | " }
             let bolus = mealHistory.totalNetBolus
             detailText += String(format: NSLocalizedString("Bolus %.2f E", comment: "Bolus amount format"), bolus)
         }
-        
+
         // Collect food item names
         let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName } ?? []
         let foodItemNamesStr = foodItemNames.joined(separator: " | ")
-        
-        // Update the cell text
-        cell.textLabel?.text = foodItemNamesStr
-        cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
+
+        // Fetch user-defined special items from UserDefaults
+        let userTopUps = UserDefaults.standard.string(forKey: "topUps") ?? ""
+        let specialItems = userTopUps.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+        // Check if any of the food items contain a carbs top-up item
+        let containsSpecialItem = foodItemNames.contains { item in
+            specialItems.contains { specialItem in
+                item.localizedCaseInsensitiveContains(specialItem)
+            }
+        }
+
+        // Update the cell text and add the emoji if the condition is met
+        if containsSpecialItem {
+            cell.detailTextLabel?.text = "\(mealDateStr) |🔝\(detailText)"
+        } else {
+            cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
+        }
         cell.detailTextLabel?.textColor = .gray
-        
+        cell.textLabel?.text = foodItemNamesStr
+
         return cell
     }
+
+
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
