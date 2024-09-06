@@ -19,7 +19,7 @@
 "KH" = "CARBS";
 "Reg KH" = "Reg Carbs";
 "Reg Bolus" = "Reg Bolus";
-"(av tot behov %.2f E)" = "(of meal tot req %.2f U)";
+"(av totalt behov %.2f E)" = "(of meal tot req %.2f U)";
 "%.2f E" = "%.2f U";
 "(av totalt %.0f g i måltiden)" = "(of meal tot carbs %.0f g)";
 "%.0f g" = "%.0f g";

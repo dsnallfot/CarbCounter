@@ -19,7 +19,7 @@
 "KH" = "KH";
 "Reg KH" = "Reg KH";
 "Reg Bolus" = "Reg Bolus";
-"(av tot behov %.2f E)" = "(av tot behov %.2f E)";
+"(av totalt behov %.2f E)" = "(av totalt behov %.2f E)";
 "%.2f E" = "%.2f E";
 "(av totalt %.0f g i måltiden)" = "(av totalt %.0f g i måltiden)";
 "%.0f g" = "%.0f g";

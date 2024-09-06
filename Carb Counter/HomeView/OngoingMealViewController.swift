@@ -470,7 +470,7 @@ class OngoingMealViewController: UIViewController {
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let detailLabel = UILabel()
-        let localizedBolusDetailFormat = NSLocalizedString("(av tot behov %.2f E)", comment: "Detail label text showing the total bolus needed")
+        let localizedBolusDetailFormat = NSLocalizedString("(av totalt behov %.2f E)", comment: "Detail label text showing the total bolus needed")
         detailLabel.text = String(format: localizedBolusDetailFormat, totalBolus)
         detailLabel.textColor = .gray
         detailLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
