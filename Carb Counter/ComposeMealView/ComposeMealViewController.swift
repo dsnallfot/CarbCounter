@@ -882,7 +882,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(summaryView)
         
-        let bolusContainer = createContainerView(backgroundColor: .systemBlue)
+        let bolusContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(bolusContainer)
         
         let bolusLabel = createLabel(text: NSLocalizedString("BOLUS", comment: "BOLUS"), fontSize: 9, weight: .bold, color: .white)
@@ -895,7 +895,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         bolusContainer.isUserInteractionEnabled = true
         bolusContainer.addGestureRecognizer(bolusTapGesture)
         
-        let carbsContainer = createContainerView(backgroundColor: .systemOrange)
+        let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
         
         let summaryLabel = createLabel(text: NSLocalizedString("KOLHYDRATER", comment: "KOLHYDRATER"), fontSize: 9, weight: .bold, color: .white)
@@ -908,7 +908,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         carbsContainer.isUserInteractionEnabled = true
         carbsContainer.addGestureRecognizer(carbsTapGesture)
         
-        let fatContainer = createContainerView(backgroundColor: .systemBrown)
+        let fatContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(fatContainer)
         
         let netFatLabel = createLabel(text: NSLocalizedString("FETT", comment: "FETT"), fontSize: 9, weight: .bold, color: .white)
@@ -921,7 +921,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         fatContainer.isUserInteractionEnabled = true
         fatContainer.addGestureRecognizer(fatTapGesture)
         
-        let proteinContainer = createContainerView(backgroundColor: .systemBrown)
+        let proteinContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(proteinContainer)
         
         let netProteinLabel = createLabel(text: NSLocalizedString("PROTEIN", comment: "PROTEIN"), fontSize: 9, weight: .bold, color: .white)
@@ -979,7 +979,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(treatmentView)
         
-        let crContainer = createContainerView(backgroundColor: .systemCyan)
+        let crContainer = createContainerView(backgroundColor: .systemCyan, borderColor: .white, borderWidth: 2)
         treatmentView.addSubview(crContainer)
         
         crLabel = createLabel(text: NSLocalizedString("INSULINKVOT", comment: "INSULINKVOT"), fontSize: 9, weight: .bold, color: .white)
@@ -1797,7 +1797,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         if showAlert {
-            let maxCarbsAlert = UIAlertController(title: NSLocalizedString("Maxgräns", comment: "Maxgräns"), message: NSLocalizedString("\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...", comment: "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..."), preferredStyle: .alert)
+            let maxCarbsAlert = UIAlertController(title: NSLocalizedString("Maxgräns överskriden", comment: "Maxgräns överskriden"), message: String(format: NSLocalizedString("\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg...", comment: "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg..."), khValue, bolusValue, adjustedKhValue, adjustedBolusValue), preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
             }

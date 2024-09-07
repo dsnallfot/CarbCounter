@@ -78,7 +78,8 @@
 "+ VÄLJ I LISTA" = "+ VÄLJ I LISTA";
 "+ SKOLMATEN" = "+ SKOLMATEN";
 "OVERRIDE" = "OVERRIDE";
-"Maxgräns" = "Maxgräns";
+"Maxgräns överskriden" = "Maxgräns överskriden";
+"\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg..." = "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg...";
 "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..." = "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...";
 "Manuell registrering" = "Manuell registrering";
 "\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nRegistrera nu den angivna startdosen för måltiden i iAPS/Trio:\n\n• %@ g kolhydrater\n• %@ E insulin";

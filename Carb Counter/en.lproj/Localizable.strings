@@ -78,8 +78,8 @@
 "+ VÄLJ I LISTA" = "+ FOOD ITEMS";
 "+ SKOLMATEN" = "+ SCHOOL";
 "OVERRIDE" = "OVERRIDE";
-"Maxgräns" = "Maximum limit";
-"\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..." = "\nThe meal registration exceeds the set maximum limits for carbohydrates and/or bolus. \n\nThe dosage will therefore be adjusted down to the allowed maximum level in the next step...";
+"Maxgräns överskriden" = "Maximum limit exceeded";
+"\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg..." = "\nThe meal registration %@ g carbs and %@ U bolus exceeds the set maximum limits: %@ g carbs and/or %@ U bolus.\n\nThe dosage will therefore be adjusted down to the allowed maximum level in the next step...";
 "Manuell registrering" = "Manual registration";
 "\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nNow register the specified start dose for the meal %@ g carbs and %@ U insulin in iAPS/Trio";
 "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nNow register the carbohydrates that have not yet been registered in iAPS/Trio, and give a bolus according to the summary below:\n\n• %@ g carbohydrates";
