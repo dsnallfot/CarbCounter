@@ -27,6 +27,8 @@
 /* Compose meal view controller */
 "Lägg till eller ersätt?" = "Lägg till eller ersätt?";
 "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?" = "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?";
+"Kolhydratssnål Måltid" = "Kolhydratssnål Måltid";
+"\nDagens skollunch verkar innehålla relativt lite kolhydrater. \n\nKomplettera gärna med extra kolhydrater, exvis en skiva knäckebröd, en frukt eller extra mjölk." = "\nDagens skollunch verkar innehålla relativt lite kolhydrater. \n\nKomplettera gärna med extra kolhydrater, exvis en skiva knäckebröd, en frukt eller extra mjölk.";
 "Ersätt" = "Ersätt";
 "Addera" = "Addera";
 "Avbryt" = "Avbryt";

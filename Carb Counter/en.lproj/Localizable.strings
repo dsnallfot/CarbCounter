@@ -27,6 +27,8 @@
 /* Compose meal view controller */
 "Lägg till eller ersätt?" = "Add or replace?";
 "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?" = "\nNote! You already have an ongoing meal registration.\n\nDo you want to add the new meal to the ongoing one, or do you want to replace the ongoing meal with the new one?";
+"Kolhydratssnål Måltid" = "Low Carb Meal";
+"\nDagens skollunch verkar innehålla relativt lite kolhydrater. \n\nKomplettera gärna med extra kolhydrater, exvis en skiva knäckebröd, en frukt eller extra mjölk." = "\nTodays school lunch seems to contain relatively few carbs.\n\nConsider adding any food item with additional carbs, such as bread, fruit or some extra milk.";
 "Ersätt" = "Replace";
 "Addera" = "Add";
 "Avbryt" = "Cancel";

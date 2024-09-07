@@ -527,6 +527,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
+        
+        // Check if any food item has either carbohydrates or carbsPP greater than 10
+        let isCarbohydrateRich = matchedFoodItems.contains { $0.carbohydrates > 10 || $0.carbsPP > 10 }
+        
+        if !isCarbohydrateRich {
+            // Delay the alert to make sure UI is ready
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let alertTitle = NSLocalizedString("Kolhydratssnål Måltid", comment:"Kolhydratssnål Måltid")
+                let alertMessage = NSLocalizedString("\nDagens skollunch verkar innehålla relativt lite kolhydrater. \n\nKomplettera gärna med extra kolhydrater, exvis en skiva knäckebröd, en frukt eller extra mjölk.", comment:"\nDagens skollunch verkar innehålla relativt lite kolhydrater. \n\nKomplettera gärna med extra kolhydrater, exvis en skiva knäckebröd, en frukt eller extra mjölk.")
+                
+                self.showAlert(title: alertTitle, message: alertMessage)
+            }
+        }
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        present(alertController, animated: true, completion: nil)
     }
     
     func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
