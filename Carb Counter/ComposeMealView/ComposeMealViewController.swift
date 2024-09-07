@@ -51,6 +51,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var registeredContainer: UIView!
     var totalRegisteredLabel: UITextField!
     
+    // Container views for bolus, fat, protein, and carbs
+    var bolusContainer: UIView!
+    var fatContainer: UIView!
+    var proteinContainer: UIView!
+    var carbsContainer: UIView!
+    
     ///Meal food item rows  labels
     var foodItemLabel: UILabel!
     var portionServedLabel: UILabel!
@@ -282,6 +288,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         fetchFoodItems()
         checkIfEditing()
+        //updatePercentages()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -396,6 +403,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateRemainsBolus()
         updateClearAllButtonState()
         saveToCoreData()
+        //updatePercentages()
     }
     
     public func updateSaveFavoriteButtonState() {
@@ -872,6 +880,60 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ])
     }
     
+    private func updatePercentages() {
+        // Ensure all label texts are not nil
+        guard let bolusText = totalBolusAmountLabel?.text,
+              let fatText = totalNetFatLabel?.text,
+              let proteinText = totalNetProteinLabel?.text,
+              let carbsText = totalNetCarbsLabel?.text else {
+            print("One or more labels are nil, cannot calculate percentages")
+            return
+        }
+
+        // Calculate the percentages
+        let bolusPercentage = calculatePercentage(registeredSoFar: registeredBolusSoFar, totalValue: bolusText)
+        let fatPercentage = calculatePercentage(registeredSoFar: registeredFatSoFar, totalValue: fatText)
+        let proteinPercentage = calculatePercentage(registeredSoFar: registeredProteinSoFar, totalValue: proteinText)
+        let carbsPercentage = calculatePercentage(registeredSoFar: registeredCarbsSoFar, totalValue: carbsText)
+
+        // Update the overlay layers accordingly
+        updateOverlayLayer(for: bolusContainer, percentage: bolusPercentage)
+        updateOverlayLayer(for: fatContainer, percentage: fatPercentage)
+        updateOverlayLayer(for: proteinContainer, percentage: proteinPercentage)
+        updateOverlayLayer(for: carbsContainer, percentage: carbsPercentage)
+    }
+
+    private func calculatePercentage(registeredSoFar: Double, totalValue: String?) -> CGFloat {
+        guard let totalString = totalValue, let total = Double(totalString.replacingOccurrences(of: "[^0-9.]", with: "", options: .regularExpression)), total > 0 else {
+            return 0.0
+        }
+        let percentage = 1 - (registeredSoFar / total)
+        return CGFloat(clamp(percentage, to: 0...1)) // Ensure percentage stays between 0 and 1
+    }
+    
+    private func updateOverlayLayer(for container: UIView, percentage: CGFloat) {
+        // Remove any existing overlay layers
+        container.subviews.forEach { subview in
+            if subview.tag == 999 {
+                subview.removeFromSuperview()
+            }
+        }
+
+        // Create a new overlay view
+        let overlayView = UIView()
+        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        overlayView.translatesAutoresizingMaskIntoConstraints = false
+        overlayView.tag = 999
+        container.insertSubview(overlayView, at: 0)
+
+        NSLayoutConstraint.activate([
+            overlayView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            overlayView.topAnchor.constraint(equalTo: container.topAnchor),
+            overlayView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            overlayView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: percentage) // Set width based on percentage
+        ])
+    }
+    
     private func setupSummaryView(in container: UIView) {
         let colors: [CGColor] = [
             UIColor.clear.cgColor,
@@ -881,8 +943,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let summaryView = GradientView(colors: colors)
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(summaryView)
-        
-        let bolusContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 2)
+
+        // Bolus container setup
+        bolusContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(bolusContainer)
         
         let bolusLabel = createLabel(text: NSLocalizedString("BOLUS", comment: "BOLUS"), fontSize: 9, weight: .bold, color: .white)
@@ -890,57 +953,73 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
-        
+
         let bolusTapGesture = UITapGestureRecognizer(target: self, action: #selector(showBolusInfo))
         bolusContainer.isUserInteractionEnabled = true
         bolusContainer.addGestureRecognizer(bolusTapGesture)
-        
-        let carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .white, borderWidth: 2)
+
+        let bolusPercentage = calculatePercentage(registeredSoFar: registeredBolusSoFar, totalValue: totalBolusAmountLabel?.text)
+        updateOverlayLayer(for: bolusContainer, percentage: bolusPercentage)
+
+        // Carbs container setup
+        carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
-        
-        let summaryLabel = createLabel(text: NSLocalizedString("KOLHYDRATER", comment: "KOLHYDRATER"), fontSize: 9, weight: .bold, color: .white)
+
+        let carbsLabel = createLabel(text: NSLocalizedString("CARBS", comment: "CARBS"), fontSize: 9, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
-        let carbsStack = UIStackView(arrangedSubviews: [summaryLabel, totalNetCarbsLabel])
+        let carbsStack = UIStackView(arrangedSubviews: [carbsLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
-        
+
         let carbsTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCarbsInfo))
         carbsContainer.isUserInteractionEnabled = true
         carbsContainer.addGestureRecognizer(carbsTapGesture)
-        
-        let fatContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
+
+        let carbsPercentage = calculatePercentage(registeredSoFar: registeredCarbsSoFar, totalValue: totalNetCarbsLabel?.text)
+        updateOverlayLayer(for: carbsContainer, percentage: carbsPercentage)
+
+        // Fat container setup
+        fatContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(fatContainer)
-        
-        let netFatLabel = createLabel(text: NSLocalizedString("FETT", comment: "FETT"), fontSize: 9, weight: .bold, color: .white)
+
+        let fatLabel = createLabel(text: NSLocalizedString("FAT", comment: "FAT"), fontSize: 9, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
-        let fatStack = UIStackView(arrangedSubviews: [netFatLabel, totalNetFatLabel])
+        let fatStack = UIStackView(arrangedSubviews: [fatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(fatStack, in: fatContainer, padding: fatPadding)
-        
+
         let fatTapGesture = UITapGestureRecognizer(target: self, action: #selector(showFatInfo))
         fatContainer.isUserInteractionEnabled = true
         fatContainer.addGestureRecognizer(fatTapGesture)
-        
-        let proteinContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
+
+        let fatPercentage = calculatePercentage(registeredSoFar: registeredFatSoFar, totalValue: totalNetFatLabel?.text)
+        updateOverlayLayer(for: fatContainer, percentage: fatPercentage)
+
+        // Protein container setup
+        proteinContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(proteinContainer)
-        
-        let netProteinLabel = createLabel(text: NSLocalizedString("PROTEIN", comment: "PROTEIN"), fontSize: 9, weight: .bold, color: .white)
+
+        let proteinLabel = createLabel(text: NSLocalizedString("PROTEIN", comment: "PROTEIN"), fontSize: 9, weight: .bold, color: .white)
         totalNetProteinLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
-        let proteinStack = UIStackView(arrangedSubviews: [netProteinLabel, totalNetProteinLabel])
+        let proteinStack = UIStackView(arrangedSubviews: [proteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
-        
+
         let proteinTapGesture = UITapGestureRecognizer(target: self, action: #selector(showProteinInfo))
         proteinContainer.isUserInteractionEnabled = true
         proteinContainer.addGestureRecognizer(proteinTapGesture)
-        
+
+        let proteinPercentage = calculatePercentage(registeredSoFar: registeredProteinSoFar, totalValue: totalNetProteinLabel?.text)
+        updateOverlayLayer(for: proteinContainer, percentage: proteinPercentage)
+
+        // Horizontal stack view setup
         let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
         hStack.axis = .horizontal
         hStack.spacing = 8
         hStack.translatesAutoresizingMaskIntoConstraints = false
         hStack.distribution = .fillEqually
         summaryView.addSubview(hStack)
-        
+
         NSLayoutConstraint.activate([
             summaryView.heightAnchor.constraint(equalToConstant: 60),
             summaryView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -951,6 +1030,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             hStack.topAnchor.constraint(equalTo: summaryView.topAnchor, constant: 10),
             hStack.bottomAnchor.constraint(equalTo: summaryView.bottomAnchor, constant: -5)
         ])
+    }
+
+    /// Helper function to add the semi-transparent overlay layer behind the labels
+    private func addOverlayLayer(to container: UIView, percentage: CGFloat, belowView: UIView) {
+        let overlayView = UIView()
+        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        overlayView.translatesAutoresizingMaskIntoConstraints = false
+        // Insert the overlay view at index 0 to ensure it's behind other subviews
+        container.insertSubview(overlayView, at: 0)
+
+        NSLayoutConstraint.activate([
+            overlayView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            overlayView.topAnchor.constraint(equalTo: container.topAnchor),
+            overlayView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            overlayView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: percentage)
+        ])
+    }
+    /// Helper function to clamp a value between a minimum and maximum value
+    private func clamp(_ value: Double, to limits: ClosedRange<Double>) -> Double {
+        return min(max(value, limits.lowerBound), limits.upperBound)
     }
     
     @objc private func showAddFoodItemViewController() {
@@ -2085,6 +2184,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         updateRemainsBolus()
         updateSaveFavoriteButtonState()
+        updatePercentages()
     }
     
     private func formatNumber(_ value: Double) -> String {
@@ -2731,5 +2831,12 @@ extension ComposeMealViewController {
 public extension Character {
     var isWhitespaceOrNewline: Bool {
         return isWhitespace || isNewline
+    }
+}
+
+/// Extension to clamp the values between a range
+extension Comparable {
+    func clamped(to limits: ClosedRange<Self>) -> Self {
+        return min(max(self, limits.lowerBound), limits.upperBound)
     }
 }
