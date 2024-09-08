@@ -942,6 +942,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Create a new overlay view
         let overlayView = UIView()
         overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        //overlayView.backgroundColor = UIColor.systemGray2.withAlphaComponent(1)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         overlayView.tag = 999
         container.insertSubview(overlayView, at: 0)
@@ -985,7 +986,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(carbsContainer)
 
-        let carbsLabel = createLabel(text: NSLocalizedString("CARBS", comment: "CARBS"), fontSize: 9, weight: .bold, color: .white)
+        let carbsLabel = createLabel(text: NSLocalizedString("KOLHYDRATER", comment: "KOLHYDRATER"), fontSize: 9, weight: .bold, color: .white)
         totalNetCarbsLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [carbsLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -1002,7 +1003,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         fatContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
         summaryView.addSubview(fatContainer)
 
-        let fatLabel = createLabel(text: NSLocalizedString("FAT", comment: "FAT"), fontSize: 9, weight: .bold, color: .white)
+        let fatLabel = createLabel(text: NSLocalizedString("FETT", comment: "FETT"), fontSize: 9, weight: .bold, color: .white)
         totalNetFatLabel = createLabel(text: NSLocalizedString("0.0 g", comment: "0.0 g"), fontSize: 18, weight: .semibold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [fatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
@@ -1056,6 +1057,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func addOverlayLayer(to container: UIView, percentage: CGFloat, belowView: UIView) {
         let overlayView = UIView()
         overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        //overlayView.backgroundColor = UIColor.systemGray2.withAlphaComponent(1)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         // Insert the overlay view at index 0 to ensure it's behind other subviews
         container.insertSubview(overlayView, at: 0)
@@ -1098,7 +1100,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(treatmentView)
         
-        let crContainer = createContainerView(backgroundColor: .systemCyan, borderColor: .white, borderWidth: 2)
+        //let crContainer = createContainerView(backgroundColor: .systemCyan, borderColor: .white, borderWidth: 2)
+        let crContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 2)
         treatmentView.addSubview(crContainer)
         
         crLabel = createLabel(text: NSLocalizedString("INSULINKVOT", comment: "INSULINKVOT"), fontSize: 9, weight: .bold, color: .white)
@@ -2611,7 +2614,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastContainer: UIView = {
             let view = UIView()
-            view.backgroundColor = .systemBlue.withAlphaComponent(0.35)
+            view.backgroundColor = .systemGray2
+            //view.backgroundColor = .systemBlue.withAlphaComponent(0.35)
             view.layer.cornerRadius = 8
             view.layer.borderWidth = 2
             view.layer.borderColor = UIColor.white.cgColor
@@ -2633,7 +2637,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Create the container for the lateBreakfastSwitch and label
             let lateBreakfastContainer = UIView()
             lateBreakfastContainer.translatesAutoresizingMaskIntoConstraints = false
-            lateBreakfastContainer.backgroundColor = .systemBlue.withAlphaComponent(0.35)
+            //lateBreakfastContainer.backgroundColor = .systemBlue.withAlphaComponent(0.35)
+            lateBreakfastContainer.backgroundColor = .systemGray2
             lateBreakfastContainer.layer.cornerRadius = 8
             lateBreakfastContainer.layer.borderWidth = 2
             lateBreakfastContainer.layer.borderColor = UIColor.white.cgColor
