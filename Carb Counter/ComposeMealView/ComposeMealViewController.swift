@@ -381,7 +381,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             remainingDoseGiven = false
             
             // Reset the variables to 0.0 and save to UserDefaults
-            resetVariablesToDefault()
+            //resetVariablesToDefault()
+            registeredCarbsSoFar = 0.0
         } else {
             saveMealToHistory = true // Set true when totalRegisteredLabel becomes non-empty by manual input
             
@@ -1554,6 +1555,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
             if !isEditingMeal {
                 stopAutoSaveToCSV()
+                resetVariablesToDefault()
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
@@ -2584,7 +2586,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             button.setTitle(NSLocalizedString("+ SKOLMATEN", comment: "+ SKOLMATEN"), for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
             button.setTitleColor(.white, for: .normal)
-            button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
+            //button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
+            button.backgroundColor = .systemGray2
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.cornerRadius = 8
             button.layer.borderWidth = 2
