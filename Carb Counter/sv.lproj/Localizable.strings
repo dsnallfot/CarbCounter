@@ -41,12 +41,12 @@
 "0 E" = "0 E";
 " E" = " E";
 "+ RESTERANDE" = "+ RESTERANDE";
-"BOLUS" = "BOLUS";
+"BOLUS" = "TOT BOLUS";
 "0.00 E" = "0.00 E";
-"KOLHYDRATER" = "KOLHYDRATER";
+"KOLHYDRATER" = "TOT KH";
 "0.0 g" = "0.0 g";
-"FETT" = "FETT";
-"PROTEIN" = "PROTEIN";
+"FETT" = "TOT FETT";
+"PROTEIN" = "TOT PROTEIN";
 "INSULINKVOT" = "INSULINKVOT";
 "HELA DOSEN" = "HELA DOSEN";
 "0g" = "0g";
@@ -116,7 +116,7 @@
 "LIVSMEDEL" = "LIVSMEDEL";
 "PORTION" = "PORTION";
 "LÄMNAT" = "LÄMNAT";
-"KOLHYDR." = "KOLHYDR.";
+"KOLHYDR." = "KH";
 
 /* Food Item Row View */
 "Klar" = "Klar";

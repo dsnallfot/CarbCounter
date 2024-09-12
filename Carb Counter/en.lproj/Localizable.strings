@@ -41,12 +41,12 @@
 "0 E" = "0 U"; 
 " E" = " U";
 "+ RESTERANDE" = "+ REMAINING";
-"BOLUS" = "BOLUS";
+"BOLUS" = "TOT BOLUS";
 "0.00 E" = "0.00 U";
-"KOLHYDRATER" = "CARBS";
+"KOLHYDRATER" = "TOT CARBS";
 "0.0 g" = "0.0 g";
-"FETT" = "FAT";
-"PROTEIN" = "PROTEIN";
+"FETT" = "TOT FAT";
+"PROTEIN" = "TOT PROTEIN";
 "INSULINKVOT" = "CARB RATIO";
 "HELA DOSEN" = "FULL DOSE";
 "0g" = "0g";

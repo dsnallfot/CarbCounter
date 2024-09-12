@@ -2131,11 +2131,30 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return containerView
     }
     
+    /*
     private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
         let label = UILabel()
         label.text = text
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        label.textColor = color
+        label.textAlignment = .center
+        return label
+    }*/
+    
+    private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
+        let systemFont = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        let font: UIFont
+
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            font = UIFont(descriptor: roundedDescriptor, size: fontSize)
+        } else {
+            font = systemFont
+        }
+
+        let label = UILabel()
+        label.text = text
+        label.font = font
         label.textColor = color
         label.textAlignment = .center
         return label
@@ -2293,7 +2312,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         headlineStackView.translatesAutoresizingMaskIntoConstraints = false
         headlineContainer.addSubview(headlineStackView)
         
-        let font = UIFont.systemFont(ofSize: 9)
+        let systemFont = UIFont.systemFont(ofSize: 11, weight: .bold)
+        let font: UIFont
+
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            font = UIFont(descriptor: roundedDescriptor, size: 11)
+        } else {
+            font = systemFont
+        }
         
         foodItemLabel = UILabel()
         foodItemLabel.text = NSLocalizedString("LIVSMEDEL", comment: "LIVSMEDEL")
@@ -2305,21 +2331,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         portionServedLabel = UILabel()
         portionServedLabel.text = NSLocalizedString("PORTION", comment: "PORTION")
         portionServedLabel.textAlignment = .left
-        portionServedLabel.widthAnchor.constraint(equalToConstant: 69).isActive = true
+        portionServedLabel.widthAnchor.constraint(equalToConstant: 68).isActive = true
         portionServedLabel.font = font
         portionServedLabel.textColor = .gray
         
         notEatenLabel = UILabel()
         notEatenLabel.text = NSLocalizedString("LÄMNAT", comment: "LÄMNAT")
         notEatenLabel.textAlignment = .left
-        notEatenLabel.widthAnchor.constraint(equalToConstant: 44).isActive = true
+        notEatenLabel.widthAnchor.constraint(equalToConstant: 52).isActive = true
         notEatenLabel.font = font
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
         netCarbsLabel.text = NSLocalizedString("KOLHYDR.", comment: "KOLHYDR.")
         netCarbsLabel.textAlignment = .right
-        netCarbsLabel.widthAnchor.constraint(equalToConstant: 52).isActive = true
+        netCarbsLabel.widthAnchor.constraint(equalToConstant: 48).isActive = true
         netCarbsLabel.font = font
         netCarbsLabel.textColor = .gray
         headlineStackView.addArrangedSubview(foodItemLabel)
@@ -2331,7 +2357,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             headlineStackView.leadingAnchor.constraint(equalTo: headlineContainer.leadingAnchor, constant: 16),
             headlineStackView.trailingAnchor.constraint(equalTo: headlineContainer.trailingAnchor, constant: -16),
             headlineStackView.topAnchor.constraint(equalTo: headlineContainer.topAnchor, constant: 16),
-            headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor, constant: -5)
+            headlineStackView.bottomAnchor.constraint(equalTo: headlineContainer.bottomAnchor)
         ])
     }
     
@@ -2570,7 +2596,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let addButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle(NSLocalizedString("+ VÄLJ I LISTA", comment: "+ VÄLJ I LISTA"), for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+            
+            let systemFont = UIFont.systemFont(ofSize: 12, weight: .bold)
+            if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+                button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 12)
+            } else {
+                button.titleLabel?.font = systemFont
+            }
+            
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -2584,9 +2617,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle(NSLocalizedString("+ SKOLMATEN", comment: "+ SKOLMATEN"), for: .normal)
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+
+            let systemFont = UIFont.systemFont(ofSize: 12, weight: .bold)
+            if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+                button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 12)
+            } else {
+                button.titleLabel?.font = systemFont
+            }
+
             button.setTitleColor(.white, for: .normal)
-            //button.backgroundColor = .systemBlue.withAlphaComponent(0.3)
             button.backgroundColor = .systemGray2
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.cornerRadius = 8
@@ -2607,7 +2646,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastLabel: UILabel = {
             let label = UILabel()
-            label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            let systemFont = UIFont.systemFont(ofSize: 12, weight: .bold)
+            if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+                label.font = UIFont(descriptor: roundedDescriptor, size: 12)
+            } else {
+                label.font = systemFont
+            }
+            
             label.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
