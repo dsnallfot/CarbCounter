@@ -29,7 +29,14 @@ class OngoingMealViewController: UIViewController {
     let takeoverButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(NSLocalizedString("Ta över registrering", comment: "Ta över registrering"), for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        
+        let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 19)
+        } else {
+            button.titleLabel?.font = systemFont
+        }
+        
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10

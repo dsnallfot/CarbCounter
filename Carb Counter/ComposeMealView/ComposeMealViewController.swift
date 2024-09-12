@@ -1163,7 +1163,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
         let registeredLabel = createLabel(text: NSLocalizedString("REGGADE KH", comment: "REGGADE KH"), fontSize: 9, weight: .bold, color: .white)
-        totalRegisteredLabel = createTextField(placeholder: NSLocalizedString("...", comment: "..."), fontSize: 18, weight: .semibold, color: .white)
+        totalRegisteredLabel = createTextField(placeholder: NSLocalizedString("...", comment: "..."), fontSize: 18, weight: .bold, color: .white)
         
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredLabel])
         registeredStack.axis = .vertical
@@ -2131,17 +2131,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return containerView
     }
     
-    /*
-    private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
-        let label = UILabel()
-        label.text = text
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
-        label.textColor = color
-        label.textAlignment = .center
-        return label
-    }*/
-    
     private func createLabel(text: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UILabel {
         let systemFont = UIFont.systemFont(ofSize: fontSize, weight: weight)
         let font: UIFont
@@ -2161,10 +2150,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func createTextField(placeholder: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor) -> UITextField {
+        let systemFont = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        let font: UIFont
+
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            font = UIFont(descriptor: roundedDescriptor, size: fontSize)
+        } else {
+            font = systemFont
+        }
+
         let textField = UITextField()
         textField.placeholder = placeholder
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        textField.font = font
         textField.textColor = color
         textField.textAlignment = .right
         textField.keyboardType = .decimalPad
