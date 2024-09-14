@@ -967,7 +967,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         container.addSubview(summaryView)
 
         // Bolus container setup
-        bolusContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 2)
+        bolusContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 0)
         summaryView.addSubview(bolusContainer)
         
         let bolusLabel = createLabel(text: NSLocalizedString("BOLUS", comment: "BOLUS"), fontSize: 9, weight: .bold, color: .white)
@@ -984,7 +984,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateOverlayLayer(for: bolusContainer, percentage: bolusPercentage)
 
         // Carbs container setup
-        carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .white, borderWidth: 2)
+        carbsContainer = createContainerView(backgroundColor: .systemOrange, borderColor: .white, borderWidth: 0)
         summaryView.addSubview(carbsContainer)
 
         let carbsLabel = createLabel(text: NSLocalizedString("KOLHYDRATER", comment: "KOLHYDRATER"), fontSize: 9, weight: .bold, color: .white)
@@ -1001,7 +1001,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateOverlayLayer(for: carbsContainer, percentage: carbsPercentage)
 
         // Fat container setup
-        fatContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
+        fatContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 0)
         summaryView.addSubview(fatContainer)
 
         let fatLabel = createLabel(text: NSLocalizedString("FETT", comment: "FETT"), fontSize: 9, weight: .bold, color: .white)
@@ -1018,7 +1018,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateOverlayLayer(for: fatContainer, percentage: fatPercentage)
 
         // Protein container setup
-        proteinContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 2)
+        proteinContainer = createContainerView(backgroundColor: .systemBrown, borderColor: .white, borderWidth: 0)
         summaryView.addSubview(proteinContainer)
 
         let proteinLabel = createLabel(text: NSLocalizedString("PROTEIN", comment: "PROTEIN"), fontSize: 9, weight: .bold, color: .white)
@@ -1102,7 +1102,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         container.addSubview(treatmentView)
         
         //let crContainer = createContainerView(backgroundColor: .systemCyan, borderColor: .white, borderWidth: 2)
-        let crContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 2)
+        let crContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(crContainer)
         
         crLabel = createLabel(text: NSLocalizedString("INSULINKVOT", comment: "INSULINKVOT"), fontSize: 9, weight: .bold, color: .white)
@@ -1118,7 +1118,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         crContainer.isUserInteractionEnabled = true
         crContainer.addGestureRecognizer(crTapGesture)
         
-        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .white, borderWidth: 2)
+        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
@@ -1138,7 +1138,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
         
-        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .white, borderWidth: 2)
+        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(startAmountContainer)
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
@@ -1157,7 +1157,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
         
-        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 2)
+        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(registeredContainerTapped))
         registeredContainer.addGestureRecognizer(tapGesture)
@@ -2122,7 +2122,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.backgroundColor = backgroundColor
-        containerView.layer.cornerRadius = 8
+        containerView.layer.cornerRadius = 10
         containerView.clipsToBounds = true
         if let borderColor = borderColor {
             containerView.layer.borderColor = borderColor.cgColor
@@ -2605,8 +2605,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
-            button.layer.cornerRadius = 8
-            button.layer.borderWidth = 2
+            button.layer.cornerRadius = 10
+            button.layer.borderWidth = 0
             button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
             return button
@@ -2624,10 +2624,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
 
             button.setTitleColor(.white, for: .normal)
-            button.backgroundColor = .systemGray2
+            button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
-            button.layer.cornerRadius = 8
-            button.layer.borderWidth = 2
+            button.layer.cornerRadius = 10
+            button.layer.borderWidth = 0
             button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
             button.addTarget(self, action: #selector(rssButtonTapped), for: .touchUpInside)
@@ -2660,10 +2660,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastContainer: UIView = {
             let view = UIView()
-            view.backgroundColor = .systemGray2
+            view.backgroundColor = .systemBlue
             //view.backgroundColor = .systemBlue.withAlphaComponent(0.35)
-            view.layer.cornerRadius = 8
-            view.layer.borderWidth = 2
+            view.layer.cornerRadius = 10
+            view.layer.borderWidth = 0
             view.layer.borderColor = UIColor.white.cgColor
             view.clipsToBounds = true
             view.translatesAutoresizingMaskIntoConstraints = false
@@ -2684,9 +2684,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let lateBreakfastContainer = UIView()
             lateBreakfastContainer.translatesAutoresizingMaskIntoConstraints = false
             //lateBreakfastContainer.backgroundColor = .systemBlue.withAlphaComponent(0.35)
-            lateBreakfastContainer.backgroundColor = .systemGray2
-            lateBreakfastContainer.layer.cornerRadius = 8
-            lateBreakfastContainer.layer.borderWidth = 2
+            lateBreakfastContainer.backgroundColor = .systemBlue
+            lateBreakfastContainer.layer.cornerRadius = 10
+            lateBreakfastContainer.layer.borderWidth = 0
             lateBreakfastContainer.layer.borderColor = UIColor.white.cgColor
             lateBreakfastContainer.clipsToBounds = true
 
