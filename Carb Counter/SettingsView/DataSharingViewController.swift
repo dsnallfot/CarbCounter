@@ -189,19 +189,17 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-    ///Ongoing meal import
+///Ongoing meal import
     @objc public func importOngoingMealCSV() {
         let fileManager = FileManager.default
         guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
             print("Import Failed: iCloud Drive URL is nil.")
             return
         }
-        
         do {
             let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
             let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
             let importedRows = parseOngoingMealCSV(rows)
-            //print("Parsed Rows: \(importedRows)") // Log parsed rows
             NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
             print("Import Successful: OngoingMeal.csv has been imported")
         } catch {
@@ -615,24 +613,6 @@ class DataSharingViewController: UIViewController {
             try context.save()
         } catch {
             print("Import Failed: Error fetching or saving data: \(error)")
-        }
-    }
-    
-    // Ongoing meal import
-    @objc public func importOngoingMealCSV() async {
-        let fileManager = FileManager.default
-        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
-            print("Import Failed: iCloud Drive URL is nil.")
-            return
-        }
-        do {
-            let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
-            let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
-            let importedRows = parseOngoingMealCSV(rows)
-            NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
-            print("Import Successful: OngoingMeal.csv has been imported")
-        } catch {
-            print("Failed to read CSV file: \(error)")
         }
     }
     
