@@ -339,7 +339,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 sortFoodItems()
                 tableView.reloadData()
             } else {
-                filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+                filteredFoodItems = foodItems.filter { foodItem in
+                    let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
+                    let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
+                    return nameMatches || emojiMatches
+                }
                 sortFoodItems()
             }
         } else {
