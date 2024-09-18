@@ -25,6 +25,15 @@
 "%.0f g" = "%.0f g";
 
 /* Compose meal view controller */
+"EditRegistration.Header" = "Edit registered values";
+"EditRegistration.Carbs" = "Carbs";
+"EditRegistration.Fat" = "Fat";
+"EditRegistration.Protein" = "Protein";
+"EditRegistration.Bolus" = "Bolus";
+"EditRegistration.MealTime" = "Meal time";
+"EditRegistration.Done" = "Done";
+"EditRegistration.WeightMeasurement" = "g";
+"EditRegistration.BolusMeasurement" = "U";
 "Lägg till eller ersätt?" = "Add or replace?";
 "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?" = "\nNote! You already have an ongoing meal registration.\n\nDo you want to add the new meal to the ongoing one, or do you want to replace the ongoing meal with the new one?";
 "Kolhydratssnål Måltid" = "Low Carb Meal";

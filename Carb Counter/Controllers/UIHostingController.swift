@@ -43,3 +43,39 @@ extension EditRegistrationPopoverHostingController: UIPopoverPresentationControl
         return .none
     }
 }
+
+class InfoPopoverHostingController: UIHostingController<InfoPopoverView> {
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: InfoPopoverView(title: "", message: ""))
+    }
+    
+    init(title: String, message: String) {
+        let view = InfoPopoverView(title: title, message: message)
+        super.init(rootView: view)
+        modalPresentationStyle = .popover
+        popoverPresentationController?.delegate = self
+        
+        // Dynamically calculate preferredContentSize
+        let width: CGFloat = 300
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.view.layoutIfNeeded()
+        let size = hostingController.sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+        preferredContentSize = CGSize(width: width, height: size.height)
+    }
+}
+
+extension InfoPopoverHostingController: UIPopoverPresentationControllerDelegate {
+    func popoverPresentationControllerDidDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
+    }
+}
+
+extension ComposeMealViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
+    }
+}

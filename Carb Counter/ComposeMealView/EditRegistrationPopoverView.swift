@@ -28,91 +28,79 @@ struct EditRegistrationPopoverView: View {
     }
 
     var body: some View {
-        Form {
-            Section(header: Text("Edit registration").font(.subheadline)) {
-                HStack {
-                    Text("Carbs")
-                    Spacer()
-                    TextField("Carbs", text: Binding(
-                        get: {
-                            registeredCarbsSoFar == 0 ? "" : formatValue(registeredCarbsSoFar)
-                        },
-                        set: {
-                            registeredCarbsSoFar = Double($0) ?? 0
+        ZStack {
+            Color(red: 90/255, green: 104/255, blue: 125/255).opacity(0.7).edgesIgnoringSafeArea(.all) // Add background
+            
+            VStack(spacing: 0) {
+                Form {
+                    Section(header: Text("EditRegistration.Header".localized).padding(.top, 12).padding(.bottom, 12)) {
+                        VStack(spacing: 0) {
+                            ForEach([
+                                ("EditRegistration.Carbs".localized, $registeredCarbsSoFar),
+                                ("EditRegistration.Fat".localized, $registeredFatSoFar),
+                                ("EditRegistration.Protein".localized, $registeredProteinSoFar),
+                                ("EditRegistration.Bolus".localized, $registeredBolusSoFar)
+                            ], id: \.0) { label, binding in
+                                HStack {
+                                    Text(label)
+                                    Spacer()
+                                    TextField(label, text: Binding(
+                                        get: {
+                                            binding.wrappedValue == 0 ? "" : formatValue(binding.wrappedValue)
+                                        },
+                                        set: {
+                                            binding.wrappedValue = Double($0) ?? 0
+                                        }
+                                    ))
+                                    .keyboardType(.decimalPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 100)
+                                    Text(label == "EditRegistration.Bolus".localized ? "EditRegistration.BolusMeasurement".localized : "EditRegistration.WeightMeasurement".localized)
+                                }
+                                .padding(.vertical, 12)
+                                
+                                Divider()
+                            }
+                            
+                            HStack {
+                                Text("EditRegistration.MealTime".localized)
+                                Spacer()
+                                DatePicker("", selection: Binding(get: {
+                                    self.mealDate ?? Date()
+                                }, set: {
+                                    self.mealDate = $0
+                                }), displayedComponents: [.hourAndMinute])
+                                .labelsHidden()
+                            }
+                            .padding(.vertical, 6)
                         }
-                    ))
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 100)
-                    Text("g")
+                    }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                    .listRowBackground(Color.white.opacity(0.1))
                 }
-                HStack {
-                    Text("Fat")
-                    Spacer()
-                    TextField("Fat", text: Binding(
-                        get: {
-                            registeredFatSoFar == 0 ? "" : formatValue(registeredFatSoFar)
-                        },
-                        set: {
-                            registeredFatSoFar = Double($0) ?? 0
-                        }
-                    ))
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 100)
-                    Text("g")
+                .scrollContentBackground(.hidden)
+                
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                    onDismiss?()
+                }) {
+                    Text("EditRegistration.Done".localized)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
-                HStack {
-                    Text("Protein")
-                    Spacer()
-                    TextField("Protein", text: Binding(
-                        get: {
-                            registeredProteinSoFar == 0 ? "" : formatValue(registeredProteinSoFar)
-                        },
-                        set: {
-                            registeredProteinSoFar = Double($0) ?? 0
-                        }
-                    ))
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 100)
-                    Text("g")
-                }
-                HStack {
-                    Text("Bolus")
-                    Spacer()
-                    TextField("Bolus", text: Binding(
-                        get: {
-                            registeredBolusSoFar == 0 ? "" : String(format: "%.2f", registeredBolusSoFar)
-                        },
-                        set: {
-                            registeredBolusSoFar = Double($0) ?? 0
-                        }
-                    ))
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 100)
-                    Text("E")
-                }
-                HStack {
-                    Text("Meal time")
-                    Spacer()
-                    DatePicker("", selection: Binding(get: {
-                        self.mealDate ?? Date()
-                    }, set: {
-                        self.mealDate = $0
-                    }), displayedComponents: [.hourAndMinute])
-                    .labelsHidden()
-                }
-            }
-
-            Button(action: {
-                presentationMode.wrappedValue.dismiss()
-                onDismiss?()
-            }) {
-                Text("Done")
-                    .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
             }
         }
+    }
+}
+
+extension String {
+    var localized: String {
+        NSLocalizedString(self, comment: "")
     }
 }

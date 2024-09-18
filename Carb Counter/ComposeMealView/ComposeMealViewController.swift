@@ -2770,41 +2770,6 @@ struct InfoPopoverView: View {
     }
 }
 
-class InfoPopoverHostingController: UIHostingController<InfoPopoverView> {
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder, rootView: InfoPopoverView(title: "", message: ""))
-    }
-    
-    init(title: String, message: String) {
-        let view = InfoPopoverView(title: title, message: message)
-        super.init(rootView: view)
-        modalPresentationStyle = .popover
-        popoverPresentationController?.delegate = self
-        
-        // Dynamically calculate preferredContentSize
-        let width: CGFloat = 300
-        let hostingController = UIHostingController(rootView: view)
-        hostingController.view.layoutIfNeeded()
-        let size = hostingController.sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
-        preferredContentSize = CGSize(width: width, height: size.height)
-    }
-}
-
-extension InfoPopoverHostingController: UIPopoverPresentationControllerDelegate {
-    func popoverPresentationControllerDidDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) {
-        dismiss(animated: true, completion: nil)
-    }
-    
-    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-        return .none
-    }
-}
-
-extension ComposeMealViewController: UIPopoverPresentationControllerDelegate {
-    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-        return .none
-    }
-}
 
 extension ComposeMealViewController {
     private func presentPopover(title: String, message: String, sourceView: UIView) {
@@ -2842,7 +2807,7 @@ extension ComposeMealViewController {
         // Use "0" if totalRegisteredCarbsLabel.text is empty or nil
         let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
             
-        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
+        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
     }
     
     @objc private func showFatInfo() {
@@ -2871,9 +2836,7 @@ extension ComposeMealViewController {
             presentPopover(title: NSLocalizedString("Senaste override", comment: "Senaste override"), message: NSLocalizedString("Ingen tidigare aktivering hittades.", comment: "Ingen tidigare aktivering hittades."), sourceView: addButtonRowView.lateBreakfastLabel)
         }
     }
-}
-
-extension ComposeMealViewController {
+    
     @objc private func editCurrentRegistration() {
         let popoverController = EditRegistrationPopoverHostingController(
             registeredFatSoFar: Binding(get: { [weak self] in
