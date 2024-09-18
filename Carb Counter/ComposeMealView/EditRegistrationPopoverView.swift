@@ -93,7 +93,7 @@ struct EditRegistrationPopoverView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
-                .padding(.bottom, 20)
+                .padding(.bottom, 15)
             }
         }
     }
