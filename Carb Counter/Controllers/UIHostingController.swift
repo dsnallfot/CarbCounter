@@ -29,7 +29,7 @@ class EditRegistrationPopoverHostingController: UIHostingController<EditRegistra
         popoverPresentationController?.delegate = self
 
         // Set preferredContentSize to accommodate the form
-        preferredContentSize = CGSize(width: 340, height: 370)
+        preferredContentSize = CGSize(width: 340, height: 380)
     }
 }
 

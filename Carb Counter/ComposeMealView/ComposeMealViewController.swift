@@ -375,36 +375,51 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
  
     @objc private func totalRegisteredCarbsLabelDidChange(_ textField: UILabel) {
-        if isPopoverChange {
-            isPopoverChange = false
-            return
-        }
 
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
             textField.text = text.replacingOccurrences(of: ",", with: ".")
         }
 
-        if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: ""), text.isEmpty {
+        // Check if carbs, fat, protein, and bolus are all 0
+        if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: ""),
+           Double(text) == 0,
+           registeredFatSoFar == 0.0,
+           registeredProteinSoFar == 0.0,
+           registeredBolusSoFar == 0.0 {
+            
+            // If all are 0, set saveMealToHistory to false and reset variables
             saveMealToHistory = false
+            print("save meal to history false")
             startDoseGiven = false
             remainingDoseGiven = false
             registeredCarbsSoFar = 0
         } else {
+            // If any are non-zero, proceed with saving
             saveMealToHistory = true
-            if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: ""), let carbsValue = Double(text) {
+            print("save meal to history true")
+            if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: ""),
+               let carbsValue = Double(text) {
                 registeredCarbsSoFar = carbsValue
             } else {
                 registeredCarbsSoFar = 0
             }
             saveValuesToUserDefaults()
+            print("saved to userdefaults")
         }
 
         // Call additional update methods
+        print("additional methods ran")
         updateTotalNutrients()
         updateHeadlineVisibility()
         updateRemainsBolus()
         updateClearAllButtonState()
         saveToCoreData()
+        
+        // Avoid looping
+        if isPopoverChange {
+            isPopoverChange = false
+            return
+        }
     }
     
     public func updateSaveFavoriteButtonState() {
@@ -981,7 +996,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         summaryView.addSubview(carbsContainer)
 
         let carbsLabel = createLabel(text: NSLocalizedString("KOLHYDRATER", comment: "KOLHYDRATER"), fontSize: 9, weight: .bold, color: .white)
-        totalNetCarbsLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .semibold, color: .white)
+        totalNetCarbsLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .bold, color: .white)
         let carbsStack = UIStackView(arrangedSubviews: [carbsLabel, totalNetCarbsLabel])
         let carbsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(carbsStack, in: carbsContainer, padding: carbsPadding)
@@ -998,7 +1013,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         summaryView.addSubview(fatContainer)
 
         let fatLabel = createLabel(text: NSLocalizedString("FETT", comment: "FETT"), fontSize: 9, weight: .bold, color: .white)
-        totalNetFatLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .semibold, color: .white)
+        totalNetFatLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .bold, color: .white)
         let fatStack = UIStackView(arrangedSubviews: [fatLabel, totalNetFatLabel])
         let fatPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(fatStack, in: fatContainer, padding: fatPadding)
@@ -1015,7 +1030,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         summaryView.addSubview(proteinContainer)
 
         let proteinLabel = createLabel(text: NSLocalizedString("PROTEIN", comment: "PROTEIN"), fontSize: 9, weight: .bold, color: .white)
-        totalNetProteinLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .semibold, color: .white)
+        totalNetProteinLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .bold, color: .white)
         let proteinStack = UIStackView(arrangedSubviews: [proteinLabel, totalNetProteinLabel])
         let proteinPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(proteinStack, in: proteinContainer, padding: proteinPadding)
@@ -1118,8 +1133,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         remainsContainer.isUserInteractionEnabled = true
         
         remainsLabel = createLabel(text: NSLocalizedString("HELA DOSEN", comment: "HELA DOSEN"), fontSize: 9, weight: .bold, color: .white)
-        totalRemainsLabel = createLabel(text: NSLocalizedString("0g", comment: "0g"), fontSize: 12, weight: .semibold, color: .white)
-        totalRemainsBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .semibold, color: .white)
+        totalRemainsLabel = createLabel(text: NSLocalizedString("0g", comment: "0g"), fontSize: 12, weight: .bold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .bold, color: .white)
         
         let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
         remainsValuesStack.axis = .horizontal
@@ -1138,8 +1153,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         startAmountContainer.isUserInteractionEnabled = true
         
         let startAmountLabel = createLabel(text: NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS"), fontSize: 9, weight: .bold, color: .white)
-        totalStartAmountLabel = createLabel(text: String(format: NSLocalizedString("%.0fg", comment: "%.0fg"), scheduledStartDose), fontSize: 12, weight: .semibold, color: .white)
-        totalStartBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .semibold, color: .white)
+        totalStartAmountLabel = createLabel(text: String(format: NSLocalizedString("%.0fg", comment: "%.0fg"), scheduledStartDose), fontSize: 12, weight: .bold, color: .white)
+        totalStartBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .bold, color: .white)
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
         startAmountValuesStack.axis = .horizontal
         startAmountValuesStack.spacing = 3
@@ -1269,13 +1284,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let formattedLastValue = String(format: "%.0f g", registeredCarbsSoFar)
             totalRegisteredCarbsLabel.text = registeredCarbsSoFar == 0 ? nil : formattedLastValue
             
-            // Check if the formatted number is greater than 0
+            // Check if any of the values (carbs, fat, protein, bolus) are greater than 0
             if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
                let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")),
-               numberValue > 0 {
-                saveMealToHistory = true // Set true when totalRegisteredCarbsLabel becomes non-empty
+               numberValue > 0 || registeredFatSoFar > 0.0 || registeredProteinSoFar > 0.0 || registeredBolusSoFar > 0.0 {
+                
+                saveMealToHistory = true // Set true if any of the values are greater than 0
             } else {
-                saveMealToHistory = false // Reset if the value is not greater than 0
+                saveMealToHistory = false // Reset if all the values are 0
             }
             
             // Ensure UI elements are initialized
@@ -2055,12 +2071,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateTotalNutrients()
         clearAllButton.isEnabled = true
         
+        // Check if any of the values (carbs, fat, protein, bolus) are greater than 0
         if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
            let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")),
-           numberValue > 0 {
-            saveMealToHistory = true // Set true when totalRegisteredCarbsLabel becomes non-empty by send input
+           numberValue > 0 || registeredFatSoFar > 0.0 || registeredProteinSoFar > 0.0 || registeredBolusSoFar > 0.0 {
+            
+            saveMealToHistory = true // Set true if any of the values are greater than 0
         } else {
-            saveMealToHistory = false // Set false when totalRegisteredCarbsLabel becomes empty by send input
+            saveMealToHistory = false // Reset if all the values are 0
         }
         
         if UserDefaultsRepository.allowSharingOngoingMeals {
@@ -2804,7 +2822,6 @@ extension ComposeMealViewController {
     
     @objc private func showCarbsInfo() {
         let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g")).replacingOccurrences(of: "g", with: " g")
-        // Use "0" if totalRegisteredCarbsLabel.text is empty or nil
         let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
             
         presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
@@ -2883,6 +2900,7 @@ extension ComposeMealViewController {
                 self.updateHeadlineVisibility()
                 self.updateClearAllButtonState()
                 self.saveToCoreData()
+                self.saveValuesToUserDefaults()
             }
         )
         popoverController.modalPresentationStyle = .popover

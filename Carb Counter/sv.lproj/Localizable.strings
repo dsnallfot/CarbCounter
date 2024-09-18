@@ -25,7 +25,7 @@
 "%.0f g" = "%.0f g";
 
 /* Compose meal view controller */
-"EditRegistration.Header" = "Ändra registrerade värden";
+"EditRegistration.Header" = "Justera registrerade värden";
 "EditRegistration.Carbs" = "Kolhydrater";
 "EditRegistration.Fat" = "Fett";
 "EditRegistration.Protein" = "Protein";

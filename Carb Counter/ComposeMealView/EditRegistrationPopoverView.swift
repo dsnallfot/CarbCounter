@@ -18,12 +18,25 @@ struct EditRegistrationPopoverView: View {
 
     var onDismiss: (() -> Void)?
 
-    // Custom formatter to remove trailing zeros
+    // Custom formatter to remove trailing zeros and adjust to the needed precision
     private func formatValue(_ value: Double) -> String {
         if value == floor(value) {
             return String(format: "%.0f", value) // No decimal places if it's a whole number
+        } else if value * 10 == floor(value * 10) {
+            return String(format: "%.1f", value) // Show one decimal place if one decimal is non-zero
         } else {
-            return String(format: "%.1f", value).replacingOccurrences(of: ".0", with: "") // Show one decimal places, but remove ".0"
+            return String(format: "%.2f", value) // Show two decimal places
+        }
+    }
+    
+    // Helper function to get the custom UIFont for the button text
+    private func getRoundedFont(size: CGFloat, weight: UIFont.Weight) -> Font {
+        let systemFont = UIFont.systemFont(ofSize: size, weight: weight)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            let roundedFont = UIFont(descriptor: roundedDescriptor, size: size)
+            return Font(roundedFont)
+        } else {
+            return Font(systemFont)
         }
     }
 
@@ -32,8 +45,9 @@ struct EditRegistrationPopoverView: View {
             Color(red: 90/255, green: 104/255, blue: 125/255).opacity(0.7).edgesIgnoringSafeArea(.all) // Add background
             
             VStack(spacing: 0) {
+                Text("EditRegistration.Header".localized).fontWeight(.bold).padding(.top, 15).padding(.bottom, -15)
                 Form {
-                    Section(header: Text("EditRegistration.Header".localized).padding(.top, 12).padding(.bottom, 12)) {
+                    Section {
                         VStack(spacing: 0) {
                             ForEach([
                                 ("EditRegistration.Carbs".localized, $registeredCarbsSoFar),
@@ -44,12 +58,13 @@ struct EditRegistrationPopoverView: View {
                                 HStack {
                                     Text(label)
                                     Spacer()
-                                    TextField(label, text: Binding(
+                                    TextField("...", text: Binding(
                                         get: {
                                             binding.wrappedValue == 0 ? "" : formatValue(binding.wrappedValue)
                                         },
                                         set: {
-                                            binding.wrappedValue = Double($0) ?? 0
+                                            // Replace commas with periods before converting to Double
+                                            binding.wrappedValue = Double($0.replacingOccurrences(of: ",", with: ".")) ?? 0
                                         }
                                     ))
                                     .keyboardType(.decimalPad)
@@ -57,7 +72,7 @@ struct EditRegistrationPopoverView: View {
                                     .frame(width: 100)
                                     Text(label == "EditRegistration.Bolus".localized ? "EditRegistration.BolusMeasurement".localized : "EditRegistration.WeightMeasurement".localized)
                                 }
-                                .padding(.vertical, 12)
+                                .padding(.vertical, 11)
                                 
                                 Divider()
                             }
@@ -72,7 +87,7 @@ struct EditRegistrationPopoverView: View {
                                 }), displayedComponents: [.hourAndMinute])
                                 .labelsHidden()
                             }
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 5.5)
                         }
                     }
                     .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
@@ -90,6 +105,7 @@ struct EditRegistrationPopoverView: View {
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
+                        .font(getRoundedFont(size: 19, weight: .semibold)) // Apply the rounded font here
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
