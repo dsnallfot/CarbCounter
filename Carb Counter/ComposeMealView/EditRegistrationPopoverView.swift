@@ -15,6 +15,7 @@ struct EditRegistrationPopoverView: View {
     @Binding var mealDate: Date?
 
     @Environment(\.presentationMode) var presentationMode
+    @State private var showAlert = false // State variable to show the alert
 
     var onDismiss: (() -> Void)?
 
@@ -28,7 +29,7 @@ struct EditRegistrationPopoverView: View {
             return String(format: "%.2f", value) // Show two decimal places
         }
     }
-    
+
     // Helper function to get the custom UIFont for the button text
     private func getRoundedFont(size: CGFloat, weight: UIFont.Weight) -> Font {
         let systemFont = UIFont.systemFont(ofSize: size, weight: weight)
@@ -45,7 +46,29 @@ struct EditRegistrationPopoverView: View {
             Color(red: 90/255, green: 104/255, blue: 125/255).opacity(0.7).edgesIgnoringSafeArea(.all) // Add background
             
             VStack(spacing: 0) {
-                Text("EditRegistration.Header".localized).fontWeight(.bold).padding(.top, 15).padding(.bottom, -15)
+                Button(action: {
+                    showAlert = true // Trigger the alert when the button is pressed
+                }) {
+                    HStack {
+                        Spacer()
+                        
+                        Text("EditRegistration.Header".localized)
+                            //.fontWeight(.bold)
+                            .font(getRoundedFont(size: 19, weight: .bold))
+                        
+                        Spacer()
+                        
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .font(.system(size: 16))
+                    }
+                    .padding(.top, 15)
+                    //.padding(.bottom, -15)
+                    .padding(.trailing, 20)
+                    .padding(.leading, 20)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
                 Form {
                     Section {
                         VStack(spacing: 0) {
@@ -63,7 +86,6 @@ struct EditRegistrationPopoverView: View {
                                             binding.wrappedValue == 0 ? "" : formatValue(binding.wrappedValue)
                                         },
                                         set: {
-                                            // Replace commas with periods before converting to Double
                                             binding.wrappedValue = Double($0.replacingOccurrences(of: ",", with: ".")) ?? 0
                                         }
                                     ))
@@ -105,12 +127,25 @@ struct EditRegistrationPopoverView: View {
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
-                        .font(getRoundedFont(size: 19, weight: .semibold)) // Apply the rounded font here
+                        .font(getRoundedFont(size: 19, weight: .semibold))
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
                 .padding(.bottom, 15)
             }
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("DeleteAllValues.Title".localized),
+                message: Text("DeleteAllValues.Message".localized),
+                primaryButton: .destructive(Text("DeleteAllValues.Button".localized)) {
+                    registeredFatSoFar = 0
+                    registeredProteinSoFar = 0
+                    registeredBolusSoFar = 0
+                    registeredCarbsSoFar = 0
+                },
+                secondaryButton: .cancel(Text("Avbryt"))
+            )
         }
     }
 }

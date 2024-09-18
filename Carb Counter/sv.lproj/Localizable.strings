@@ -25,7 +25,7 @@
 "%.0f g" = "%.0f g";
 
 /* Compose meal view controller */
-"EditRegistration.Header" = "Justera registrerade värden";
+"EditRegistration.Header" = "Registrerade värden";
 "EditRegistration.Carbs" = "Kolhydrater";
 "EditRegistration.Fat" = "Fett";
 "EditRegistration.Protein" = "Protein";
@@ -34,6 +34,9 @@
 "EditRegistration.Done" = "Klar";
 "EditRegistration.WeightMeasurement" = "g";
 "EditRegistration.BolusMeasurement" = "E";
+"DeleteAllValues.Title" = "Radera alla värden?";
+"DeleteAllValues.Message" = "\nÄr du säker på att du vill radera alla registrerade värden? \n\nDenna åtgärd kan inte ångras.";
+"DeleteAllValues.Button" = "Radera";
 "Lägg till eller ersätt?" = "Lägg till eller ersätt?";
 "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?" = "\nObs! Du har redan en pågående måltidsregistrering.\n\nVill du addera den nya måltiden till den pågående, eller vill du ersätta den pågående måltiden med den nya?";
 "Kolhydratssnål Måltid" = "Kolhydratssnål Måltid";
