@@ -26,6 +26,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var addButtonRowView: AddButtonRowView!
     private var scrollViewBottomConstraint: NSLayoutConstraint?
     private var addButtonRowViewBottomConstraint: NSLayoutConstraint?
+    private var crContainer: UIView?
+    private var crContainerBackgroundColor: UIColor = .systemGray2
     
     ///Buttons
     var clearAllButton: UIBarButtonItem!
@@ -1109,23 +1111,28 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         treatmentView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(treatmentView)
         
-        //let crContainer = createContainerView(backgroundColor: .systemCyan, borderColor: .white, borderWidth: 2)
-        let crContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 0)
-        treatmentView.addSubview(crContainer)
+        // Initialize crContainer with the initial background color
+            crContainer = createContainerView(backgroundColor: crContainerBackgroundColor, borderColor: .white, borderWidth: 0)
+            treatmentView.addSubview(crContainer!)
         
         crLabel = createLabel(text: NSLocalizedString("INSULINKVOT", comment: "INSULINKVOT"), fontSize: 9, weight: .bold, color: .white)
         nowCRLabel = createLabel(text: formatScheduledCarbRatio(scheduledCarbRatio), fontSize: 18, weight: .bold, color: .white)
         
-        let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
-        crStack.axis = .vertical
-        crStack.spacing = 4
-        let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
-        setupStackView(crStack, in: crContainer, padding: crPadding)
-        
-        let crTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCRInfo))
-        crContainer.isUserInteractionEnabled = true
-        crContainer.addGestureRecognizer(crTapGesture)
-        
+        if let crContainer = crContainer {
+            let crStack = UIStackView(arrangedSubviews: [crLabel, nowCRLabel])
+            crStack.axis = .vertical
+            crStack.spacing = 4
+            let crPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+            setupStackView(crStack, in: crContainer, padding: crPadding)
+            
+            // Ensure crContainer is non-nil before setting properties or adding gestures
+            let crTapGesture = UITapGestureRecognizer(target: self, action: #selector(showCRInfo))
+            crContainer.isUserInteractionEnabled = true
+            crContainer.addGestureRecognizer(crTapGesture)
+        } else {
+            // Handle the case where crContainer is nil
+            print("crContainer is nil and cannot be configured.")
+        }
         remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
@@ -1178,23 +1185,38 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredStack.spacing = 4
         let registeredPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(registeredStack, in: registeredContainer, padding: registeredPadding)
-        let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
-        hStack.axis = .horizontal
-        hStack.spacing = 8
-        hStack.translatesAutoresizingMaskIntoConstraints = false
-        hStack.distribution = .fillEqually
-        treatmentView.addSubview(hStack)
+        if let crContainer = crContainer, let startAmountContainer = startAmountContainer, let remainsContainer = remainsContainer, let registeredContainer = registeredContainer {
+            let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredCarbsLabel])
+            registeredStack.axis = .vertical
+            registeredStack.spacing = 4
+            let registeredPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+            setupStackView(registeredStack, in: registeredContainer, padding: registeredPadding)
+            
+            // Create horizontal stack with the unwrapped containers
+            let hStack = UIStackView(arrangedSubviews: [crContainer, startAmountContainer, remainsContainer, registeredContainer])
+            hStack.axis = .horizontal
+            hStack.spacing = 8
+            hStack.translatesAutoresizingMaskIntoConstraints = false
+            hStack.distribution = .fillEqually
+            treatmentView.addSubview(hStack)
+            
+            // Add constraints for hStack
+            NSLayoutConstraint.activate([
+                hStack.leadingAnchor.constraint(equalTo: treatmentView.leadingAnchor, constant: 16),
+                hStack.trailingAnchor.constraint(equalTo: treatmentView.trailingAnchor, constant: -16),
+                hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
+                hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
+            ])
+        } else {
+            // Handle the case where any of the views are nil
+            print("One or more views are nil and cannot be added to the stack view.")
+        }
         
         NSLayoutConstraint.activate([
             treatmentView.heightAnchor.constraint(equalToConstant: 60),
             treatmentView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             treatmentView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             treatmentView.topAnchor.constraint(equalTo: container.topAnchor, constant: 60),
-            
-            hStack.leadingAnchor.constraint(equalTo: treatmentView.leadingAnchor, constant: 16),
-            hStack.trailingAnchor.constraint(equalTo: treatmentView.trailingAnchor, constant: -16),
-            hStack.topAnchor.constraint(equalTo: treatmentView.topAnchor, constant: 5),
-            hStack.bottomAnchor.constraint(equalTo: treatmentView.bottomAnchor, constant: -10)
         ])
         
         //addDoneButtonToKeyboard()
@@ -2572,15 +2594,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
         UserDefaultsRepository.lateBreakfast = lateBreakfast
-        
+
+        // Change background color based on `lateBreakfast` state
         if lateBreakfast {
+            crContainerBackgroundColor = .systemRed // Change to desired color when true
             scheduledCarbRatio /= lateBreakfastFactor
         } else {
+            crContainerBackgroundColor = .systemGray2 // Revert to default color
             updatePlaceholderValuesForCurrentHour()
         }
-        
+
         updateScheduledValuesUI()
         updateTotalNutrients()
+
+        // Safely unwrap crContainer and update its background color
+            if let crContainer = crContainer {
+                crContainer.backgroundColor = crContainerBackgroundColor
+            }
     }
 
     class AddButtonRowView: UIView {
@@ -2629,7 +2659,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastSwitch: UISwitch = {
             let toggle = UISwitch()
-            toggle.onTintColor = .systemBlue
+            toggle.onTintColor = .systemRed
             toggle.translatesAutoresizingMaskIntoConstraints = false
             toggle.addTarget(self, action: #selector(lateBreakfastSwitchToggled(_:)), for: .valueChanged)
             return toggle
@@ -2653,8 +2683,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastContainer: UIView = {
             let view = UIView()
-            view.backgroundColor = .systemBlue
-            //view.backgroundColor = .systemBlue.withAlphaComponent(0.35)
+            view.backgroundColor = .systemGray2
+            //view.backgroundColor = .systemRed.withAlphaComponent(0.5)
             view.layer.cornerRadius = 10
             view.layer.borderWidth = 0
             view.layer.borderColor = UIColor.white.cgColor
@@ -2676,8 +2706,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Create the container for the lateBreakfastSwitch and label
             let lateBreakfastContainer = UIView()
             lateBreakfastContainer.translatesAutoresizingMaskIntoConstraints = false
-            //lateBreakfastContainer.backgroundColor = .systemBlue.withAlphaComponent(0.35)
-            lateBreakfastContainer.backgroundColor = .systemBlue
+            //lateBreakfastContainer.backgroundColor = .systemRed.withAlphaComponent(0.5)
+            lateBreakfastContainer.backgroundColor = .systemGray2
             lateBreakfastContainer.layer.cornerRadius = 10
             lateBreakfastContainer.layer.borderWidth = 0
             lateBreakfastContainer.layer.borderColor = UIColor.white.cgColor
