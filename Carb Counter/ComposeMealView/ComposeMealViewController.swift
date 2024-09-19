@@ -151,7 +151,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Add the "Plate" image on top of the gradient view
         let plateImageView = UIImageView(image: UIImage(named: "Plate"))
         plateImageView.contentMode = .scaleAspectFit
-        plateImageView.alpha = 0.08
+        plateImageView.alpha = 0.05
         plateImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(plateImageView)
 
@@ -2613,6 +2613,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.startLateBreakfastTimer()
         } else {
             crContainerBackgroundColor = .systemGray2 // Revert to default color
+
             updatePlaceholderValuesForCurrentHour()
             updateScheduledValuesUI()
             updateTotalNutrients()
@@ -2620,6 +2621,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Safely unwrap crContainer and update its background color
             if let crContainer = crContainer {
                 crContainer.backgroundColor = crContainerBackgroundColor
+            }
+            // Safely unwrap and update lateBreakfastContainer's background color
+            if let addButtonRowView = self.addButtonRowView {
+                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemGray2
             }
         }
     }
@@ -2663,6 +2668,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if let crContainer = self.crContainer {
                 crContainer.backgroundColor = self.crContainerBackgroundColor
             }
+            // Safely unwrap and update lateBreakfastContainer's background color
+            if let addButtonRowView = self.addButtonRowView {
+                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemRed
+            }
         }
         
         // Define the "Använd Förinställd" action
@@ -2684,12 +2693,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if let crContainer = self.crContainer {
                 crContainer.backgroundColor = self.crContainerBackgroundColor
             }
+            // Safely unwrap and update lateBreakfastContainer's background color
+            if let addButtonRowView = self.addButtonRowView {
+                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemRed
+            }
         }
         
         // Define the "Cancel" action
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { [weak self] _ in
             guard let self = self else { return }
-            
             turnOffLateBreakfastSwitch()
         }
         
@@ -2706,14 +2718,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let addButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle(NSLocalizedString("+ VÄLJ I LISTA", comment: "+ VÄLJ I LISTA"), for: .normal)
-            
             let systemFont = UIFont.systemFont(ofSize: 12, weight: .bold)
             if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
                 button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 12)
             } else {
                 button.titleLabel?.font = systemFont
             }
-            
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -2727,14 +2737,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let rssButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle(NSLocalizedString("+ SKOLMATEN", comment: "+ SKOLMATEN"), for: .normal)
-
             let systemFont = UIFont.systemFont(ofSize: 12, weight: .bold)
             if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
                 button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 12)
             } else {
                 button.titleLabel?.font = systemFont
             }
-
             button.setTitleColor(.white, for: .normal)
             button.backgroundColor = .systemBlue
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -2748,9 +2756,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         let lateBreakfastSwitch: UISwitch = {
             let toggle = UISwitch()
-            toggle.onTintColor = .systemRed
+            toggle.onTintColor = .clear
             toggle.translatesAutoresizingMaskIntoConstraints = false
-            //toggle.addTarget(self, action: #selector(lateBreakfastSwitchToggled(_:)), for: .valueChanged)
             return toggle
         }()
         
@@ -2762,7 +2769,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 label.font = systemFont
             }
-            
             label.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -2770,10 +2776,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return label
         }()
         
+        // Make lateBreakfastContainer a public property
         let lateBreakfastContainer: UIView = {
             let view = UIView()
             view.backgroundColor = .systemGray2
-            //view.backgroundColor = .systemRed.withAlphaComponent(0.5)
             view.layer.cornerRadius = 10
             view.layer.borderWidth = 0
             view.layer.borderColor = UIColor.white.cgColor
@@ -2792,16 +2798,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         private func setupView() {
-            // Create the container for the lateBreakfastSwitch and label
-            let lateBreakfastContainer = UIView()
-            lateBreakfastContainer.translatesAutoresizingMaskIntoConstraints = false
-            //lateBreakfastContainer.backgroundColor = .systemRed.withAlphaComponent(0.5)
-            lateBreakfastContainer.backgroundColor = .systemGray2
-            lateBreakfastContainer.layer.cornerRadius = 10
-            lateBreakfastContainer.layer.borderWidth = 0
-            lateBreakfastContainer.layer.borderColor = UIColor.white.cgColor
-            lateBreakfastContainer.clipsToBounds = true
-
             // Add label and switch to the container
             lateBreakfastContainer.addSubview(lateBreakfastLabel)
             lateBreakfastContainer.addSubview(lateBreakfastSwitch)
