@@ -1764,7 +1764,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let alertMessage = String(format: NSLocalizedString("\nVill du även aktivera overriden \n%@ i iAPS/Trio?", comment: "Message asking if the user wants to activate the override in iAPS/Trio"), overrideName)
                 
                 let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
                 let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in
                     self.sendOverrideRequest(combinedString: combinedString)
                 }
@@ -1773,10 +1773,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(alertController, animated: true, completion: nil)
             } else {
                 let alertController = UIAlertController(title: NSLocalizedString("Manuell aktivering", comment: "Manuell aktivering"), message: String(format: NSLocalizedString("\nKom ihåg att aktivera overriden \n\(overrideName) i iAPS/Trio", comment: "\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio"), overrideName), preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
                 let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 }
-                alertController.addAction(cancelAction)
                 alertController.addAction(okAction)
                 present(alertController, animated: true, completion: nil)
             }
@@ -2668,7 +2666,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         // Define the "Använd Förinställd" action
-        let cancelAction = UIAlertAction(title: String(format: NSLocalizedString("Använd %@", comment: "Använd %@"), overrideName), style: .default) { [weak self] _ in
+        let presetAction = UIAlertAction(title: String(format: NSLocalizedString("Använd %@", comment: "Använd %@"), overrideName), style: .default) { [weak self] _ in
             guard let self = self else { return }
             
             self.temporaryOverride = false // Keep the override flag false
@@ -2688,8 +2686,16 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
         
+        // Define the "Cancel" action
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { [weak self] _ in
+            guard let self = self else { return }
+            
+            turnOffLateBreakfastSwitch()
+        }
+        
         // Add actions to the alert controller
         alertController.addAction(confirmAction)
+        alertController.addAction(presetAction)
         alertController.addAction(cancelAction)
         
         // Present the alert
