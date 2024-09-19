@@ -83,7 +83,7 @@
 "Fel" = "Error";
 "OK" = "OK";
 "Tillfällig eller förinställd override?" = "Temporary or preset override?";
-"\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i % nedan" = "\nSelect if you want to use the preset override (%@), or enable a temporary override.\n\nIf you want to enable a temporary override, please enter the override percentage in the field below.";
+"\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan" = "\nSelect if you want to use the preset override (%@), or enable a temporary override.\n\nIf you want to enable a temporary override, please enter the override percentage in the field below.";
 "Ange override-faktor i %" = "Enter override percentage %";
 "Använd tillfällig" = "Use temporary";
 "Använd %@" = "Use %@";

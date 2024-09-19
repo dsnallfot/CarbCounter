@@ -2631,7 +2631,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let overrideName = UserDefaultsRepository.lateBreakfastOverrideName ?? "förinställd"
         let alertController = UIAlertController(
             title: NSLocalizedString("Tillfällig eller förinställd override?", comment: "Tillfällig eller förinställd override?"),
-            message: String(format: NSLocalizedString("\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i % nedan", comment: "\nVälj om du vill aktivera den förinställda overriden %@, eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i % nedan"), overrideName),
+            message: String(format: NSLocalizedString("\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan", comment: "\nVälj om du vill aktivera den förinställda overriden %@, eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan"), overrideName),
             preferredStyle: .alert
         )
         
