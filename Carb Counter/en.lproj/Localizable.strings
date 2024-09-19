@@ -82,10 +82,15 @@
 "\nKommandot levererades till iAPS/Trio" = "\nThe command was delivered to iAPS/Trio";
 "Fel" = "Error";
 "OK" = "OK";
+"Tillfällig eller förinställd override?" = "Temporary or preset override?";
+"\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i % nedan" = "\nSelect if you want to use the preset override (%@), or enable a temporary override.\n\nIf you want to enable a temporary override, please enter the override percentage in the field below.";
+"Ange override-faktor i %" = "Enter override percentage %";
+"Använd tillfällig" = "Use temporary";
+"Använd %@" = "Use %@";
 "Manuell aktivering" = "Manual activation";
-"\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio" = "\nRemember to activate the override \n'%@' in iAPS/Trio";
+"\nKom ihåg att aktivera overriden \n%@ i iAPS/Trio" = "\nRemember to activate the override \n%@ in iAPS/Trio";
 "Aktivera override" = "Activate override";
-"\nVill du aktivera overriden \n'%@' i iAPS/Trio?" = "\nDo you want to activate the override \n'%@' in iAPS/Trio?";
+"\nVill du även aktivera overriden \n%@ i iAPS/Trio?" = "\nDo you also want to activate the override \n%@ in iAPS/Trio?";
 "Ja" = "Yes";
 "Avbryt" = "Cancel";
 "Klar" = "Done";

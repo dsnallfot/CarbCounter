@@ -75,6 +75,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var zeroBolus: Bool = false
     var lateBreakfast: Bool = false
     var lateBreakfastFactor = Double(1.5)
+    var temporaryOverride: Bool = false
+    var temporaryOverrideFactor = Double(1.0)
     private var lateBreakfastTimer: Timer?
     private let lateBreakfastDuration: TimeInterval = 90 * 60 // 90 minutes in seconds
     var startDoseGiven: Bool = false
@@ -185,7 +187,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         lateBreakfast = UserDefaultsRepository.lateBreakfast
         addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
         if lateBreakfast {
-            scheduledCarbRatio /= lateBreakfastFactor
+            if temporaryOverride {
+                scheduledCarbRatio /= temporaryOverrideFactor
+            } else {
+                scheduledCarbRatio /= lateBreakfastFactor
+            }
         }
         updateScheduledValuesUI()
 
@@ -272,7 +278,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor // Fetch factor for calculating late breakfast CR
         
         if lateBreakfast {
-            scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
+            if temporaryOverride {
+                scheduledCarbRatio /= temporaryOverrideFactor
+            } else {
+                scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
+            }
         }
         updateScheduledValuesUI() // Update labels
         
@@ -1729,43 +1739,47 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     /// Registration of meal and remote commands
-    @objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
+    /*@objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
         if sender.isOn {
-            handleLateBreakfastSwitchOn()
             self.startLateBreakfastTimer()
+            if temporaryOverride {
+                print("temporary override already applied")
+            } else {
+                handleLateBreakfastSwitchOn()
+            }
         }
-    }
+    }*/
     
     private func handleLateBreakfastSwitchOn() {
         guard let overrideName = UserDefaultsRepository.lateBreakfastOverrideName else {
             print("No override name available")
             return
         }
-        if UserDefaultsRepository.allowShortcuts {
-            let caregiverName = UserDefaultsRepository.caregiverName
-            let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-            let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
-            
-            let alertTitle = NSLocalizedString("Aktivera override", comment: "Aktivera override")
-            let alertMessage = String(format: NSLocalizedString("\nVill du aktivera overriden \n'%@' i iAPS/Trio?", comment: "Message asking if the user wants to activate the override in iAPS/Trio"), overrideName)
-            
-            let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
-            let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in
-                self.sendOverrideRequest(combinedString: combinedString)
+            if UserDefaultsRepository.allowShortcuts {
+                let caregiverName = UserDefaultsRepository.caregiverName
+                let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+                let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+                
+                let alertTitle = NSLocalizedString("Aktivera override", comment: "Aktivera override")
+                let alertMessage = String(format: NSLocalizedString("\nVill du även aktivera overriden \n%@ i iAPS/Trio?", comment: "Message asking if the user wants to activate the override in iAPS/Trio"), overrideName)
+                
+                let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+                let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in
+                    self.sendOverrideRequest(combinedString: combinedString)
+                }
+                alertController.addAction(cancelAction)
+                alertController.addAction(yesAction)
+                present(alertController, animated: true, completion: nil)
+            } else {
+                let alertController = UIAlertController(title: NSLocalizedString("Manuell aktivering", comment: "Manuell aktivering"), message: String(format: NSLocalizedString("\nKom ihåg att aktivera overriden \n\(overrideName) i iAPS/Trio", comment: "\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio"), overrideName), preferredStyle: .alert)
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+                let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
+                }
+                alertController.addAction(cancelAction)
+                alertController.addAction(okAction)
+                present(alertController, animated: true, completion: nil)
             }
-            alertController.addAction(cancelAction)
-            alertController.addAction(yesAction)
-            present(alertController, animated: true, completion: nil)
-        } else {
-            let alertController = UIAlertController(title: NSLocalizedString("Manuell aktivering", comment: "Manuell aktivering"), message: String(format: NSLocalizedString("\nKom ihåg att aktivera overriden \n'\(overrideName)' i iAPS/Trio", comment: "\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio"), overrideName), preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
-            }
-            alertController.addAction(cancelAction)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-        }
     }
     
     private func startLateBreakfastTimer() {
@@ -2594,23 +2608,92 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
         lateBreakfast = sender.isOn
         UserDefaultsRepository.lateBreakfast = lateBreakfast
-
-        // Change background color based on `lateBreakfast` state
+        
+        // Show alert to set temporary override factor
         if lateBreakfast {
-            crContainerBackgroundColor = .systemRed // Change to desired color when true
-            scheduledCarbRatio /= lateBreakfastFactor
+            showTemporaryOverrideAlert()
+            self.startLateBreakfastTimer()
         } else {
             crContainerBackgroundColor = .systemGray2 // Revert to default color
             updatePlaceholderValuesForCurrentHour()
-        }
-
-        updateScheduledValuesUI()
-        updateTotalNutrients()
-
-        // Safely unwrap crContainer and update its background color
+            updateScheduledValuesUI()
+            updateTotalNutrients()
+            
+            // Safely unwrap crContainer and update its background color
             if let crContainer = crContainer {
                 crContainer.backgroundColor = crContainerBackgroundColor
             }
+        }
+    }
+
+    private func showTemporaryOverrideAlert() {
+        // Create an alert with a text field for entering the override factor in percentage
+        let overrideName = UserDefaultsRepository.lateBreakfastOverrideName ?? "förinställd"
+        let alertController = UIAlertController(
+            title: NSLocalizedString("Tillfällig eller förinställd override?", comment: "Tillfällig eller förinställd override?"),
+            message: String(format: NSLocalizedString("\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i % nedan", comment: "\nVälj om du vill aktivera den förinställda overriden %@, eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i % nedan"), overrideName),
+            preferredStyle: .alert
+        )
+        
+        // Add a text field to the alert for user input
+        alertController.addTextField { textField in
+            textField.placeholder = NSLocalizedString("Ange override-faktor i %", comment: "Ange override-faktor i %")
+            textField.keyboardType = .decimalPad
+        }
+        
+        // Define the "Använd tillfällig" action
+        let confirmAction = UIAlertAction(title: NSLocalizedString("Använd tillfällig", comment: "Använd tillfällig"), style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Get the text from the alert's text field
+            let inputText = alertController.textFields?.first?.text ?? ""
+            
+            // Convert the text to a Double or use 100 as default if no value was provided
+            let percentageFactor = Double(inputText) ?? 100
+            
+            // Divide the entered value by 100 to get the override factor
+            self.temporaryOverrideFactor = percentageFactor / 100.0
+            self.temporaryOverride = true // Set the flag to true
+            self.crContainerBackgroundColor = .systemRed // Change color
+            self.scheduledCarbRatio /= self.temporaryOverrideFactor // Adjust carb ratio
+            
+            // Continue with scheduled updates
+            self.updateScheduledValuesUI()
+            self.updateTotalNutrients()
+            
+            // Safely unwrap crContainer and update its background color
+            if let crContainer = self.crContainer {
+                crContainer.backgroundColor = self.crContainerBackgroundColor
+            }
+        }
+        
+        // Define the "Använd Förinställd" action
+        let cancelAction = UIAlertAction(title: String(format: NSLocalizedString("Använd %@", comment: "Använd %@"), overrideName), style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            self.temporaryOverride = false // Keep the override flag false
+            self.crContainerBackgroundColor = .systemRed
+
+            // Apply the specific calculation for "Nej"
+            self.scheduledCarbRatio /= self.lateBreakfastFactor
+            
+            // Run default logic
+            self.updateScheduledValuesUI()
+            self.updateTotalNutrients()
+            self.handleLateBreakfastSwitchOn()
+            
+            // Safely unwrap crContainer and update its background color
+            if let crContainer = self.crContainer {
+                crContainer.backgroundColor = self.crContainerBackgroundColor
+            }
+        }
+        
+        // Add actions to the alert controller
+        alertController.addAction(confirmAction)
+        alertController.addAction(cancelAction)
+        
+        // Present the alert
+        present(alertController, animated: true, completion: nil)
     }
 
     class AddButtonRowView: UIView {
@@ -2661,7 +2744,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let toggle = UISwitch()
             toggle.onTintColor = .systemRed
             toggle.translatesAutoresizingMaskIntoConstraints = false
-            toggle.addTarget(self, action: #selector(lateBreakfastSwitchToggled(_:)), for: .valueChanged)
+            //toggle.addTarget(self, action: #selector(lateBreakfastSwitchToggled(_:)), for: .valueChanged)
             return toggle
         }()
         
