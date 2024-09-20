@@ -2625,6 +2625,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Safely unwrap and update lateBreakfastContainer's background color
             if let addButtonRowView = self.addButtonRowView {
                 addButtonRowView.lateBreakfastContainer.backgroundColor = .systemGray2
+                addButtonRowView.lateBreakfastLabel.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             }
         }
     }
@@ -2670,7 +2671,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
             // Safely unwrap and update lateBreakfastContainer's background color
             if let addButtonRowView = self.addButtonRowView {
+                let override = self.temporaryOverrideFactor * 100
+                let formattedOverride = String(format: "%.0f", override)
                 addButtonRowView.lateBreakfastContainer.backgroundColor = .systemRed
+                addButtonRowView.lateBreakfastLabel.text = ("\(formattedOverride) %  ")
             }
         }
         
@@ -2695,7 +2699,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
             // Safely unwrap and update lateBreakfastContainer's background color
             if let addButtonRowView = self.addButtonRowView {
+                let override = self.lateBreakfastFactor * 100
+                let formattedOverride = String(format: "%.0f", override)
                 addButtonRowView.lateBreakfastContainer.backgroundColor = .systemRed
+                addButtonRowView.lateBreakfastLabel.text = ("\(formattedOverride) %   ")
             }
         }
         
