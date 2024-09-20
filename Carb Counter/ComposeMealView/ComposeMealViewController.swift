@@ -192,7 +192,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 scheduledCarbRatio /= lateBreakfastFactor
             }
-            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
+            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         }
         updateScheduledValuesUI()
 
@@ -284,7 +284,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
             }
-            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
+            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         }
         updateScheduledValuesUI() // Update labels
         
@@ -324,7 +324,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if lateBreakfast {
             scheduledCarbRatio *= lateBreakfastFactor // Reset scheduledCarbRatio when leaving view
         }
-        UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
+        UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         hourChangeTimer?.invalidate()
         hourChangeTimer = nil
     }
@@ -1361,7 +1361,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let currentHour = Calendar.current.component(.hour, from: Date())
         if let carbRatio = CoreDataHelper.shared.fetchCarbRatio(for: currentHour) {
             scheduledCarbRatio = carbRatio
-            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
+            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         }
         if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
             scheduledStartDose = startDose
@@ -2666,7 +2666,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.setLatestOverrideFactor(self.temporaryOverrideFactor)
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
-            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio //Save carb ratio in user defaults
+            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio
             
             // Safely unwrap crContainer and update its background color
             if let crContainer = self.crContainer {
@@ -2696,7 +2696,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
             self.handleLateBreakfastSwitchOn()
-            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio //Save carb ratio in user defaults
+            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio
             
             // Safely unwrap crContainer and update its background color
             if let crContainer = self.crContainer {
@@ -2952,13 +2952,13 @@ extension ComposeMealViewController {
         let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g")).replacingOccurrences(of: "g", with: " g")
         let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
             
-        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
+        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
     }
     
     @objc private func showFatInfo() {
         let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let fatRemaining = String(format: "%.0f", fatTotalValue - registeredFatSoFar)
-        presentPopover(title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining), sourceView: totalNetFatLabel)
+        presentPopover(title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining), sourceView: totalNetFatLabel)
     }
     
     @objc private func showProteinInfo() {
