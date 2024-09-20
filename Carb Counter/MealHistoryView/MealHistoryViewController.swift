@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPopoverPresentationControllerDelegate {
     
     var tableView: UITableView!
     var mealHistories: [MealHistory] = []
@@ -221,8 +221,16 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             self.present(alert, animated: true, completion: nil)
         }
         deleteAction.image = UIImage(systemName: "trash.fill")
-        return UISwipeActionsConfiguration(actions: [deleteAction])
-    }
+            
+            let editAction = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
+                self.presentEditPopover(for: indexPath)
+                completionHandler(true)
+            }
+            editAction.image = UIImage(systemName: "square.and.pencil")
+            editAction.backgroundColor = .systemBlue
+            
+            return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let mealHistory = filteredMealHistories[indexPath.row]
@@ -239,5 +247,89 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             return false
         }
         tableView.reloadData()
+    }
+    
+    private func presentEditPopover(for indexPath: IndexPath) {
+        let mealHistory = filteredMealHistories[indexPath.row]
+
+        // Create the custom alert view controller
+        let customAlertVC = CustomAlertViewController()
+        customAlertVC.mealDate = mealHistory.mealDate
+        customAlertVC.modalPresentationStyle = .overFullScreen
+        customAlertVC.modalTransitionStyle = .crossDissolve
+        customAlertVC.onSave = { [weak self] newDate in
+            // Update the meal date in the meal history
+            mealHistory.mealDate = newDate
+
+            // Save to Core Data
+            let context = CoreDataStack.shared.context
+            do {
+                try context.save()
+            } catch {
+                print("Failed to save updated meal date: \(error.localizedDescription)")
+            }
+
+            // Run the export function after saving the updated date
+            if let dataSharingVC = self?.dataSharingVC {
+                Task {
+                    await dataSharingVC.exportMealHistoryToCSV()
+                    print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                }
+            }
+
+            // Reload table
+            self?.tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+
+        present(customAlertVC, animated: true, completion: nil)
+    }
+
+    private struct AssociatedKeys {
+        static var indexPath: UInt8 = 0
+        static var datePicker: UInt8 = 1
+    }
+    
+    @objc private func saveDatePickerValue(sender: UIButton) {
+        guard let editVC = sender.superview?.viewController,
+              let indexPath = objc_getAssociatedObject(editVC, &AssociatedKeys.indexPath) as? IndexPath,
+              let datePicker = objc_getAssociatedObject(editVC, &AssociatedKeys.datePicker) as? UIDatePicker else { return }
+        
+        // Update the meal date in the meal history
+        let mealHistory = filteredMealHistories[indexPath.row]
+        mealHistory.mealDate = datePicker.date
+        
+        // Save to Core Data
+        let context = CoreDataStack.shared.context
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save updated meal date: \(error.localizedDescription)")
+        }
+        
+        // Run the export function after saving the updated date
+        if let dataSharingVC = self.dataSharingVC {
+            Task {
+                await dataSharingVC.exportMealHistoryToCSV()
+                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+            }
+        }
+        
+        // Dismiss the popover and reload table
+        dismiss(animated: true) {
+            self.tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+    }
+}
+
+extension UIView {
+    var viewController: UIViewController? {
+        var responder: UIResponder? = self
+        while responder != nil {
+            if let vc = responder as? UIViewController {
+                return vc
+            }
+            responder = responder?.next
+        }
+        return nil
     }
 }
