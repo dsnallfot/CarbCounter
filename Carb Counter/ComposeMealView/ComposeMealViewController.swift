@@ -1398,6 +1398,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     private func saveMealHistory() {
         guard !foodItemRows.isEmpty else {
+            mealDate = nil // Reset mealDate to nil after exiting without saving
             print("No food items to save.")
             return
         }
@@ -1602,6 +1603,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if !isEditingMeal {
                 stopAutoSaveToCSV()
                 resetVariablesToDefault()
+                mealDate = nil // Reset mealDate to nil after deleting all food items
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
