@@ -192,6 +192,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 scheduledCarbRatio /= lateBreakfastFactor
             }
+            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
         }
         updateScheduledValuesUI()
 
@@ -283,6 +284,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
             }
+            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
         }
         updateScheduledValuesUI() // Update labels
         
@@ -1359,6 +1361,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let currentHour = Calendar.current.component(.hour, from: Date())
         if let carbRatio = CoreDataHelper.shared.fetchCarbRatio(for: currentHour) {
             scheduledCarbRatio = carbRatio
+            UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio //Save carb ratio in user defaults
         }
         if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
             scheduledStartDose = startDose
@@ -2663,6 +2666,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.setLatestOverrideFactor(self.temporaryOverrideFactor)
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
+            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio //Save carb ratio in user defaults
             
             // Safely unwrap crContainer and update its background color
             if let crContainer = self.crContainer {
@@ -2692,6 +2696,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
             self.handleLateBreakfastSwitchOn()
+            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio //Save carb ratio in user defaults
             
             // Safely unwrap crContainer and update its background color
             if let crContainer = self.crContainer {
@@ -2963,7 +2968,24 @@ extension ComposeMealViewController {
     }
     
     @objc private func showCRInfo() {
-        presentPopover(title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"), message: String(format:NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater.")), sourceView: nowCRLabel)
+        let CR = UserDefaultsRepository.scheduledCarbRatio
+        let amount = CR * 2
+
+        func formatValue(_ value: Double) -> String {
+            return value == floor(value) ? String(format: "%.0f", value) : String(format: "%.1f", value)
+        }
+        
+        let formattedCR = formatValue(CR)
+        let formattedAmount = formatValue(amount)
+        
+        let message = String(
+            format: NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater."), formattedCR, formattedAmount)
+        
+        presentPopover(
+            title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"),
+            message: message,
+            sourceView: nowCRLabel
+        )
     }
     
     @objc private func lateBreakfastLabelTapped() {
