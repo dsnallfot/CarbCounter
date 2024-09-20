@@ -2298,13 +2298,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainsTextString = self.startDoseGiven ? NSLocalizedString("+ KVAR ATT GE", comment: "+ KVAR ATT GE") : NSLocalizedString("+ HELA DOSEN", comment: "+ HELA DOSEN")
         let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
         
+        // Helper function to format numbers with necessary decimal places
+        func formatValue(_ value: Double) -> String {
+            if value == floor(value) {
+                return String(format: "%.0f", value) // No decimal places if it's a whole number
+            } else if value * 10 == floor(value * 10) {
+                return String(format: "%.1f", value) // One decimal place if one decimal is non-zero
+            } else {
+                return String(format: "%.2f", value) // Two decimal places otherwise
+            }
+        }
+        
         if let registeredText = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
            let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
             
             let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
-            totalRemainsBolusLabel.text = String(format: NSLocalizedString("%.2fE", comment: "%.2fE"), remainsBolus)
+            totalRemainsBolusLabel.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E") // Use helper function to format remainsBolus
             
             if remainsValue < -0.5 || remainsBolus < -0.05 {
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
@@ -2323,7 +2334,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
             
-            totalRemainsBolusLabel?.text = formatNumber(remainsBolus) + NSLocalizedString("E", comment: "E")
+            totalRemainsBolusLabel?.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E") // Use helper function to format remainsBolus
             
             remainsContainer?.backgroundColor = .systemGray
             remainsLabel?.text = remainsTextString
