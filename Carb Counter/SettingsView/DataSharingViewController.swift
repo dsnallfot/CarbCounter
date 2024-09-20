@@ -673,6 +673,7 @@ class DataSharingViewController: UIViewController {
 
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
+        userDefaultsData["lateBreakfastFactorUsed"] = UserDefaultsRepository.lateBreakfastFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = UserDefaultsRepository.nightscoutURL ?? ""
         userDefaultsData["nightscoutToken"] = UserDefaultsRepository.nightscoutToken ?? ""
@@ -739,6 +740,8 @@ class DataSharingViewController: UIViewController {
                 if let date = ISO8601DateFormatter().date(from: values[1]) {
                     UserDefaultsRepository.lateBreakfastStartTime = date
                 }
+            case "lateBreakfastFactorUsed":
+                UserDefaultsRepository.lateBreakfastFactorUsed = values[1]
             case "dabasAPISecret":
                 UserDefaultsRepository.dabasAPISecret = values[1]
             case "nightscoutURL":

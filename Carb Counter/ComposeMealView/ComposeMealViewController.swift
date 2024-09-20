@@ -1739,16 +1739,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     /// Registration of meal and remote commands
-    /*@objc private func lateBreakfastSwitchToggled(_ sender: UISwitch) {
-        if sender.isOn {
-            self.startLateBreakfastTimer()
-            if temporaryOverride {
-                print("temporary override already applied")
-            } else {
-                handleLateBreakfastSwitchOn()
-            }
-        }
-    }*/
     
     private func handleLateBreakfastSwitchOn() {
         guard let overrideName = UserDefaultsRepository.lateBreakfastOverrideName else {
@@ -1792,6 +1782,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Override timer off")
         addButtonRowView.lateBreakfastSwitch.isOn = false
         lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
+    }
+    
+    func setLatestOverrideFactor(_ overrideFactor: Double) {
+        let multipliedFactor = overrideFactor * 100
+
+        let formattedFactor = String(format: "%.0f %%", multipliedFactor)
+        
+        UserDefaultsRepository.lateBreakfastFactorUsed = formattedFactor
     }
     
     private func sendOverrideRequest(combinedString: String) {
@@ -2661,7 +2659,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.crContainerBackgroundColor = .systemRed // Change color
             self.scheduledCarbRatio /= self.temporaryOverrideFactor // Adjust carb ratio
             
-            // Continue with scheduled updates
+            // Run default logic
+            self.setLatestOverrideFactor(self.temporaryOverrideFactor)
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
             
@@ -2689,6 +2688,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.scheduledCarbRatio /= self.lateBreakfastFactor
             
             // Run default logic
+            self.setLatestOverrideFactor(self.lateBreakfastFactor)
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
             self.handleLateBreakfastSwitchOn()
@@ -2971,7 +2971,8 @@ extension ComposeMealViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm"
             let formattedDate = formatter.string(from: startTime)
-            presentPopover(title: NSLocalizedString("Senaste override", comment: "Senaste override"), message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate), sourceView: addButtonRowView.lateBreakfastLabel)
+            let latestFactorUsed = UserDefaultsRepository.lateBreakfastFactorUsed
+            presentPopover(title: String(format: NSLocalizedString("Senaste override • %@", comment: "Senaste override • %@"), latestFactorUsed), message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate), sourceView: addButtonRowView.lateBreakfastLabel)
         } else {
             presentPopover(title: NSLocalizedString("Senaste override", comment: "Senaste override"), message: NSLocalizedString("Ingen tidigare aktivering hittades.", comment: "Ingen tidigare aktivering hittades."), sourceView: addButtonRowView.lateBreakfastLabel)
         }

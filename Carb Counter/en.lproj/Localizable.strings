@@ -117,6 +117,7 @@
 "Insulinkvot" = "Insulin Ratio";
 "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR 25 innebär att det behövs 2 E insulin till 50 g kolhydrater." = "Also called Carb Ratio (CR)\n\nThe value corresponds to how much carbohydrates 1 U insulin covers.\n\n Example:\nCR 25 means that 2 U insulin is needed for 50 g carbohydrates.";
 "Senaste override" = "Last override";
+"Senaste override • %@" = "Last override • %@";
 "Aktiverades %@" = "Activated %@";
 "Ingen tidigare aktivering hittades." = "No previous activation found.";
 "%.0f g/E" = "%.0f g/U";
