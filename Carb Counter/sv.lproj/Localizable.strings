@@ -117,8 +117,8 @@
 "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nSTATUS FÖR DENNA MÅLTID:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
 "Insulinkvot" = "INSULINKVOT";
 "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater." = "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n EXEMPEL:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.";
-"Senaste override" = "Senaste override";
-"Senaste override • %@" = "Senaste override • %@";
+"Senaste override" = "SENASTE OVERRIDE";
+"Senaste override • %@" = "SENASTE OVERRIDE • %@";
 "Aktiverades %@" = "Aktiverades %@";
 "Ingen tidigare aktivering hittades." = "Ingen tidigare aktivering hittades.";
 "%.0f g/E" = "%.0f g/E"; // E (Enheter)
