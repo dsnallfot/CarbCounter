@@ -2065,26 +2065,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
         print("updateRegisteredAmount function ran")
-        // Print the received values to verify they are passed correctly
-        /*print("Received KH Value: \(khValue)")
-        print("Received Fat Value: \(fatValue)")
-        print("Received Protein Value: \(proteinValue)")
-        print("Received Bolus Value: \(bolusValue)")
-        print("Received Start Dose: \(startDose)")*/
         
         // Set the startDoseGiven variable based on the received startDose value
         self.startDoseGiven = startDose
         
-        // Print the startDoseGiven value to confirm it is set correctly
-        //print("Start Dose Given is set to: \(self.startDoseGiven)")
-        
         let currentRegisteredValue = Double(totalRegisteredCarbsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
-        let newRegisteredValue = currentRegisteredValue + remainsValue
-        
-        // Print the updated registeredCarbsSoFar
-        //print("Updated Total Registered Value: \(newRegisteredValue)g")
-        
+        let newRegisteredValue = currentRegisteredValue + remainsValue        
         let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let proteinDoubleValue = Double(proteinValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let bolusDoubleValue = Double(bolusValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0

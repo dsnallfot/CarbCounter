@@ -813,12 +813,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableViewBottomConstraint.constant = 0
         view.layoutIfNeeded()
     }
-
-    
-    /*@objc private func navigateToScanner() {
-        let scannerVC = ScannerViewController()
-        navigationController?.pushViewController(scannerVC, animated: true)
-    }*/
     
     @objc private func navigateToScanner() {
         let scannerVC = ScannerViewController()

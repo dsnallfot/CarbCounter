@@ -1261,19 +1261,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         }
     }
 
-    
-    /*// Function to find ComposeMealViewController in the navigation stack
-    private func findComposeMealViewController() -> ComposeMealViewController? {
-        if let navController = self.presentingViewController as? UINavigationController {
-            for vc in navController.viewControllers {
-                if let composeMealVC = vc as? ComposeMealViewController {
-                    return composeMealVC
-                }
-            }
-        }
-        return nil
-    }*/
-
     // Helper function to extract values from combinedString
     func extractValue(from text: String, prefix: String, suffix: String) -> String {
         if let startRange = text.range(of: prefix)?.upperBound,
@@ -1295,29 +1282,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Disable or enable button based on isButtonDisabled
         sendMealButton.isEnabled = !isButtonDisabled
     }
-
-    /*
-    // Function to hide both the bolusRow and bolusCalcStack
-    func hideBolusRow() {
-        bolusRow.isHidden = true
-        bolusCalcStack.isHidden = true
-    }
-    
-    // Function to show the bolusRow
-    func showBolusRow() {
-        bolusRow.isHidden = false
-    }
-    
-    // Function to hide the bolusCalcStack
-    func hideBolusCalcRow() {
-        bolusCalcStack.isHidden = true
-    }
-    
-    // Function to show the bolusCalcStack
-    func showBolusCalcRow() {
-        bolusCalcStack.isHidden = false
-    }
-    */
     
     @IBAction func doneButtonTapped(_ sender: Any) {
         dismiss(animated: true, completion: nil)
