@@ -2663,9 +2663,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let confirmAction = UIAlertAction(title: NSLocalizedString("Använd tillfällig", comment: "Använd tillfällig"), style: .default) { [weak self] _ in
             guard let self = self else { return }
             
-            // Get the text from the alert's text field
-            let inputText = alertController.textFields?.first?.text ?? ""
-            
+            // Get the text from the alert's text field and replace ',' with '.'
+            let inputText = alertController.textFields?.first?.text?.replacingOccurrences(of: ",", with: ".") ?? ""
+                    
             // Convert the text to a Double or use 100 as default if no value was provided
             let percentageFactor = Double(inputText) ?? 100
             
