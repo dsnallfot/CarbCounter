@@ -44,6 +44,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var crLabel: UILabel!
     var nowCRLabel: UILabel!
     var startAmountContainer: UIView!
+    var startAmountLabel: UILabel!
     var totalStartAmountLabel: UILabel!
     var totalStartBolusLabel: UILabel!
     var remainsContainer: UIView!
@@ -548,6 +549,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
         
+        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -644,6 +647,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Error deserializing JSON: \(error)")
         }
         
+        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -701,7 +706,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Food item not found for entryId: \(foodEntry.entryId?.uuidString ?? "nil") or name: \(foodEntry.entryName ?? "nil")")
             }
         }
-        
+        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -745,6 +751,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
             self.lateBreakfastTimer?.invalidate()
             self.turnOffLateBreakfastSwitch()
+            self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
+            self.startAmountContainer.backgroundColor = .systemPurple
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
@@ -779,6 +787,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRegisteredCarbsLabel.text = NSLocalizedString("0 g", comment: "0 g")
         
         // Reset the startBolus amount
+        startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
+        startAmountContainer.backgroundColor = .systemPurple
         totalStartBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
         
         // Reset the remainsContainer color and label
@@ -989,7 +999,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         container.addSubview(summaryView)
 
         // Bolus container setup
-        bolusContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 0)
+        bolusContainer = createContainerView(backgroundColor: .systemIndigo, borderColor: .white, borderWidth: 0)
         summaryView.addSubview(bolusContainer)
         
         let bolusLabel = createLabel(text: NSLocalizedString("BOLUS", comment: "BOLUS"), fontSize: 9, weight: .bold, color: .white)
@@ -1171,7 +1181,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
         
-        let startAmountLabel = createLabel(text: NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS"), fontSize: 9, weight: .bold, color: .white)
+        let startAmountText = foodItemRows.isEmpty ? NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountLabel = createLabel(text: startAmountText, fontSize: 9, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: NSLocalizedString("%.0fg", comment: "%.0fg"), scheduledStartDose), fontSize: 12, weight: .bold, color: .white)
         totalStartBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .bold, color: .white)
         let startAmountValuesStack = UIStackView(arrangedSubviews: [totalStartAmountLabel, totalStartBolusLabel])
@@ -1335,8 +1346,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             updateClearAllButtonState()
             updateSaveFavoriteButtonState()
             updateHeadlineVisibility()
+            updateStartAmountLabel()
         } catch {
             print("Debug - Failed to fetch FoodItemRows: \(error)")
+        }
+    }
+    
+    private func updateStartAmountLabel() {
+        guard let startAmountLabel = startAmountLabel else {
+            print("startAmountLabel is not initialized.")
+            return
+        }
+        
+        if foodItemRows.isEmpty {
+            startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
+            startAmountContainer.backgroundColor = .systemPurple
+        } else {
+            startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+            startAmountContainer.backgroundColor = .systemBlue
         }
     }
     
@@ -1696,12 +1723,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             registeredFatSoFar = maxRegisteredFatSoFar
             registeredProteinSoFar = maxRegisteredProteinSoFar
             registeredBolusSoFar = maxRegisteredBolusSoFar
-            
-            
-            updateTotalNutrients()
-            updateClearAllButtonState()
-            updateSaveFavoriteButtonState()
-            updateHeadlineVisibility()
         }
     }
     
@@ -2455,7 +2476,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         rowView.onValueChange = { [weak self] in
             self?.updateTotalNutrients()
         }
-        
+        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -2496,6 +2518,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self?.updateHeadlineVisibility()
         }
         rowView.calculateNutrients()
+        
+        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountContainer.backgroundColor = .systemBlue
+        updateTotalNutrients()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
     }
     
     @objc private func addButtonTapped() {
@@ -2516,16 +2545,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let index = foodItemRows.firstIndex(of: rowView) {
             foodItemRows.remove(at: index)
         }
-        //moveAddButtonRowToEnd()
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
         
-        // Check if foodItemRows is empty and allowSharingOngoingMeals is true before exporting blank CSV
+        // Check if foodItemRows is empty and update label accordingly
         if foodItemRows.isEmpty {
             startDoseGiven = false
             remainingDoseGiven = false
+            startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
+            startAmountContainer.backgroundColor = .systemPurple
+            
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 cleanDuplicateFiles()
                 exportBlankCSV()
