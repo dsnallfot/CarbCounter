@@ -128,8 +128,8 @@
 "+ HELA DOSEN" = "+ FULL DOSE";
 "ÖVERDOS!" = "OVERDOSE!";
 "Varning" = "Warning";
-"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more insulin than the estimated need! \n\nMake sure to supplement with %@g carbohydrates to avoid low blood sugar!";
-"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more carbohydrates than what has been eaten! \n\nMake sure to supplement with %@ carbohydrates to avoid low blood sugar!";
+"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more carbohydrates than what's been eaten. \n\nMake sure to add %@ g carbohydrates to avoid a low blood sugar!";
+"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more insulin than the calculated need. \n\nMake sure to add %@ g carbohydrates to avoid a low blood sugar!";
 "LIVSMEDEL" = "FOOD ITEMS";
 "PORTION" = "SERVED";
 "LÄMNAT" = "LEFT";
@@ -176,6 +176,7 @@
 "Protein: " = "Protein: ";
 "Insulin: " = "Insulin: ";
 "E" = "U";
+" g/E" = " g/U";
 
 "Registrera Måltid" = "Register Meal";
 "Registrera startdos" = "Register Start Dose";

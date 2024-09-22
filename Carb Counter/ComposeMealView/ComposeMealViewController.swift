@@ -1942,7 +1942,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             if let bolusValue = Double(bolusText), let crValue = Double(crText) {
                 let khValue = bolusValue * crValue
                 let formattedKhValue = formatValue(String(format: "%.0f", khValue))
-                let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: NSLocalizedString("\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med \(formattedKhValue)g kolhydrater för att undvika ett lågt blodsocker!"), preferredStyle: .alert)
+                let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: String(format: NSLocalizedString("\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!"), formattedKhValue), preferredStyle: .alert)
                 let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
                 alert.addAction(okAction)
                 present(alert, animated: true, completion: nil)
@@ -1952,7 +1952,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         } else if remainsValue < 0 {
             let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!"), preferredStyle: .alert)
+            let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: String(format: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!"), khValue), preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
