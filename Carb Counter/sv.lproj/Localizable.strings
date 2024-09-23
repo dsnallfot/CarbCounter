@@ -112,10 +112,10 @@
 "• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@";
 "Kolhydrater Totalt" = "KOLHYDRATER TOTALT";
 "Den beräknade summan av alla kolhydrater i måltiden." = "Den beräknade summan av alla kolhydrater i måltiden.";
-"• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@" = "• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@";
+"• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@" = "• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@";
 "Fett Totalt" = "FETT TOTALT";
 "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.";
-"• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g" = "• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g";
+"• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
 "Protein Totalt" = "PROTEIN TOTALT";
 "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.";
 "• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
@@ -143,8 +143,8 @@
 " KLAR" = " KLAR";
 "MÅLTID" = "MÅLTID";
 "Varning" = "Varning";
-"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer insulin än det beräknade behovet. \n\nSe till att komplettera med %@g kolhydrater för att undvika ett lågt blodsocker!";
-"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer kolhydrater än vad som har ätits. \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!";
+"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer insulin än det beräknade behovet. \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!";
+"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!";
 "LIVSMEDEL" = "LIVSMEDEL";
 "PORTION" = "PORTION";
 "LÄMNAT" = "LÄMNAT";

@@ -112,10 +112,10 @@
 "• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "• Total estimated need: %@\n• Registered so far: %@ U\n• Remaining to register: %@";
 "Kolhydrater Totalt" = "CARBOHYDRATES TOTAL";
 "Den beräknade summan av alla kolhydrater i måltiden." = "The estimated total amount of carbohydrates in the meal.";
-"• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@" = "• Total amount of carbohydrates: %@\n• Registered so far: %@ g\n• Remaining to register: %@";
+"• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@" = "• Total amount of carbohydrates: %@\n• Registered so far: %@\n• Remaining to register: %@";
 "Fett Totalt" = "FAT TOTAL";
 "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "The estimated total amount of fat in the meal. \n\nFat also requires insulin, but with a few hours delay.";
-"• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g" = "• Total amount of fat: %@\n• Registered so far: %.0f\n• Remaining to register: %@ g";
+"• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "• Total amount of fat: %@\n• Registered so far: %.0f g\n• Remaining to register: %@ g";
 "Protein Totalt" = "PROTEIN TOTAL";
 "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning." = "The estimated total amount of protein in the meal. \n\nProtein also requires insulin, but with a few hours delay.";
 "• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "• Total amount of protein: %@\n• Registered so far: %.0f g\n• Remaining to register: %@ g";
@@ -142,8 +142,8 @@
 " KLAR" = " DONE";
 "MÅLTID" = "MEAL";
 "Varning" = "Warning";
-"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more insulin than the calculated need. \n\nMake sure to add %@g carbohydrates to avoid a low blood sugar!";
-"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more carbohydrates than what's been eaten. \n\nMake sure to add %@ carbohydrates to avoid a low blood sugar!";
+"\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more insulin than the calculated need. \n\nMake sure to add %@ g carbohydrates to avoid a low blood sugar!";
+"\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more carbohydrates than what's been eaten. \n\nMake sure to add %@ carbohydrates to avoid a low blood sugar!";
 "LIVSMEDEL" = "FOOD ITEMS";
 "PORTION" = "SERVED";
 "LÄMNAT" = "LEFT";

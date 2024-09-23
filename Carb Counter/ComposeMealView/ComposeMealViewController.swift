@@ -1954,8 +1954,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Invalid input for calculation")
             }
         } else if remainsValue < 0 {
-            let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: String(format: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!"), khValue), preferredStyle: .alert)
+            let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: " g").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
+            let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: String(format: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!"), khValue), preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
@@ -3111,7 +3111,7 @@ extension ComposeMealViewController {
     }
     
     @objc private func showBolusInfo() {
-        let bolusRemains = totalRemainsBolusLabel.text?.isEmpty == true ? "0 E" : String(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? "0 E")
+        let bolusRemains = totalRemainsBolusLabel.text?.isEmpty == true ? "0 E" : String(totalRemainsBolusLabel.text?.replacingOccurrences(of: " ", with: NSLocalizedString("0E", comment: "0E")).replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? "0 E")
 
         let formattedRegisteredBolus: String
         if registeredBolusSoFar.truncatingRemainder(dividingBy: 1) == 0 {
@@ -3143,6 +3143,8 @@ extension ComposeMealViewController {
             .replacingOccurrences(of: "g", with: " g")
             .replacingOccurrences(of: " KLAR", with: "0 g")
             .replacingOccurrences(of: " DONE", with: "0 g")
+            .replacingOccurrences(of: " PÅ INPUT", with: "0 g")
+            .replacingOccurrences(of: " FOR INPUT", with: "0 g")
         let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
         
         // Calculate progress value
@@ -3154,7 +3156,7 @@ extension ComposeMealViewController {
             title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"),
             message: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.", comment: "Den beräknade summan av alla kolhydrater i måltiden."),
             statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
-            statusMessage: String(format: NSLocalizedString("• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@", comment: "• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains),
+            statusMessage: String(format: NSLocalizedString("• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@", comment: "• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains),
             progress: progress,
             progressBarColor: Color.orange,
             showProgressBar: true,
@@ -3173,7 +3175,7 @@ extension ComposeMealViewController {
             title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"),
             message: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning."),
             statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
-            statusMessage: String(format: NSLocalizedString("• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g", comment: "• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining),
+            statusMessage: String(format: NSLocalizedString("• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining),
             progress: progress,
             progressBarColor: Color.brown,
             showProgressBar: true,
