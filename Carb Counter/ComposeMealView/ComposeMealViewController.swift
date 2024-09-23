@@ -1162,8 +1162,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         remainsContainer.isUserInteractionEnabled = true
         
         remainsLabel = createLabel(text: NSLocalizedString("HELA DOSEN", comment: "HELA DOSEN"), fontSize: 9, weight: .bold, color: .white)
-        totalRemainsLabel = createLabel(text: NSLocalizedString("0g", comment: "0g"), fontSize: 12, weight: .bold, color: .white)
-        totalRemainsBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .bold, color: .white)
+        totalRemainsLabel = createLabel(text: NSLocalizedString("", comment: ""), fontSize: 12, weight: .bold, color: .white)
+        totalRemainsBolusLabel = createLabel(text: NSLocalizedString("", comment: ""), fontSize: 12, weight: .bold, color: .white)
         
         let remainsValuesStack = UIStackView(arrangedSubviews: [totalRemainsLabel, totalRemainsBolusLabel])
         remainsValuesStack.axis = .horizontal
@@ -2300,6 +2300,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return (value * 20.0).rounded(.down) / 20.0
     }
     
+    private func updateRemainsLabel(text: String, fontSize: CGFloat) {
+        let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
+        
+        remainsLabel.text = newLabel.text
+        remainsLabel.font = newLabel.font
+        remainsLabel.textColor = newLabel.textColor
+        remainsLabel.textAlignment = newLabel.textAlignment
+    }
+    
+    private func updateTotalRemainsLabel(text: String, fontSize: CGFloat) {
+        let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
+        
+        totalRemainsLabel.text = newLabel.text
+        totalRemainsLabel.font = newLabel.font
+        totalRemainsLabel.textColor = newLabel.textColor
+        totalRemainsLabel.textAlignment = newLabel.textAlignment
+    }
+    
     public func updateRemainsBolus() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         let totalCarbsValue = Double(totalNetCarbs)
@@ -2337,20 +2355,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5) where proteinTotalValue == 0 && fatTotalValue == 0 && totalCarbsValue == 0:
                 remainsContainer.backgroundColor = .systemGray2
                 registeredContainer.backgroundColor = .systemGray2
-                remainsLabel.text = NSLocalizedString("VÄNTAR...", comment: "VÄNTAR...")
+                remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
+                updateTotalRemainsLabel(text: NSLocalizedString("PÅ INPUT", comment: "PÅ INPUT"), fontSize: 9)
+                totalRemainsBolusLabel.text = ""
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5):
                 remainsContainer.backgroundColor = .systemGreen
                 registeredContainer.backgroundColor = .systemGreen
-                remainsLabel.text = NSLocalizedString("KLAR!", comment: "KLAR!")
+                remainsLabel.text = NSLocalizedString("MÅLTID", comment: "MÅLTID")
+                updateTotalRemainsLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+                totalRemainsBolusLabel.text = ""
                 
             case let (x, y, z, w) where x > 0.5 || y > 0.5 || z > 0.05 || w > 0.5:
                 remainsContainer.backgroundColor = .systemOrange
                 registeredContainer.backgroundColor = .systemOrange
                 remainsLabel.text = remainsTextString
+                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
             default:
                 remainsContainer.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
+                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
             }
 
         } else {
@@ -2369,14 +2393,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 
                 remainsContainer?.backgroundColor = .systemGray2
                 registeredContainer?.backgroundColor = .systemGray2
-                remainsLabel.text = NSLocalizedString("VÄNTAR...", comment: "VÄNTAR...")
-            } else if remainsValue >= -0.5 && remainsValue <= 0.5 
+                remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
+                updateTotalRemainsLabel(text: NSLocalizedString("PÅ INPUT", comment: "PÅ INPUT"), fontSize: 9)
+                totalRemainsBolusLabel.text = ""
+            } else if remainsValue >= -0.5 && remainsValue <= 0.5
                         && remainsBolus >= -0.05 && remainsBolus <= 0.05
                         && proteinRemaining >= -0.05 && proteinRemaining <= 0.05
                         && fatRemaining >= -0.05 && fatRemaining <= 0.05 {
                 remainsContainer?.backgroundColor = .systemGreen
                 registeredContainer.backgroundColor = .systemGreen
-                remainsLabel.text = NSLocalizedString("KLAR!", comment: "KLAR!")
+                remainsLabel.text = NSLocalizedString("MÅLTID", comment: "MÅLTID")
+                updateTotalRemainsLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+                totalRemainsBolusLabel.text = ""
             } else if remainsValue > 0.5 ||
                         remainsBolus > 0.05 ||
                         proteinRemaining > 0.05 ||
@@ -2384,10 +2412,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 remainsContainer?.backgroundColor = .systemOrange
                 registeredContainer.backgroundColor = .systemOrange
                 remainsLabel.text = remainsTextString
+                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
             } else {
                 remainsContainer?.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
+                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
             }
 
             remainsLabel?.text = remainsTextString
