@@ -99,7 +99,6 @@
 "OVERRIDE" = "OVERRIDE";
 "Maxgräns överskriden" = "Maxgräns överskriden";
 "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg..." = "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg...";
-"\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg..." = "\nMåltidsregistreringen överskrider de inställda maxgränserna för kolhydrater och/eller bolus. \n\nDoseringen justeras därför ner till den tillåtna maxnivån i nästa steg...";
 "Manuell registrering" = "Manuell registrering";
 "\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nRegistrera nu den angivna startdosen för måltiden i iAPS/Trio:\n\n• %@ g kolhydrater\n• %@ E insulin";
 "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nSlutför nu registreringen av måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater";
@@ -107,16 +106,24 @@
 "\n• %@ g protein" = "\n• %@ g protein";
 "\n• %@ E insulin" = "\n• %@ E insulin";
 "0 E" = "0 E";
+"Status för denna måltid:" = "Status för denna måltid:";
 "Bolus Total" = "BOLUS TOTALT";
-"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nSTATUS FÖR DENNA MÅLTID:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@";
+"Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden." = "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.";
+"• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@" = "• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@";
 "Kolhydrater Totalt" = "KOLHYDRATER TOTALT";
-"Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@" = "Den beräknade summan av alla kolhydrater i måltiden.\n\nSTATUS FÖR DENNA MÅLTID:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@";
+"Den beräknade summan av alla kolhydrater i måltiden." = "Den beräknade summan av alla kolhydrater i måltiden.";
+"• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@" = "• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@";
 "Fett Totalt" = "FETT TOTALT";
-"Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g" = "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nSTATUS FÖR DENNA MÅLTID:\n• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
+"Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.";
+"• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g" = "• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g";
 "Protein Totalt" = "PROTEIN TOTALT";
-"Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nSTATUS FÖR DENNA MÅLTID:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
+"Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning." = "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.";
+"• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g" = "• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g";
 "Insulinkvot" = "INSULINKVOT";
-"Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater." = "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n EXEMPEL:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.";
+"Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker." = "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.";
+"CR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater." = "CR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.";
+"Exempel:" = "Exempel:";
+
 "Senaste override" = "SENASTE OVERRIDE";
 "Senaste override • %@" = "SENASTE OVERRIDE • %@";
 "Aktiverades %@" = "Aktiverad %@";
