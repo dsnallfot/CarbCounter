@@ -49,11 +49,19 @@ extension EditRegistrationPopoverHostingController: UIPopoverPresentationControl
 
 class InfoPopoverHostingController: UIHostingController<InfoPopoverView> {
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder, rootView: InfoPopoverView(title: "", message: ""))
+        super.init(coder: aDecoder, rootView: InfoPopoverView(title: "", message: "", statusTitle: "", statusMessage: "", progress: 0.0, progressBarColor: Color.clear, showProgressBar: false))
     }
     
-    init(title: String, message: String) {
-        let view = InfoPopoverView(title: title, message: message)
+    init(title: String, message: String, statusTitle: String, statusMessage: String, progress: CGFloat, progressBarColor: Color, showProgressBar: Bool) {
+        let view = InfoPopoverView(
+            title: title,
+            message: message,
+            statusTitle: statusTitle,
+            statusMessage: statusMessage,
+            progress: progress,
+            progressBarColor: progressBarColor,  // Pass the progress bar color
+            showProgressBar: showProgressBar  // Pass the boolean to show/hide progress bar
+        )
         super.init(rootView: view)
         modalPresentationStyle = .popover
         popoverPresentationController?.delegate = self

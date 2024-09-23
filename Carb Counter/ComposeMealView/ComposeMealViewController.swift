@@ -405,8 +405,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // If all are 0, set saveMealToHistory to false and reset variables
             saveMealToHistory = false
             print("save meal to history false")
-            startDoseGiven = false
-            remainingDoseGiven = false
+            //startDoseGiven = false
+            //remainingDoseGiven = false
             registeredCarbsSoFar = 0
         } else {
             // If any are non-zero, proceed with saving
@@ -549,7 +549,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
         
-        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountLabel.text = startDoseTextString
         startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -647,7 +648,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Error deserializing JSON: \(error)")
         }
         
-        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountLabel.text = startDoseTextString
         startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -706,7 +708,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Food item not found for entryId: \(foodEntry.entryId?.uuidString ?? "nil") or name: \(foodEntry.entryName ?? "nil")")
             }
         }
-        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountLabel.text = startDoseTextString
         startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -752,7 +755,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.lateBreakfastTimer?.invalidate()
             self.turnOffLateBreakfastSwitch()
             self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
-            self.startAmountContainer.backgroundColor = .systemPurple
+            self.startAmountContainer.backgroundColor = .systemBlue
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
@@ -788,7 +791,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Reset the startBolus amount
         startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
-        startAmountContainer.backgroundColor = .systemPurple
+        startAmountContainer.backgroundColor = .systemBlue
         totalStartBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
         
         // Reset the remainsContainer color and label
@@ -1175,13 +1178,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainsPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(remainsStack, in: remainsContainer, padding: remainsPadding)
         
-        startAmountContainer = createContainerView(backgroundColor: .systemPurple, borderColor: .white, borderWidth: 0)
+        startAmountContainer = createContainerView(backgroundColor: .systemBlue, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(startAmountContainer)
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
         startAmountContainer.isUserInteractionEnabled = true
         
-        let startAmountText = foodItemRows.isEmpty ? NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startAmountText = foodItemRows.isEmpty ? NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS") : startDoseTextString
         startAmountLabel = createLabel(text: startAmountText, fontSize: 9, weight: .bold, color: .white)
         totalStartAmountLabel = createLabel(text: String(format: NSLocalizedString("%.0fg", comment: "%.0fg"), scheduledStartDose), fontSize: 12, weight: .bold, color: .white)
         totalStartBolusLabel = createLabel(text: NSLocalizedString("0E", comment: "0E"), fontSize: 12, weight: .bold, color: .white)
@@ -1360,9 +1364,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         if foodItemRows.isEmpty {
             startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
-            startAmountContainer.backgroundColor = .systemPurple
+            startAmountContainer.backgroundColor = .systemBlue
         } else {
-            startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+            let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+            startAmountLabel.text = startDoseTextString
             startAmountContainer.backgroundColor = .systemBlue
         }
     }
@@ -2243,6 +2248,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     public func updateTotalNutrients() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
+        let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        let remainsBolus = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         
         guard let totalNetCarbsLabel = totalNetCarbsLabel else {
             print("Error: totalNetCarbsLabel is nil")
@@ -2300,15 +2307,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return (value * 20.0).rounded(.down) / 20.0
     }
     
-    private func updateRemainsLabel(text: String, fontSize: CGFloat) {
-        let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
-        
-        remainsLabel.text = newLabel.text
-        remainsLabel.font = newLabel.font
-        remainsLabel.textColor = newLabel.textColor
-        remainsLabel.textAlignment = newLabel.textAlignment
-    }
-    
     private func updateTotalRemainsLabel(text: String, fontSize: CGFloat) {
         let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
         
@@ -2316,6 +2314,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRemainsLabel.font = newLabel.font
         totalRemainsLabel.textColor = newLabel.textColor
         totalRemainsLabel.textAlignment = newLabel.textAlignment
+    }
+    
+    private func updateTotalStartAmountLabel(text: String, fontSize: CGFloat) {
+        let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
+        
+        totalStartAmountLabel.text = newLabel.text
+        totalStartAmountLabel.font = newLabel.font
+        totalStartAmountLabel.textColor = newLabel.textColor
+        totalStartAmountLabel.textAlignment = newLabel.textAlignment
     }
     
     public func updateRemainsBolus() {
@@ -2338,45 +2345,57 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Calculate protein and fat remaining values upfront
         let proteinTotalValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let proteinRemaining = proteinTotalValue - registeredProteinSoFar
-
+        
         let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let fatRemaining = fatTotalValue - registeredFatSoFar
-
+        
         if let registeredText = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
            let registeredValue = Double(registeredText) {
             
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
-
+            
             let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
             totalRemainsBolusLabel.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E")
-
+            
             switch (remainsValue, remainsBolus, proteinRemaining, fatRemaining) {
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5) where proteinTotalValue == 0 && fatTotalValue == 0 && totalCarbsValue == 0:
                 remainsContainer.backgroundColor = .systemGray2
                 registeredContainer.backgroundColor = .systemGray2
                 remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
                 updateTotalRemainsLabel(text: NSLocalizedString(" PÅ INPUT", comment: " PÅ INPUT"), fontSize: 9)
-                totalRemainsBolusLabel.text = ""
+                updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
+                totalRemainsBolusLabel.text = " "
+                updateStartAmountLabel()
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5):
                 remainsContainer.backgroundColor = .systemGreen
                 registeredContainer.backgroundColor = .systemGreen
-                remainsLabel.text = NSLocalizedString("MÅLTID", comment: "MÅLTID")
+                startAmountContainer.backgroundColor = .systemGray2
+                remainsLabel.text = NSLocalizedString("KVAR ATT GE", comment: "KVAR ATT GE")
                 updateTotalRemainsLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalRemainsBolusLabel.text = ""
+                startAmountLabel.text = NSLocalizedString("+ DOS", comment: "+ DOS")
+                updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+                totalStartBolusLabel.text = ""
                 
-            case let (x, y, z, w) where x > 0.5 || y > 0.5 || z > 0.05 || w > 0.5:
-                remainsContainer.backgroundColor = .systemOrange
-                registeredContainer.backgroundColor = .systemOrange
+                
+            case let (x, y, z, w) where x > 0.5 || y > 0.05 || z > 0.5 || w > 0.5:
+                remainsContainer?.backgroundColor = .systemBlue
+                registeredContainer.backgroundColor = .systemGray2
                 remainsLabel.text = remainsTextString
                 updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
+                updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
+                updateStartAmountLabel()
             default:
                 remainsContainer.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
+                startAmountContainer.backgroundColor = .systemGray2
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
-                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
+                updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+                totalStartBolusLabel.text = ""
+                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? " ", fontSize: 12)
             }
-
+            
         } else {
             // Calculate values when no registration is found
             let remainsValue = totalCarbsValue // Set remainsValue to totalCarbsValue since no registration found
@@ -2395,32 +2414,57 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 registeredContainer?.backgroundColor = .systemGray2
                 remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
                 updateTotalRemainsLabel(text: NSLocalizedString(" PÅ INPUT", comment: " PÅ INPUT"), fontSize: 9)
-                totalRemainsBolusLabel.text = ""
+                totalRemainsBolusLabel.text = " "
+                updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
+                updateStartAmountLabel()
             } else if remainsValue >= -0.5 && remainsValue <= 0.5
                         && remainsBolus >= -0.05 && remainsBolus <= 0.05
-                        && proteinRemaining >= -0.05 && proteinRemaining <= 0.05
-                        && fatRemaining >= -0.05 && fatRemaining <= 0.05 {
+                        && proteinRemaining >= -0.5 && proteinRemaining <= 0.5
+                        && fatRemaining >= -0.5 && fatRemaining <= 0.5 {
                 remainsContainer?.backgroundColor = .systemGreen
                 registeredContainer.backgroundColor = .systemGreen
-                remainsLabel.text = NSLocalizedString("MÅLTID", comment: "MÅLTID")
+                startAmountContainer.backgroundColor = .systemGray2
+                remainsLabel.text = NSLocalizedString("KVAR ATT GE", comment: "KVAR ATT GE")
                 updateTotalRemainsLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalRemainsBolusLabel.text = ""
+                startAmountLabel.text = NSLocalizedString("+ DOS", comment: "+ DOS")
+                updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+                totalStartBolusLabel.text = ""
             } else if remainsValue > 0.5 ||
                         remainsBolus > 0.05 ||
-                        proteinRemaining > 0.05 ||
-                        fatRemaining > 0.05 {
-                remainsContainer?.backgroundColor = .systemOrange
-                registeredContainer.backgroundColor = .systemOrange
+                        proteinRemaining > 0.5 ||
+                        fatRemaining > 0.5 {
+                remainsContainer?.backgroundColor = .systemBlue
+                registeredContainer.backgroundColor = .systemGray2
                 remainsLabel.text = remainsTextString
                 updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
+                updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
+                updateStartAmountLabel()
             } else {
                 remainsContainer?.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
+                startAmountContainer.backgroundColor = .systemGray2
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
-                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
+                updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+                totalStartBolusLabel.text = ""
+                updateTotalRemainsLabel(text: totalRemainsLabel.text ?? " ", fontSize: 12)
+                
             }
-
+            
             remainsLabel?.text = remainsTextString
+        }
+        let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        if registeredCarbsSoFar > 0 && totalNetCarbs > 0 && remainsValue <= scheduledStartDose {
+            startAmountLabel.text = NSLocalizedString("DOS", comment: "DOS")
+            startAmountContainer.backgroundColor = .systemGray2
+            updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
+            totalStartBolusLabel.text = ""
+            if remainsValue > 0.4 {
+                remainsContainer?.backgroundColor = .systemBlue
+            } else if remainsValue < -0.4 {
+                remainsContainer?.backgroundColor = .systemRed
+                registeredContainer.backgroundColor = .systemRed
+            }
         }
     }
     
@@ -2537,7 +2581,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         rowView.onValueChange = { [weak self] in
             self?.updateTotalNutrients()
         }
-        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountLabel.text = startDoseTextString
         startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -2580,7 +2625,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         rowView.calculateNutrients()
         
-        startAmountLabel.text = NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
+        startAmountLabel.text = startDoseTextString
         startAmountContainer.backgroundColor = .systemBlue
         updateTotalNutrients()
         updateClearAllButtonState()
@@ -2613,10 +2659,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Check if foodItemRows is empty and update label accordingly
         if foodItemRows.isEmpty {
-            startDoseGiven = false
-            remainingDoseGiven = false
+            //startDoseGiven = false
+            //remainingDoseGiven = false
             startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
-            startAmountContainer.backgroundColor = .systemPurple
+            startAmountContainer.backgroundColor = .systemBlue
             
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 cleanDuplicateFiles()
@@ -2983,23 +3029,59 @@ class GradientView: UIView {
 struct InfoPopoverView: View {
     let title: String
     let message: String
+    let statusTitle: String
+    let statusMessage: String
+    let progress: CGFloat
+    let progressBarColor: Color
+    let showProgressBar: Bool
     
-    let backgroundColor = Color(red: 90/255, green: 104/255, blue: 125/255)
+    let backgroundColor = Color(red: 90/255, green: 104/255, blue: 145/255)
     
     var body: some View {
         ZStack {
             backgroundColor.opacity(0.7)
             
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Text(title)
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.top, 12)
+                
                 Text(message)
                     .font(.subheadline)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding()
+                
+                Text(statusTitle)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.top, 12)
+                
+                Text(statusMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                
+                // Conditional rendering of the progress bar
+                if showProgressBar {
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white.opacity(0.1))
+                                .frame(height: 20)
+                            
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(progressBarColor)  // Use the passed color
+                                .frame(width: min(progress, 1.0) * geometry.size.width, height: 20)
+                        }
+                        .frame(height: 20)
+                    }
+                    .padding([.leading, .trailing], 16)
+                    .frame(height: 20)
+                }
+                
                 Spacer()
             }
             .padding()
@@ -3010,8 +3092,16 @@ struct InfoPopoverView: View {
 
 
 extension ComposeMealViewController {
-    private func presentPopover(title: String, message: String, sourceView: UIView) {
-        let popoverController = InfoPopoverHostingController(title: title, message: message)
+    private func presentPopover(title: String, message: String, statusTitle: String, statusMessage: String, progress: CGFloat, progressBarColor: Color, showProgressBar: Bool, sourceView: UIView) {
+        let popoverController = InfoPopoverHostingController(
+            title: title,
+            message: message,
+            statusTitle: statusTitle,
+            statusMessage: statusMessage,
+            progress: progress,
+            progressBarColor: progressBarColor,
+            showProgressBar: showProgressBar
+        )
         popoverController.modalPresentationStyle = .popover
         popoverController.popoverPresentationController?.sourceView = sourceView
         popoverController.popoverPresentationController?.sourceRect = sourceView.bounds
@@ -3021,7 +3111,7 @@ extension ComposeMealViewController {
     }
     
     @objc private func showBolusInfo() {
-        let bolusRemains = String(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? NSLocalizedString("0 E", comment: "0 E"))
+        let bolusRemains = totalRemainsBolusLabel.text?.isEmpty == true ? "0 E" : String(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? "0 E")
 
         let formattedRegisteredBolus: String
         if registeredBolusSoFar.truncatingRemainder(dividingBy: 1) == 0 {
@@ -3032,30 +3122,82 @@ extension ComposeMealViewController {
             formattedRegisteredBolus = String(format: "%.2f", registeredBolusSoFar)
         }
         
+        // Calculate progress value
+        let totalBolusValue = Double(totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0") ?? 0.0
+        let progress: CGFloat = totalBolusValue > 0 ? CGFloat(registeredBolusSoFar / totalBolusValue) : 0.0
+        
         presentPopover(
             title: NSLocalizedString("Bolus Total", comment: "Bolus Total"),
-            message: String(format: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.\n\nStatus för denna måltid:\n• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@"), totalBolusAmountLabel.text ?? "0 E", formattedRegisteredBolus, bolusRemains),
+            message: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@", comment: "• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@"), totalBolusAmountLabel.text ?? "0 E", formattedRegisteredBolus, bolusRemains),
+            progress: progress,
+            progressBarColor: Color.indigo,
+            showProgressBar: true,
             sourceView: totalBolusAmountLabel
         )
     }
     
     @objc private func showCarbsInfo() {
-        let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g")).replacingOccurrences(of: "g", with: " g")
+        let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g"))
+            .replacingOccurrences(of: "g", with: " g")
+            .replacingOccurrences(of: " KLAR", with: "0 g")
+            .replacingOccurrences(of: " DONE", with: "0 g")
         let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
-            
-        presentPopover(title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@", comment: "Den beräknade summan av alla kolhydrater i måltiden.\n\nStatus för denna måltid:\n• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains), sourceView: totalNetCarbsLabel)
+        
+        // Calculate progress value
+        let totalCarbsValue = Double(totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let registeredCarbs = Double(carbsRegistered.replacingOccurrences(of: " g", with: "")) ?? 0.0
+        let progress: CGFloat = totalCarbsValue > 0 ? CGFloat(registeredCarbs / totalCarbsValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"),
+            message: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.", comment: "Den beräknade summan av alla kolhydrater i måltiden."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@", comment: "• Total mängd kolhydrater: %@\n• Hittills registerat: %@ g\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains),
+            progress: progress,
+            progressBarColor: Color.orange,
+            showProgressBar: true,
+            sourceView: totalNetCarbsLabel
+        )
     }
     
     @objc private func showFatInfo() {
         let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let fatRemaining = String(format: "%.0f", fatTotalValue - registeredFatSoFar)
-        presentPopover(title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining), sourceView: totalNetFatLabel)
+        
+        // Calculate progress value
+        let progress: CGFloat = fatTotalValue > 0 ? CGFloat(registeredFatSoFar / fatTotalValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"),
+            message: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g", comment: "• Total mängd fett: %@\n• Hittills registerat: %.0f\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining),
+            progress: progress,
+            progressBarColor: Color.brown,
+            showProgressBar: true,
+            sourceView: totalNetFatLabel
+        )
     }
     
     @objc private func showProteinInfo() {
         let proteinTotalValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let proteinRemaining = String(format: "%.0f", proteinTotalValue - registeredProteinSoFar)
-        presentPopover(title: NSLocalizedString("Protein Totalt", comment: "Protein Totalt"), message: String(format: NSLocalizedString("Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.\n\nStatus för denna måltid:\n• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetProteinLabel.text ?? "0 g", registeredProteinSoFar, proteinRemaining), sourceView: totalNetProteinLabel)
+        
+        // Calculate progress value
+        let progress: CGFloat = proteinTotalValue > 0 ? CGFloat(registeredProteinSoFar / proteinTotalValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Protein Totalt", comment: "Protein Totalt"),
+            message: NSLocalizedString("Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetProteinLabel.text ?? "0 g", registeredProteinSoFar, proteinRemaining),
+            progress: progress,
+            progressBarColor: Color.brown,
+            showProgressBar: true,
+            sourceView: totalNetProteinLabel
+        )
     }
     
     @objc private func showCRInfo() {
@@ -3070,11 +3212,18 @@ extension ComposeMealViewController {
         let formattedAmount = formatValue(amount)
         
         let message = String(
-            format: NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.\n\n Exempel:\nCR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater."), formattedCR, formattedAmount)
+            format: NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker."), formattedCR, formattedAmount)
+        let statusMessage = String(
+            format: NSLocalizedString("CR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.", comment: "CR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater."), formattedCR, formattedAmount)
         
         presentPopover(
             title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"),
             message: message,
+            statusTitle: NSLocalizedString("Exempel:", comment: "Exempel:"),
+            statusMessage: statusMessage,
+            progress: 0,
+            progressBarColor: Color.clear,
+            showProgressBar: false,
             sourceView: nowCRLabel
         )
     }
@@ -3085,9 +3234,25 @@ extension ComposeMealViewController {
             formatter.dateFormat = "yyyy-MM-dd HH:mm"
             let formattedDate = formatter.string(from: startTime)
             let latestFactorUsed = UserDefaultsRepository.lateBreakfastFactorUsed
-            presentPopover(title: String(format: NSLocalizedString("Senaste override • %@", comment: "Senaste override • %@"), latestFactorUsed), message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate), sourceView: addButtonRowView.lateBreakfastLabel)
+            presentPopover(
+                title: String(format: NSLocalizedString("Senaste override • %@", comment: "Senaste override • %@"), latestFactorUsed),
+                message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate),
+                statusTitle: "",
+                statusMessage: "",
+                progress: 0,
+                progressBarColor: Color.clear,
+                showProgressBar: false,
+                sourceView: addButtonRowView.lateBreakfastLabel)
         } else {
-            presentPopover(title: NSLocalizedString("Senaste override", comment: "Senaste override"), message: NSLocalizedString("Ingen tidigare aktivering hittades.", comment: "Ingen tidigare aktivering hittades."), sourceView: addButtonRowView.lateBreakfastLabel)
+            presentPopover(
+                title: NSLocalizedString("Senaste override", comment: "Senaste override"),
+                message: NSLocalizedString("Ingen tidigare aktivering hittades.", comment: "Ingen tidigare aktivering hittades."),
+                statusTitle: "",
+                statusMessage: "",
+                progress: 0,
+                progressBarColor: Color.clear,
+                showProgressBar: false,
+                sourceView: addButtonRowView.lateBreakfastLabel)
         }
     }
     

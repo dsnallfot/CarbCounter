@@ -43,7 +43,7 @@ struct EditRegistrationPopoverView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 90/255, green: 104/255, blue: 125/255).opacity(0.7).edgesIgnoringSafeArea(.all)
+            Color(red: 90/255, green: 104/255, blue: 145/255).opacity(0.7).edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 0) {
                 Button(action: {
@@ -146,7 +146,7 @@ struct EditRegistrationPopoverView: View {
             )
         }
         .onDisappear {
-            composeMealViewController?.updateRemainsBolus()
+            composeMealViewController?.updateTotalNutrients()
             if registeredFatSoFar == 0 &&
                 registeredProteinSoFar == 0 &&
                 registeredBolusSoFar == 0 &&
