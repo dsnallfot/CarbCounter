@@ -2356,7 +2356,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 remainsContainer.backgroundColor = .systemGray2
                 registeredContainer.backgroundColor = .systemGray2
                 remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
-                updateTotalRemainsLabel(text: NSLocalizedString("PÅ INPUT", comment: "PÅ INPUT"), fontSize: 9)
+                updateTotalRemainsLabel(text: NSLocalizedString(" PÅ INPUT", comment: " PÅ INPUT"), fontSize: 9)
                 totalRemainsBolusLabel.text = ""
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5):
                 remainsContainer.backgroundColor = .systemGreen
@@ -2394,7 +2394,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 remainsContainer?.backgroundColor = .systemGray2
                 registeredContainer?.backgroundColor = .systemGray2
                 remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
-                updateTotalRemainsLabel(text: NSLocalizedString("PÅ INPUT", comment: "PÅ INPUT"), fontSize: 9)
+                updateTotalRemainsLabel(text: NSLocalizedString(" PÅ INPUT", comment: " PÅ INPUT"), fontSize: 9)
                 totalRemainsBolusLabel.text = ""
             } else if remainsValue >= -0.5 && remainsValue <= 0.5
                         && remainsBolus >= -0.05 && remainsBolus <= 0.05
