@@ -128,6 +128,8 @@
 "+ KVAR ATT GE" = "+ KVAR ATT GE";
 "+ HELA DOSEN" = "+ HELA DOSEN";
 "ÖVERDOS!" = "ÖVERDOS!";
+"VÄNTAR..." = "VÄNTAR...";
+"KLAR!" = "KLAR!";
 "Varning" = "Varning";
 "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer insulin än det beräknade behovet. \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!";
 "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med \(khValue) kolhydrater för att undvika ett lågt blodsocker!" = "\nDu har registrerat mer kolhydrater än vad som har ätits. \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!";

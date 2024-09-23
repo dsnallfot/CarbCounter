@@ -792,7 +792,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalStartBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
         
         // Reset the remainsContainer color and label
-        remainsContainer.backgroundColor = .systemGray
+        remainsContainer.backgroundColor = .systemGray2
         remainsLabel.text = NSLocalizedString("+ RESTERANDE", comment: "+ RESTERANDE")
     }
     
@@ -1155,7 +1155,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Handle the case where crContainer is nil
             print("crContainer is nil and cannot be configured.")
         }
-        remainsContainer = createContainerView(backgroundColor: .systemGreen, borderColor: .white, borderWidth: 0)
+        remainsContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
@@ -1629,8 +1629,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
             if !isEditingMeal {
                 stopAutoSaveToCSV()
-                resetVariablesToDefault()
-                mealDate = nil // Reset mealDate to nil after deleting all food items
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
@@ -2302,7 +2300,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return (value * 20.0).rounded(.down) / 20.0
     }
     
-    private func updateRemainsBolus() {
+    public func updateRemainsBolus() {
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         let totalCarbsValue = Double(totalNetCarbs)
         let remainsTextString = self.startDoseGiven ? NSLocalizedString("+ KVAR ATT GE", comment: "+ KVAR ATT GE") : NSLocalizedString("+ HELA DOSEN", comment: "+ HELA DOSEN")
@@ -2319,47 +2317,80 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
         }
         
+        // Calculate protein and fat remaining values upfront
+        let proteinTotalValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let proteinRemaining = proteinTotalValue - registeredProteinSoFar
+
+        let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let fatRemaining = fatTotalValue - registeredFatSoFar
+
         if let registeredText = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
            let registeredValue = Double(registeredText) {
+            
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
-            
+
             let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
-            totalRemainsBolusLabel.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E") // Use helper function to format remainsBolus
-            
-            if remainsValue < -0.5 || remainsBolus < -0.05 {
-                remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
-            } else {
-                remainsLabel.text = remainsTextString
-            }
-            
-            switch (remainsValue, remainsBolus) {
-            case (-0.5...0.5, -0.05...0.05):
+            totalRemainsBolusLabel.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E")
+
+            switch (remainsValue, remainsBolus, proteinRemaining, fatRemaining) {
+            case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5) where proteinTotalValue == 0 && fatTotalValue == 0 && totalCarbsValue == 0:
+                remainsContainer.backgroundColor = .systemGray2
+                registeredContainer.backgroundColor = .systemGray2
+                remainsLabel.text = NSLocalizedString("VÄNTAR...", comment: "VÄNTAR...")
+            case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5):
                 remainsContainer.backgroundColor = .systemGreen
-            case let (x, y) where x > 0.5 || y > 0.05:
+                registeredContainer.backgroundColor = .systemGreen
+                remainsLabel.text = NSLocalizedString("KLAR!", comment: "KLAR!")
+                
+            case let (x, y, z, w) where x > 0.5 || y > 0.5 || z > 0.05 || w > 0.5:
                 remainsContainer.backgroundColor = .systemOrange
+                registeredContainer.backgroundColor = .systemOrange
+                remainsLabel.text = remainsTextString
             default:
                 remainsContainer.backgroundColor = .systemRed
+                registeredContainer.backgroundColor = .systemRed
+                remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
             }
+
         } else {
-            totalRemainsLabel.text = String(format: "%.0fg", totalCarbsValue)
+            // Calculate values when no registration is found
+            let remainsValue = totalCarbsValue // Set remainsValue to totalCarbsValue since no registration found
             
-            totalRemainsBolusLabel?.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E") // Use helper function to format remainsBolus
+            let remainsBolus = roundDownToNearest05(totalCarbsValue / scheduledCarbRatio) - registeredBolusSoFar
+            totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
+            totalRemainsBolusLabel?.text = formatValue(remainsBolus) + NSLocalizedString("E", comment: "E")
             
-            remainsContainer?.backgroundColor = .systemGray
+            if remainsValue >= -0.5 && remainsValue <= 0.5 &&
+                remainsBolus >= -0.05 && remainsBolus <= 0.05 &&
+                proteinRemaining >= -0.5 && proteinRemaining <= 0.5 &&
+                fatRemaining >= -0.5 && fatRemaining <= 0.5 &&
+                proteinTotalValue == 0 && fatTotalValue == 0 && totalCarbsValue == 0 {
+                
+                remainsContainer?.backgroundColor = .systemGray2
+                registeredContainer?.backgroundColor = .systemGray2
+                remainsLabel.text = NSLocalizedString("VÄNTAR...", comment: "VÄNTAR...")
+            } else if remainsValue >= -0.5 && remainsValue <= 0.5 
+                        && remainsBolus >= -0.05 && remainsBolus <= 0.05
+                        && proteinRemaining >= -0.05 && proteinRemaining <= 0.05
+                        && fatRemaining >= -0.05 && fatRemaining <= 0.05 {
+                remainsContainer?.backgroundColor = .systemGreen
+                registeredContainer.backgroundColor = .systemGreen
+                remainsLabel.text = NSLocalizedString("KLAR!", comment: "KLAR!")
+            } else if remainsValue > 0.5 ||
+                        remainsBolus > 0.05 ||
+                        proteinRemaining > 0.05 ||
+                        fatRemaining > 0.05 {
+                remainsContainer?.backgroundColor = .systemOrange
+                registeredContainer.backgroundColor = .systemOrange
+                remainsLabel.text = remainsTextString
+            } else {
+                remainsContainer?.backgroundColor = .systemRed
+                registeredContainer.backgroundColor = .systemRed
+                remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
+            }
+
             remainsLabel?.text = remainsTextString
-        }
-        
-        let remainsText = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0"
-        let remainsValue = Double(remainsText) ?? 0.0
-        
-        switch (remainsValue, remainsBolus) {
-        case (-0.5...0.5, -0.05...0.05):
-            remainsContainer.backgroundColor = .systemGreen
-        case let (x, y) where x > 0.5 || y > 0.05:
-            remainsContainer.backgroundColor = .systemOrange
-        default:
-            remainsContainer.backgroundColor = .systemRed
         }
     }
     
@@ -2574,7 +2605,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let carbsValue = Double(carbsText.replacingOccurrences(of: ",", with: "")) ?? 0.0
 
         // Enable the button if there are food items or the total carbs value is greater than 0
-        clearAllButton.isEnabled = !foodItemRows.isEmpty || carbsValue > 0
+        clearAllButton.isEnabled = !foodItemRows.isEmpty || registeredCarbsSoFar > 0 || registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0
     }
     
     private func updateScheduledValuesUI() {
@@ -2961,8 +2992,7 @@ extension ComposeMealViewController {
     
     @objc private func showBolusInfo() {
         let bolusRemains = String(totalRemainsBolusLabel.text?.replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? NSLocalizedString("0 E", comment: "0 E"))
-        
-        // Format registeredBolusSoFar based on its value
+
         let formattedRegisteredBolus: String
         if registeredBolusSoFar.truncatingRemainder(dividingBy: 1) == 0 {
             formattedRegisteredBolus = String(format: "%.0f", registeredBolusSoFar)
@@ -3049,16 +3079,13 @@ extension ComposeMealViewController {
                 self?.registeredBolusSoFar = newValue
             }),
             registeredCarbsSoFar: Binding(get: { [weak self] in
-                // Read registeredCarbsSoFar from totalRegisteredCarbsLabel.text and remove " g" suffix before conversion
                 if let text = self?.totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
                    let value = Double(text) {
                     return value
                 }
                 return 0.0
             }, set: { [weak self] newValue in
-                // Update totalRegisteredCarbsLabel.text with the new value and append " g" suffix
                 self?.totalRegisteredCarbsLabel.text = String(format: "%.0f g", newValue)
-                // Also update registeredCarbsSoFar
                 self?.registeredCarbsSoFar = newValue
             }),
             mealDate: Binding(get: { [weak self] in
@@ -3066,12 +3093,10 @@ extension ComposeMealViewController {
             }, set: { [weak self] newValue in
                 self?.mealDate = newValue
             }),
+            composeMealViewController: self,
             onDismiss: { [weak self] in
                 guard let self = self else { return }
-                // Call totalRegisteredCarbsLabelDidChange to perform updates
                 self.totalRegisteredCarbsLabelDidChange(self.totalRegisteredCarbsLabel)
-                
-                // Optionally, if you need to update other UI elements
                 self.updateTotalNutrients()
                 self.updateRemainsBolus()
                 self.updateHeadlineVisibility()

@@ -124,9 +124,11 @@
 "%.2fE" = "%.2fU";
 "%.1fE" = "%.1fU";
 "%.2fE" = "%.2fU";
-"+ KVAR ATT GE" = "+ REMAINING TO GIVE";
+"+ KVAR ATT GE" = "+ REMAINING";
 "+ HELA DOSEN" = "+ FULL DOSE";
 "ÖVERDOS!" = "OVERDOSE!";
+"VÄNTAR..." = "WAITING...";
+"KLAR!" = "DONE!";
 "Varning" = "Warning";
 "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more carbohydrates than what's been eaten. \n\nMake sure to add %@ g carbohydrates to avoid a low blood sugar!";
 "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!" = "\nYou have registered more insulin than the calculated need. \n\nMake sure to add %@ g carbohydrates to avoid a low blood sugar!";

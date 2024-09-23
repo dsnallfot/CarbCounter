@@ -10,21 +10,24 @@ import SwiftUI
 
 class EditRegistrationPopoverHostingController: UIHostingController<EditRegistrationPopoverView> {
     var onDismiss: (() -> Void)?
+    var composeMealViewController: ComposeMealViewController?
 
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder, rootView: EditRegistrationPopoverView(registeredFatSoFar: .constant(0), registeredProteinSoFar: .constant(0), registeredBolusSoFar: .constant(0), registeredCarbsSoFar: .constant(0), mealDate: .constant(nil), onDismiss: nil))
+        super.init(coder: aDecoder, rootView: EditRegistrationPopoverView(registeredFatSoFar: .constant(0), registeredProteinSoFar: .constant(0), registeredBolusSoFar: .constant(0), registeredCarbsSoFar: .constant(0), mealDate: .constant(nil), composeMealViewController: nil, onDismiss: nil))
     }
 
-    init(registeredFatSoFar: Binding<Double>, registeredProteinSoFar: Binding<Double>, registeredBolusSoFar: Binding<Double>, registeredCarbsSoFar: Binding<Double>, mealDate: Binding<Date?>, onDismiss: (() -> Void)?) {
+    init(registeredFatSoFar: Binding<Double>, registeredProteinSoFar: Binding<Double>, registeredBolusSoFar: Binding<Double>, registeredCarbsSoFar: Binding<Double>, mealDate: Binding<Date?>, composeMealViewController: ComposeMealViewController?, onDismiss: (() -> Void)?) {
         let view = EditRegistrationPopoverView(
             registeredFatSoFar: registeredFatSoFar,
             registeredProteinSoFar: registeredProteinSoFar,
             registeredBolusSoFar: registeredBolusSoFar,
             registeredCarbsSoFar: registeredCarbsSoFar,
             mealDate: mealDate,
+            composeMealViewController: composeMealViewController,
             onDismiss: onDismiss
         )
         super.init(rootView: view)
+        self.composeMealViewController = composeMealViewController
         modalPresentationStyle = .popover
         popoverPresentationController?.delegate = self
 

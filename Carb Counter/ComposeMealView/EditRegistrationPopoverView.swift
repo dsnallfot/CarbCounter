@@ -14,23 +14,23 @@ struct EditRegistrationPopoverView: View {
     @Binding var registeredCarbsSoFar: Double
     @Binding var mealDate: Date?
 
+    var composeMealViewController: ComposeMealViewController?
+    
     @Environment(\.presentationMode) var presentationMode
-    @State private var showAlert = false // State variable to show the alert
+    @State private var showAlert = false
 
     var onDismiss: (() -> Void)?
 
-    // Custom formatter to remove trailing zeros and adjust to the needed precision
     private func formatValue(_ value: Double) -> String {
         if value == floor(value) {
-            return String(format: "%.0f", value) // No decimal places if it's a whole number
+            return String(format: "%.0f", value)
         } else if value * 10 == floor(value * 10) {
-            return String(format: "%.1f", value) // Show one decimal place if one decimal is non-zero
+            return String(format: "%.1f", value)
         } else {
-            return String(format: "%.2f", value) // Show two decimal places
+            return String(format: "%.2f", value)
         }
     }
 
-    // Helper function to get the custom UIFont for the button text
     private func getRoundedFont(size: CGFloat, weight: UIFont.Weight) -> Font {
         let systemFont = UIFont.systemFont(ofSize: size, weight: weight)
         if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
@@ -43,17 +43,16 @@ struct EditRegistrationPopoverView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 90/255, green: 104/255, blue: 125/255).opacity(0.7).edgesIgnoringSafeArea(.all) // Add background
+            Color(red: 90/255, green: 104/255, blue: 125/255).opacity(0.7).edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 0) {
                 Button(action: {
-                    showAlert = true // Trigger the alert when the button is pressed
+                    showAlert = true
                 }) {
                     HStack {
                         Spacer()
                         
                         Text("EditRegistration.Header".localized)
-                            //.fontWeight(.bold)
                             .font(getRoundedFont(size: 19, weight: .bold))
                         
                         Spacer()
@@ -63,7 +62,6 @@ struct EditRegistrationPopoverView: View {
                             .font(.system(size: 16))
                     }
                     .padding(.top, 15)
-                    //.padding(.bottom, -15)
                     .padding(.trailing, 20)
                     .padding(.leading, 20)
                 }
@@ -146,6 +144,17 @@ struct EditRegistrationPopoverView: View {
                 },
                 secondaryButton: .cancel(Text("Avbryt"))
             )
+        }
+        .onDisappear {
+            composeMealViewController?.updateRemainsBolus()
+            if registeredFatSoFar == 0 &&
+                registeredProteinSoFar == 0 &&
+                registeredBolusSoFar == 0 &&
+                registeredCarbsSoFar == 0 {
+                
+                mealDate = nil
+            }
+            onDismiss?()
         }
     }
 }
