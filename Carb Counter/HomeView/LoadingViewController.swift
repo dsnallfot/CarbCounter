@@ -39,12 +39,19 @@ class LoadingViewController: UIViewController {
 
     private func setupUI() {
         // Create and setup the title label
-        let titleLabel = UILabel()
-        titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
-        titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textColor = UIColor.label.withAlphaComponent(0.4)
+           let titleLabel = UILabel()
+           titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
+           titleLabel.textAlignment = .center
+           
+           let systemFont = UIFont.systemFont(ofSize: 36, weight: .semibold)
+           if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+               titleLabel.font = UIFont(descriptor: roundedDescriptor, size: 36)
+           } else {
+               titleLabel.font = systemFont
+           }
+
+           titleLabel.translatesAutoresizingMaskIntoConstraints = false
+           titleLabel.textColor = UIColor.label.withAlphaComponent(0.4)
         
         // Create and setup the container view for the image
         let imageContainerView = UIView()

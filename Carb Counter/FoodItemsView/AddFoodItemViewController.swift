@@ -1,3 +1,4 @@
+// Daniel: 600+ lines - To be cleaned
 import UIKit
 import CoreData
 
@@ -75,6 +76,16 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         setupSaveButton()
         setupSaveAndAddButton()
         setupUI()
+        
+        // Apply rounded font to saveButton
+            if let saveButtonFontDescriptor = saveButton.titleLabel?.font.fontDescriptor.withDesign(.rounded) {
+                saveButton.titleLabel?.font = UIFont(descriptor: saveButtonFontDescriptor, size: saveButton.titleLabel?.font.pointSize ?? 17)
+            }
+
+            // Apply rounded font to saveAndAddButton
+            if let saveAndAddButtonFontDescriptor = saveAndAddButton.titleLabel?.font.fontDescriptor.withDesign(.rounded) {
+                saveAndAddButton.titleLabel?.font = UIFont(descriptor: saveAndAddButtonFontDescriptor, size: saveAndAddButton.titleLabel?.font.pointSize ?? 17)
+            }
         
         foodItemView.layer.cornerRadius = 8
         foodItemView.layer.masksToBounds = true
@@ -608,5 +619,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         saveButton.isEnabled = nameChanged || emojiChanged || carbsChanged || fatChanged || proteinChanged || notesChanged
         saveAndAddButton.isEnabled = saveButton.isEnabled
         updateSaveButtonTitle()
+    }
+}
+
+// MARK: Extension (AddFoodItemDelegate)
+extension ComposeMealViewController: AddFoodItemDelegate {
+    func didAddFoodItem() {
+        fetchFoodItems()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
     }
 }

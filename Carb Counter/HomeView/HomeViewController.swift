@@ -79,8 +79,16 @@ class HomeViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
         titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
+        
+        let systemFont = UIFont.systemFont(ofSize: 36, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            titleLabel.font = UIFont(descriptor: roundedDescriptor, size: 36)
+        } else {
+            titleLabel.font = systemFont
+        }
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
         
         
         // Create and setup the container view for the image

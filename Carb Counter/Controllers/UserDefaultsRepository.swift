@@ -162,6 +162,15 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "lateBreakfastStartTime")
         }
     }
+    
+    static var lateBreakfastFactorUsed: String {
+            get {
+                return UserDefaults.standard.string(forKey: "lateBreakfastFactorUsed") ?? "100 %"
+            }
+            set {
+                UserDefaults.standard.set(newValue, forKey: "lateBreakfastFactorUsed")
+            }
+        }
         
     static var dabasAPISecret: String {
         get {
@@ -251,6 +260,14 @@ class UserDefaultsRepository {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "excludeWords")
+        }
+    }
+    static var topUps: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "topUps")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "topUps")
         }
     }
 }

@@ -1,3 +1,4 @@
+// Daniel: 500+ lines - To be cleaned
 import UIKit
 import CoreData
 
@@ -29,7 +30,14 @@ class OngoingMealViewController: UIViewController {
     let takeoverButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(NSLocalizedString("Ta över registrering", comment: "Ta över registrering"), for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        
+        let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 19)
+        } else {
+            button.titleLabel?.font = systemFont
+        }
+        
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10
@@ -470,7 +478,7 @@ class OngoingMealViewController: UIViewController {
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         let detailLabel = UILabel()
-        let localizedBolusDetailFormat = NSLocalizedString("(av tot behov %.2f E)", comment: "Detail label text showing the total bolus needed")
+        let localizedBolusDetailFormat = NSLocalizedString("(av totalt behov %.2f E)", comment: "Detail label text showing the total bolus needed")
         detailLabel.text = String(format: localizedBolusDetailFormat, totalBolus)
         detailLabel.textColor = .gray
         detailLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)

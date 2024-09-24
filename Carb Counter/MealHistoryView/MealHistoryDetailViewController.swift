@@ -35,7 +35,14 @@ class MealHistoryDetailViewController: UIViewController {
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
         actionButton.setTitle(NSLocalizedString("Servera samma måltid igen", comment: "Serve the same meal again"), for: .normal)
-        actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
+
+        let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            actionButton.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 19)
+        } else {
+            actionButton.titleLabel?.font = systemFont
+        }
+
         actionButton.backgroundColor = .systemBlue
         actionButton.setTitleColor(.white, for: .normal)
         actionButton.layer.cornerRadius = 10
@@ -51,6 +58,7 @@ class MealHistoryDetailViewController: UIViewController {
             actionButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
+
 
     @objc private func repeatMeal() {
         guard let mealHistory = mealHistory else {

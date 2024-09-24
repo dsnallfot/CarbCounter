@@ -1,3 +1,4 @@
+// Daniel: 1100+ lines - To be cleaned
 import UIKit
 import CoreData
 import UniformTypeIdentifiers
@@ -339,7 +340,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 sortFoodItems()
                 tableView.reloadData()
             } else {
-                filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+                filteredFoodItems = foodItems.filter { foodItem in
+                    let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
+                    let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
+                    return nameMatches || emojiMatches
+                }
                 sortFoodItems()
             }
         } else {
@@ -809,12 +814,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableViewBottomConstraint.constant = 0
         view.layoutIfNeeded()
     }
-
-    
-    /*@objc private func navigateToScanner() {
-        let scannerVC = ScannerViewController()
-        navigationController?.pushViewController(scannerVC, animated: true)
-    }*/
     
     @objc private func navigateToScanner() {
         let scannerVC = ScannerViewController()

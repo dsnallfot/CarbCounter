@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPopoverPresentationControllerDelegate {
     
     var tableView: UITableView!
     var mealHistories: [MealHistory] = []
@@ -119,47 +119,64 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "MealHistoryCell")
         cell.backgroundColor = .clear // Set cell background to clear
         let mealHistory = filteredMealHistories[indexPath.row]
-        
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMM HH:mm"
         let mealDateStr = dateFormatter.string(from: mealHistory.mealDate ?? Date())
-        
+
         var detailText = ""
-        
+
         if mealHistory.totalNetCarbs > 0 {
             let carbs = mealHistory.totalNetCarbs
             detailText += String(format: NSLocalizedString("KH %.0f g", comment: "Carbs amount format"), carbs)
         }
-        
+
         if mealHistory.totalNetFat > 0 {
             if !detailText.isEmpty { detailText += " | " }
             let fat = mealHistory.totalNetFat
             detailText += String(format: NSLocalizedString("Fett %.0f g", comment: "Fat amount format"), fat)
         }
-        
+
         if mealHistory.totalNetProtein > 0 {
             if !detailText.isEmpty { detailText += " | " }
             let protein = mealHistory.totalNetProtein
             detailText += String(format: NSLocalizedString("Protein %.0f g", comment: "Protein amount format"), protein)
         }
-        
+
         if mealHistory.totalNetBolus > 0 {
             if !detailText.isEmpty { detailText += " | " }
             let bolus = mealHistory.totalNetBolus
             detailText += String(format: NSLocalizedString("Bolus %.2f E", comment: "Bolus amount format"), bolus)
         }
-        
+
         // Collect food item names
         let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName } ?? []
         let foodItemNamesStr = foodItemNames.joined(separator: " | ")
-        
-        // Update the cell text
-        cell.textLabel?.text = foodItemNamesStr
-        cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
+
+        // Fetch user-defined special items from UserDefaults
+        let userTopUps = UserDefaults.standard.string(forKey: "topUps") ?? ""
+        let specialItems = userTopUps.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+        // Check if any of the food items contain a carbs top-up item
+        let containsSpecialItem = foodItemNames.contains { item in
+            specialItems.contains { specialItem in
+                item.localizedCaseInsensitiveContains(specialItem)
+            }
+        }
+
+        // Update the cell text and add the emoji if the condition is met
+        if containsSpecialItem {
+            cell.detailTextLabel?.text = "\(mealDateStr) |🔝\(detailText)"
+        } else {
+            cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
+        }
         cell.detailTextLabel?.textColor = .gray
-        
+        cell.textLabel?.text = foodItemNamesStr
+
         return cell
     }
+
+
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
@@ -204,8 +221,16 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             self.present(alert, animated: true, completion: nil)
         }
         deleteAction.image = UIImage(systemName: "trash.fill")
-        return UISwipeActionsConfiguration(actions: [deleteAction])
-    }
+            
+            let editAction = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
+                self.presentEditPopover(for: indexPath)
+                completionHandler(true)
+            }
+            editAction.image = UIImage(systemName: "square.and.pencil")
+            editAction.backgroundColor = .systemBlue
+            
+            return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let mealHistory = filteredMealHistories[indexPath.row]
@@ -222,5 +247,89 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             return false
         }
         tableView.reloadData()
+    }
+    
+    private func presentEditPopover(for indexPath: IndexPath) {
+        let mealHistory = filteredMealHistories[indexPath.row]
+
+        // Create the custom alert view controller
+        let customAlertVC = CustomAlertViewController()
+        customAlertVC.mealDate = mealHistory.mealDate
+        customAlertVC.modalPresentationStyle = .overFullScreen
+        customAlertVC.modalTransitionStyle = .crossDissolve
+        customAlertVC.onSave = { [weak self] newDate in
+            // Update the meal date in the meal history
+            mealHistory.mealDate = newDate
+
+            // Save to Core Data
+            let context = CoreDataStack.shared.context
+            do {
+                try context.save()
+            } catch {
+                print("Failed to save updated meal date: \(error.localizedDescription)")
+            }
+
+            // Run the export function after saving the updated date
+            if let dataSharingVC = self?.dataSharingVC {
+                Task {
+                    await dataSharingVC.exportMealHistoryToCSV()
+                    print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                }
+            }
+
+            // Reload table
+            self?.tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+
+        present(customAlertVC, animated: true, completion: nil)
+    }
+
+    private struct AssociatedKeys {
+        static var indexPath: UInt8 = 0
+        static var datePicker: UInt8 = 1
+    }
+    
+    @objc private func saveDatePickerValue(sender: UIButton) {
+        guard let editVC = sender.superview?.viewController,
+              let indexPath = objc_getAssociatedObject(editVC, &AssociatedKeys.indexPath) as? IndexPath,
+              let datePicker = objc_getAssociatedObject(editVC, &AssociatedKeys.datePicker) as? UIDatePicker else { return }
+        
+        // Update the meal date in the meal history
+        let mealHistory = filteredMealHistories[indexPath.row]
+        mealHistory.mealDate = datePicker.date
+        
+        // Save to Core Data
+        let context = CoreDataStack.shared.context
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save updated meal date: \(error.localizedDescription)")
+        }
+        
+        // Run the export function after saving the updated date
+        if let dataSharingVC = self.dataSharingVC {
+            Task {
+                await dataSharingVC.exportMealHistoryToCSV()
+                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+            }
+        }
+        
+        // Dismiss the popover and reload table
+        dismiss(animated: true) {
+            self.tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+    }
+}
+
+extension UIView {
+    var viewController: UIViewController? {
+        var responder: UIResponder? = self
+        while responder != nil {
+            if let vc = responder as? UIViewController {
+                return vc
+            }
+            responder = responder?.next
+        }
+        return nil
     }
 }

@@ -1,3 +1,4 @@
+// Daniel: 500+ lines - To be cleaned
 import AVFoundation
 import CoreData
 import UIKit
@@ -38,17 +39,6 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.ean8, .ean13, .pdf417, .upce]
-/*
-            // Calculate rectOfInterest
-            let overlayFrame = view.frame
-            let rectWidth = overlayFrame.width * 0.85
-            let rectHeight = rectWidth
-            let rectX = (overlayFrame.width - rectWidth) / 2
-            let rectY = (overlayFrame.height - rectHeight) / 2
-
-            // Convert overlay frame to a normalized rect for rectOfInterest
-            let overlayRect = CGRect(x: rectX / overlayFrame.width, y: rectY / overlayFrame.height, width: rectWidth / overlayFrame.width, height: rectHeight / overlayFrame.height)
-            metadataOutput.rectOfInterest = overlayRect*/
         } else {
             failed()
             return
@@ -62,12 +52,6 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         DispatchQueue.global(qos: .background).async {
             self.captureSession.startRunning()
         }
-/*
-        // Add overlay view
-        let overlayView = ScannerOverlayView(frame: view.frame)
-        overlayView.backgroundColor = UIColor.clear
-        view.addSubview(overlayView)
-        */
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
                 navigationItem.leftBarButtonItem = closeButton
 

@@ -1,3 +1,4 @@
+// Daniel: 800+ lines - To be cleaned
 import UIKit
 import CloudKit
 import CoreData
@@ -189,19 +190,17 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-    ///Ongoing meal import
+///Ongoing meal import
     @objc public func importOngoingMealCSV() {
         let fileManager = FileManager.default
         guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
             print("Import Failed: iCloud Drive URL is nil.")
             return
         }
-        
         do {
             let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
             let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
             let importedRows = parseOngoingMealCSV(rows)
-            //print("Parsed Rows: \(importedRows)") // Log parsed rows
             NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
             print("Import Successful: OngoingMeal.csv has been imported")
         } catch {
@@ -618,24 +617,6 @@ class DataSharingViewController: UIViewController {
         }
     }
     
-    // Ongoing meal import
-    @objc public func importOngoingMealCSV() async {
-        let fileManager = FileManager.default
-        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
-            print("Import Failed: iCloud Drive URL is nil.")
-            return
-        }
-        do {
-            let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
-            let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
-            let importedRows = parseOngoingMealCSV(rows)
-            NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
-            print("Import Successful: OngoingMeal.csv has been imported")
-        } catch {
-            print("Failed to read CSV file: \(error)")
-        }
-    }
-    
     private func parseOngoingMealCSV(_ rows: [String]) -> [FoodItemRowData] {
         var foodItemRows = [FoodItemRowData]()
         
@@ -693,6 +674,7 @@ class DataSharingViewController: UIViewController {
 
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
+        userDefaultsData["lateBreakfastFactorUsed"] = UserDefaultsRepository.lateBreakfastFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = UserDefaultsRepository.nightscoutURL ?? ""
         userDefaultsData["nightscoutToken"] = UserDefaultsRepository.nightscoutToken ?? ""
@@ -701,6 +683,7 @@ class DataSharingViewController: UIViewController {
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
         userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
+        userDefaultsData["topUps"] = UserDefaultsRepository.topUps ?? ""
 
         let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
 
@@ -758,6 +741,8 @@ class DataSharingViewController: UIViewController {
                 if let date = ISO8601DateFormatter().date(from: values[1]) {
                     UserDefaultsRepository.lateBreakfastStartTime = date
                 }
+            case "lateBreakfastFactorUsed":
+                UserDefaultsRepository.lateBreakfastFactorUsed = values[1]
             case "dabasAPISecret":
                 UserDefaultsRepository.dabasAPISecret = values[1]
             case "nightscoutURL":
@@ -772,6 +757,8 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.schoolFoodURL = values[1]
             case "excludeWords":
                 UserDefaultsRepository.excludeWords = values[1]
+            case "topUps":
+                UserDefaultsRepository.topUps = values[1]
             default:
                 break
             }

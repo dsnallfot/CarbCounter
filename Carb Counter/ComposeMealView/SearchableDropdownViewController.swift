@@ -329,7 +329,11 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         if searchText.isEmpty {
             filteredFoodItems = foodItems
         } else {
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+            filteredFoodItems = foodItems.filter { foodItem in
+                let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
+                let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
+                return nameMatches || emojiMatches
+            }
         }
         sortFoodItems()
         tableView.reloadData()
