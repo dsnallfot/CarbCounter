@@ -1,3 +1,4 @@
+// Daniel: 1100+ lines - To be cleaned
 import UIKit
 import CoreData
 import UniformTypeIdentifiers

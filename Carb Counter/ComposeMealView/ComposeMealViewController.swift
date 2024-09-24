@@ -1,4 +1,4 @@
-//
+// Daniel: 3000+ lines - To be cleaned
 //  ComposeMealViewController.swift
 //  Carb Counter
 //
@@ -1852,7 +1852,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         // Call additional update methods
-        print("additional methods ran")
         updateTotalNutrients()
         updateHeadlineVisibility()
         updateRemainsBolus()

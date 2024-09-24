@@ -1,3 +1,4 @@
+// Daniel: 500+ lines - To be cleaned
 import AVFoundation
 import CoreData
 import UIKit

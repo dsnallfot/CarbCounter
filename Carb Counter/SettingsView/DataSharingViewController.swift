@@ -1,3 +1,4 @@
+// Daniel: 800+ lines - To be cleaned
 import UIKit
 import CloudKit
 import CoreData
