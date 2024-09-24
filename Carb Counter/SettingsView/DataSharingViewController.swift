@@ -248,7 +248,7 @@ class DataSharingViewController: UIViewController {
     
     ///Creating csv files
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji;lastEdited\n"
+        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;lastEdited;emoji\n"
         
         let dateFormatter = ISO8601DateFormatter()  // Using ISO 8601 format for dates
         
@@ -267,10 +267,11 @@ class DataSharingViewController: UIViewController {
             let proteinPP = item.proteinPP
             let count = item.count
             let notes = item.notes ?? ""
-            let emoji = item.emoji ?? ""
             let lastEdited = dateFormatter.string(from: item.lastEdited ?? Date())  // Format lastEdited date
+            let emoji = item.emoji ?? ""
+
             
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji);\(lastEdited)\n"
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(lastEdited);\(emoji)\n"
         }
         
         return csvString
@@ -433,7 +434,7 @@ class DataSharingViewController: UIViewController {
                     let existingItem = existingFoodItemsDict[id]
                     
                     // Access the lastEdited date string directly
-                    let lastEditedString = values[15]
+                    let lastEditedString = values[14]
                     
                     // Parse the lastEdited date from the CSV row
                     if let newLastEditedDate = dateFormatter.date(from: lastEditedString) {
@@ -459,7 +460,7 @@ class DataSharingViewController: UIViewController {
                         foodItem.proteinPP = Double(values[11]) ?? 0.0
                         foodItem.count = Int16(values[12]) ?? 0
                         foodItem.notes = values[13]
-                        foodItem.emoji = values[14]
+                        foodItem.emoji = values[15]
                         
                         // Set lastEdited date
                         foodItem.lastEdited = newLastEditedDate
@@ -480,10 +481,10 @@ class DataSharingViewController: UIViewController {
                         foodItem.proteinPP = Double(values[11]) ?? 0.0
                         foodItem.count = Int16(values[12]) ?? 0
                         foodItem.notes = values[13]
-                        foodItem.emoji = values[14]
-                        
                         // Set lastEdited to current date if no valid date is provided
                         foodItem.lastEdited = Date()
+                        foodItem.emoji = values[15]
+
                     }
                 }
             }
