@@ -2255,6 +2255,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
             favoriteMeals.name = mealName
             favoriteMeals.id = UUID()
+            if let lastEdited = favoriteMeals.lastEdited {
+                let isoFormatter = ISO8601DateFormatter()
+                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                let formattedDate = isoFormatter.string(from: lastEdited)
+                print("Last Edited (CSV Format): \(formattedDate)")
+            } else {
+                print("Last Edited: nil")
+            }
             
             var items: [[String: Any]] = []
             for row in self.foodItemRows {

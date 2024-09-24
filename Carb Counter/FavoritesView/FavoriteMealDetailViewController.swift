@@ -111,6 +111,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     @objc private func saveChanges() {
         favoriteMeal.name = nameTextField.text
         
+        // Set lastEdited to current date when saving changes
+        favoriteMeal.lastEdited = Date()
+        
         CoreDataStack.shared.saveContext()
         
         // Ensure dataSharingVC is instantiated
@@ -216,6 +219,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             guard let self = self, let newPortion = editAlert.textFields?.first?.text else { return }
             items[indexPath.row]["portionServed"] = newPortion
             self.favoriteMeal.items = self.updateItems(items: items)
+            
+            // Set lastEdited to current date when modifying item
+            self.favoriteMeal.lastEdited = Date()
             
             CoreDataStack.shared.saveContext()
             
