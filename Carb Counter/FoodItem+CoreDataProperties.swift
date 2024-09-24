@@ -31,5 +31,6 @@ extension FoodItem {
     @NSManaged public var protein: Double
     @NSManaged public var proteinPP: Double
     @NSManaged public var notes: String?
+    @NSManaged public var lastEdited: Date
 
 }

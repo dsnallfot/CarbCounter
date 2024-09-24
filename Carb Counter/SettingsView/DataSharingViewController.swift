@@ -248,7 +248,9 @@ class DataSharingViewController: UIViewController {
     
     ///Creating csv files
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji\n"
+        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;emoji;lastEdited\n"
+        
+        let dateFormatter = ISO8601DateFormatter()  // Using ISO 8601 format for dates
         
         for item in foodItems {
             let id = item.id?.uuidString ?? ""
@@ -266,8 +268,9 @@ class DataSharingViewController: UIViewController {
             let count = item.count
             let notes = item.notes ?? ""
             let emoji = item.emoji ?? ""
+            let lastEdited = dateFormatter.string(from: item.lastEdited ?? Date())  // Format lastEdited date
             
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji)\n"
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(emoji);\(lastEdited)\n"
         }
         
         return csvString
@@ -408,7 +411,7 @@ class DataSharingViewController: UIViewController {
     // Parse Food Items CSV
     public func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 15 else {
+        guard columns.count == 16 else {  // Ensure the count is 16
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
@@ -417,30 +420,75 @@ class DataSharingViewController: UIViewController {
         let existingFoodItems = try? context.fetch(fetchRequest)
         let existingFoodItemsDict = Dictionary(uniqueKeysWithValues: existingFoodItems?.compactMap { ($0.id, $0) } ?? [])
         
+        // Date formatter for parsing dates from CSV
+        let dateFormatter = ISO8601DateFormatter()
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 15 {
+            if values.count == 16 {
                 if let id = UUID(uuidString: values[0]),
                    !values.dropFirst().allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                    let foodItem = existingFoodItemsDict[id] ?? FoodItem(context: context)
-                    foodItem.id = id
-                    foodItem.name = values[1]
-                    foodItem.carbohydrates = Double(values[2]) ?? 0.0
-                    foodItem.carbsPP = Double(values[3]) ?? 0.0
-                    foodItem.fat = Double(values[4]) ?? 0.0
-                    foodItem.fatPP = Double(values[5]) ?? 0.0
-                    foodItem.netCarbs = Double(values[6]) ?? 0.0
-                    foodItem.netFat = Double(values[7]) ?? 0.0
-                    foodItem.netProtein = Double(values[8]) ?? 0.0
-                    foodItem.perPiece = values[9] == "true"
-                    foodItem.protein = Double(values[10]) ?? 0.0
-                    foodItem.proteinPP = Double(values[11]) ?? 0.0
-                    foodItem.count = Int16(values[12]) ?? 0
-                    foodItem.notes = values[13]
-                    foodItem.emoji = values[14]
+                    
+                    // Retrieve existing food item if available
+                    let existingItem = existingFoodItemsDict[id]
+                    
+                    // Access the lastEdited date string directly
+                    let lastEditedString = values[15]
+                    
+                    // Parse the lastEdited date from the CSV row
+                    if let newLastEditedDate = dateFormatter.date(from: lastEditedString) {
+                        if let existingLastEdited = existingItem?.lastEdited,
+                           existingLastEdited >= newLastEditedDate {
+                            // Skip if existing item is more recent or same as the one being imported
+                            continue
+                        }
+                        
+                        // Update or create a new FoodItem
+                        let foodItem = existingItem ?? FoodItem(context: context)
+                        foodItem.id = id
+                        foodItem.name = values[1]
+                        foodItem.carbohydrates = Double(values[2]) ?? 0.0
+                        foodItem.carbsPP = Double(values[3]) ?? 0.0
+                        foodItem.fat = Double(values[4]) ?? 0.0
+                        foodItem.fatPP = Double(values[5]) ?? 0.0
+                        foodItem.netCarbs = Double(values[6]) ?? 0.0
+                        foodItem.netFat = Double(values[7]) ?? 0.0
+                        foodItem.netProtein = Double(values[8]) ?? 0.0
+                        foodItem.perPiece = values[9] == "true"
+                        foodItem.protein = Double(values[10]) ?? 0.0
+                        foodItem.proteinPP = Double(values[11]) ?? 0.0
+                        foodItem.count = Int16(values[12]) ?? 0
+                        foodItem.notes = values[13]
+                        foodItem.emoji = values[14]
+                        
+                        // Set lastEdited date
+                        foodItem.lastEdited = newLastEditedDate
+                    } else {
+                        // If there's no valid lastEdited date in the CSV, handle the fallback case here
+                        let foodItem = existingItem ?? FoodItem(context: context)
+                        foodItem.id = id
+                        foodItem.name = values[1]
+                        foodItem.carbohydrates = Double(values[2]) ?? 0.0
+                        foodItem.carbsPP = Double(values[3]) ?? 0.0
+                        foodItem.fat = Double(values[4]) ?? 0.0
+                        foodItem.fatPP = Double(values[5]) ?? 0.0
+                        foodItem.netCarbs = Double(values[6]) ?? 0.0
+                        foodItem.netFat = Double(values[7]) ?? 0.0
+                        foodItem.netProtein = Double(values[8]) ?? 0.0
+                        foodItem.perPiece = values[9] == "true"
+                        foodItem.protein = Double(values[10]) ?? 0.0
+                        foodItem.proteinPP = Double(values[11]) ?? 0.0
+                        foodItem.count = Int16(values[12]) ?? 0
+                        foodItem.notes = values[13]
+                        foodItem.emoji = values[14]
+                        
+                        // Set lastEdited to current date if no valid date is provided
+                        foodItem.lastEdited = Date()
+                    }
                 }
             }
         }
+        
         do {
             try context.save()
         } catch {
