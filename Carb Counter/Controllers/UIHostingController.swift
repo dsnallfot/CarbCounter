@@ -171,3 +171,225 @@ class CustomAlertViewController: UIViewController {
         dismiss(animated: true, completion: nil)
     }
 }
+
+extension ComposeMealViewController {
+    
+    public func presentPopover(title: String, message: String, statusTitle: String, statusMessage: String, progress: CGFloat, progressBarColor: Color, showProgressBar: Bool, sourceView: UIView) {
+        let popoverController = InfoPopoverHostingController(
+            title: title,
+            message: message,
+            statusTitle: statusTitle,
+            statusMessage: statusMessage,
+            progress: progress,
+            progressBarColor: progressBarColor,
+            showProgressBar: showProgressBar
+        )
+        popoverController.modalPresentationStyle = .popover
+        popoverController.popoverPresentationController?.sourceView = sourceView
+        popoverController.popoverPresentationController?.sourceRect = sourceView.bounds
+        popoverController.popoverPresentationController?.permittedArrowDirections = .any
+        popoverController.popoverPresentationController?.delegate = self
+        present(popoverController, animated: true, completion: nil)
+    }
+    
+    @objc public func showBolusInfo() {
+        let bolusRemains = totalRemainsBolusLabel.text?.isEmpty == true ? "0 E" : String(totalRemainsBolusLabel.text?.replacingOccurrences(of: " ", with: NSLocalizedString("0E", comment: "0E")).replacingOccurrences(of: "E", with: " E").replacingOccurrences(of: "U", with: " U") ?? "0 E")
+        
+        let formattedRegisteredBolus: String
+        if registeredBolusSoFar.truncatingRemainder(dividingBy: 1) == 0 {
+            formattedRegisteredBolus = String(format: "%.0f", registeredBolusSoFar)
+        } else if registeredBolusSoFar * 10 == floor(registeredBolusSoFar * 10) {
+            formattedRegisteredBolus = String(format: "%.1f", registeredBolusSoFar)
+        } else {
+            formattedRegisteredBolus = String(format: "%.2f", registeredBolusSoFar)
+        }
+        
+        // Calculate progress value
+        let totalBolusValue = Double(totalBolusAmountLabel.text?.replacingOccurrences(of: " E", with: "") ?? "0") ?? 0.0
+        let progress: CGFloat = totalBolusValue > 0 ? CGFloat(registeredBolusSoFar / totalBolusValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Bolus Total", comment: "Bolus Total"),
+            message: NSLocalizedString("Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden.", comment: "Den beräknade mängden insulin som krävs för att täcka kolhydraterna i måltiden."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@", comment: "• Totalt beräknat behov: %@\n• Hittills registerat: %@ E\n• Kvar att registrera: %@"), totalBolusAmountLabel.text ?? "0 E", formattedRegisteredBolus, bolusRemains),
+            progress: progress,
+            progressBarColor: Color.indigo,
+            showProgressBar: true,
+            sourceView: totalBolusAmountLabel
+        )
+    }
+    
+    @objc public func showCarbsInfo() {
+        let carbsRemains = String(totalRemainsLabel.text ?? NSLocalizedString("0 g", comment: "0 g"))
+            .replacingOccurrences(of: "g", with: " g")
+            .replacingOccurrences(of: " KLAR", with: "0 g")
+            .replacingOccurrences(of: " DONE", with: "0 g")
+            .replacingOccurrences(of: " PÅ INPUT", with: "0 g")
+            .replacingOccurrences(of: " FOR INPUT", with: "0 g")
+        let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
+        
+        // Calculate progress value
+        let totalCarbsValue = Double(totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let registeredCarbs = Double(carbsRegistered.replacingOccurrences(of: " g", with: "")) ?? 0.0
+        let progress: CGFloat = totalCarbsValue > 0 ? CGFloat(registeredCarbs / totalCarbsValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Kolhydrater Totalt", comment: "Kolhydrater Totalt"),
+            message: NSLocalizedString("Den beräknade summan av alla kolhydrater i måltiden.", comment: "Den beräknade summan av alla kolhydrater i måltiden."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@", comment: "• Total mängd kolhydrater: %@\n• Hittills registerat: %@\n• Kvar att registrera: %@"), totalNetCarbsLabel.text ?? "0 g", carbsRegistered, carbsRemains),
+            progress: progress,
+            progressBarColor: Color.orange,
+            showProgressBar: true,
+            sourceView: totalNetCarbsLabel
+        )
+    }
+    
+    @objc public func showFatInfo() {
+        let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let fatRemaining = String(format: "%.0f", fatTotalValue - registeredFatSoFar)
+        
+        // Calculate progress value
+        let progress: CGFloat = fatTotalValue > 0 ? CGFloat(registeredFatSoFar / fatTotalValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Fett Totalt", comment: "Fett Totalt"),
+            message: NSLocalizedString("Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all fett i måltiden. \n\nFett kräver också insulin, men med några timmars fördröjning."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "• Total mängd fett: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetFatLabel.text ?? "0 g", registeredFatSoFar, fatRemaining),
+            progress: progress,
+            progressBarColor: Color.brown,
+            showProgressBar: true,
+            sourceView: totalNetFatLabel
+        )
+    }
+    
+    @objc public func showProteinInfo() {
+        let proteinTotalValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let proteinRemaining = String(format: "%.0f", proteinTotalValue - registeredProteinSoFar)
+        
+        // Calculate progress value
+        let progress: CGFloat = proteinTotalValue > 0 ? CGFloat(registeredProteinSoFar / proteinTotalValue) : 0.0
+        
+        presentPopover(
+            title: NSLocalizedString("Protein Totalt", comment: "Protein Totalt"),
+            message: NSLocalizedString("Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning.", comment: "Den beräknade summan av all protein i måltiden. \n\nProtein kräver också insulin, men med några timmars fördröjning."),
+            statusTitle: NSLocalizedString("Status för denna måltid:", comment: "Status för denna måltid:"),
+            statusMessage: String(format: NSLocalizedString("• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g", comment: "• Total mängd protein: %@\n• Hittills registerat: %.0f g\n• Kvar att registrera: %@ g"), totalNetProteinLabel.text ?? "0 g", registeredProteinSoFar, proteinRemaining),
+            progress: progress,
+            progressBarColor: Color.brown,
+            showProgressBar: true,
+            sourceView: totalNetProteinLabel
+        )
+    }
+    
+    @objc public func showCRInfo() {
+        let CR = UserDefaultsRepository.scheduledCarbRatio
+        let amount = CR * 2
+        
+        func formatValue(_ value: Double) -> String {
+            return value == floor(value) ? String(format: "%.0f", value) : String(format: "%.1f", value)
+        }
+        
+        let formattedCR = formatValue(CR)
+        let formattedAmount = formatValue(amount)
+        
+        let message = String(
+            format: NSLocalizedString("Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker.", comment: "Även kallad Carb Ratio (CR)\n\nVärdet motsvarar hur stor mängd kolhydrater som 1 E insulin täcker."), formattedCR, formattedAmount)
+        let statusMessage = String(
+            format: NSLocalizedString("CR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater.", comment: "CR %@ innebär att det behövs 2 E insulin till %@ g kolhydrater."), formattedCR, formattedAmount)
+        
+        presentPopover(
+            title: NSLocalizedString("Insulinkvot", comment: "Insulinkvot"),
+            message: message,
+            statusTitle: NSLocalizedString("Exempel:", comment: "Exempel:"),
+            statusMessage: statusMessage,
+            progress: 0,
+            progressBarColor: Color.clear,
+            showProgressBar: false,
+            sourceView: nowCRLabel
+        )
+    }
+    
+    @objc public func lateBreakfastLabelTapped() {
+        if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm"
+            let formattedDate = formatter.string(from: startTime)
+            let latestFactorUsed = UserDefaultsRepository.lateBreakfastFactorUsed
+            presentPopover(
+                title: String(format: NSLocalizedString("Senaste override • %@", comment: "Senaste override • %@"), latestFactorUsed),
+                message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate),
+                statusTitle: "",
+                statusMessage: "",
+                progress: 0,
+                progressBarColor: Color.clear,
+                showProgressBar: false,
+                sourceView: addButtonRowView.lateBreakfastLabel)
+        } else {
+            presentPopover(
+                title: NSLocalizedString("Senaste override", comment: "Senaste override"),
+                message: NSLocalizedString("Ingen tidigare aktivering hittades.", comment: "Ingen tidigare aktivering hittades."),
+                statusTitle: "",
+                statusMessage: "",
+                progress: 0,
+                progressBarColor: Color.clear,
+                showProgressBar: false,
+                sourceView: addButtonRowView.lateBreakfastLabel)
+        }
+    }
+    
+    @objc public func editCurrentRegistration() {
+        let popoverController = EditRegistrationPopoverHostingController(
+            registeredFatSoFar: Binding(get: { [weak self] in
+                self?.registeredFatSoFar ?? 0.0
+            }, set: { [weak self] newValue in
+                self?.registeredFatSoFar = newValue
+            }),
+            registeredProteinSoFar: Binding(get: { [weak self] in
+                self?.registeredProteinSoFar ?? 0.0
+            }, set: { [weak self] newValue in
+                self?.registeredProteinSoFar = newValue
+            }),
+            registeredBolusSoFar: Binding(get: { [weak self] in
+                self?.registeredBolusSoFar ?? 0.0
+            }, set: { [weak self] newValue in
+                self?.registeredBolusSoFar = newValue
+            }),
+            registeredCarbsSoFar: Binding(get: { [weak self] in
+                if let text = self?.totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
+                   let value = Double(text) {
+                    return value
+                }
+                return 0.0
+            }, set: { [weak self] newValue in
+                self?.totalRegisteredCarbsLabel.text = String(format: "%.0f g", newValue)
+                self?.registeredCarbsSoFar = newValue
+            }),
+            mealDate: Binding(get: { [weak self] in
+                self?.mealDate
+            }, set: { [weak self] newValue in
+                self?.mealDate = newValue
+            }),
+            composeMealViewController: self,
+            onDismiss: { [weak self] in
+                guard let self = self else { return }
+                self.totalRegisteredCarbsLabelDidChange(self.totalRegisteredCarbsLabel)
+                self.updateTotalNutrients()
+                self.updateRemainsBolus()
+                self.updateHeadlineVisibility()
+                self.updateClearAllButtonState()
+                self.saveToCoreData()
+                self.saveValuesToUserDefaults()
+            }
+        )
+        popoverController.modalPresentationStyle = .popover
+        popoverController.popoverPresentationController?.sourceView = totalRegisteredCarbsLabel
+        popoverController.popoverPresentationController?.permittedArrowDirections = .any
+        popoverController.popoverPresentationController?.delegate = self
+        present(popoverController, animated: true, completion: nil)
+    }
+}
+
+

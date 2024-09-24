@@ -621,3 +621,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         updateSaveButtonTitle()
     }
 }
+
+// MARK: Extension (AddFoodItemDelegate)
+extension ComposeMealViewController: AddFoodItemDelegate {
+    func didAddFoodItem() {
+        fetchFoodItems()
+        updateClearAllButtonState()
+        updateSaveFavoriteButtonState()
+        updateHeadlineVisibility()
+    }
+}
