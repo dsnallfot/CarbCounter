@@ -327,7 +327,7 @@ class DataSharingViewController: UIViewController {
     }
     
     private func createCSV(from mealHistories: [MealHistory]) -> String {
-        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;totalNetBolus;foodEntries\n"
+        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;totalNetBolus;delete;foodEntries\n"
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Use the same format for export and import
@@ -339,6 +339,7 @@ class DataSharingViewController: UIViewController {
             let totalNetFat = mealHistory.totalNetFat
             let totalNetProtein = mealHistory.totalNetProtein
             let totalNetBolus = mealHistory.totalNetBolus
+            let deleteFlag = mealHistory.delete ? "true" : "false" // Convert delete boolean to string
             
             let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
                 [
@@ -354,7 +355,7 @@ class DataSharingViewController: UIViewController {
                 ].map { "\($0)" }.joined(separator: ",")
             }.joined(separator: "|") ?? ""
             
-            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(foodEntries)\n"
+            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(deleteFlag);\(foodEntries)\n"
         }
         
         return csvString
@@ -676,7 +677,7 @@ class DataSharingViewController: UIViewController {
     // Parse Meal History CSV
     public func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 7 else {
+        guard columns.count == 8 else { // Updated to 8 columns: id, mealDate, totalNetCarbs, totalNetFat, totalNetProtein, totalNetBolus, delete, foodEntries
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
@@ -684,38 +685,96 @@ class DataSharingViewController: UIViewController {
         let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
         do {
             let existingMealHistories = try context.fetch(fetchRequest)
-            let existingIDs = Set(existingMealHistories.compactMap { $0.id })
+            let existingMealHistoriesDict = Dictionary(uniqueKeysWithValues: existingMealHistories.compactMap { ($0.id, $0) })
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Use the same format for export and import
             
             for row in rows[1...] {
                 let values = row.components(separatedBy: ";")
-                if values.count == 7, !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                    if let id = UUID(uuidString: values[0]), !existingIDs.contains(id) {
-                        let mealHistory = MealHistory(context: context)
-                        mealHistory.id = id
-                        mealHistory.mealDate = dateFormatter.date(from: values[1])
-                        mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
-                        mealHistory.totalNetFat = Double(values[3]) ?? 0.0
-                        mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
-                        mealHistory.totalNetBolus = Double(values[5]) ?? 0.0
+                if values.count == 8, // Check for 8 columns
+                   !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
+                    if let id = UUID(uuidString: values[0]) {
                         
-                        let foodEntriesValues = values[6].components(separatedBy: "|")
-                        for foodEntryValue in foodEntriesValues {
-                            let foodEntryParts = foodEntryValue.components(separatedBy: ",")
-                            if foodEntryParts.count == 9 {
-                                let foodEntry = FoodItemEntry(context: context)
-                                foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
-                                foodEntry.entryName = foodEntryParts[1]
-                                foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
-                                foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
-                                foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
-                                foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
-                                foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
-                                foodEntry.entryPerPiece = foodEntryParts[7] == "1"
-                                foodEntry.entryEmoji = foodEntryParts[8]
-                                mealHistory.addToFoodEntries(foodEntry)
+                        // Retrieve existing meal history if available
+                        if let existingItem = existingMealHistoriesDict[id] {
+                            // Check if the delete flag is set to true
+                            if values[6] == "true" {
+                                // If delete is true, remove the existing meal history
+                                context.delete(existingItem)
+                                continue // Skip further processing for this item
+                            }
+                            
+                            // Parse the lastEdited date from the CSV row
+                            let lastEditedString = values[1]
+                            if let newMealDate = dateFormatter.date(from: lastEditedString) {
+                                if let existingMealDate = existingItem.mealDate, existingMealDate >= newMealDate {
+                                    // Skip if existing item is more recent or same as the one being imported
+                                    continue
+                                }
+                                
+                                // Update existing meal history
+                                existingItem.mealDate = newMealDate
+                                existingItem.totalNetCarbs = Double(values[2]) ?? 0.0
+                                existingItem.totalNetFat = Double(values[3]) ?? 0.0
+                                existingItem.totalNetProtein = Double(values[4]) ?? 0.0
+                                existingItem.totalNetBolus = Double(values[5]) ?? 0.0
+                                existingItem.delete = false // Reset delete flag if updating
+                                
+                                // Update food entries
+                                existingItem.removeFromFoodEntries(existingItem.foodEntries ?? NSSet())
+                                let foodEntriesValues = values[7].components(separatedBy: "|")
+                                for foodEntryValue in foodEntriesValues {
+                                    let foodEntryParts = foodEntryValue.components(separatedBy: ",")
+                                    if foodEntryParts.count == 9 {
+                                        let foodEntry = FoodItemEntry(context: context)
+                                        foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
+                                        foodEntry.entryName = foodEntryParts[1]
+                                        foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
+                                        foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
+                                        foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
+                                        foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
+                                        foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
+                                        foodEntry.entryPerPiece = foodEntryParts[7] == "1"
+                                        foodEntry.entryEmoji = foodEntryParts[8]
+                                        existingItem.addToFoodEntries(foodEntry)
+                                    }
+                                }
+                            }
+                        } else {
+                            // Create a new meal history if not found
+                            let mealHistory = MealHistory(context: context)
+                            mealHistory.id = id
+                            mealHistory.mealDate = dateFormatter.date(from: values[1])
+                            mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
+                            mealHistory.totalNetFat = Double(values[3]) ?? 0.0
+                            mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
+                            mealHistory.totalNetBolus = Double(values[5]) ?? 0.0
+                            mealHistory.delete = values[6] == "true" // Set the delete flag
+                            
+                            // If delete is true, remove it from Core Data
+                            if mealHistory.delete {
+                                context.delete(mealHistory)
+                                continue
+                            }
+                            
+                            // Parse food entries
+                            let foodEntriesValues = values[7].components(separatedBy: "|")
+                            for foodEntryValue in foodEntriesValues {
+                                let foodEntryParts = foodEntryValue.components(separatedBy: ",")
+                                if foodEntryParts.count == 9 {
+                                    let foodEntry = FoodItemEntry(context: context)
+                                    foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
+                                    foodEntry.entryName = foodEntryParts[1]
+                                    foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
+                                    foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
+                                    foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
+                                    foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
+                                    foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
+                                    foodEntry.entryPerPiece = foodEntryParts[7] == "1"
+                                    foodEntry.entryEmoji = foodEntryParts[8]
+                                    mealHistory.addToFoodEntries(foodEntry)
+                                }
                             }
                         }
                     }

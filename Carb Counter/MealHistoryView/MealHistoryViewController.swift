@@ -194,43 +194,51 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Radera", comment: "Confirm deletion"), style: .destructive, handler: { _ in
-                let mealHistory = self.filteredMealHistories[indexPath.row]
-                let context = CoreDataStack.shared.context
-                context.delete(mealHistory)
-                
-                // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = self.dataSharingVC else { return }
-                
-                // Call the desired function
                 Task {
-                    print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
-                    await dataSharingVC.exportMealHistoryToCSV()
+                    await self.deleteMealHistory(at: indexPath)
+                    completionHandler(true) // Perform the delete action
                 }
-                
-                do {
-                    try context.save()
-                    self.mealHistories.removeAll { $0 == mealHistory }
-                    self.filteredMealHistories.remove(at: indexPath.row)
-                    tableView.deleteRows(at: [indexPath], with: .fade)
-                } catch {
-                    print(String(format: NSLocalizedString("Failed to delete meal history: %@", comment: "Log message for failed meal history deletion"), error.localizedDescription))
-                }
-                completionHandler(true) // Perform the delete action
             }))
             
             self.present(alert, animated: true, completion: nil)
         }
         deleteAction.image = UIImage(systemName: "trash.fill")
-            
-            let editAction = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
-                self.presentEditPopover(for: indexPath)
-                completionHandler(true)
-            }
-            editAction.image = UIImage(systemName: "square.and.pencil")
-            editAction.backgroundColor = .systemBlue
-            
-            return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        
+        let editAction = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
+            self.presentEditPopover(for: indexPath)
+            completionHandler(true)
         }
+        editAction.image = UIImage(systemName: "square.and.pencil")
+        editAction.backgroundColor = .systemBlue
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+    }
+    
+    private func deleteMealHistory(at indexPath: IndexPath) async {
+        let mealHistory = filteredMealHistories[indexPath.row]
+        
+        // Set the delete flag to true before exporting
+        mealHistory.delete = true
+        mealHistory.mealDate = Date() // Update mealDate to current date to ensure accurate last edited time
+
+        // Export the updated list of meal histories
+        guard let dataSharingVC = dataSharingVC else { return }
+        print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
+        await dataSharingVC.exportMealHistoryToCSV()
+        
+        // After exporting, delete the item from Core Data
+        let context = CoreDataStack.shared.context
+        context.delete(mealHistory)
+        
+        do {
+            try context.save()
+            mealHistories.removeAll { $0 == mealHistory }
+            filteredMealHistories.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } catch {
+            print(String(format: NSLocalizedString("Failed to delete meal history: %@", comment: "Log message for failed meal history deletion"), error.localizedDescription))
+        }
+    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let mealHistory = filteredMealHistories[indexPath.row]
