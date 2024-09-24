@@ -757,25 +757,35 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func deleteFoodItem(at indexPath: IndexPath) {
         let foodItem = filteredFoodItems[indexPath.row]
         let context = CoreDataStack.shared.context
-        context.delete(foodItem)
+        
+        // Step 1: Set the delete flag to true
+        foodItem.delete = true
+        
         do {
+            // Step 2: Save the context with the updated delete flag
             try context.save()
-            foodItems.remove(at: indexPath.row)
-            filteredFoodItems.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-            updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
+            
+            // Step 3: Export the updated list to CSV before actually deleting the item
+            guard let dataSharingVC = dataSharingVC else { return }
+            Task {
+                print("Food items export triggered")
+                await dataSharingVC.exportFoodItemsToCSV()
+                
+                // Step 4: After exporting, delete the item from Core Data
+                context.delete(foodItem)
+                do {
+                    try context.save()
+                    // Remove from the data arrays and table view
+                    foodItems.remove(at: indexPath.row)
+                    filteredFoodItems.remove(at: indexPath.row)
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
+                    updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
+                } catch {
+                    print("Failed to delete food item: \(error)")
+                }
+            }
         } catch {
-            print("Failed to delete food item: \(error)")
-        }
-        
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-        Task {
-            print("Food items export triggered")
-            await dataSharingVC.exportFoodItemsToCSV()
-
+            print("Failed to update delete flag: \(error)")
         }
     }
     

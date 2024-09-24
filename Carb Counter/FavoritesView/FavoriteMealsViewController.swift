@@ -259,16 +259,24 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
     private func deleteFavoriteMeal(at indexPath: IndexPath) async {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
-        CoreDataStack.shared.context.delete(favoriteMeal)
-        CoreDataStack.shared.saveContext()
         
-        favoriteMeals.removeAll { $0 == favoriteMeal }
-        filteredFavoriteMeals.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        
+        // Set the delete flag to true before exporting
+        favoriteMeal.delete = true
+        favoriteMeal.lastEdited = Date() // Update lastEdited date to current date
+
+        // Export the updated list of favorite meals
         guard let dataSharingVC = dataSharingVC else { return }
         print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
         await dataSharingVC.exportFavoriteMealsToCSV()
+        
+        // After exporting, delete the item from Core Data
+        CoreDataStack.shared.context.delete(favoriteMeal)
+        CoreDataStack.shared.saveContext()
+        
+        // Update local arrays and UI
+        favoriteMeals.removeAll { $0 == favoriteMeal }
+        filteredFavoriteMeals.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 
     // MARK: - UISearchBarDelegate

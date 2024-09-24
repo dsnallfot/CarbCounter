@@ -248,7 +248,7 @@ class DataSharingViewController: UIViewController {
     
     ///Creating csv files
     private func createCSV(from foodItems: [FoodItem]) -> String {
-        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;lastEdited;emoji\n"
+        var csvString = "id;name;carbohydrates;carbsPP;fat;fatPP;netCarbs;netFat;netProtein;perPiece;protein;proteinPP;count;notes;lastEdited;delete;emoji\n"
         
         let dateFormatter = ISO8601DateFormatter()  // Using ISO 8601 format for dates
         
@@ -268,17 +268,17 @@ class DataSharingViewController: UIViewController {
             let count = item.count
             let notes = item.notes ?? ""
             let lastEdited = dateFormatter.string(from: item.lastEdited ?? Date())  // Format lastEdited date
+            let delete = item.delete  // Adding the delete field
             let emoji = item.emoji ?? ""
 
-            
-            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(lastEdited);\(emoji)\n"
+            csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(lastEdited);\(delete);\(emoji)\n"
         }
         
         return csvString
     }
     
     private func createCSV(from favoriteMeals: [FavoriteMeals]) -> String {
-        var csvString = "id;name;lastEdited;items\n"
+        var csvString = "id;name;lastEdited;delete;items\n"
         
         let dateFormatter = ISO8601DateFormatter()  // Using ISO 8601 format for dates
         
@@ -286,10 +286,10 @@ class DataSharingViewController: UIViewController {
             let id = meal.id?.uuidString ?? ""
             let name = meal.name ?? ""
             let lastEdited = dateFormatter.string(from: meal.lastEdited ?? Date())  // Format lastEdited date
-            
+            let deleteFlag = meal.delete ? "true" : "false"  // Convert delete flag to string
             let itemsString = meal.items as? String ?? ""
             
-            csvString += "\(id);\(name);\(lastEdited);\(itemsString)\n"
+            csvString += "\(id);\(name);\(lastEdited);\(deleteFlag);\(itemsString)\n"
         }
         
         return csvString
@@ -415,7 +415,7 @@ class DataSharingViewController: UIViewController {
     // Parse Food Items CSV
     public func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 16 else {  // Ensure the count is 16
+        guard columns.count == 17 else {  // Ensure the count is 17 to include the delete flag
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
@@ -429,66 +429,75 @@ class DataSharingViewController: UIViewController {
         
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 16 {
-                if let id = UUID(uuidString: values[0]),
-                   !values.dropFirst().allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                    
-                    // Retrieve existing food item if available
-                    let existingItem = existingFoodItemsDict[id]
-                    
-                    // Access the lastEdited date string directly
-                    let lastEditedString = values[14]
-                    
-                    // Parse the lastEdited date from the CSV row
-                    if let newLastEditedDate = dateFormatter.date(from: lastEditedString) {
-                        if let existingLastEdited = existingItem?.lastEdited,
-                           existingLastEdited >= newLastEditedDate {
-                            // Skip if existing item is more recent or same as the one being imported
-                            continue
-                        }
-                        
-                        // Update or create a new FoodItem
-                        let foodItem = existingItem ?? FoodItem(context: context)
-                        foodItem.id = id
-                        foodItem.name = values[1]
-                        foodItem.carbohydrates = Double(values[2]) ?? 0.0
-                        foodItem.carbsPP = Double(values[3]) ?? 0.0
-                        foodItem.fat = Double(values[4]) ?? 0.0
-                        foodItem.fatPP = Double(values[5]) ?? 0.0
-                        foodItem.netCarbs = Double(values[6]) ?? 0.0
-                        foodItem.netFat = Double(values[7]) ?? 0.0
-                        foodItem.netProtein = Double(values[8]) ?? 0.0
-                        foodItem.perPiece = values[9] == "true"
-                        foodItem.protein = Double(values[10]) ?? 0.0
-                        foodItem.proteinPP = Double(values[11]) ?? 0.0
-                        foodItem.count = Int16(values[12]) ?? 0
-                        foodItem.notes = values[13]
-                        foodItem.emoji = values[15]
-                        
-                        // Set lastEdited date
-                        foodItem.lastEdited = newLastEditedDate
-                    } else {
-                        // If there's no valid lastEdited date in the CSV, handle the fallback case here
-                        let foodItem = existingItem ?? FoodItem(context: context)
-                        foodItem.id = id
-                        foodItem.name = values[1]
-                        foodItem.carbohydrates = Double(values[2]) ?? 0.0
-                        foodItem.carbsPP = Double(values[3]) ?? 0.0
-                        foodItem.fat = Double(values[4]) ?? 0.0
-                        foodItem.fatPP = Double(values[5]) ?? 0.0
-                        foodItem.netCarbs = Double(values[6]) ?? 0.0
-                        foodItem.netFat = Double(values[7]) ?? 0.0
-                        foodItem.netProtein = Double(values[8]) ?? 0.0
-                        foodItem.perPiece = values[9] == "true"
-                        foodItem.protein = Double(values[10]) ?? 0.0
-                        foodItem.proteinPP = Double(values[11]) ?? 0.0
-                        foodItem.count = Int16(values[12]) ?? 0
-                        foodItem.notes = values[13]
-                        // Set lastEdited to current date if no valid date is provided
-                        foodItem.lastEdited = Date()
-                        foodItem.emoji = values[15]
-
+            if values.count == 17,  // Ensure the row has 17 columns
+               let id = UUID(uuidString: values[0]),
+               !values.dropFirst().allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
+                
+                // Check if the delete flag is set
+                let deleteFlag = (values[15] as NSString).boolValue
+                
+                if deleteFlag {
+                    // If delete flag is true, remove the item from Core Data if it exists
+                    if let existingItem = existingFoodItemsDict[id] {
+                        context.delete(existingItem)
+                        print("Deleted food item with id \(id) from Core Data.")
                     }
+                    continue
+                }
+                
+                // Retrieve existing food item if available
+                let existingItem = existingFoodItemsDict[id]
+                
+                // Access the lastEdited date string directly
+                let lastEditedString = values[14]
+                
+                // Parse the lastEdited date from the CSV row
+                if let newLastEditedDate = dateFormatter.date(from: lastEditedString) {
+                    if let existingLastEdited = existingItem?.lastEdited,
+                       existingLastEdited >= newLastEditedDate {
+                        // Skip if existing item is more recent or same as the one being imported
+                        continue
+                    }
+                    
+                    // Update or create a new FoodItem
+                    let foodItem = existingItem ?? FoodItem(context: context)
+                    foodItem.id = id
+                    foodItem.name = values[1]
+                    foodItem.carbohydrates = Double(values[2]) ?? 0.0
+                    foodItem.carbsPP = Double(values[3]) ?? 0.0
+                    foodItem.fat = Double(values[4]) ?? 0.0
+                    foodItem.fatPP = Double(values[5]) ?? 0.0
+                    foodItem.netCarbs = Double(values[6]) ?? 0.0
+                    foodItem.netFat = Double(values[7]) ?? 0.0
+                    foodItem.netProtein = Double(values[8]) ?? 0.0
+                    foodItem.perPiece = values[9] == "true"
+                    foodItem.protein = Double(values[10]) ?? 0.0
+                    foodItem.proteinPP = Double(values[11]) ?? 0.0
+                    foodItem.count = Int16(values[12]) ?? 0
+                    foodItem.notes = values[13]
+                    foodItem.lastEdited = newLastEditedDate
+                    foodItem.delete = deleteFlag  // Set the delete flag
+                    foodItem.emoji = values[16]
+                } else {
+                    // If there's no valid lastEdited date in the CSV, handle the fallback case here
+                    let foodItem = existingItem ?? FoodItem(context: context)
+                    foodItem.id = id
+                    foodItem.name = values[1]
+                    foodItem.carbohydrates = Double(values[2]) ?? 0.0
+                    foodItem.carbsPP = Double(values[3]) ?? 0.0
+                    foodItem.fat = Double(values[4]) ?? 0.0
+                    foodItem.fatPP = Double(values[5]) ?? 0.0
+                    foodItem.netCarbs = Double(values[6]) ?? 0.0
+                    foodItem.netFat = Double(values[7]) ?? 0.0
+                    foodItem.netProtein = Double(values[8]) ?? 0.0
+                    foodItem.perPiece = values[9] == "true"
+                    foodItem.protein = Double(values[10]) ?? 0.0
+                    foodItem.proteinPP = Double(values[11]) ?? 0.0
+                    foodItem.count = Int16(values[12]) ?? 0
+                    foodItem.notes = values[13]
+                    foodItem.lastEdited = Date()  // Set lastEdited to current date if no valid date is provided
+                    foodItem.delete = deleteFlag  // Set the delete flag
+                    foodItem.emoji = values[16]
                 }
             }
         }
@@ -503,7 +512,7 @@ class DataSharingViewController: UIViewController {
     // Parse Favorite Meals CSV
     public func parseFavoriteMealsCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 4 else { // Updated to 4 columns: id, name, lastEdited, items
+        guard columns.count == 5 else { // Updated to 5 columns: id, name, lastEdited, delete, items
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
@@ -517,12 +526,24 @@ class DataSharingViewController: UIViewController {
 
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 4, // Check for 4 columns
+            if values.count == 5, // Check for 5 columns
                !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
                 if let id = UUID(uuidString: values[0]) {
                     
                     // Retrieve existing favorite meal if available
                     let existingItem = existingFavoriteMealsDict[id]
+                    
+                    // Check the delete flag
+                    let deleteFlag = (values[3] as NSString).boolValue
+                    
+                    if deleteFlag {
+                        // If delete flag is true, remove the item from Core Data if it exists
+                        if let existingMeal = existingItem {
+                            context.delete(existingMeal)
+                            print("Deleted favorite meal with id \(id) from Core Data.")
+                        }
+                        continue
+                    }
                     
                     // Access the lastEdited date string directly
                     let lastEditedString = values[2]
@@ -540,13 +561,14 @@ class DataSharingViewController: UIViewController {
                         favoriteMeal.id = id
                         favoriteMeal.name = values[1]
                         favoriteMeal.lastEdited = newLastEditedDate
-                        favoriteMeal.items = values[3] as NSObject
+                        favoriteMeal.delete = deleteFlag // Set the delete flag
+                        favoriteMeal.items = values[4] as NSObject
                     } else {
                         // If there's no valid lastEdited date in the CSV, handle the fallback case here
                         let favoriteMeal = existingItem ?? FavoriteMeals(context: context)
                         favoriteMeal.id = id
                         favoriteMeal.name = values[1]
-                        favoriteMeal.items = values[3] as NSObject
+                        favoriteMeal.items = values[4] as NSObject
                         
                         // Use values[2] as the fallback lastEdited date if possible
                         if let fallbackLastEditedDate = dateFormatter.date(from: lastEditedString) {
@@ -555,6 +577,7 @@ class DataSharingViewController: UIViewController {
                             // Set lastEdited to current date if no valid date is provided
                             favoriteMeal.lastEdited = Date()
                         }
+                        favoriteMeal.delete = deleteFlag // Set the delete flag
                     }
                 }
             }
