@@ -19,6 +19,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         return .portrait
     }
+    
+    func application(_ application: UIApplication, userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
+        let persistentContainer = CoreDataStack.shared.persistentContainer
+
+        // Obtain the persistent store
+        guard let store = persistentContainer.persistentStoreCoordinator.persistentStores.first else {
+            print("Persistent store not found")
+            return
+        }
+
+        // Accept the share invitations
+        persistentContainer.acceptShareInvitations(from: [cloudKitShareMetadata], into: store) { (acceptedShares, error) in
+            if let error = error {
+                print("Failed to accept share: \(error.localizedDescription)")
+            } else {
+                print("Successfully accepted share")
+                // Post a notification to inform the app that the share was accepted
+                NotificationCenter.default.post(name: .didAcceptShare, object: nil)
+            }
+        }
+    }
 
     // MARK: - Background Task Handling
     

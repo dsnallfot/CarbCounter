@@ -53,6 +53,7 @@
 		65D138AB2C43DEBD00FAE6BF /* LoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D138AA2C43DEBD00FAE6BF /* LoadingViewController.swift */; };
 		65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */; };
 		65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */; };
+		65FC26802CA451820060E4F6 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FC267F2CA451820060E4F6 /* CloudKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -125,6 +126,7 @@
 		65D138AA2C43DEBD00FAE6BF /* LoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewController.swift; sourceTree = "<group>"; };
 		65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NightscoutManager.swift; path = "Carb Counter/Controllers/NightscoutManager.swift"; sourceTree = SOURCE_ROOT; };
 		65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRegisteredAmountIntent.swift; sourceTree = "<group>"; };
+		65FC267F2CA451820060E4F6 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +134,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				65FC26802CA451820060E4F6 /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +244,7 @@
 			children = (
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EDF62C20DA9200B0FDF5 /* Products */,
+				65FC267E2CA451820060E4F6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -292,6 +296,14 @@
 				65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */,
 			);
 			path = Shortcuts;
+			sourceTree = "<group>";
+		};
+		65FC267E2CA451820060E4F6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				65FC267F2CA451820060E4F6 /* CloudKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

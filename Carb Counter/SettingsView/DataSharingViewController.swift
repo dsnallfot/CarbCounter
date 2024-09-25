@@ -4,7 +4,7 @@ import CloudKit
 import CoreData
 import UniformTypeIdentifiers
 
-class DataSharingViewController: UIViewController {
+class DataSharingViewController: UIViewController, UICloudSharingControllerDelegate {
     
     private var lastImportTime: Date?
     private var viewHasAppeared = false
@@ -40,12 +40,70 @@ class DataSharingViewController: UIViewController {
         
         setupNavigationBarButtons()
         setupToggleForOngoingMealSharing()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleShareAcceptance), name: .didAcceptShare, object: nil)
+
     }
     
     private func setupNavigationBarButtons() {
-        let exportButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(exportData))
-        let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
-        navigationItem.rightBarButtonItems = [exportButton, importButton]
+        let exportButton = UIBarButtonItem(image: UIImage(systemName: "arrow.up.doc"), style: .plain, target: self, action: #selector(exportData))
+        let importButton = UIBarButtonItem(image: UIImage(systemName: "arrow.down.doc"), style: .plain, target: self, action: #selector(importData))
+        let shareButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(shareButtonTapped(_:)))
+
+        navigationItem.rightBarButtonItems = [shareButton, exportButton, importButton]
+    }
+    
+    @IBAction func shareButtonTapped(_ sender: Any) {
+        // Fetch or create the SharedRoot object
+        let sharedRoot = CoreDataHelper.shared.fetchOrCreateSharedRoot()
+        let container = CoreDataStack.shared.persistentContainer
+        
+        // Share the sharedRoot object
+        container.share([sharedRoot], to: nil) { (objectIDs, share, cloudKitContainer, error) in
+            if let error = error {
+                print("Failed to create share: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let share = share, let cloudKitContainer = cloudKitContainer else {
+                print("Share or CloudKit container is nil")
+                return
+            }
+            
+            // Set the title of the share
+            share[CKShare.SystemFieldKey.title] = "CarbsCounter Shared Data" as CKRecordValue
+            
+            DispatchQueue.main.async {
+                // Create the UICloudSharingController
+                let ckContainer = CKContainer(identifier: "iCloud.com.dsnallfot.CarbContainer")
+                let sharingController = UICloudSharingController(share: share, container: ckContainer)
+                sharingController.delegate = self
+                self.present(sharingController, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    @objc func handleShareAcceptance() {
+        // Refresh the data or update the UI as needed
+        print("Share accepted - refreshing data")
+        // Fetch data from CoreData or update the UI accordingly
+    }
+    
+    func cloudSharingController(_ csc: UICloudSharingController, failedToSaveShareWithError error: Error) {
+        print("Failed to save share: \(error.localizedDescription)")
+    }
+    
+    func itemTitle(for csc: UICloudSharingController) -> String? {
+        return "CarbsCounter Shared Data"
+    }
+    
+    func cloudSharingControllerDidSaveShare(_ csc: UICloudSharingController) {
+        print("Successfully saved share")
+    }
+    
+    func cloudSharingControllerDidStopSharing(_ csc: UICloudSharingController) {
+        print("Stopped sharing")
+        // Handle the stop sharing action
     }
     
     private func setupToggleForOngoingMealSharing() {
@@ -1053,4 +1111,6 @@ extension DataSharingViewController {
 extension Notification.Name {
     static let didImportOngoingMeal = Notification.Name("didImportOngoingMeal")
     static let didImportUserDefaults = Notification.Name("didImportUserDefaults")
+    static let didAcceptShare = Notification.Name("didAcceptShare")
 }
+
