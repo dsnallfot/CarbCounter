@@ -124,8 +124,8 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         
         // Call the desired function
         Task {
-            print("Favorite meals export triggered")
-            await dataSharingVC.exportFavoriteMealsToCSV()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Favorite meals export triggered")
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFavoriteMealsToCSV()
         }
         
         delegate?.favoriteMealDetailViewControllerDidSave(self)
@@ -230,8 +230,8 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             
             // Call the desired function
             Task {
-                print("Favorite meals export triggered")
-                await dataSharingVC.exportFavoriteMealsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Favorite meals export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFavoriteMealsToCSV()
             }
             
             self.tableView.reloadData()

@@ -107,10 +107,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         didSet {
             if isEditingMeal {
                 UserDefaultsRepository.allowViewingOngoingMeals = false
-                startAutoSaveToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // startAutoSaveToCSV()
             } else {
                 UserDefaultsRepository.allowViewingOngoingMeals = true
-                stopAutoSaveToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT //stopAutoSaveToCSV()
             }
         }
     }
@@ -294,13 +294,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Ensure updateTotalNutrients is called after all initializations
         updateTotalNutrients()
         
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT //
+        /*
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else { return }
         Task {
             print("Data import triggered")
             await
             dataSharingVC.importAllCSVFiles()
-        }
+        }*/
         fetchFoodItems()
         checkIfEditing()
     }
@@ -876,10 +878,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.startDoseGiven = false
             self.remainingDoseGiven = false
             self.isEditingMeal = false
-            self.stopAutoSaveToCSV()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT //self.stopAutoSaveToCSV()
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 self.cleanDuplicateFiles()
-                self.exportBlankCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // self.exportBlankCSV()
             }
             self.lateBreakfastTimer?.invalidate()
             self.turnOffLateBreakfastSwitch()
@@ -1159,7 +1161,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         if UserDefaultsRepository.allowSharingOngoingMeals {
-            self.exportToCSV()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // self.exportToCSV()
         }
     }
     
@@ -1470,7 +1472,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 cleanDuplicateFiles()
-                exportBlankCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // exportBlankCSV()
             }
         }
     }
@@ -1664,7 +1666,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         isEditingMeal = true
         print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
-        startAutoSaveToCSV()
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT //startAutoSaveToCSV()
     }
     
     func stopEditing() {
@@ -1680,7 +1682,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             isEditingMeal = !foodItemRows.isEmpty
             print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
             if !isEditingMeal {
-                stopAutoSaveToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT //stopAutoSaveToCSV()
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
@@ -1995,6 +1997,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     // MARK: Methods (Core data and csv handling)
+    //DANIEL: TO BE MIGRATED TO CLOUDKIT //
     private func exportBlankCSV() {
         let blankCSVString = "foodItemID;portionServed;notEaten;registeredCarbsSoFar;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
         saveCSV(data: blankCSVString, fileName: "OngoingMeal.csv")
@@ -2039,6 +2042,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     /// Core data functions
+    //DANIEL: TO BE MIGRATED TO CLOUDKIT //
+    /*
     func startAutoSaveToCSV() {
         if UserDefaultsRepository.allowSharingOngoingMeals {
             exportTimer?.invalidate()
@@ -2057,7 +2062,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         Task {
             await DataSharingViewController().exportOngoingMealToCSV()
         }
-    }
+    }*/
     private func loadFoodItemsFromCoreData() {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
@@ -2207,11 +2212,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             guard let dataSharingVC = dataSharingVC else { return }
             Task {
-                print("Meal history export triggered")
-                await dataSharingVC.exportMealHistoryToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Meal history export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportMealHistoryToCSV()
                 
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Food items export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFoodItemsToCSV()
             }
             
         } catch {
@@ -2289,8 +2294,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             guard let dataSharingVC = self.dataSharingVC else { return }
             Task {
-                print("Favorite meals export triggered")
-                await dataSharingVC.exportFavoriteMealsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Favorite meals export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFavoriteMealsToCSV()
             }
             
             let confirmAlert = UIAlertController(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."), preferredStyle: .alert)

@@ -453,8 +453,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Trigger CSV export
             guard let dataSharingVC = dataSharingVC else { return }
             Task {
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Food items export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFoodItemsToCSV()
             }
             
             // Dismiss or pop view controller based on the presentation style

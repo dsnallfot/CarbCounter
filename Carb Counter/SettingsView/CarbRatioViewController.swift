@@ -97,8 +97,8 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         
         // Call the desired function
         Task {
-            print("Carb ratios export triggered")
-            await dataSharingVC.exportCarbRatioScheduleToCSV()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Carb ratios export triggered")
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportCarbRatioScheduleToCSV()
 
         }
     }

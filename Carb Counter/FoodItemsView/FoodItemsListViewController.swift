@@ -132,8 +132,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Call the desired function
 
         Task {
-            print("Data import triggered")
-            await dataSharingVC.importAllCSVFiles()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Data import triggered")
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.importAllCSVFiles()
         }
         
         // Load saved search text
@@ -714,8 +714,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
             // Call the export function
             Task {
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Food items export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFoodItemsToCSV()
             }
         } catch {
             print("Failed to save food item: \(error)")
@@ -768,8 +768,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             // Step 3: Export the updated list to CSV before actually deleting the item
             guard let dataSharingVC = dataSharingVC else { return }
             Task {
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Food items export triggered")
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFoodItemsToCSV()
                 
                 // Step 4: After exporting, delete the item from Core Data
                 context.delete(foodItem)

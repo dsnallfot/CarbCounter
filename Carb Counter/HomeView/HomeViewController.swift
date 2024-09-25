@@ -55,9 +55,9 @@ class HomeViewController: UIViewController {
         guard let dataSharingVC = dataSharingVC else { return }
         
         // Call the desired function
-        print("Data import triggered")
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Data import triggered")
         Task {
-            await dataSharingVC.importAllCSVFiles()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.importAllCSVFiles()
         }
         
         // Observe changes to allowViewingOngoingMeals

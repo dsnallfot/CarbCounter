@@ -95,8 +95,8 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         
         // Call the desired function
         Task {
-            print("Startdoses export triggered")
-            await dataSharingVC.exportStartDoseScheduleToCSV()
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // print("Startdoses export triggered")
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportStartDoseScheduleToCSV()
 
         }
     }

@@ -266,8 +266,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
         // Export the updated list of favorite meals
         guard let dataSharingVC = dataSharingVC else { return }
-        print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
-        await dataSharingVC.exportFavoriteMealsToCSV()
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT // print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFavoriteMealsToCSV()
         
         // After exporting, delete the item from Core Data
         CoreDataStack.shared.context.delete(favoriteMeal)
@@ -313,10 +313,10 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
             // Export favorite meals to CSV
             guard let dataSharingVC = self?.dataSharingVC else { return }
-            print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
+            //DANIEL: TO BE MIGRATED TO CLOUDKIT // print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
             
             Task {
-                await dataSharingVC.exportFavoriteMealsToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportFavoriteMealsToCSV()
             }
         }
 

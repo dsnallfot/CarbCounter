@@ -223,8 +223,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
 
         // Export the updated list of meal histories
         guard let dataSharingVC = dataSharingVC else { return }
-        print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
-        await dataSharingVC.exportMealHistoryToCSV()
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT // print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
+        //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportMealHistoryToCSV()
         
         // After exporting, delete the item from Core Data
         let context = CoreDataStack.shared.context
@@ -280,8 +280,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             // Run the export function after saving the updated date
             if let dataSharingVC = self?.dataSharingVC {
                 Task {
-                    await dataSharingVC.exportMealHistoryToCSV()
-                    print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                    //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportMealHistoryToCSV()
+                    //DANIEL: TO BE MIGRATED TO CLOUDKIT // print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
                 }
             }
 
@@ -317,8 +317,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Run the export function after saving the updated date
         if let dataSharingVC = self.dataSharingVC {
             Task {
-                await dataSharingVC.exportMealHistoryToCSV()
-                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // await dataSharingVC.exportMealHistoryToCSV()
+                //DANIEL: TO BE MIGRATED TO CLOUDKIT // print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
             }
         }
         
