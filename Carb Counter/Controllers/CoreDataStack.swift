@@ -67,4 +67,19 @@ class CoreDataStack {
             }
         }
     }
-}
+    func fetchOrCreateSharedRoot() -> SharedRoot {
+            let fetchRequest: NSFetchRequest<SharedRoot> = SharedRoot.fetchRequest()
+            do {
+                let results = try context.fetch(fetchRequest)
+                if let sharedRoot = results.first {
+                    return sharedRoot
+                } else {
+                    let newSharedRoot = SharedRoot(context: context)
+                    try context.save()
+                    return newSharedRoot
+                }
+            } catch {
+                fatalError("Failed to fetch or create SharedRoot: \(error)")
+            }
+        }
+    }

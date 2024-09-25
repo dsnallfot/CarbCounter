@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="CarbRatioSchedule" representedClassName="CarbRatioSchedule" syncable="YES" codeGenerationType="class">
+    <entity name="CarbRatioSchedule" representedClassName=".CarbRatioSchedule" syncable="YES" codeGenerationType="class">
         <attribute name="carbRatio" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="hour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
+        <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="carbRatioSchedule" inverseEntity="SharedRoot"/>
     </entity>
-    <entity name="FavoriteMeals" representedClassName="FavoriteMeals" syncable="YES" codeGenerationType="class">
+    <entity name="FavoriteMeals" representedClassName=".FavoriteMeals" syncable="YES" codeGenerationType="class">
         <attribute name="delete" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="items" optional="YES" attributeType="Transformable"/>
         <attribute name="lastEdited" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
+        <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="favoriteMeals" inverseEntity="SharedRoot"/>
     </entity>
-    <entity name="FoodItem" representedClassName="FoodItem" syncable="YES" codeGenerationType="class">
+    <entity name="FoodItem" representedClassName=".FoodItem" syncable="YES" codeGenerationType="class">
         <attribute name="carbohydrates" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="carbsPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="count" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -32,8 +34,9 @@
         <attribute name="protein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="proteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
+        <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="foodItem" inverseEntity="SharedRoot"/>
     </entity>
-    <entity name="FoodItemEntry" representedClassName="FoodItemEntry" syncable="YES" codeGenerationType="class">
+    <entity name="FoodItemEntry" representedClassName=".FoodItemEntry" syncable="YES" codeGenerationType="class">
         <attribute name="entryCarbohydrates" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="entryCarbsPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="entryEmoji" optional="YES" attributeType="String"/>
@@ -49,8 +52,9 @@
         <attribute name="entryProteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
         <relationship name="mealHistory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MealHistory" inverseName="foodEntries" inverseEntity="MealHistory"/>
+        <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="foodItemEntry" inverseEntity="SharedRoot"/>
     </entity>
-    <entity name="FoodItemRow" representedClassName="FoodItemRow" syncable="YES" codeGenerationType="class">
+    <entity name="FoodItemRow" representedClassName=".FoodItemRow" syncable="YES" codeGenerationType="class">
         <attribute name="foodItemID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="netCarbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="netFat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -62,7 +66,7 @@
         <attribute name="registeredFatSoFar" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="registeredProteinSoFar" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="MealHistory" representedClassName="MealHistory" syncable="YES" codeGenerationType="class">
+    <entity name="MealHistory" representedClassName=".MealHistory" syncable="YES" codeGenerationType="class">
         <attribute name="delete" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="mealDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -72,11 +76,22 @@
         <attribute name="totalNetFat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="totalNetProtein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="foodEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FoodItemEntry" inverseName="mealHistory" inverseEntity="FoodItemEntry"/>
+        <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="mealHistoryShared" inverseEntity="SharedRoot"/>
     </entity>
-    <entity name="StartDoseSchedule" representedClassName="StartDoseSchedule" syncable="YES" codeGenerationType="class">
+    <entity name="SharedRoot" representedClassName=".SharedRoot" syncable="YES" codeGenerationType="class">
+        <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
+        <relationship name="carbRatioSchedule" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CarbRatioSchedule" inverseName="sharedRoot" inverseEntity="CarbRatioSchedule"/>
+        <relationship name="favoriteMeals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FavoriteMeals" inverseName="sharedRoot" inverseEntity="FavoriteMeals"/>
+        <relationship name="foodItem" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FoodItem" inverseName="sharedRoot" inverseEntity="FoodItem"/>
+        <relationship name="foodItemEntry" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FoodItemEntry" inverseName="sharedRoot" inverseEntity="FoodItemEntry"/>
+        <relationship name="mealHistoryShared" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MealHistory" inverseName="sharedRoot" inverseEntity="MealHistory"/>
+        <relationship name="startDoseSchedule" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="StartDoseSchedule" inverseName="sharedRoot" inverseEntity="StartDoseSchedule"/>
+    </entity>
+    <entity name="StartDoseSchedule" representedClassName=".StartDoseSchedule" syncable="YES" codeGenerationType="class">
         <attribute name="hour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
         <attribute name="startDose" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="startDoseSchedule" inverseEntity="SharedRoot"/>
     </entity>
     <configuration name="Cloudkit" usedWithCloudKit="YES">
         <memberEntity name="FoodItem"/>
@@ -85,5 +100,6 @@
         <memberEntity name="FoodItemEntry"/>
         <memberEntity name="MealHistory"/>
         <memberEntity name="StartDoseSchedule"/>
+        <memberEntity name="SharedRoot"/>
     </configuration>
 </model>
