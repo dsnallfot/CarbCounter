@@ -26,6 +26,7 @@ extension FoodItemRow {
     @NSManaged public var registeredFatSoFar: Double
     @NSManaged public var registeredProteinSoFar: Double
     @NSManaged public var registeredBolusSoFar: Double
+    @NSManaged public var share: CKShare?
     
 
 }

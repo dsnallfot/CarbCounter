@@ -23,6 +23,7 @@ extension MealHistory {
     @NSManaged public var totalNetBolus: Double
     @NSManaged public var foodEntries: NSSet?
     @NSManaged public var delete: Bool
+    @NSManaged public var share: CKShare?
 }
 
 // MARK: Generated accessors for foodEntries

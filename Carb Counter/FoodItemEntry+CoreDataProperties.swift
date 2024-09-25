@@ -30,5 +30,6 @@ extension FoodItemEntry {
     @NSManaged public var entryProteinPP: Double
     @NSManaged public var entryId: UUID?
     @NSManaged public var mealHistory: MealHistory?
+    @NSManaged public var share: CKShare?
 
 }

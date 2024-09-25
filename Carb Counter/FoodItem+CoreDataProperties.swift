@@ -33,5 +33,6 @@ extension FoodItem {
     @NSManaged public var notes: String?
     @NSManaged public var lastEdited: Date
     @NSManaged public var delete: Bool
+    @NSManaged public var share: CKShare?
 
 }

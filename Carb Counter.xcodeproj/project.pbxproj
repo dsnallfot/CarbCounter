@@ -36,6 +36,7 @@
 		659632852C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		659632862C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		659632872C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
+		65B9A4C72CA40564009403FB /* CKShareTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B9A4C62CA40564009403FB /* CKShareTransformer.swift */; };
 		65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */; };
 		65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */; };
 		65BAB4EE2C5AE76C0055638D /* RSSHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4ED2C5AE76B0055638D /* RSSHelper.swift */; };
@@ -112,6 +113,7 @@
 		656C64A42C6C007000431374 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		656C64A62C6C008400431374 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
+		65B9A4C62CA40564009403FB /* CKShareTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CKShareTransformer.swift; sourceTree = "<group>"; };
 		65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownViewController.swift; sourceTree = "<group>"; };
 		65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedViewController.swift; sourceTree = "<group>"; };
 		65BAB4ED2C5AE76B0055638D /* RSSHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSHelper.swift; sourceTree = "<group>"; };
@@ -226,6 +228,7 @@
 				6522DDC12C9AB6E700C0BF49 /* UIHostingController.swift */,
 				65BE764A2CA2C134005EAFE2 /* GradientView.swift */,
 				65BE764E2CA2C54E005EAFE2 /* Formatters.swift */,
+				65B9A4C62CA40564009403FB /* CKShareTransformer.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -444,6 +447,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				65C75D002C25967C00114BD3 /* StartDoseViewController.swift in Sources */,
+				65B9A4C72CA40564009403FB /* CKShareTransformer.swift in Sources */,
 				6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */,
 				6553EE032C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
