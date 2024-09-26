@@ -71,7 +71,7 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
             }
             
             // Set the title of the share
-            share[CKShare.SystemFieldKey.title] = "CarbsCounter Shared Data" as CKRecordValue
+            share[CKShare.SystemFieldKey.title] = "Carb Counter Shared Data" as CKRecordValue
             
             DispatchQueue.main.async {
                 // Create the UICloudSharingController
@@ -94,7 +94,7 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
     }
     
     func itemTitle(for csc: UICloudSharingController) -> String? {
-        return "CarbsCounter Shared Data"
+        return "Carb Counter Shared Data"
     }
     
     func cloudSharingControllerDidSaveShare(_ csc: UICloudSharingController) {
@@ -153,41 +153,62 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
     }
 
     @objc private func importData() {
+        print("Import data action triggered.")
         let alert = UIAlertController(title: NSLocalizedString("Importera data", comment: "Importera data"), message: NSLocalizedString("Välj vilken data du vill importera", comment: "Välj vilken data du vill importera"), preferredStyle: .actionSheet)
         
-        // Automatic import for all CSV files
         alert.addAction(UIAlertAction(title: NSLocalizedString("Importera hela databasen", comment: "Importera hela databasen"), style: .default, handler: { _ in
-            Task { await self.importAllCSVFiles() }
+            print("Import all data option selected.")
+            Task {
+                print("Starting to import all CSV files...")
+                await self.importAllCSVFiles()
+            }
         }))
         
-        // Present document picker for specific CSV imports
         alert.addAction(UIAlertAction(title: NSLocalizedString("Livsmedel", comment: "Livsmedel"), style: .default, handler: { _ in
-            Task { await self.presentDocumentPicker(for: "Food Items") }
+            print("Import specific CSV for Food Items selected.")
+            Task {
+                await self.presentDocumentPicker(for: "Food Items")
+            }
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Favoritmåltider", comment: "Favoritmåltider"), style: .default, handler: { _ in
-            Task { await self.presentDocumentPicker(for: "Favorite Meals") }
+            print("Import specific CSV for Favorite Meals selected.")
+            Task {
+                await self.presentDocumentPicker(for: "Favorite Meals")
+            }
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Måltidshistorik", comment: "Måltidshistorik"), style: .default, handler: { _ in
-            Task { await self.presentDocumentPicker(for: "Meal History") }
+            print("Import specific CSV for Meal History selected.")
+            Task {
+                await self.presentDocumentPicker(for: "Meal History")
+            }
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Carb ratios schema", comment: "Carb ratios schema"), style: .default, handler: { _ in
-            Task { await self.presentDocumentPicker(for: "Carb Ratio Schedule") }
+            print("Import specific CSV for Carb Ratio Schedule selected.")
+            Task {
+                await self.presentDocumentPicker(for: "Carb Ratio Schedule")
+            }
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Startdoser schema", comment: "Startdoser schema"), style: .default, handler: { _ in
-            Task { await self.presentDocumentPicker(for: "Start Dose Schedule") }
+            print("Import specific CSV for Start Dose Schedule selected.")
+            Task {
+                await self.presentDocumentPicker(for: "Start Dose Schedule")
+            }
         }))
         
-        // New option for importing user settings
         alert.addAction(UIAlertAction(title: NSLocalizedString("Användarinställningar", comment: "Användarinställningar"), style: .default, handler: { _ in
-            Task { await self.importUserDefaultsFromCSV() }
+            print("Import specific CSV for User Defaults selected.")
+            Task {
+                await self.presentDocumentPicker(for: "UserDefaults")
+            }
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel))
         
+        print("Displaying import data options alert.")
         present(alert, animated: true, completion: nil)
     }
     
@@ -218,7 +239,7 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
         lastImportTime = Date()
         
         let fileManager = FileManager.default
-        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/NewCarbsCounter") else {
             print("Import Failed: iCloud Drive URL is nil.")
             return
         }
@@ -251,7 +272,7 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
 ///Ongoing meal import
     @objc public func importOngoingMealCSV() {
         let fileManager = FileManager.default
-        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
+        guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/NewCarbsCounter/OngoingMeal.csv") else {
             print("Import Failed: iCloud Drive URL is nil.")
             return
         }
@@ -429,34 +450,46 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
     }
     
     private func presentDocumentPicker(for entityName: String) async {
+        print("Presenting document picker for entity: \(entityName)")
         DispatchQueue.main.async {
-            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText])
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.commaSeparatedText], asCopy: true)
             documentPicker.delegate = self
             documentPicker.accessibilityHint = entityName
-            self.present(documentPicker, animated: true, completion: nil)
+            self.present(documentPicker, animated: true, completion: {
+                print("Document picker presented for entity: \(entityName)")
+            })
         }
     }
     
     // Parsing CSV files
     public func parseCSV(at url: URL, for entityName: String) async {
+        print("Starting CSV parsing for entity: \(entityName) at URL: \(url)")
         do {
             let csvData = try String(contentsOf: url, encoding: .utf8)
+            print("CSV data successfully read.")
             let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
+            print("CSV data split into \(rows.count) rows.")
             
             let context = CoreDataStack.shared.context
             
             switch entityName {
             case "Food Items":
+                print("Parsing CSV for Food Items.")
                 await parseFoodItemsCSV(rows, context: context)
             case "Favorite Meals":
+                print("Parsing CSV for Favorite Meals.")
                 await parseFavoriteMealsCSV(rows, context: context)
             case "Carb Ratio Schedule":
+                print("Parsing CSV for Carb Ratio Schedule.")
                 await parseCarbRatioScheduleCSV(rows, context: context)
             case "Start Dose Schedule":
+                print("Parsing CSV for Start Dose Schedule.")
                 await parseStartDoseScheduleCSV(rows, context: context)
             case "Meal History":
+                print("Parsing CSV for Meal History.")
                 await parseMealHistoryCSV(rows, context: context)
             case "Ongoing Meal":
+                print("Parsing CSV for Ongoing Meal.")
                 let importedRows = parseOngoingMealCSV(rows)
                 NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
             default:
@@ -465,11 +498,12 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
             }
             
             try context.save()
-            print("Import Successful: \(entityName) has been imported")
+            print("Import successful: \(entityName) has been imported and context saved.")
         } catch {
-            print("Failed to read CSV file: \(error)")
+            print("Failed to read CSV file for entity \(entityName): \(error)")
         }
     }
+
     
     // Parse Food Items CSV
     public func parseFoodItemsCSV(_ rows: [String], context: NSManagedObjectContext) async {
@@ -927,70 +961,88 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
         showAlert(title: NSLocalizedString("Export lyckades", comment: "Export lyckades"), message: NSLocalizedString("Användarinställningarna har exporterats.", comment: "Användarinställningarna har exporterats."))
     }
 
-
-
-    
-    @objc private func importUserDefaultsFromCSV() async {
-        await presentDocumentPicker(for: "UserDefaults")
-    }
     
     private func parseUserDefaultsCSV(_ rows: [String]) {
+        print("Parsing UserDefaults CSV with \(rows.count) rows.")
         for row in rows {
             let values = row.components(separatedBy: ";")
-            guard values.count == 2 else { continue }
+            guard values.count == 2 else {
+                print("Skipped row due to incorrect format: \(row)")
+                continue
+            }
             
             switch values[0] {
             case "twilioSIDString":
                 UserDefaultsRepository.twilioSIDString = values[1]
+                print("Updated twilioSIDString: \(values[1])")
             case "twilioSecretString":
                 UserDefaultsRepository.twilioSecretString = values[1]
+                print("Updated twilioSecretString: \(values[1])")
             case "twilioFromNumberString":
                 UserDefaultsRepository.twilioFromNumberString = values[1]
-            //case "twilioToNumberString":
-            //    UserDefaultsRepository.twilioToNumberString = values[1]
+                print("Updated twilioFromNumberString: \(values[1])")
             case "remoteSecretCode":
                 UserDefaultsRepository.remoteSecretCode = values[1]
+                print("Updated remoteSecretCode: \(values[1])")
             case "useStartDosePercentage":
                 UserDefaultsRepository.useStartDosePercentage = Bool(values[1]) ?? false
+                print("Updated useStartDosePercentage: \(values[1])")
             case "startDoseFactor":
                 UserDefaultsRepository.startDoseFactor = Double(values[1]) ?? 0.5
+                print("Updated startDoseFactor: \(values[1])")
             case "maxCarbs":
                 UserDefaultsRepository.maxCarbs = Double(values[1]) ?? 30.0
+                print("Updated maxCarbs: \(values[1])")
             case "maxBolus":
                 UserDefaultsRepository.maxBolus = Double(values[1]) ?? 1.0
+                print("Updated maxBolus: \(values[1])")
             case "lateBreakfastFactor":
                 UserDefaultsRepository.lateBreakfastFactor = Double(values[1]) ?? 1.0
+                print("Updated lateBreakfastFactor: \(values[1])")
             case "lateBreakfastOverrideName":
                 UserDefaultsRepository.lateBreakfastOverrideName = values[1]
+                print("Updated lateBreakfastOverrideName: \(values[1])")
             case "useMmol":
                 UserDefaultsRepository.useMmol = Bool(values[1]) ?? false
+                print("Updated useMmol: \(values[1])")
             case "lateBreakfastStartTime":
                 if let date = ISO8601DateFormatter().date(from: values[1]) {
                     UserDefaultsRepository.lateBreakfastStartTime = date
+                    print("Updated lateBreakfastStartTime: \(date)")
                 }
             case "lateBreakfastFactorUsed":
                 UserDefaultsRepository.lateBreakfastFactorUsed = values[1]
+                print("Updated lateBreakfastFactorUsed: \(values[1])")
             case "dabasAPISecret":
                 UserDefaultsRepository.dabasAPISecret = values[1]
+                print("Updated dabasAPISecret: \(values[1])")
             case "nightscoutURL":
                 UserDefaultsRepository.nightscoutURL = values[1]
+                print("Updated nightscoutURL: \(values[1])")
             case "nightscoutToken":
                 UserDefaultsRepository.nightscoutToken = values[1]
+                print("Updated nightscoutToken: \(values[1])")
             case "allowSharingOngoingMeals":
                 UserDefaultsRepository.allowSharingOngoingMeals = Bool(values[1]) ?? false
+                print("Updated allowSharingOngoingMeals: \(values[1])")
             case "allowViewingOngoingMeals":
                 UserDefaultsRepository.allowViewingOngoingMeals = Bool(values[1]) ?? true
+                print("Updated allowViewingOngoingMeals: \(values[1])")
             case "schoolFoodURL":
                 UserDefaultsRepository.schoolFoodURL = values[1]
+                print("Updated schoolFoodURL: \(values[1])")
             case "excludeWords":
                 UserDefaultsRepository.excludeWords = values[1]
+                print("Updated excludeWords: \(values[1])")
             case "topUps":
                 UserDefaultsRepository.topUps = values[1]
+                print("Updated topUps: \(values[1])")
             default:
-                break
+                print("Unknown UserDefaults key: \(values[0]) with value: \(values[1])")
             }
         }
         NotificationCenter.default.post(name: .didImportUserDefaults, object: nil)
+        print("UserDefaults import completed and notification posted.")
     }
     
 }
@@ -998,28 +1050,52 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
 // Document Picker Delegate Methods
 extension DataSharingViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let url = urls.first else { return }
-        
-        if url.startAccessingSecurityScopedResource() {
-            defer { url.stopAccessingSecurityScopedResource() }
+        print("Document picker did pick documents at URLs: \(urls)")
+        guard let url = urls.first else {
+            print("No URL found.")
+            return
+        }
+
+        // Check if the file is in the app's sandbox; no need for security-scoped resource access
+        let isInAppSandbox = url.path.starts(with: NSTemporaryDirectory()) || url.path.starts(with: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].path)
+
+        if !isInAppSandbox {
+            // Access security-scoped resource only if outside the sandbox
+            if url.startAccessingSecurityScopedResource() {
+                defer { url.stopAccessingSecurityScopedResource() }
+                processFile(at: url, controller: controller)
+            } else {
+                print("Failed to access security-scoped resource for URL: \(url)")
+                showAlert(title: "Access Error", message: "Unable to access the selected file. Please make sure the file is available and try again.")
+            }
+        } else {
+            // Process the file directly if within the sandbox
+            processFile(at: url, controller: controller)
+        }
+    }
+
+    func processFile(at url: URL, controller: UIDocumentPickerViewController) {
+        do {
             if let entityName = controller.accessibilityHint {
+                print("Starting CSV import for entity: \(entityName)")
                 if entityName == "UserDefaults" {
-                    Task {
-                        let csvData = try String(contentsOf: url, encoding: .utf8)
-                        let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
-                        parseUserDefaultsCSV(rows)
-                        showAlert(title: NSLocalizedString("Import lyckades", comment: "Import lyckades"), message: NSLocalizedString("Användarinställningarna har importerats.", comment: "Användarinställningarna har importerats."))
-                    }
+                    let csvData = try String(contentsOf: url, encoding: .utf8)
+                    let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
+                    print("Parsing UserDefaults CSV with \(rows.count) rows.")
+                    parseUserDefaultsCSV(rows)
+                    showAlert(title: NSLocalizedString("Import lyckades", comment: "Import lyckades"), message: NSLocalizedString("Användarinställningarna har importerats.", comment: "Användarinställningarna har importerats."))
                 } else {
                     Task { await parseCSV(at: url, for: entityName) }
                 }
             }
-        } else {
-            print("Failed to access security-scoped resource.")
+        } catch {
+            print("Error reading CSV file: \(error.localizedDescription)")
+            showAlert(title: "File Error", message: "Unable to read the selected file. Please ensure it is in the correct format and try again.")
         }
     }
-
+    
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        print("Document picker was cancelled.")
         controller.dismiss(animated: true, completion: nil)
     }
 }
@@ -1066,7 +1142,7 @@ extension DataSharingViewController {
                 try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
                 
                 let fileManager = FileManager.default
-                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
+                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/NewCarbsCounter")
                 let destinationURL = iCloudURL?.appendingPathComponent(fileName)
                 
                 if let destinationURL = destinationURL {
@@ -1090,7 +1166,7 @@ extension DataSharingViewController {
                 try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
                 
                 let fileManager = FileManager.default
-                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent(NSLocalizedString("Documents/CarbsCounter/Användarinställningar", comment: "Documents/CarbsCounter/Användarinställningar"))
+                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent(NSLocalizedString("Documents/NewCarbsCounter/Användarinställningar", comment: "Documents/NewCarbsCounter/Användarinställningar"))
                 let destinationURL = iCloudURL?.appendingPathComponent(fileName)
                 
                 if let destinationURL = destinationURL {
@@ -1112,5 +1188,6 @@ extension Notification.Name {
     static let didImportOngoingMeal = Notification.Name("didImportOngoingMeal")
     static let didImportUserDefaults = Notification.Name("didImportUserDefaults")
     static let didAcceptShare = Notification.Name("didAcceptShare")
+    static let dataDidChangeRemotely = Notification.Name("dataDidChangeRemotely")
 }
 

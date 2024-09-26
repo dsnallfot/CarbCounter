@@ -208,6 +208,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         self.fetchFoodItems()
         loadFoodItemsFromCoreData()
         NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
+
         allowShortcuts = UserDefaultsRepository.allowShortcuts
         
         /// Create buttons
@@ -2016,8 +2017,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         DispatchQueue.global(qos: .background).async {
             let fileManager = FileManager.default
             
-            // Get the iCloud URL for the CarbsCounter directory
-            guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
+            // Get the iCloud URL for the CarbCounter directory
+            guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/NewCarbsCounter") else {
                 print("Failed to get iCloud URL.")
                 return
             }

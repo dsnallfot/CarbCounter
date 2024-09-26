@@ -8,6 +8,24 @@
 import Foundation
 import CloudKit
 
+@objc(CKShareTransformer)
+class CKShareTransformer: NSSecureUnarchiveFromDataTransformer {
+    override static var allowedTopLevelClasses: [AnyClass] {
+        return [CKShare.self]
+    }
+
+    static func register() {
+        let className = String(describing: CKShareTransformer.self)
+        let name = NSValueTransformerName(className)
+        let transformer = CKShareTransformer()
+        ValueTransformer.setValueTransformer(transformer, forName: name)
+    }
+}
+
+/*
+import Foundation
+import CloudKit
+
 class CKShareTransformer: ValueTransformer {
 
     override class func allowsReverseTransformation() -> Bool {
@@ -39,3 +57,4 @@ class CKShareTransformer: ValueTransformer {
     }
 }
 
+*/

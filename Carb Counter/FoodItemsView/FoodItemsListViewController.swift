@@ -435,7 +435,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         
         var request = URLRequest(url: openfoodURL)
-        request.addValue("CarbsCounterApp_iOS_Version_0.1", forHTTPHeaderField: "User-Agent")
+        request.addValue("CarbCounterApp_iOS_Version_0.1", forHTTPHeaderField: "User-Agent")
         
         let openfoodTask = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -722,12 +722,27 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
 
-    
+    /*
     private func fetchAllFoodItems() -> [FoodItem] {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             return try context.fetch(fetchRequest)
+        } catch {
+            print("Failed to fetch food items: \(error)")
+            return []
+        }
+    }
+     */
+    private func fetchAllFoodItems() -> [FoodItem] {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "delete == false")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        do {
+            let results = try context.fetch(fetchRequest)
+            print("Fetched \(results.count) food items")
+            return results
         } catch {
             print("Failed to fetch food items: \(error)")
             return []

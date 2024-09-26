@@ -589,12 +589,27 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         }
         print("ComposeMealViewController not found in tab bar controller")
     }
-    
-    private func fetchAllFoodItems() -> [FoodItem] {
+    /*
+    public func fetchAllFoodItems() -> [FoodItem] {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         do {
             return try context.fetch(fetchRequest)
+        } catch {
+            print("Failed to fetch food items: \(error)")
+            return []
+        }
+    }*/
+    
+    private func fetchAllFoodItems() -> [FoodItem] {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "delete == false")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        do {
+            let results = try context.fetch(fetchRequest)
+            print("Fetched \(results.count) food items")
+            return results
         } catch {
             print("Failed to fetch food items: \(error)")
             return []

@@ -39,10 +39,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
-        if shortcutItem.type == "com.dsnallfot.CarbsCounter.scanBarcode" {
+        if shortcutItem.type == "com.dsnallfot.NewCarbsCounter.scanBarcode" {
             shouldOpenScanner = true
         }
-        if shortcutItem.type == "com.dsnallfot.CarbsCounter.addFood" {
+        if shortcutItem.type == "com.dsnallfot.NewCarbsCounter.addFood" {
             shouldOpenAddFood = true
         }
     }
@@ -111,7 +111,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     private func setupLocalizedShortcuts() {
         let scanBarcodeShortcut = UIApplicationShortcutItem(
-            type: "com.dsnallfot.CarbsCounter.scanBarcode",
+            type: "com.dsnallfot.NewCarbsCounter.scanBarcode",
             localizedTitle: NSLocalizedString("SCAN_BARCODE_KEY", comment: "Scan barcode shortcut"),
             localizedSubtitle: nil,
             icon: UIApplicationShortcutIcon(systemImageName: "barcode.viewfinder"),
@@ -119,7 +119,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         
         let addFoodShortcut = UIApplicationShortcutItem(
-            type: "com.dsnallfot.CarbsCounter.addFood",
+            type: "com.dsnallfot.NewCarbsCounter.addFood",
             localizedTitle: NSLocalizedString("ADD_FOOD_KEY", comment: "Add food shortcut"),
             localizedSubtitle: nil,
             icon: UIApplicationShortcutIcon(systemImageName: "plus.circle"),
