@@ -54,32 +54,69 @@ class DataSharingViewController: UIViewController, UICloudSharingControllerDeleg
     }
     
     @IBAction func shareButtonTapped(_ sender: Any) {
-        // Fetch or create the SharedRoot object
-        let sharedRoot = CoreDataHelper.shared.fetchOrCreateSharedRoot()
-        let container = CoreDataStack.shared.persistentContainer
+        fetchCurrentUserIdentity { recordID in
+            guard let recordID = recordID else {
+                print("Failed to fetch current user record ID.")
+                return
+            }
+            
+            let sharedRoot = CoreDataHelper.shared.fetchOrCreateSharedRoot()
+            let container = CoreDataStack.shared.persistentContainer
+            let context = container.viewContext
+            
+            container.share([sharedRoot], to: nil) { (objectIDs, share, cloudKitContainer, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print("Failed to create share: \(error.localizedDescription)")
+                        return
+                    }
+
+                    guard let share = share else {
+                        print("Share is nil")
+                        return
+                    }
+
+                    // Set the title of the share
+                    share[CKShare.SystemFieldKey.title] = "Carb Counter Shared Data" as CKRecordValue?
+
+                    // Save the context to persist the share
+                    context.performAndWait {
+                        do {
+                            if context.hasChanges {
+                                try context.save()
+                            }
+                        } catch {
+                            print("Failed to save context after sharing: \(error)")
+                            return
+                        }
+                    }
+
+                    // Create the UICloudSharingController
+                    let sharingController = UICloudSharingController(share: share, container: cloudKitContainer!)
+                    sharingController.delegate = self
+                    self.present(sharingController, animated: true, completion: nil)
+                }
+            }
+        }
+    }
+    
+    func fetchCurrentUserIdentity(completion: @escaping (CKRecord.ID?) -> Void) {
+        let ckContainer = CKContainer(identifier: "iCloud.com.dsnallfot.CarbContainer")
         
-        // Share the sharedRoot object
-        container.share([sharedRoot], to: nil) { (objectIDs, share, cloudKitContainer, error) in
+        ckContainer.fetchUserRecordID { (recordID, error) in
             if let error = error {
-                print("Failed to create share: \(error.localizedDescription)")
+                print("Failed to fetch user record ID: \(error.localizedDescription)")
+                completion(nil)
                 return
             }
             
-            guard let share = share, let cloudKitContainer = cloudKitContainer else {
-                print("Share or CloudKit container is nil")
+            guard let recordID = recordID else {
+                print("Failed to fetch user record ID.")
+                completion(nil)
                 return
             }
             
-            // Set the title of the share
-            share[CKShare.SystemFieldKey.title] = "Carb Counter Shared Data" as CKRecordValue
-            
-            DispatchQueue.main.async {
-                // Create the UICloudSharingController
-                let ckContainer = CKContainer(identifier: "iCloud.com.dsnallfot.CarbContainer")
-                let sharingController = UICloudSharingController(share: share, container: ckContainer)
-                sharingController.delegate = self
-                self.present(sharingController, animated: true, completion: nil)
-            }
+            completion(recordID)
         }
     }
     

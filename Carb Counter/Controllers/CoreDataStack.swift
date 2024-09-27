@@ -8,69 +8,87 @@ class CoreDataStack {
     init() {
         // Register CKShareTransformer
         CKShareTransformer.register()
-        
-        // Use your Core Data model name
+
+        // Initialize the persistent container with your Core Data model name
         persistentContainer = NSPersistentCloudKitContainer(name: "CarbsCounter")
 
-        // Configure the persistent store description
-        guard let description = persistentContainer.persistentStoreDescriptions.first else {
-            fatalError("No Descriptions Found")
+        // Get the private store description
+        guard let privateStoreDescription = persistentContainer.persistentStoreDescriptions.first else {
+            fatalError("No persistent store descriptions found")
         }
 
-        // Set the CloudKit container options
-        let options = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.dsnallfot.CarbContainer")
-        options.databaseScope = .private // or .shared if needed
-        description.cloudKitContainerOptions = options
+        // Configure the private store
+        let privateOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.dsnallfot.CarbContainer")
+        privateOptions.databaseScope = .private
+        privateStoreDescription.cloudKitContainerOptions = privateOptions
+        privateStoreDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        privateStoreDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        privateStoreDescription.configuration = "PrivateCloudkit"
 
-        // Enable persistent history tracking
-        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        // Create a shared store description
+        let sharedStoreURL = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("Shared.sqlite")
+        let sharedStoreDescription = NSPersistentStoreDescription(url: sharedStoreURL)
+        let sharedOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.dsnallfot.CarbContainer")
+        sharedOptions.databaseScope = .shared
+        sharedStoreDescription.cloudKitContainerOptions = sharedOptions
+        sharedStoreDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        sharedStoreDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        sharedStoreDescription.configuration = "SharedCloudkit"
 
-        // Enable remote change notifications
-        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        
+        // Add the shared store description to the persistent container
+        persistentContainer.persistentStoreDescriptions.append(sharedStoreDescription)
+
+        // Load both stores
+        persistentContainer.loadPersistentStores { (storeDescription, error) in
+            if let error = error as NSError? {
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            } else {
+                storeDescription.shouldAddStoreAsynchronously = false
+                storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+                storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+            }
+        }
+
+        // Set merge policies
+        persistentContainer.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+
+        // Observe remote change notifications
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(processRemoteStoreChange),
             name: .NSPersistentStoreRemoteChange,
             object: persistentContainer.persistentStoreCoordinator
         )
-
-        // Load the persistent stores
-        persistentContainer.loadPersistentStores { (storeDescription, error) in
-            if let error = error as NSError? {
-                // Handle error appropriately
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            } else {
-                // Successfully loaded the store
-                self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
-            }
-        }
     }
 
     // Access the main context
     var context: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
- 
- func saveContext() {
-     let context = persistentContainer.viewContext
-     if context.hasChanges {
-         do {
-             try context.save()
-             print("Context saved successfully.")
-         } catch {
-             let nserror = error as NSError
-             // Handle the error appropriately
-             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-         }
-     }
- }
+
+    func saveContext() {
+        let context = persistentContainer.viewContext
+        if context.hasChanges {
+            do {
+                try context.save()
+                print("Context saved successfully.")
+            } catch {
+                let nserror = error as NSError
+                // Handle the error appropriately
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+            }
+        }
+    }
+
     @objc
     func processRemoteStoreChange(notification: Notification) {
+        guard let userInfo = notification.userInfo else { return }
         let context = persistentContainer.viewContext
         context.perform {
             // Merge changes into the context
-            context.mergeChanges(fromContextDidSave: notification)
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: userInfo, into: [context])
+
             // Post notification to update UI or fetch data
             NotificationCenter.default.post(name: .dataDidChangeRemotely, object: nil)
         }

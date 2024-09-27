@@ -35,6 +35,8 @@ class LoadingViewController: UIViewController {
         
         // Setup UI components
         setupUI()
+        
+        CoreDataHelper.shared.triggerCloudKitSyncOperation()
     }
 
     private func setupUI() {

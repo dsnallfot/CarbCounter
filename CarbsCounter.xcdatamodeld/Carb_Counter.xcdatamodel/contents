@@ -79,6 +79,7 @@
         <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="mealHistoryShared" inverseEntity="SharedRoot"/>
     </entity>
     <entity name="SharedRoot" representedClassName=".SharedRoot" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="String"/>
         <attribute name="share" optional="YES" attributeType="Transformable" valueTransformerName="CKShareTransformer"/>
         <relationship name="carbRatioSchedule" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CarbRatioSchedule" inverseName="sharedRoot" inverseEntity="CarbRatioSchedule"/>
         <relationship name="favoriteMeals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FavoriteMeals" inverseName="sharedRoot" inverseEntity="FavoriteMeals"/>
@@ -93,7 +94,17 @@
         <attribute name="startDose" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="sharedRoot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SharedRoot" inverseName="startDoseSchedule" inverseEntity="SharedRoot"/>
     </entity>
-    <configuration name="Cloudkit" usedWithCloudKit="YES">
+    <configuration name="PrivateCloudkit" usedWithCloudKit="YES">
+        <memberEntity name="CarbRatioSchedule"/>
+        <memberEntity name="FavoriteMeals"/>
+        <memberEntity name="FoodItem"/>
+        <memberEntity name="FoodItemEntry"/>
+        <memberEntity name="FoodItemRow"/>
+        <memberEntity name="MealHistory"/>
+        <memberEntity name="SharedRoot"/>
+        <memberEntity name="StartDoseSchedule"/>
+    </configuration>
+    <configuration name="SharedCloudkit" usedWithCloudKit="YES">
         <memberEntity name="FoodItem"/>
         <memberEntity name="CarbRatioSchedule"/>
         <memberEntity name="FavoriteMeals"/>

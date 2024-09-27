@@ -23,24 +23,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
         let persistentContainer = CoreDataStack.shared.persistentContainer
 
-        // Obtain the persistent store
-        guard let store = persistentContainer.persistentStoreCoordinator.persistentStores.first else {
-            print("Persistent store not found")
+        guard let sharedStore = persistentContainer.persistentStoreCoordinator.persistentStores.first(where: { store in
+            store.configurationName == "SharedCloudkit"
+        }) else {
+            print("Shared store not found")
             return
         }
 
-        // Accept the share invitations
-        persistentContainer.acceptShareInvitations(from: [cloudKitShareMetadata], into: store) { (acceptedShares, error) in
+        persistentContainer.acceptShareInvitations(from: [cloudKitShareMetadata], into: sharedStore) { (acceptedShares, error) in
             if let error = error {
-                print("Failed to accept share: \(error.localizedDescription)")
+                print("Error accepting share invitations: \(error)")
             } else {
-                print("Successfully accepted share")
-                // Post a notification to inform the app that the share was accepted
-                NotificationCenter.default.post(name: .didAcceptShare, object: nil)
+                print("Successfully accepted share invitations: \(acceptedShares?.count ?? 0) shares")
             }
         }
     }
-
+    
+    
     // MARK: - Background Task Handling
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {

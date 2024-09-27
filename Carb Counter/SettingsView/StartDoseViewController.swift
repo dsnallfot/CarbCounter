@@ -154,7 +154,6 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
             }
             tableView.reloadRows(at: [indexPath], with: .automatic)
             print("Saved start dose \(value) for hour \(indexPath.row)")
-            
         }
     }
     
