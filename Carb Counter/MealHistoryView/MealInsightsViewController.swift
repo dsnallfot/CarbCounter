@@ -8,14 +8,25 @@ import UIKit
 import CoreData
 
 class MealInsightsViewController: UIViewController {
+    
+    var prepopulatedSearchText: String?
 
     // UI Elements
     private let fromDateLabel = UILabel()
     private let toDateLabel = UILabel()
     private let fromDatePicker = UIDatePicker()
     private let toDatePicker = UIDatePicker()
-    private let segmentedControl = UISegmentedControl(items: ["Analys måltider", "Analys livsmedel"])
-    private let mealTimesSegmentedControl = UISegmentedControl(items: ["Dygn", "Frukost", "Lunch", "Mellis", "Middag"])
+    private let segmentedControl = UISegmentedControl(items: [
+        NSLocalizedString("Måltider", comment: "Meal insights segment title"),
+        NSLocalizedString("Livsmedel", comment: "Food insights segment title")
+    ])
+    private let mealTimesSegmentedControl = UISegmentedControl(items: [
+        NSLocalizedString("Dygn", comment: "Day time period"),
+        NSLocalizedString("Frukost", comment: "Breakfast time period"),
+        NSLocalizedString("Lunch", comment: "Lunch time period"),
+        NSLocalizedString("Mellis", comment: "Snack time period"),
+        NSLocalizedString("Middag", comment: "Dinner time period")
+    ])
     private let datePresetsSegmentedControl = UISegmentedControl(items: ["Allt", "3d", "7d", "30d", "90d"])
     private let searchTextField = UITextField()
     private let statsTableView = UITableView()
@@ -30,30 +41,63 @@ class MealInsightsViewController: UIViewController {
 
     // Data
     private var mealHistories: [MealHistory] = []
-    private var uniqueFoodEntries: [String] = [] // To store unique food names for display
-    private var allFilteredFoodEntries: [FoodItemEntry] = [] // For stats calculations
+    private var uniqueFoodEntries: [String] = []
+    private var allFilteredFoodEntries: [FoodItemEntry] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         title = NSLocalizedString("Måltidsinsikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
-
+    
+        // Add the close button when the view is presented modally
+        if isModalPresentation {
+            addCloseButton()
+        } else {
+            updateStats(for: "")
+        }
+        
         setupGradientView()
         setupSegmentedControlAndDatePickers()
-        setupMealTimesSegmentedControl() // Setup new control
+        setupMealTimesSegmentedControl()
         setupSearchTextField()
         setupStatsTableView()
         setupStatsView()
         setupTimePickers()
 
         loadDefaultDates()
-        setDefaultTimePickers() // Set default times
+        setDefaultTimePickers()
         fetchMealHistories()
 
-        // Set default mode to "Analys livsmedel"
+        // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
+        
+        // Delay performing the search until the data is fully loaded
+        DispatchQueue.main.async {
+            if let searchText = self.prepopulatedSearchText {
+                self.searchTextField.text = searchText
+                print("searchtext: \(searchText)")  // Now log it before performing the search
+                self.performSearch(with: searchText)
+            }
+        }
     }
+    
+    // Function to check if the view controller is presented modally
+    private var isModalPresentation: Bool {
+        return presentingViewController != nil || navigationController?.presentingViewController?.presentedViewController == navigationController || tabBarController?.presentingViewController is UITabBarController
+    }
+
+    // Add a close button to the navigation bar
+    private func addCloseButton() {
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(dismissModal))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+
+    // Action to dismiss the view controller
+    @objc private func dismissModal() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     private func setupGradientView() {
         let colors: [CGColor] = [
             UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -157,13 +201,13 @@ class MealInsightsViewController: UIViewController {
             fromDatePicker.date = fromDate
             toDatePicker.date = now
 
-            // Check if the selected case in segmentedControl is "Analys livsmedel" or "Analys måltider"
+            // Check if the selected case in segmentedControl is "Insikt livsmedel" or "Insikt måltider"
             if segmentedControl.selectedSegmentIndex == 1 {
-                // Case: "Analys livsmedel"
+                // Case: "Insikt livsmedel"
                 filterFoodEntries()
-                resetStatsView()
+                updateStats(for: "")
             } else if segmentedControl.selectedSegmentIndex == 0 {
-                // Case: "Analys måltider"
+                // Case: "Insikt måltider"
                 calculateMealStats()
             }
         }
@@ -223,7 +267,7 @@ class MealInsightsViewController: UIViewController {
         }
     }
     
-    // Time pickers for "Analys måltider" mode
+    // Time pickers for "Insikt måltider" mode
     private func setupTimePickers() {
         // Configure "Från tid" label and picker
         fromTimeLabel.text = NSLocalizedString("Från tid", comment: "From Time Label")
@@ -286,8 +330,9 @@ class MealInsightsViewController: UIViewController {
 
     @objc private func switchMode(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
-            // "Analys måltider" mode
+            // "Insikt måltider" mode
             searchTextField.isHidden = true
+            searchTextField.resignFirstResponder() // Hide keyboard if it is up
             statsTableView.isHidden = true
             fromTimePicker.isHidden = false
             toTimePicker.isHidden = false
@@ -297,7 +342,7 @@ class MealInsightsViewController: UIViewController {
 
             calculateMealStats()
         } else {
-            // "Analys livsmedel" mode
+            // "Insikt livsmedel" mode
             searchTextField.isHidden = false
             statsTableView.isHidden = false
             fromTimePicker.isHidden = true
@@ -311,7 +356,7 @@ class MealInsightsViewController: UIViewController {
     private func setupSearchTextField() {
         searchTextField.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
         searchTextField.borderStyle = .roundedRect
-        searchTextField.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.6)
+        searchTextField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
         searchTextField.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
         searchTextField.translatesAutoresizingMaskIntoConstraints = false
         
@@ -326,6 +371,26 @@ class MealInsightsViewController: UIViewController {
             searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchTextField.heightAnchor.constraint(equalToConstant: 40)
         ])
+    }
+    
+    private func performSearch(with searchText: String) {
+        // Trim the search text to remove any leading/trailing whitespace
+        let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+        // Filter entries based on the trimmed search text
+        self.filterFoodEntries()
+
+        // Try to find the matching entry
+        if let matchingEntry = allFilteredFoodEntries.first(where: {
+            let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+            return trimmedEntryName == trimmedSearchText
+        }) {
+            print("match found \(matchingEntry.entryName ?? "")")
+            updateStats(for: matchingEntry.entryName ?? "")
+        } else {
+            print("no match found \(searchText)")
+            updateStats(for: "")
+        }
     }
     
     private func setupStatsTableView() {
@@ -349,8 +414,10 @@ class MealInsightsViewController: UIViewController {
     }
 
     private func setupStatsView() {
-        statsView.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.6)
+        statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
         statsView.layer.cornerRadius = 10
+        statsView.layer.borderWidth = 1
+        statsView.layer.borderColor = UIColor.white.cgColor
         statsView.translatesAutoresizingMaskIntoConstraints = false
 
         statsLabel.numberOfLines = 0
@@ -358,14 +425,13 @@ class MealInsightsViewController: UIViewController {
         statsView.addSubview(statsLabel)
         statsLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Make sure statsView is added to the view hierarchy before applying constraints
         view.addSubview(statsView)
 
         NSLayoutConstraint.activate([
             statsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             statsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            statsView.heightAnchor.constraint(equalToConstant: 190),
+            statsView.heightAnchor.constraint(equalToConstant: 220),
 
             statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 16),
             statsLabel.leadingAnchor.constraint(equalTo: statsView.leadingAnchor, constant: 16),
@@ -403,16 +469,22 @@ class MealInsightsViewController: UIViewController {
     }
     
     @objc private func dateChanged() {
-        filterFoodEntries()
-        resetStatsView()  // Clear stats when date changes
+        // Check if the selected case in segmentedControl is "Insikt livsmedel" or "Insikt måltider"
+        if segmentedControl.selectedSegmentIndex == 1 {
+            // Case: "Insikt livsmedel"
+            filterFoodEntries()
+            updateStats(for: "")
+        } else if segmentedControl.selectedSegmentIndex == 0 {
+            // Case: "Insikt måltider"
+            calculateMealStats()
+        }
     }
     
     @objc private func searchTextChanged() {
         filterFoodEntries()
-        
-        // Reset stats if search field is cleared
+
         if searchTextField.text?.isEmpty ?? true {
-            resetStatsView()
+            updateStats(for: "")
         }
     }
     
@@ -445,36 +517,47 @@ class MealInsightsViewController: UIViewController {
         statsTableView.reloadData()
     }
     
-    private func resetStatsView() {
-        statsLabel.text = ""  // Clear the stats view
-    }
-    
-    // Meal analysis calculations
+    // Meal insights calculations
     private func calculateMealStats() {
         let fromDate = fromDatePicker.date
         let toDate = toDatePicker.date
-        let fromTime = fromTimePicker.date
-        let toTime = toTimePicker.date
-        
-        let filteredMeals = mealHistories.filter {
-            guard let mealDate = $0.mealDate else { return false }
-            let calendar = Calendar.current
-            let mealTime = calendar.dateComponents([.hour, .minute], from: mealDate)
-            let fromTimeComponents = calendar.dateComponents([.hour, .minute], from: fromTime)
-            let toTimeComponents = calendar.dateComponents([.hour, .minute], from: toTime)
-            
-            return mealDate >= fromDate && mealDate <= toDate &&
-                (mealTime.hour! >= fromTimeComponents.hour! && mealTime.minute! >= fromTimeComponents.minute!) &&
-                (mealTime.hour! <= toTimeComponents.hour! && mealTime.minute! <= toTimeComponents.minute!) &&
-                $0.totalNetCarbs > 0  // Filter out meals with totalNetCarbs == 0
+        let calendar = Calendar.current
+
+        // Extract the time components from the time pickers
+        let fromTimeComponents = calendar.dateComponents([.hour, .minute], from: fromTimePicker.date)
+        let toTimeComponents = calendar.dateComponents([.hour, .minute], from: toTimePicker.date)
+
+        let filteredMeals = mealHistories.filter { history in
+            guard let mealDate = history.mealDate else { return false }
+
+            // Step 1: Filter based on the date range
+            if mealDate < fromDate || mealDate > toDate {
+                return false
+            }
+
+            // Step 2: Filter based on the time range (only consider the time part of each meal)
+            let mealTimeComponents = calendar.dateComponents([.hour, .minute], from: mealDate)
+
+            // Ensure the meal's time is within the selected time range
+            let isWithinTimeRange = (
+                mealTimeComponents.hour! > fromTimeComponents.hour! ||
+                (mealTimeComponents.hour == fromTimeComponents.hour && mealTimeComponents.minute! >= fromTimeComponents.minute!)
+            ) && (
+                mealTimeComponents.hour! < toTimeComponents.hour! ||
+                (mealTimeComponents.hour == toTimeComponents.hour && mealTimeComponents.minute! <= toTimeComponents.minute!)
+            )
+
+            // Step 3: Return true if the meal is within both date and time range, and it has a valid totalNetCarbs
+            return isWithinTimeRange && history.totalNetCarbs > 0
         }
-        
+
+        // Calculate statistics based on the filtered meals
         let totalCarbs = filteredMeals.map { $0.totalNetCarbs }.reduce(0, +)
         let totalFat = filteredMeals.map { $0.totalNetFat }.reduce(0, +)
         let totalProtein = filteredMeals.map { $0.totalNetProtein }.reduce(0, +)
         let totalBolus = filteredMeals.map { $0.totalNetBolus }.reduce(0, +)
         let count = Double(filteredMeals.count)
-        
+
         let avgCarbs = totalCarbs / count
         let avgFat = totalFat / count
         let avgProtein = totalProtein / count
@@ -484,28 +567,43 @@ class MealInsightsViewController: UIViewController {
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
 
-        // Bold the first line ("Medelvärden i måltider")
-        let boldText = "\(NSLocalizedString("Medelvärden i måltider", comment: "Averages"))\n\n"
+        // Bold the first line ("Medelvärden i måltider"), center-aligned
+        let boldText = "\(NSLocalizedString("Medelvärden måltider (Datum och tid)", comment: "Averages"))\n\n"
         let boldAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize)
+            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize),
+            .paragraphStyle: centeredParagraphStyle()
         ]
         statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
 
-        // Regular text for the rest
+        // Create a tab stop for aligning text
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 300)]
+        paragraphStyle.defaultTabInterval = 300
+        paragraphStyle.alignment = .center
+
+        // Regular text for the stats, left-aligned labels and right-aligned values
         let regularText = """
-        • \(NSLocalizedString("Kolhydrater", comment: "Average Carbs")): \(String(format: "%.0f g", avgCarbs))
-        • \(NSLocalizedString("Fett", comment: "Average Fat")): \(String(format: "%.0f g", avgFat))
-        • \(NSLocalizedString("Protein", comment: "Average Protein")): \(String(format: "%.0f g", avgProtein))
-        • \(NSLocalizedString("Bolus", comment: "Average Bolus")): \(String(format: "%.2f E", avgBolus))
-        • \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")): \(String(format: "%.0f g/E", insulinRatio))
+        \(NSLocalizedString("Kolhydrater", comment: "Average Carbs")):\t\(String(format: "%.0f g", avgCarbs))
+        \(NSLocalizedString("Fett", comment: "Average Fat")):\t\(String(format: "%.0f g", avgFat))
+        \(NSLocalizedString("Protein", comment: "Average Protein")):\t\(String(format: "%.0f g", avgProtein))
+        \(NSLocalizedString("Bolus", comment: "Average Bolus")):\t\(String(format: "%.2f E", avgBolus))
+        \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")):\t\(String(format: "%.0f g/E", insulinRatio))
         """
         let regularAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize)
+            .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
+            .paragraphStyle: paragraphStyle
         ]
         statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
 
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
+    }
+
+    // Helper function to center-align text for the title
+    private func centeredParagraphStyle() -> NSMutableParagraphStyle {
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        return paragraphStyle
     }
     
     private func updateStats(for entryName: String) {
@@ -513,44 +611,62 @@ class MealInsightsViewController: UIViewController {
         let matchingEntries = allFilteredFoodEntries.filter {
             $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
         }
-        
+
         // Get the emoji from the first matching entry, or default to an empty string if no entries are found
         let entryEmoji = matchingEntries.first?.entryEmoji ?? ""
-        
+
         // Determine if the portions are measured in pieces or grams
         let isPerPiece = matchingEntries.first?.entryPerPiece ?? false
-        
+
         let timesServed = matchingEntries.count
         let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
         let averagePortion = portions.reduce(0, +) / Double(portions.count)
         let largestPortion = portions.max() ?? 0.0
         let smallestPortion = portions.min() ?? 0.0
-        
+
         // Format based on whether it's measured in pieces or grams
         let portionFormat = isPerPiece ? NSLocalizedString("%.1f st", comment: "Per piece portion format") : NSLocalizedString("%.0f g", comment: "Grams portion format")
-        
+
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
-        
-        // Bold the first line (entryName and entryEmoji)
-        let boldText = "\(entryName) \(entryEmoji)\n\n"
+
+        // Check if entryName and entryEmoji are empty, then use placeholder text
+        let boldText: String
+        if entryName.isEmpty && entryEmoji.isEmpty {
+            boldText = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+        } else {
+            boldText = "\(entryName) \(entryEmoji)\n\n"
+        }
+
+        // Bold the first line (either entryName and entryEmoji or placeholder), center-aligned
         let boldAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize)
+            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize),
+            .paragraphStyle: centeredParagraphStyle()
         ]
         statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
-        
-        // Regular text for the rest
-        let regularText = """
-        • \(NSLocalizedString("Genomsnittlig portion", comment: "Average portion label")): \(String(format: portionFormat, averagePortion))
-        • \(NSLocalizedString("Största portion", comment: "Largest portion label")): \(String(format: portionFormat, largestPortion))
-        • \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")): \(String(format: portionFormat, smallestPortion))
-        • \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")): \(timesServed)
-        """
-        let regularAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize)
-        ]
-        statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
-        
+
+        // If the boldText is not the placeholder, add the detailed stats
+        if !(entryName.isEmpty && entryEmoji.isEmpty) {
+            // Create a tab stop for aligning text
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 300)]
+            paragraphStyle.defaultTabInterval = 300
+            paragraphStyle.alignment = .center
+
+            // Regular text for the stats
+            let regularText = """
+            \(NSLocalizedString("Genomsnittlig portion", comment: "Average portion label")):\t\(String(format: portionFormat, averagePortion))
+            \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(String(format: portionFormat, largestPortion))
+            \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(String(format: portionFormat, smallestPortion))\n
+            \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)
+            """
+            let regularAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
+                .paragraphStyle: paragraphStyle
+            ]
+            statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
+        }
+
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
     }

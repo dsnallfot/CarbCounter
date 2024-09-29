@@ -685,11 +685,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
-        // Check if UserDefaultsRepository.allowDataClearing is true, then add the reset button
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
+            self.presentMealInsightsViewController(with: foodItem)
+        }))
+        
         if UserDefaultsRepository.allowDataClearing {
             alert.addAction(UIAlertAction(title: NSLocalizedString("Nollställ räknare", comment: "Reset counter button"), style: .destructive, handler: { _ in
                 foodItem.count = 0
-                self.saveFoodItemChanges(for: foodItem) // Save the changes to Core Data
+                self.saveFoodItemChanges(for: foodItem)
             }))
         }
 
@@ -755,6 +758,23 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
         print("ComposeMealViewController not found in tab bar controller")
+    }
+    
+    private func presentMealInsightsViewController(with foodItem: FoodItem) {
+        // Create an instance of MealInsightsViewController
+        let mealInsightsVC = MealInsightsViewController()
+
+        // Prepopulate the search text field with the foodItem name
+        mealInsightsVC.prepopulatedSearchText = foodItem.name ?? ""
+
+        // Embed the MealInsightsViewController in a UINavigationController
+        let navController = UINavigationController(rootViewController: mealInsightsVC)
+
+        // Set the modal presentation style
+        navController.modalPresentationStyle = .pageSheet
+
+        // Present the view controller modally
+        present(navController, animated: true, completion: nil)
     }
     
     private func deleteFoodItem(at indexPath: IndexPath) {

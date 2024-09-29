@@ -395,16 +395,30 @@
 "Åt upp %@ g" = "Ate %@ g";
 
 /* Meal insights VC*/
+"Måltider" = "Meals";
+"Livsmedel" = "Food Items";
+"Dygn" = "Day";
+"Frukost" = "Breakfast";
+"Lunch" = "Lunch";
+"Mellis" = "Snack";
+"Middag" = "Dinner";
 "Sök livsmedel" = "Search Food Item";
 "Till datum" = "To Date";
 "Från datum" = "From Date";
-"Måltidsinsikter" = "Meal Insights";
+"Måltidsinsikter" = "Insights";
 "Serverats antal gånger" = "Times served";
 "Genomsnittlig portion" = "Average portion";
 "Största portion" = "Largest portion";
 "Minsta portion" = "Smallest portion";
 "%.1f st" = "%.1f pcs";
 "%.0f g" = "%.0f g";
+"Medelvärden måltider (Datum och tid)" = "Meal average values";
+"Verklig insulinkvot" = "Actual Carb Ratio";
+"%.0f g" = "%.0f g";
+"%.2f E" = "%.2f U";
+"%.0f g/E" = "%.0f g/U";
+"Insikter" = "Insights";
+"Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 
 /* Settings */
 "Inställningar" = "Settings";
