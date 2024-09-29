@@ -16,6 +16,7 @@ class MealInsightsViewController: UIViewController {
     private let toDatePicker = UIDatePicker()
     private let segmentedControl = UISegmentedControl(items: ["Analys måltider", "Analys livsmedel"])
     private let mealTimesSegmentedControl = UISegmentedControl(items: ["Dygn", "Frukost", "Lunch", "Mellis", "Middag"])
+    private let datePresetsSegmentedControl = UISegmentedControl(items: ["Allt", "3d", "7d", "30d", "90d"])
     private let searchTextField = UITextField()
     private let statsTableView = UITableView()
     private let fromTimePicker = UIDatePicker()
@@ -99,19 +100,24 @@ class MealInsightsViewController: UIViewController {
         toDateStackView.spacing = 8
         toDateStackView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Create a stack view to hold the date pickers and the segmented control
+        // Date pickers stack view
         let datePickersStackView = UIStackView(arrangedSubviews: [fromDateStackView, toDateStackView])
         datePickersStackView.axis = .vertical
         datePickersStackView.spacing = 16
         datePickersStackView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Add the segmented control
+        // Main segmented control
         segmentedControl.selectedSegmentIndex = 1
         segmentedControl.addTarget(self, action: #selector(switchMode(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
-        // Create a stack view that includes both the date pickers and the segmented control
-        let combinedStackView = UIStackView(arrangedSubviews: [datePickersStackView, segmentedControl])
+        // Date preset segmented control
+        datePresetsSegmentedControl.selectedSegmentIndex = UISegmentedControl.noSegment
+        datePresetsSegmentedControl.addTarget(self, action: #selector(datePresetChanged(_:)), for: .valueChanged)
+        datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+
+        // Combine the controls and stack views
+        let combinedStackView = UIStackView(arrangedSubviews: [segmentedControl, datePresetsSegmentedControl, datePickersStackView])
         combinedStackView.axis = .vertical
         combinedStackView.spacing = 16
         combinedStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -125,6 +131,42 @@ class MealInsightsViewController: UIViewController {
             combinedStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             combinedStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
+    }
+
+    // Action for date presets
+    @objc private func datePresetChanged(_ sender: UISegmentedControl) {
+        let now = Date()
+        var fromDate: Date?
+
+        switch sender.selectedSegmentIndex {
+        case 0: // Allt - Get the earliest available date from mealHistories
+            fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
+        case 1: // 3d
+            fromDate = Calendar.current.date(byAdding: .hour, value: -72, to: now)
+        case 2: // 7d
+            fromDate = Calendar.current.date(byAdding: .hour, value: -144, to: now)
+        case 3: // 30d
+            fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now)
+        case 4: // 90d
+            fromDate = Calendar.current.date(byAdding: .day, value: -90, to: now)
+        default:
+            break
+        }
+
+        if let fromDate = fromDate {
+            fromDatePicker.date = fromDate
+            toDatePicker.date = now
+
+            // Check if the selected case in segmentedControl is "Analys livsmedel" or "Analys måltider"
+            if segmentedControl.selectedSegmentIndex == 1 {
+                // Case: "Analys livsmedel"
+                filterFoodEntries()
+                resetStatsView()
+            } else if segmentedControl.selectedSegmentIndex == 0 {
+                // Case: "Analys måltider"
+                calculateMealStats()
+            }
+        }
     }
     
     // Set default times for time pickers
@@ -145,7 +187,7 @@ class MealInsightsViewController: UIViewController {
         view.addSubview(mealTimesSegmentedControl)
 
         NSLayoutConstraint.activate([
-            mealTimesSegmentedControl.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 16),
+            mealTimesSegmentedControl.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 16),
             mealTimesSegmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             mealTimesSegmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
@@ -279,7 +321,7 @@ class MealInsightsViewController: UIViewController {
         view.addSubview(searchTextField)
         
         NSLayoutConstraint.activate([
-            searchTextField.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 16),
+            searchTextField.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 16),
             searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchTextField.heightAnchor.constraint(equalToConstant: 40)
@@ -438,14 +480,32 @@ class MealInsightsViewController: UIViewController {
         let avgProtein = totalProtein / count
         let avgBolus = totalBolus / count
         let insulinRatio = avgCarbs / avgBolus
-        
-        statsLabel.text = """
-        • \(NSLocalizedString("Genomsnitt Kolhydrater", comment: "Average Carbs")): \(String(format: "%.0f g", avgCarbs))
-        • \(NSLocalizedString("Genomsnitt Fett", comment: "Average Fat")): \(String(format: "%.0f g", avgFat))
-        • \(NSLocalizedString("Genomsnitt Protein", comment: "Average Protein")): \(String(format: "%.0f g", avgProtein))
-        • \(NSLocalizedString("Genomsnitt Bolus", comment: "Average Bolus")): \(String(format: "%.2f E", avgBolus))
+
+        // Create an attributed string to apply different styles
+        let statsText = NSMutableAttributedString()
+
+        // Bold the first line ("Medelvärden i måltider")
+        let boldText = "\(NSLocalizedString("Medelvärden i måltider", comment: "Averages"))\n\n"
+        let boldAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize)
+        ]
+        statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
+
+        // Regular text for the rest
+        let regularText = """
+        • \(NSLocalizedString("Kolhydrater", comment: "Average Carbs")): \(String(format: "%.0f g", avgCarbs))
+        • \(NSLocalizedString("Fett", comment: "Average Fat")): \(String(format: "%.0f g", avgFat))
+        • \(NSLocalizedString("Protein", comment: "Average Protein")): \(String(format: "%.0f g", avgProtein))
+        • \(NSLocalizedString("Bolus", comment: "Average Bolus")): \(String(format: "%.2f E", avgBolus))
         • \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")): \(String(format: "%.0f g/E", insulinRatio))
         """
+        let regularAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize)
+        ]
+        statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
+
+        // Assign the attributed text to the label
+        statsLabel.attributedText = statsText
     }
     
     private func updateStats(for entryName: String) {
