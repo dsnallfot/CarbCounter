@@ -394,6 +394,18 @@
 "Åt upp %@ st" = "Ate %@ pcs";
 "Åt upp %@ g" = "Ate %@ g";
 
+/* Meal insights VC*/
+"Sök livsmedel" = "Search Food Item";
+"Till datum" = "To Date";
+"Från datum" = "From Date";
+"Måltidsinsikter" = "Meal Insights";
+"Serverats antal gånger" = "Times served";
+"Genomsnittlig portion" = "Average portion";
+"Största portion" = "Largest portion";
+"Minsta portion" = "Smallest portion";
+"%.1f st" = "%.1f pcs";
+"%.0f g" = "%.0f g";
+
 /* Settings */
 "Inställningar" = "Settings";
 "Tillbaka" = "Back";

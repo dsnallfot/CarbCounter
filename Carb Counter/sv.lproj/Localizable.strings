@@ -395,6 +395,18 @@
 "Åt upp %@ st" = "Åt upp %@ st";
 "Åt upp %@ g" = "Åt upp %@ g";
 
+/* Meal insights VC*/
+"Sök livsmedel" = "Sök livsmedel";
+"Till datum" = "Till datum";
+"Från datum" = "Från datum";
+"Måltidsinsikter" = "Måltidsinsikter";
+"Serverats antal gånger" = "Serverats antal gånger";
+"Genomsnittlig portion" = "Genomsnittlig portion ";
+"Största portion" = "Största portion";
+"Minsta portion" = "Minsta portion";
+"%.1f st" = "%.1f st";
+"%.0f g" = "%.0f g";
+
 /* Settings */
 "Inställningar" = "Inställningar";
 "Tillbaka" = "Tillbaka";
