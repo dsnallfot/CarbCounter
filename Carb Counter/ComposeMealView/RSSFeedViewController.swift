@@ -127,6 +127,9 @@ class RSSFeedViewController: UIViewController {
         let context = CoreDataStack.shared.context
         let request: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         
+        // Add a predicate to filter out items where the delete flag is true
+        request.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        
         do {
             foodItems = try context.fetch(request)
         } catch {

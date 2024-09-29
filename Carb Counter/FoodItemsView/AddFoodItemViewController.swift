@@ -434,6 +434,10 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
+
+            // Set the delete flag to false by default for new food items
+            newFoodItem.delete = false
+            
             updateFoodItem(newFoodItem)
             foodItem = newFoodItem // Assign the new food item to the foodItem variable for later use
             print("Created new food item: \(newFoodItem.name ?? "ospecifierat")")
@@ -534,7 +538,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     private func sanitizedDouble(from text: String?) -> Double {
         return Double(text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0.0
     }
-    
     private func addToComposeMealViewController() {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else {

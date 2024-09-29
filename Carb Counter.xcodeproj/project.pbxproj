@@ -50,6 +50,7 @@
 		65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */; };
 		65D138A92C4017E400FAE6BF /* OngoingMealViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D138A82C4017E400FAE6BF /* OngoingMealViewController.swift */; };
 		65D138AB2C43DEBD00FAE6BF /* LoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D138AA2C43DEBD00FAE6BF /* LoadingViewController.swift */; };
+		65D2B06C2CA9760000C0AF80 /* MealInsightsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D2B06B2CA9760000C0AF80 /* MealInsightsViewController.swift */; };
 		65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */; };
 		65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */; };
 /* End PBXBuildFile section */
@@ -128,6 +129,7 @@
 		65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHelper.swift; sourceTree = "<group>"; };
 		65D138A82C4017E400FAE6BF /* OngoingMealViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OngoingMealViewController.swift; sourceTree = "<group>"; };
 		65D138AA2C43DEBD00FAE6BF /* LoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewController.swift; sourceTree = "<group>"; };
+		65D2B06B2CA9760000C0AF80 /* MealInsightsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealInsightsViewController.swift; sourceTree = "<group>"; };
 		65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NightscoutManager.swift; path = "Carb Counter/Controllers/NightscoutManager.swift"; sourceTree = SOURCE_ROOT; };
 		65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRegisteredAmountIntent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -207,6 +209,7 @@
 			children = (
 				6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */,
 				6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */,
+				65D2B06B2CA9760000C0AF80 /* MealInsightsViewController.swift */,
 			);
 			path = MealHistoryView;
 			sourceTree = "<group>";
@@ -444,6 +447,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				65C75D002C25967C00114BD3 /* StartDoseViewController.swift in Sources */,
+				65D2B06C2CA9760000C0AF80 /* MealInsightsViewController.swift in Sources */,
 				6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */,
 				6553EE032C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,

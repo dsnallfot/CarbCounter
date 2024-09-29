@@ -508,8 +508,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         
         do {
+            // Fetch all items
             foodItems = try context.fetch(fetchRequest)
-            filteredFoodItems = foodItems
+            
+            // Filter out items where delete flag is true
+            filteredFoodItems = foodItems.filter { !$0.delete }
             
             DispatchQueue.main.async {
                 self.sortFoodItems()
@@ -765,24 +768,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             // Step 2: Save the context with the updated delete flag
             try context.save()
             
-            // Step 3: Export the updated list to CSV before actually deleting the item
+            // Step 3: Export the updated list to CSV before marking the item as deleted
             guard let dataSharingVC = dataSharingVC else { return }
             Task {
                 print("Food items export triggered")
                 await dataSharingVC.exportFoodItemsToCSV()
                 
-                // Step 4: After exporting, delete the item from Core Data
-                context.delete(foodItem)
-                do {
-                    try context.save()
-                    // Remove from the data arrays and table view
-                    foodItems.remove(at: indexPath.row)
-                    filteredFoodItems.remove(at: indexPath.row)
-                    tableView.deleteRows(at: [indexPath], with: .automatic)
-                    updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
-                } catch {
-                    print("Failed to delete food item: \(error)")
-                }
+                // Step 4: Update the table view without deleting the Core Data entry
+                filteredFoodItems.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
             }
         } catch {
             print("Failed to update delete flag: \(error)")
