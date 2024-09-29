@@ -8,38 +8,50 @@ import UIKit
 import CoreData
 
 class MealInsightsViewController: UIViewController {
-    
+
     // UI Elements
     private let fromDateLabel = UILabel()
     private let toDateLabel = UILabel()
     private let fromDatePicker = UIDatePicker()
     private let toDatePicker = UIDatePicker()
+    private let segmentedControl = UISegmentedControl(items: ["Analys måltider", "Analys livsmedel"])
+    private let mealTimesSegmentedControl = UISegmentedControl(items: ["Dygn", "Frukost", "Lunch", "Mellis", "Middag"])
     private let searchTextField = UITextField()
     private let statsTableView = UITableView()
-    
+    private let fromTimePicker = UIDatePicker()
+    private let toTimePicker = UIDatePicker()
+    private let fromTimeLabel = UILabel()
+    private let toTimeLabel = UILabel()
+
     // Stats View
     private let statsView = UIView()
     private let statsLabel = UILabel()
-    
+
     // Data
     private var mealHistories: [MealHistory] = []
-    private var uniqueFoodEntries: [String] = []  // To store unique food names for display
-    private var allFilteredFoodEntries: [FoodItemEntry] = []  // To store all entries (including duplicates) for stats calculations
-    private var selectedFoodEntry: String?  // To track the selected food entry
-    
+    private var uniqueFoodEntries: [String] = [] // To store unique food names for display
+    private var allFilteredFoodEntries: [FoodItemEntry] = [] // For stats calculations
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         title = NSLocalizedString("Måltidsinsikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
-        
+
         setupGradientView()
-        setupDatePickers()
+        setupSegmentedControlAndDatePickers()
+        setupMealTimesSegmentedControl() // Setup new control
         setupSearchTextField()
         setupStatsTableView()
         setupStatsView()
+        setupTimePickers()
+
         loadDefaultDates()
+        setDefaultTimePickers() // Set default times
         fetchMealHistories()
+
+        // Set default mode to "Analys livsmedel"
+        switchMode(segmentedControl)
     }
     private func setupGradientView() {
         let colors: [CGColor] = [
@@ -60,7 +72,7 @@ class MealInsightsViewController: UIViewController {
         ])
     }
     
-    private func setupDatePickers() {
+    private func setupSegmentedControlAndDatePickers() {
         // Configure From Date Picker and Label
         fromDateLabel.text = NSLocalizedString("Från datum", comment: "From Date Label")
         fromDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -68,12 +80,12 @@ class MealInsightsViewController: UIViewController {
         fromDatePicker.datePickerMode = .date
         fromDatePicker.preferredDatePickerStyle = .compact
         fromDatePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-        
+
         let fromDateStackView = UIStackView(arrangedSubviews: [fromDateLabel, fromDatePicker])
         fromDateStackView.axis = .horizontal
-        fromDateStackView.spacing = 8 // Space between label and picker
+        fromDateStackView.spacing = 8
         fromDateStackView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         // Configure To Date Picker and Label
         toDateLabel.text = NSLocalizedString("Till datum", comment: "To Date Label")
         toDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -81,25 +93,177 @@ class MealInsightsViewController: UIViewController {
         toDatePicker.datePickerMode = .date
         toDatePicker.preferredDatePickerStyle = .compact
         toDatePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-        
+
         let toDateStackView = UIStackView(arrangedSubviews: [toDateLabel, toDatePicker])
         toDateStackView.axis = .horizontal
         toDateStackView.spacing = 8
         toDateStackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Stack both date rows vertically
+
+        // Create a stack view to hold the date pickers and the segmented control
         let datePickersStackView = UIStackView(arrangedSubviews: [fromDateStackView, toDateStackView])
         datePickersStackView.axis = .vertical
         datePickersStackView.spacing = 16
         datePickersStackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(datePickersStackView)
-        
+
+        // Add the segmented control
+        segmentedControl.selectedSegmentIndex = 1
+        segmentedControl.addTarget(self, action: #selector(switchMode(_:)), for: .valueChanged)
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+
+        // Create a stack view that includes both the date pickers and the segmented control
+        let combinedStackView = UIStackView(arrangedSubviews: [datePickersStackView, segmentedControl])
+        combinedStackView.axis = .vertical
+        combinedStackView.spacing = 16
+        combinedStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Add the combined stack view to the main view
+        view.addSubview(combinedStackView)
+
+        // Set constraints for the combined stack view
         NSLayoutConstraint.activate([
-            datePickersStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            datePickersStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            datePickersStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            combinedStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            combinedStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            combinedStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
+    }
+    
+    // Set default times for time pickers
+    private func setDefaultTimePickers() {
+        let calendar = Calendar.current
+        if let fromTime = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: Date()),
+           let toTime = calendar.date(bySettingHour: 23, minute: 59, second: 0, of: Date()) {
+            fromTimePicker.date = fromTime
+            toTimePicker.date = toTime
+        }
+    }
+
+    private func setupMealTimesSegmentedControl() {
+        mealTimesSegmentedControl.selectedSegmentIndex = 0
+        mealTimesSegmentedControl.addTarget(self, action: #selector(mealTimesSegmentChanged(_:)), for: .valueChanged)
+        mealTimesSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(mealTimesSegmentedControl)
+
+        NSLayoutConstraint.activate([
+            mealTimesSegmentedControl.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 16),
+            mealTimesSegmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            mealTimesSegmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+    }
+    
+    // Action when meal times segment is changed
+    @objc private func mealTimesSegmentChanged(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0: // Dygn
+            setTimePickers(fromHour: 0, fromMinute: 0, toHour: 23, toMinute: 59)
+        case 1: // Frukost
+            setTimePickers(fromHour: 6, fromMinute: 0, toHour: 10, toMinute: 0)
+        case 2: // Lunch
+            setTimePickers(fromHour: 10, fromMinute: 0, toHour: 14, toMinute: 0)
+        case 3: // Mellis
+            setTimePickers(fromHour: 14, fromMinute: 0, toHour: 17, toMinute: 0)
+        case 4: // Middag
+            setTimePickers(fromHour: 17, fromMinute: 0, toHour: 20, toMinute: 0)
+        default:
+            break
+        }
+        // Immediately trigger the calculations after changing the meal times
+        calculateMealStats()
+    }
+    
+    // Helper function to set time pickers
+    private func setTimePickers(fromHour: Int, fromMinute: Int, toHour: Int, toMinute: Int) {
+        let calendar = Calendar.current
+        if let fromTime = calendar.date(bySettingHour: fromHour, minute: fromMinute, second: 0, of: Date()),
+           let toTime = calendar.date(bySettingHour: toHour, minute: toMinute, second: 0, of: Date()) {
+            fromTimePicker.date = fromTime
+            toTimePicker.date = toTime
+        }
+    }
+    
+    // Time pickers for "Analys måltider" mode
+    private func setupTimePickers() {
+        // Configure "Från tid" label and picker
+        fromTimeLabel.text = NSLocalizedString("Från tid", comment: "From Time Label")
+        fromTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        fromTimeLabel.textColor = .label
+        fromTimePicker.datePickerMode = .time
+        fromTimePicker.preferredDatePickerStyle = .compact  // Set compact style to make it smaller
+        fromTimePicker.addTarget(self, action: #selector(timeChanged), for: .valueChanged)
+        fromTimePicker.translatesAutoresizingMaskIntoConstraints = false
+        fromTimeLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        // Configure "Till tid" label and picker
+        toTimeLabel.text = NSLocalizedString("Till tid", comment: "To Time Label")
+        toTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        toTimeLabel.textColor = .label
+        toTimePicker.datePickerMode = .time
+        toTimePicker.preferredDatePickerStyle = .compact  // Set compact style to make it smaller
+        toTimePicker.addTarget(self, action: #selector(timeChanged), for: .valueChanged)
+        toTimePicker.translatesAutoresizingMaskIntoConstraints = false
+        toTimeLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        // Stack views for time pickers with labels
+        let fromTimeStackView = UIStackView(arrangedSubviews: [fromTimeLabel, fromTimePicker])
+        fromTimeStackView.axis = .horizontal
+        fromTimeStackView.spacing = 8
+        fromTimeStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        let toTimeStackView = UIStackView(arrangedSubviews: [toTimeLabel, toTimePicker])
+        toTimeStackView.axis = .horizontal
+        toTimeStackView.spacing = 8
+        toTimeStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Combine both time pickers into one stack
+        let timePickersStackView = UIStackView(arrangedSubviews: [fromTimeStackView, toTimeStackView])
+        timePickersStackView.axis = .vertical
+        timePickersStackView.spacing = 16
+        timePickersStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(timePickersStackView)
+
+        // Ensure proper constraints
+        NSLayoutConstraint.activate([
+            timePickersStackView.topAnchor.constraint(equalTo: mealTimesSegmentedControl.bottomAnchor, constant: 16),
+            timePickersStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            timePickersStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            // Adjust bottom to fit with statsView
+            //timePickersStackView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -16),
+
+            // Set the height of the time pickers to be similar to the date pickers
+            fromTimePicker.heightAnchor.constraint(equalToConstant: 40),
+            toTimePicker.heightAnchor.constraint(equalToConstant: 40)
+        ])
+    }
+    
+    // Trigger calculations when time is changed
+    @objc private func timeChanged() {
+        calculateMealStats()
+    }
+
+    @objc private func switchMode(_ sender: UISegmentedControl) {
+        if sender.selectedSegmentIndex == 0 {
+            // "Analys måltider" mode
+            searchTextField.isHidden = true
+            statsTableView.isHidden = true
+            fromTimePicker.isHidden = false
+            toTimePicker.isHidden = false
+            fromTimeLabel.isHidden = false
+            toTimeLabel.isHidden = false
+            mealTimesSegmentedControl.isHidden = false // Show the meal times control
+
+            calculateMealStats()
+        } else {
+            // "Analys livsmedel" mode
+            searchTextField.isHidden = false
+            statsTableView.isHidden = false
+            fromTimePicker.isHidden = true
+            toTimePicker.isHidden = true
+            fromTimeLabel.isHidden = true
+            toTimeLabel.isHidden = true
+            mealTimesSegmentedControl.isHidden = true // Hide the meal times control
+        }
     }
     
     private func setupSearchTextField() {
@@ -115,7 +279,7 @@ class MealInsightsViewController: UIViewController {
         view.addSubview(searchTextField)
         
         NSLayoutConstraint.activate([
-            searchTextField.topAnchor.constraint(equalTo: toDatePicker.bottomAnchor, constant: 16),
+            searchTextField.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 16),
             searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchTextField.heightAnchor.constraint(equalToConstant: 40)
@@ -130,15 +294,14 @@ class MealInsightsViewController: UIViewController {
         statsTableView.separatorStyle = .none
         statsTableView.backgroundColor = .clear
 
-        // Make sure both statsTableView and statsView are added to the view hierarchy before setting constraints
+        // Add both statsTableView and statsView to the hierarchy first
         view.addSubview(statsTableView)
-        view.addSubview(statsView)  // Ensure statsView is added before applying constraints
+        view.addSubview(statsView)  // Adding both views before setting constraints
 
         NSLayoutConstraint.activate([
             statsTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 16),
             statsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             statsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            // Constrain the bottom of the table to the top of the stats view
             statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -10)  // Adjust the spacing as needed
         ])
     }
@@ -147,18 +310,21 @@ class MealInsightsViewController: UIViewController {
         statsView.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.6)
         statsView.layer.cornerRadius = 10
         statsView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         statsLabel.numberOfLines = 0
         statsLabel.textAlignment = .center
         statsView.addSubview(statsLabel)
         statsLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        // Make sure statsView is added to the view hierarchy before applying constraints
+        view.addSubview(statsView)
 
         NSLayoutConstraint.activate([
             statsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             statsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             statsView.heightAnchor.constraint(equalToConstant: 190),
-            
+
             statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 16),
             statsLabel.leadingAnchor.constraint(equalTo: statsView.leadingAnchor, constant: 16),
             statsLabel.trailingAnchor.constraint(equalTo: statsView.trailingAnchor, constant: -16),
@@ -239,6 +405,47 @@ class MealInsightsViewController: UIViewController {
     
     private func resetStatsView() {
         statsLabel.text = ""  // Clear the stats view
+    }
+    
+    // Meal analysis calculations
+    private func calculateMealStats() {
+        let fromDate = fromDatePicker.date
+        let toDate = toDatePicker.date
+        let fromTime = fromTimePicker.date
+        let toTime = toTimePicker.date
+        
+        let filteredMeals = mealHistories.filter {
+            guard let mealDate = $0.mealDate else { return false }
+            let calendar = Calendar.current
+            let mealTime = calendar.dateComponents([.hour, .minute], from: mealDate)
+            let fromTimeComponents = calendar.dateComponents([.hour, .minute], from: fromTime)
+            let toTimeComponents = calendar.dateComponents([.hour, .minute], from: toTime)
+            
+            return mealDate >= fromDate && mealDate <= toDate &&
+                (mealTime.hour! >= fromTimeComponents.hour! && mealTime.minute! >= fromTimeComponents.minute!) &&
+                (mealTime.hour! <= toTimeComponents.hour! && mealTime.minute! <= toTimeComponents.minute!) &&
+                $0.totalNetCarbs > 0  // Filter out meals with totalNetCarbs == 0
+        }
+        
+        let totalCarbs = filteredMeals.map { $0.totalNetCarbs }.reduce(0, +)
+        let totalFat = filteredMeals.map { $0.totalNetFat }.reduce(0, +)
+        let totalProtein = filteredMeals.map { $0.totalNetProtein }.reduce(0, +)
+        let totalBolus = filteredMeals.map { $0.totalNetBolus }.reduce(0, +)
+        let count = Double(filteredMeals.count)
+        
+        let avgCarbs = totalCarbs / count
+        let avgFat = totalFat / count
+        let avgProtein = totalProtein / count
+        let avgBolus = totalBolus / count
+        let insulinRatio = avgCarbs / avgBolus
+        
+        statsLabel.text = """
+        • \(NSLocalizedString("Genomsnitt Kolhydrater", comment: "Average Carbs")): \(String(format: "%.0f g", avgCarbs))
+        • \(NSLocalizedString("Genomsnitt Fett", comment: "Average Fat")): \(String(format: "%.0f g", avgFat))
+        • \(NSLocalizedString("Genomsnitt Protein", comment: "Average Protein")): \(String(format: "%.0f g", avgProtein))
+        • \(NSLocalizedString("Genomsnitt Bolus", comment: "Average Bolus")): \(String(format: "%.2f E", avgBolus))
+        • \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")): \(String(format: "%.0f g/E", insulinRatio))
+        """
     }
     
     private func updateStats(for entryName: String) {
