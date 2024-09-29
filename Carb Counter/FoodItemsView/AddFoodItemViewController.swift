@@ -425,82 +425,25 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     private func saveFoodItem(addToMeal: Bool = false) {
         let context = CoreDataStack.shared.context
         
-        // Helper method to replace commas with periods
-        func sanitize(_ text: String?) -> String {
-            return text?.replacingOccurrences(of: ",", with: ".") ?? ""
-        }
-
+        // Check if we are updating an existing food item or creating a new one
         if let foodItem = foodItem {
             // Update existing food item
-            foodItem.name = (nameTextField.text ?? "")
-                .replacingOccurrences(of: NSLocalizedString("S: ", comment: "Prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skolmat: ", comment: "Prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skola: ", comment: "Prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skola ", comment: "Prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skolmat ", comment: "Prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skolmat: ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skola: ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skola ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skolmat ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
-            foodItem.notes = notesTextField.text ?? ""
-            foodItem.emoji = emojiTextField.text ?? ""
-            if isPerPiece {
-                foodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
-                foodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
-                foodItem.proteinPP = Double(sanitize(proteinTextField.text)) ?? 0.0
-                foodItem.perPiece = true
-                foodItem.carbohydrates = 0.0
-                foodItem.fat = 0.0
-                foodItem.protein = 0.0
-            } else {
-                foodItem.carbohydrates = Double(sanitize(carbsTextField.text)) ?? 0.0
-                foodItem.fat = Double(sanitize(fatTextField.text)) ?? 0.0
-                foodItem.protein = Double(sanitize(proteinTextField.text)) ?? 0.0
-                foodItem.perPiece = false
-                foodItem.carbsPP = 0.0
-                foodItem.fatPP = 0.0
-                foodItem.proteinPP = 0.0
-            }
+            updateFoodItem(foodItem)
             print("Updated existing food item: \(foodItem.name ?? "")")
         } else {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
-            newFoodItem.name = ((nameTextField.text ?? "")
-                .replacingOccurrences(of: NSLocalizedString("S: ", comment: "Prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skolmat: ", comment: "Prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skola: ", comment: "Prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skola ", comment: "Prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("Skolmat ", comment: "Prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skolmat: ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skola: ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skola ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
-                .replacingOccurrences(of: NSLocalizedString("skolmat ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")) + (isPerPiece ? " ①" : "")
-            newFoodItem.notes = notesTextField.text ?? ""
-            newFoodItem.emoji = emojiTextField.text ?? ""
+
+            // Set the delete flag to false by default for new food items
+            newFoodItem.delete = false
             
-            if isPerPiece {
-                newFoodItem.carbsPP = Double(sanitize(carbsTextField.text)) ?? 0.0
-                newFoodItem.fatPP = Double(sanitize(fatTextField.text)) ?? 0.0
-                newFoodItem.proteinPP = Double(sanitize(proteinTextField.text)) ?? 0.0
-                newFoodItem.perPiece = true
-                newFoodItem.carbohydrates = 0.0
-                newFoodItem.fat = 0.0
-                newFoodItem.protein = 0.0
-            } else {
-                newFoodItem.carbohydrates = Double(sanitize(carbsTextField.text)) ?? 0.0
-                newFoodItem.fat = Double(sanitize(fatTextField.text)) ?? 0.0
-                newFoodItem.protein = Double(sanitize(proteinTextField.text)) ?? 0.0
-                newFoodItem.perPiece = false
-                newFoodItem.carbsPP = 0.0
-                newFoodItem.fatPP = 0.0
-                newFoodItem.proteinPP = 0.0
-            }
-            newFoodItem.count = 0
+            updateFoodItem(newFoodItem)
             foodItem = newFoodItem // Assign the new food item to the foodItem variable for later use
             print("Created new food item: \(newFoodItem.name ?? "ospecifierat")")
         }
         
+        // Save the context and handle errors
         do {
             try context.save()
             print("Saved food item successfully.")
@@ -510,29 +453,91 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             if addToMeal {
                 addToComposeMealViewController()
             }
+            
+            // Trigger CSV export
+            guard let dataSharingVC = dataSharingVC else { return }
+            Task {
+                print("Food items export triggered")
+                await dataSharingVC.exportFoodItemsToCSV()
+            }
+            
+            // Dismiss or pop view controller based on the presentation style
+            if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
+                navigationController.popViewController(animated: true)
+            } else {
+                dismiss(animated: true, completion: nil)
+            }
         } catch {
             print("Failed to save food item: \(error)")
         }
-        
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
+    }
 
-        // Call the desired function
-        Task {
-            print("Food items export triggered")
-            await dataSharingVC.exportFoodItemsToCSV()
-
-        }
+    // Helper function to update food item properties
+    private func updateFoodItem(_ foodItem: FoodItem) {
+        // Update basic properties
+        foodItem.name = (nameTextField.text ?? "")
+            .replacingOccurrences(of: NSLocalizedString("S: ", comment: "Prefix for school meals"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("Skolmat: ", comment: "Prefix for school meals"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("Skola: ", comment: "Prefix for school"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("Skola ", comment: "Prefix for school"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("Skolmat ", comment: "Prefix for school meals"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("skolmat: ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("skola: ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("skola ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
+            .replacingOccurrences(of: NSLocalizedString("skolmat ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
+        foodItem.notes = notesTextField.text ?? ""
+        foodItem.emoji = emojiTextField.text ?? ""
         
-        if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
-            // Pushed onto a navigation stack
-            navigationController.popViewController(animated: true)
+        // Update per-piece or overall values
+        if isPerPiece {
+            foodItem.carbsPP = sanitizedDouble(from: carbsTextField.text)
+            foodItem.fatPP = sanitizedDouble(from: fatTextField.text)
+            foodItem.proteinPP = sanitizedDouble(from: proteinTextField.text)
+            foodItem.perPiece = true
+            foodItem.carbohydrates = 0.0
+            foodItem.fat = 0.0
+            foodItem.protein = 0.0
         } else {
-            // Presented modally
-            dismiss(animated: true, completion: nil)
+            foodItem.carbohydrates = sanitizedDouble(from: carbsTextField.text)
+            foodItem.fat = sanitizedDouble(from: fatTextField.text)
+            foodItem.protein = sanitizedDouble(from: proteinTextField.text)
+            foodItem.perPiece = false
+            foodItem.carbsPP = 0.0
+            foodItem.fatPP = 0.0
+            foodItem.proteinPP = 0.0
+        }
+
+        foodItem.lastEdited = Date()
+        
+        // Print all properties for debugging
+        print("Saving FoodItem:")
+        print("ID: \(foodItem.id?.uuidString ?? "nil")")
+        print("Name: \(foodItem.name ?? "nil")")
+        print("Carbohydrates: \(foodItem.carbohydrates)")
+        print("CarbsPP: \(foodItem.carbsPP)")
+        print("Fat: \(foodItem.fat)")
+        print("FatPP: \(foodItem.fatPP)")
+        print("Protein: \(foodItem.protein)")
+        print("ProteinPP: \(foodItem.proteinPP)")
+        print("PerPiece: \(foodItem.perPiece)")
+        print("Count: \(foodItem.count)")
+        print("Notes: \(foodItem.notes ?? "nil")")
+        print("Emoji: \(foodItem.emoji ?? "nil")")
+
+        if let lastEdited = foodItem.lastEdited {
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let formattedDate = isoFormatter.string(from: lastEdited)
+            print("Last Edited (CSV Format): \(formattedDate)")
+        } else {
+            print("Last Edited: nil")
         }
     }
-    
+
+    // Helper method to sanitize and convert text to Double
+    private func sanitizedDouble(from text: String?) -> Double {
+        return Double(text?.replacingOccurrences(of: ",", with: ".") ?? "") ?? 0.0
+    }
     private func addToComposeMealViewController() {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else {

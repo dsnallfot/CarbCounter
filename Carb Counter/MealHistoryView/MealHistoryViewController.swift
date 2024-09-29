@@ -40,6 +40,10 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         setupTableView()
         fetchMealHistories()
         
+        // Add an info button in the navigation bar
+                let infoButton = UIBarButtonItem(image: UIImage(systemName: "wand.and.rays"), style: .plain, target: self, action: #selector(navigateToMealInsights))
+                navigationItem.rightBarButtonItem = infoButton
+        
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
@@ -96,6 +100,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
         let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        // Add a predicate to filter out items where the delete flag is true
+        fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
         
         do {
             let mealHistories = try context.fetch(fetchRequest)
@@ -194,43 +201,49 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Radera", comment: "Confirm deletion"), style: .destructive, handler: { _ in
-                let mealHistory = self.filteredMealHistories[indexPath.row]
-                let context = CoreDataStack.shared.context
-                context.delete(mealHistory)
-                
-                // Ensure dataSharingVC is instantiated
-                guard let dataSharingVC = self.dataSharingVC else { return }
-                
-                // Call the desired function
                 Task {
-                    print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
-                    await dataSharingVC.exportMealHistoryToCSV()
+                    await self.deleteMealHistory(at: indexPath)
+                    completionHandler(true) // Perform the delete action
                 }
-                
-                do {
-                    try context.save()
-                    self.mealHistories.removeAll { $0 == mealHistory }
-                    self.filteredMealHistories.remove(at: indexPath.row)
-                    tableView.deleteRows(at: [indexPath], with: .fade)
-                } catch {
-                    print(String(format: NSLocalizedString("Failed to delete meal history: %@", comment: "Log message for failed meal history deletion"), error.localizedDescription))
-                }
-                completionHandler(true) // Perform the delete action
             }))
             
             self.present(alert, animated: true, completion: nil)
         }
         deleteAction.image = UIImage(systemName: "trash.fill")
-            
-            let editAction = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
-                self.presentEditPopover(for: indexPath)
-                completionHandler(true)
-            }
-            editAction.image = UIImage(systemName: "square.and.pencil")
-            editAction.backgroundColor = .systemBlue
-            
-            return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        
+        let editAction = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
+            self.presentEditPopover(for: indexPath)
+            completionHandler(true)
         }
+        editAction.image = UIImage(systemName: "square.and.pencil")
+        editAction.backgroundColor = .systemBlue
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+    }
+    
+    private func deleteMealHistory(at indexPath: IndexPath) async {
+        let mealHistory = filteredMealHistories[indexPath.row]
+        
+        // Step 1: Set the delete flag to true
+        mealHistory.delete = true
+
+        // Step 2: Export the updated list of meal histories
+        guard let dataSharingVC = dataSharingVC else { return }
+        print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
+        await dataSharingVC.exportMealHistoryToCSV()
+
+        // Step 3: Save the context with the updated delete flag
+        let context = CoreDataStack.shared.context
+        do {
+            try context.save()
+
+            // Step 4: Update the UI by removing the item from the visible list
+            filteredMealHistories.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } catch {
+            print(String(format: NSLocalizedString("Failed to delete meal history: %@", comment: "Log message for failed meal history deletion"), error.localizedDescription))
+        }
+    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let mealHistory = filteredMealHistories[indexPath.row]
@@ -247,6 +260,12 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             return false
         }
         tableView.reloadData()
+    }
+    
+    @objc private func navigateToMealInsights() {
+        // Create an instance of MealInsightsViewController and push it to the navigation stack
+        let mealInsightsVC = MealInsightsViewController()
+        navigationController?.pushViewController(mealInsightsVC, animated: true)
     }
     
     private func presentEditPopover(for indexPath: IndexPath) {

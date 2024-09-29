@@ -508,8 +508,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         
         do {
+            // Fetch all items
             foodItems = try context.fetch(fetchRequest)
-            filteredFoodItems = foodItems
+            
+            // Filter out items where delete flag is true
+            filteredFoodItems = foodItems.filter { !$0.delete }
             
             DispatchQueue.main.async {
                 self.sortFoodItems()
@@ -682,11 +685,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
-        // Check if UserDefaultsRepository.allowDataClearing is true, then add the reset button
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
+            self.presentMealInsightsViewController(with: foodItem)
+        }))
+        
         if UserDefaultsRepository.allowDataClearing {
             alert.addAction(UIAlertAction(title: NSLocalizedString("Nollställ räknare", comment: "Reset counter button"), style: .destructive, handler: { _ in
                 foodItem.count = 0
-                self.saveFoodItemChanges(for: foodItem) // Save the changes to Core Data
+                self.saveFoodItemChanges(for: foodItem)
             }))
         }
 
@@ -754,28 +760,47 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         print("ComposeMealViewController not found in tab bar controller")
     }
     
+    private func presentMealInsightsViewController(with foodItem: FoodItem) {
+        // Create an instance of MealInsightsViewController
+        let mealInsightsVC = MealInsightsViewController()
+
+        // Prepopulate the search text field with the foodItem name
+        mealInsightsVC.prepopulatedSearchText = foodItem.name ?? ""
+
+        // Embed the MealInsightsViewController in a UINavigationController
+        let navController = UINavigationController(rootViewController: mealInsightsVC)
+
+        // Set the modal presentation style
+        navController.modalPresentationStyle = .pageSheet
+
+        // Present the view controller modally
+        present(navController, animated: true, completion: nil)
+    }
+    
     private func deleteFoodItem(at indexPath: IndexPath) {
         let foodItem = filteredFoodItems[indexPath.row]
         let context = CoreDataStack.shared.context
-        context.delete(foodItem)
+        
+        // Step 1: Set the delete flag to true
+        foodItem.delete = true
+        
         do {
+            // Step 2: Save the context with the updated delete flag
             try context.save()
-            foodItems.remove(at: indexPath.row)
-            filteredFoodItems.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-            updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
+            
+            // Step 3: Export the updated list to CSV before marking the item as deleted
+            guard let dataSharingVC = dataSharingVC else { return }
+            Task {
+                print("Food items export triggered")
+                await dataSharingVC.exportFoodItemsToCSV()
+                
+                // Step 4: Update the table view without deleting the Core Data entry
+                filteredFoodItems.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
+            }
         } catch {
-            print("Failed to delete food item: \(error)")
-        }
-        
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-        Task {
-            print("Food items export triggered")
-            await dataSharingVC.exportFoodItemsToCSV()
-
+            print("Failed to update delete flag: \(error)")
         }
     }
     

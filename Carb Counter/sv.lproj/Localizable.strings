@@ -395,6 +395,32 @@
 "Åt upp %@ st" = "Åt upp %@ st";
 "Åt upp %@ g" = "Åt upp %@ g";
 
+/* Meal insights VC*/
+"Måltider" = "Måltider";
+"Livsmedel" = "Livsmedel";
+"Dygn" = "Dygn";
+"Frukost" = "Frukost";
+"Lunch" = "Lunch";
+"Mellis" = "Mellis";
+"Middag" = "Middag";
+"Sök livsmedel" = "Sök livsmedel";
+"Till datum" = "Till datum";
+"Från datum" = "Från datum";
+"Måltidsinsikter" = "Insikter";
+"Serverats antal gånger" = "Serverats antal gånger";
+"Genomsnittlig portion" = "Genomsnittlig portion";
+"Största portion" = "Största portion";
+"Minsta portion" = "Minsta portion";
+"%.1f st" = "%.1f st";
+"%.0f g" = "%.0f g";
+"Medelvärden måltider (Datum och tid)" = "Medelvärden måltider";
+"Verklig insulinkvot" = "Verklig insulinkvot";
+"%.0f g" = "%.0f g";
+"%.2f E" = "%.2f E";
+"%.0f g/E" = "%.0f g/E";
+"Insikter" = "Insikter";
+"Välj datum och ett livsmedel för att visa mer information" = "Välj datumintervall och ett livsmedel för att visa mer information";
+
 /* Settings */
 "Inställningar" = "Inställningar";
 "Tillbaka" = "Tillbaka";

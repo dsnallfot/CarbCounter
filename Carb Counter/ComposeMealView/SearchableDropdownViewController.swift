@@ -174,6 +174,9 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         
+        // Add a predicate to filter out items where the delete flag is true
+        fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        
         do {
             foodItems = try context.fetch(fetchRequest)
             filteredFoodItems = foodItems

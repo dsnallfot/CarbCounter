@@ -134,6 +134,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func fetchFavoriteMeals() {
         let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
         
+        // Add a predicate to filter out items where the delete flag is true
+        fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        
         do {
             let favoriteMeals = try CoreDataStack.shared.context.fetch(fetchRequest)
             
@@ -259,16 +262,22 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
 
     private func deleteFavoriteMeal(at indexPath: IndexPath) async {
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
-        CoreDataStack.shared.context.delete(favoriteMeal)
-        CoreDataStack.shared.saveContext()
         
-        favoriteMeals.removeAll { $0 == favoriteMeal }
-        filteredFavoriteMeals.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        
+        // Step 1: Set the delete flag to true and update lastEdited
+        favoriteMeal.delete = true
+        favoriteMeal.lastEdited = Date() // Update lastEdited date to current date
+
+        // Step 2: Export the updated list of favorite meals
         guard let dataSharingVC = dataSharingVC else { return }
         print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
         await dataSharingVC.exportFavoriteMealsToCSV()
+
+        // Step 3: Save the updated context with the delete flag set to true
+        CoreDataStack.shared.saveContext()
+
+        // Step 4: Update the UI by removing the item from the visible list
+        filteredFavoriteMeals.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 
     // MARK: - UISearchBarDelegate

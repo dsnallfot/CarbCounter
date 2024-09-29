@@ -2121,6 +2121,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     public func fetchFoodItems() {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        
+        // Add a predicate to filter out items where the delete flag is true
+        fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        
         do {
             let foodItems = try context.fetch(fetchRequest).sorted { ($0.name ?? "") < ($1.name ?? "") }
             DispatchQueue.main.async {
@@ -2168,15 +2172,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("No food items to save.")
             return
         }
+
         let context = CoreDataStack.shared.context
         let mealHistory = MealHistory(context: context)
+        
+        // Set unique ID and date
         mealHistory.id = UUID()
         mealHistory.mealDate = mealDate ?? Date()
+
+        // Set delete flag to false (as it's a new entry)
+        mealHistory.delete = false
+        
+        // Calculate total net values
         mealHistory.totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         mealHistory.totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
         mealHistory.totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
         mealHistory.totalNetBolus = registeredBolusSoFar
         
+        // Add food entries to meal history
         for row in foodItemRows {
             if let foodItem = row.selectedFoodItem {
                 let foodEntry = FoodItemEntry(context: context)
@@ -2186,25 +2199,33 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodEntry.entryFat = foodItem.fat
                 foodEntry.entryProtein = foodItem.protein
                 foodEntry.entryEmoji = foodItem.emoji
-                
+
+                // Handle portion and not eaten text fields with commas replaced by periods
                 let portionServedText = row.portionServedTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
                 let notEatenText = row.notEatenTextField.text?.replacingOccurrences(of: ",", with: ".") ?? "0"
                 foodEntry.entryPortionServed = Double(portionServedText) ?? 0
                 foodEntry.entryNotEaten = Double(notEatenText) ?? 0
+
+                // Add portion per piece values
                 foodEntry.entryCarbsPP = foodItem.carbsPP
                 foodEntry.entryFatPP = foodItem.fatPP
                 foodEntry.entryProteinPP = foodItem.proteinPP
                 foodEntry.entryPerPiece = foodItem.perPiece
+
+                // Link the food entry to the meal history
                 mealHistory.addToFoodEntries(foodEntry)
 
+                // Increment the count for how often the food item has been used
                 foodItem.count += 1
             }
         }
         
+        // Save the context and handle errors
         do {
             try context.save()
             print("MealHistory saved successfully!")
 
+            // Trigger the export after saving
             guard let dataSharingVC = dataSharingVC else { return }
             Task {
                 print("Meal history export triggered")
@@ -2218,8 +2239,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Failed to save MealHistory: \(error)")
         }
         
-        saveMealToHistory = false // Reset the flag after saving
-        mealDate = nil // Reset mealDate to nil after saving
+        // Reset the state after saving
+        saveMealToHistory = false
+        mealDate = nil
     }
     
     
@@ -2228,13 +2250,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return
         }
         guard !foodItemRows.isEmpty else {
-            let alert = UIAlertController(title: NSLocalizedString("Inga livsmedel", comment: "Inga livsmedel"), message: NSLocalizedString("Välj minst ett livsmedel för att spara en favorit.", comment: "Välj minst ett livsmedel för att spara en favorit."), preferredStyle: .alert)
+            let alert = UIAlertController(
+                title: NSLocalizedString("Inga livsmedel", comment: "Inga livsmedel"),
+                message: NSLocalizedString("Välj minst ett livsmedel för att spara en favorit.", comment: "Välj minst ett livsmedel för att spara en favorit."),
+                preferredStyle: .alert
+            )
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
             present(alert, animated: true)
             return
         }
         
-        let nameAlert = UIAlertController(title: NSLocalizedString("Spara som favoritmåltid", comment: "Spara som favoritmåltid"), message: NSLocalizedString("Ange ett namn på måltiden:", comment: "Ange ett namn på måltiden:"), preferredStyle: .alert)
+        let nameAlert = UIAlertController(
+            title: NSLocalizedString("Spara som favoritmåltid", comment: "Spara som favoritmåltid"),
+            message: NSLocalizedString("Ange ett namn på måltiden:", comment: "Ange ett namn på måltiden:"),
+            preferredStyle: .alert
+        )
         nameAlert.addTextField { textField in
             textField.placeholder = NSLocalizedString("Namn", comment: "Namn")
             textField.autocorrectionType = .no
@@ -2255,6 +2285,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
             favoriteMeals.name = mealName
             favoriteMeals.id = UUID()
+            
+            // Set the delete flag to false by default
+            favoriteMeals.delete = false
+            
+            if let lastEdited = favoriteMeals.lastEdited {
+                let isoFormatter = ISO8601DateFormatter()
+                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                let formattedDate = isoFormatter.string(from: lastEdited)
+                print("Last Edited (CSV Format): \(formattedDate)")
+            } else {
+                print("Last Edited: nil")
+            }
             
             var items: [[String: Any]] = []
             for row in self.foodItemRows {
@@ -2285,7 +2327,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 await dataSharingVC.exportFavoriteMealsToCSV()
             }
             
-            let confirmAlert = UIAlertController(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."), preferredStyle: .alert)
+            let confirmAlert = UIAlertController(
+                title: NSLocalizedString("Lyckades", comment: "Lyckades"),
+                message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."),
+                preferredStyle: .alert
+            )
             confirmAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
             self.present(confirmAlert, animated: true)
         }
