@@ -413,12 +413,16 @@
 "%.1f st" = "%.1f pcs";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Meal average values";
+"Medianvärden måltider (Datum och tid)" = "Meal median values";
 "Verklig insulinkvot" = "Actual Carb Ratio";
 "%.0f g" = "%.0f g";
 "%.2f E" = "%.2f U";
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
+"Inga sökträffar inom valt datumintervall" = "No matches in selected date range";
+"Genomsnittlig portion" = "Average serving size";
+"\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nDo you want to use the average serving size from meal history: \n%.0f g for %@?";
 
 /* Settings */
 "Inställningar" = "Settings";

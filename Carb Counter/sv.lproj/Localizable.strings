@@ -414,12 +414,16 @@
 "%.1f st" = "%.1f st";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Medelvärden måltider";
+"Medianvärden måltider (Datum och tid)" = "Medianvärden måltider";
 "Verklig insulinkvot" = "Verklig insulinkvot";
 "%.0f g" = "%.0f g";
 "%.2f E" = "%.2f E";
 "%.0f g/E" = "%.0f g/E";
 "Insikter" = "Insikter";
 "Välj datum och ett livsmedel för att visa mer information" = "Välj datumintervall och ett livsmedel för att visa mer information";
+"Inga sökträffar inom valt datumintervall" = "Inga sökträffar inom valt datumintervall";
+"Genomsnittlig portion" = "Genomsnittlig portion";
+"\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nVill du använda måltidshistorikens genomsnittliga portionsstorlek: \n%.0f g för %@?";
 
 /* Settings */
 "Inställningar" = "Inställningar";

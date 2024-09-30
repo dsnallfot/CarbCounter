@@ -132,7 +132,10 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "StartDoseCell", for: indexPath) as! StartDoseCell
         let hour = String(format: "%02d:00", indexPath.row)
         let dose = startDoses[indexPath.row] ?? 0.0
-        let formattedDose = dose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", dose) : String(format: "%.1f", dose)
+        
+        // Display an empty string if dose is 0.0, otherwise format the dose
+        let formattedDose = dose == 0.0 ? nil : (dose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", dose) : String(format: "%.1f", dose))
+        
         cell.configure(hour: hour, dose: formattedDose, delegate: self)
         cell.backgroundColor = .clear
         return cell
@@ -143,8 +146,10 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         sanitizeInput(textField)
         if let cell = textField.superview?.superview as? StartDoseCell,
-           let indexPath = tableView.indexPath(for: cell),
-           let text = textField.text, let value = Double(text) {
+           let indexPath = tableView.indexPath(for: cell) {
+            let text = textField.text ?? ""
+            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+            
             if value == 0.0 {
                 CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
                 startDoses[indexPath.row] = nil
@@ -152,9 +157,9 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
                 CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
                 startDoses[indexPath.row] = value
             }
+            
             tableView.reloadRows(at: [indexPath], with: .automatic)
             print("Saved start dose \(value) for hour \(indexPath.row)")
-            
         }
     }
     
@@ -198,11 +203,13 @@ class StartDoseCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
     let doseTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.textAlignment = .right
         textField.keyboardType = .decimalPad
+        textField.placeholder = "..."  // Set the default placeholder
         return textField
     }()
     
@@ -235,9 +242,9 @@ class StartDoseCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(hour: String, dose: String, delegate: UITextFieldDelegate) {
+    func configure(hour: String, dose: String?, delegate: UITextFieldDelegate) {
         hourLabel.text = hour
-        doseTextField.text = dose
+        doseTextField.text = dose?.isEmpty == true ? nil : dose  // If dose is empty, show placeholder
         doseTextField.delegate = delegate
     }
     
@@ -250,7 +257,6 @@ class StartDoseCell: UITableViewCell {
                 if let nextCell = tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
                     nextCell.doseTextField.becomeFirstResponder()
                 } else {
-                    // Scroll to make the next cell visible and then make the text field the first responder
                     tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         if let nextCell = tableView.cellForRow(at: nextIndexPath) as? StartDoseCell {
