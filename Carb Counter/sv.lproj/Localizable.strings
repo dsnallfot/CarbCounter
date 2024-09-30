@@ -414,6 +414,7 @@
 "%.1f st" = "%.1f st";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Medelvärden måltider";
+"Medianvärden måltider (Datum och tid)" = "Medianvärden måltider";
 "Verklig insulinkvot" = "Verklig insulinkvot";
 "%.0f g" = "%.0f g";
 "%.2f E" = "%.2f E";

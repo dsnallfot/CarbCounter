@@ -522,7 +522,104 @@ class MealInsightsViewController: UIViewController {
         statsTableView.reloadData()
     }
     
-    // Meal insights calculations
+    // Meal insights calculations (MEDIAN VALUES VERSION)
+    private func calculateMealStats() {
+        let fromDate = fromDatePicker.date
+        let toDate = toDatePicker.date
+        let calendar = Calendar.current
+
+        // Extract the time components from the time pickers
+        let fromTimeComponents = calendar.dateComponents([.hour, .minute], from: fromTimePicker.date)
+        let toTimeComponents = calendar.dateComponents([.hour, .minute], from: toTimePicker.date)
+
+        let filteredMeals = mealHistories.filter { history in
+            guard let mealDate = history.mealDate else { return false }
+
+            // Step 1: Filter based on the date range
+            if mealDate < fromDate || mealDate > toDate {
+                return false
+            }
+
+            // Step 2: Filter based on the time range (only consider the time part of each meal)
+            let mealTimeComponents = calendar.dateComponents([.hour, .minute], from: mealDate)
+
+            // Ensure the meal's time is within the selected time range
+            let isWithinTimeRange = (
+                mealTimeComponents.hour! > fromTimeComponents.hour! ||
+                (mealTimeComponents.hour == fromTimeComponents.hour && mealTimeComponents.minute! >= fromTimeComponents.minute!)
+            ) && (
+                mealTimeComponents.hour! < toTimeComponents.hour! ||
+                (mealTimeComponents.hour == toTimeComponents.hour && mealTimeComponents.minute! <= toTimeComponents.minute!)
+            )
+
+            // Step 3: Return true if the meal is within both date and time range, and it has a valid totalNetCarbs
+            return isWithinTimeRange && history.totalNetCarbs > 0
+        }
+
+        // Extract values for each category (carbohydrates, fat, protein, bolus)
+        let carbsValues = filteredMeals.map { $0.totalNetCarbs }.sorted()
+        let fatValues = filteredMeals.map { $0.totalNetFat }.sorted()
+        let proteinValues = filteredMeals.map { $0.totalNetProtein }.sorted()
+        let bolusValues = filteredMeals.map { $0.totalNetBolus }.sorted()
+
+        // Helper function to calculate the median of an array
+        func median(of values: [Double]) -> Double {
+            guard !values.isEmpty else { return 0 }
+            let sortedValues = values.sorted()
+            let count = sortedValues.count
+            if count % 2 == 0 {
+                // If even, take the average of the two middle values
+                return (sortedValues[count / 2 - 1] + sortedValues[count / 2]) / 2.0
+            } else {
+                // If odd, return the middle value
+                return sortedValues[count / 2]
+            }
+        }
+
+        // Calculate medians
+        let medianCarbs = median(of: carbsValues)
+        let medianFat = median(of: fatValues)
+        let medianProtein = median(of: proteinValues)
+        let medianBolus = median(of: bolusValues)
+        let insulinRatio = medianCarbs / medianBolus
+
+        // Create an attributed string to apply different styles
+        let statsText = NSMutableAttributedString()
+
+        // Bold the first line ("Medianvärden i måltider"), center-aligned
+        let boldText = "\(NSLocalizedString("Medianvärden måltider (Datum och tid)", comment: "Medians"))\n\n"
+        let boldAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize),
+            .paragraphStyle: centeredParagraphStyle()
+        ]
+        statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
+
+        // Create a tab stop for aligning text
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 300)]
+        paragraphStyle.defaultTabInterval = 300
+        paragraphStyle.alignment = .center
+
+        // Regular text for the stats, left-aligned labels and right-aligned values
+        let regularText = """
+        \(NSLocalizedString("Kolhydrater", comment: "Median Carbs")):\t\(String(format: "%.0f g", medianCarbs))
+        \(NSLocalizedString("Fett", comment: "Median Fat")):\t\(String(format: "%.0f g", medianFat))
+        \(NSLocalizedString("Protein", comment: "Median Protein")):\t\(String(format: "%.0f g", medianProtein))
+        \(NSLocalizedString("Bolus", comment: "Median Bolus")):\t\(String(format: "%.2f E", medianBolus))
+        \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")):\t\(String(format: "%.0f g/E", insulinRatio))
+        """
+        let regularAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
+            .paragraphStyle: paragraphStyle
+        ]
+        statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
+
+        // Assign the attributed text to the label
+        statsLabel.attributedText = statsText
+    }
+    
+    /*
+    // Meal insights calculations (AVERAGE VALUES VERSION)
     private func calculateMealStats() {
         let fromDate = fromDatePicker.date
         let toDate = toDatePicker.date
@@ -603,6 +700,7 @@ class MealInsightsViewController: UIViewController {
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
     }
+    */
 
     // Helper function to center-align text for the title
     private func centeredParagraphStyle() -> NSMutableParagraphStyle {

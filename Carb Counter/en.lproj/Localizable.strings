@@ -413,6 +413,7 @@
 "%.1f st" = "%.1f pcs";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Meal average values";
+"Medianvärden måltider (Datum och tid)" = "Meal median values";
 "Verklig insulinkvot" = "Actual Carb Ratio";
 "%.0f g" = "%.0f g";
 "%.2f E" = "%.2f U";
