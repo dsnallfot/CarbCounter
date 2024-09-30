@@ -419,6 +419,7 @@
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
+"Inga sökträffar inom valt datumintervall" = "No matches in selected date range";
 
 /* Settings */
 "Inställningar" = "Settings";

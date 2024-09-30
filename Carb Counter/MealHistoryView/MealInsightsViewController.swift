@@ -514,6 +514,11 @@ class MealInsightsViewController: UIViewController {
             return false
         }.map { $0.entryName ?? "" }
         
+        // If no food items are found, insert a placeholder
+        if uniqueFoodEntries.isEmpty {
+            uniqueFoodEntries.append(NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range"))
+        }
+        
         statsTableView.reloadData()
     }
     
@@ -675,18 +680,42 @@ class MealInsightsViewController: UIViewController {
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return uniqueFoodEntries.count
         }
-        
+
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "StatsCell", for: indexPath)
             let foodEntryName = uniqueFoodEntries[indexPath.row]
+            
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
+
+            // If it's the placeholder row, customize it
+            if foodEntryName == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
+                cell.textLabel?.textColor = .systemGray
+                cell.textLabel?.font = UIFont.italicSystemFont(ofSize: 16)
+                cell.selectionStyle = .none  // Disable selection for the placeholder row
+                cell.selectedBackgroundView = nil  // No selection effect for placeholder
+            } else {
+                cell.textLabel?.textColor = .label  // Default text color
+                cell.textLabel?.font = UIFont.systemFont(ofSize: 16)
+                cell.selectionStyle = .default  // Enable selection for normal rows
+                cell.selectedBackgroundView = customSelectionColor  // Use custom selection color
+            }
+            
             cell.textLabel?.text = foodEntryName
             cell.backgroundColor = .clear
             return cell
         }
-        
+
         func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
             let selectedEntry = uniqueFoodEntries[indexPath.row]
             
+            // Prevent selection if the placeholder is being shown
+            if selectedEntry == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
+                return
+            }
+
             searchTextField.resignFirstResponder()
             updateStats(for: selectedEntry)
         }
