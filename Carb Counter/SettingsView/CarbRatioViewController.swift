@@ -170,8 +170,8 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         let hour = String(format: "%02d:00", indexPath.row)
         let ratio = carbRatios[indexPath.row] ?? 0.0
 
-        // Display an empty string if the ratio is 0.0, otherwise format the ratio
-        let formattedRatio = ratio == 0.0 ? "" : (ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio))
+        // Pass nil to the text field if the ratio is 0.0, otherwise pass the formatted ratio
+        let formattedRatio = ratio == 0.0 ? nil : (ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio))
 
         cell.configure(hour: hour, ratio: formattedRatio, delegate: self)
         cell.backgroundColor = .clear
@@ -253,6 +253,7 @@ class CarbRatioCell: UITableViewCell {
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.textAlignment = .right
         textField.keyboardType = .decimalPad
+        textField.placeholder = "..."  // Set the default placeholder
         return textField
     }()
 
@@ -269,55 +270,57 @@ class CarbRatioCell: UITableViewCell {
             ratioTextField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             ratioTextField.widthAnchor.constraint(equalToConstant: 100)
         ])
-            let toolbar = UIToolbar()
-            toolbar.sizeToFit()
-            let nextButton = UIBarButtonItem(title: NSLocalizedString("Nästa", comment: "Nästa"), style: .plain, target: self, action: #selector(nextButtonTapped))
-            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
-            toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
-            ratioTextField.inputAccessoryView = toolbar
-            }
-            required init?(coder: NSCoder) {
-                fatalError("init(coder:) has not been implemented")
-            }
 
-            func configure(hour: String, ratio: String, delegate: UITextFieldDelegate) {
-                hourLabel.text = hour
-                ratioTextField.text = ratio
-                ratioTextField.delegate = delegate
-            }
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let nextButton = UIBarButtonItem(title: NSLocalizedString("Nästa", comment: "Nästa"), style: .plain, target: self, action: #selector(nextButtonTapped))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.setItems([nextButton, flexSpace, doneButton], animated: false)
+        ratioTextField.inputAccessoryView = toolbar
+    }
 
-            @objc private func nextButtonTapped() {
-                if let tableView = findSuperView(of: UITableView.self),
-                   let indexPath = tableView.indexPath(for: self) {
-                    let nextRow = indexPath.row + 1
-                    if nextRow < 24 {
-                        let nextIndexPath = IndexPath(row: nextRow, section: indexPath.section)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(hour: String, ratio: String?, delegate: UITextFieldDelegate) {
+        hourLabel.text = hour
+        ratioTextField.text = ratio?.isEmpty == true ? nil : ratio  // If ratio is empty, show placeholder
+        ratioTextField.delegate = delegate
+    }
+
+    @objc private func nextButtonTapped() {
+        if let tableView = findSuperView(of: UITableView.self),
+           let indexPath = tableView.indexPath(for: self) {
+            let nextRow = indexPath.row + 1
+            if nextRow < 24 {
+                let nextIndexPath = IndexPath(row: nextRow, section: indexPath.section)
+                if let nextCell = tableView.cellForRow(at: nextIndexPath) as? CarbRatioCell {
+                    nextCell.ratioTextField.becomeFirstResponder()
+                } else {
+                    tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         if let nextCell = tableView.cellForRow(at: nextIndexPath) as? CarbRatioCell {
                             nextCell.ratioTextField.becomeFirstResponder()
-                        } else {
-                            tableView.scrollToRow(at: nextIndexPath, at: .middle, animated: true)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                if let nextCell = tableView.cellForRow(at: nextIndexPath) as? CarbRatioCell {
-                                    nextCell.ratioTextField.becomeFirstResponder()
-                                }
-                            }
                         }
-                    } else {
-                        ratioTextField.resignFirstResponder()
                     }
                 }
-            }
-
-            @objc private func doneButtonTapped() {
+            } else {
                 ratioTextField.resignFirstResponder()
             }
+        }
+    }
 
-            private func findSuperView<T>(of type: T.Type) -> T? {
-                var view = superview
-                while view != nil && !(view is T) {
-                    view = view?.superview
-                }
-                return view as? T
-            }
-            }
+    @objc private func doneButtonTapped() {
+        ratioTextField.resignFirstResponder()
+    }
+
+    private func findSuperView<T>(of type: T.Type) -> T? {
+        var view = superview
+        while view != nil && !(view is T) {
+            view = view?.superview
+        }
+        return view as? T
+    }
+}
