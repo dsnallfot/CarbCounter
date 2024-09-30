@@ -421,6 +421,8 @@
 "Insikter" = "Insights";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 "Inga sökträffar inom valt datumintervall" = "No matches in selected date range";
+"Genomsnittlig portion" = "Average serving size";
+"\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nDo you want to use the average serving size from meal history: \n%.0f g for %@?";
 
 /* Settings */
 "Inställningar" = "Settings";

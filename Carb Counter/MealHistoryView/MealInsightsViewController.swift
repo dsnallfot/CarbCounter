@@ -802,12 +802,37 @@ class MealInsightsViewController: UIViewController {
         // Calculate the average portion for the currently filtered entry
         let averagePortion = calculateAveragePortion(for: entryName)
         
-        // Invoke the closure when the statsView is tapped
-        if let onAveragePortionSelected = onAveragePortionSelected {
-            onAveragePortionSelected(averagePortion)
+        // Create an alert controller with the title and message
+        let alertTitle = NSLocalizedString("Genomsnittlig portion", comment: "Average portion title")
+        let alertMessage = String(
+            format: NSLocalizedString(
+                "\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?",
+                comment: "Average portion message"
+            ),
+            averagePortion, entryName
+        )
+        
+        let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
+        
+        // Add the "Ja" (Yes) action to proceed with the population
+        let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Yes button"), style: .default) { _ in
+            // Invoke the closure with the average portion
+            if let onAveragePortionSelected = self.onAveragePortionSelected {
+                onAveragePortionSelected(averagePortion)
+            }
+            // Dismiss the MealInsightsViewController after user confirms
+            self.dismiss(animated: true, completion: nil)
         }
         
-        dismiss(animated: true, completion: nil)
+        // Add the "Avbryt" (Cancel) action to dismiss the alert
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil)
+        
+        // Add both actions to the alert controller
+        alertController.addAction(yesAction)
+        alertController.addAction(cancelAction)
+        
+        // Present the alert controller
+        present(alertController, animated: true, completion: nil)
     }
 }
     extension MealInsightsViewController: UITableViewDataSource, UITableViewDelegate {
