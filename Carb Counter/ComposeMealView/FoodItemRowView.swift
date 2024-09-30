@@ -287,11 +287,50 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             
             let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
+                self.presentMealInsightsViewController(with: selectedFoodItem)
+            }))
             alertController.addAction(okAction)
+            
             if let viewController = self.getViewController() {
                 viewController.present(alertController, animated: true, completion: nil)
             }
         }
+    
+    private func presentMealInsightsViewController(with selectedFoodItem: FoodItem) {
+        // Create an instance of MealInsightsViewController
+        let mealInsightsVC = MealInsightsViewController()
+
+        // Prepopulate the search text field with the foodItem name
+        mealInsightsVC.prepopulatedSearchText = selectedFoodItem.name ?? ""
+
+        // Embed the MealInsightsViewController in a UINavigationController
+        let navController = UINavigationController(rootViewController: mealInsightsVC)
+
+        // Set the modal presentation style
+        navController.modalPresentationStyle = .pageSheet
+
+        // Get the top view controller and present the modal
+        if let topVC = getTopViewController() {
+            topVC.present(navController, animated: true, completion: nil)
+        }
+    }
+    
+    func getTopViewController() -> UIViewController? {
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .compactMap({ $0 as? UIWindowScene })
+            .first,
+            let rootVC = windowScene.windows.filter({ $0.isKeyWindow }).first?.rootViewController else {
+                return nil
+        }
+        
+        var topController: UIViewController = rootVC
+        while let newTopController = topController.presentedViewController {
+            topController = newTopController
+        }
+        return topController
+    }
         
         private func getViewController() -> UIViewController? {
             var nextResponder: UIResponder? = self
