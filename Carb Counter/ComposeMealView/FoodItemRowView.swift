@@ -304,6 +304,13 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         // Prepopulate the search text field with the foodItem name
         mealInsightsVC.prepopulatedSearchText = selectedFoodItem.name ?? ""
 
+        // Set the completion handler to update the portionServedTextField
+        mealInsightsVC.onAveragePortionSelected = { [weak self] averagePortion in
+            guard let self = self else { return }
+            self.portionServedTextField.text = String(format: "%.0f", averagePortion)
+            self.calculateNutrients()  // Optionally recalculate nutrients after setting the portion
+        }
+
         // Embed the MealInsightsViewController in a UINavigationController
         let navController = UINavigationController(rootViewController: mealInsightsVC)
 

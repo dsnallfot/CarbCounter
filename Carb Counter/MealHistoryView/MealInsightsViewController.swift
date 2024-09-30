@@ -10,6 +10,7 @@ import CoreData
 class MealInsightsViewController: UIViewController {
     
     var prepopulatedSearchText: String?
+    var onAveragePortionSelected: ((Double) -> Void)?
 
     // UI Elements
     private let fromDateLabel = UILabel()
@@ -425,6 +426,11 @@ class MealInsightsViewController: UIViewController {
         statsView.addSubview(statsLabel)
         statsLabel.translatesAutoresizingMaskIntoConstraints = false
 
+        // Add tap gesture recognizer to statsView
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleStatsViewTap))
+        statsView.addGestureRecognizer(tapGesture)
+        statsView.isUserInteractionEnabled = true
+
         view.addSubview(statsView)
 
         NSLayoutConstraint.activate([
@@ -439,13 +445,27 @@ class MealInsightsViewController: UIViewController {
             statsLabel.bottomAnchor.constraint(equalTo: statsView.bottomAnchor, constant: -16)
         ])
     }
+
+    private func calculateAveragePortion(for entryName: String) -> Double {
+        // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
+        let matchingEntries = allFilteredFoodEntries.filter {
+            $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
+        }
+
+        // Map the portion sizes (served - not eaten) for the matching entries
+        let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
+        
+        // Calculate the average portion size, ensuring there's no division by zero
+        return portions.isEmpty ? 0 : portions.reduce(0, +) / Double(portions.count)
+    }
+    
     private func loadDefaultDates() {
         if let earliestMealDate = mealHistories.map({ $0.mealDate ?? Date() }).min() {
             fromDatePicker.date = earliestMealDate
         }
         toDatePicker.date = Date()
     }
-    
+
     private func fetchMealHistories() {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
@@ -773,6 +793,22 @@ class MealInsightsViewController: UIViewController {
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
     }
+    
+    @objc private func handleStatsViewTap() {
+        guard let entryName = searchTextField.text, !entryName.isEmpty else {
+            return
+        }
+        
+        // Calculate the average portion for the currently filtered entry
+        let averagePortion = calculateAveragePortion(for: entryName)
+        
+        // Invoke the closure when the statsView is tapped
+        if let onAveragePortionSelected = onAveragePortionSelected {
+            onAveragePortionSelected(averagePortion)
+        }
+        
+        dismiss(animated: true, completion: nil)
+    }
 }
     extension MealInsightsViewController: UITableViewDataSource, UITableViewDelegate {
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -815,6 +851,8 @@ class MealInsightsViewController: UIViewController {
             }
 
             searchTextField.resignFirstResponder()
+            
+            // Perform the updateStats and pass the averagePortion value back via the closure
             updateStats(for: selectedEntry)
         }
     }
