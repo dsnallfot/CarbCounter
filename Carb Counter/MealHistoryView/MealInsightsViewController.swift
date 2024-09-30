@@ -11,6 +11,8 @@ class MealInsightsViewController: UIViewController {
     
     var prepopulatedSearchText: String?
     var onAveragePortionSelected: ((Double) -> Void)?
+    private var selectedEntryName: String?
+    private var isComingFromModal = false
 
     // UI Elements
     private let fromDateLabel = UILabel()
@@ -51,6 +53,9 @@ class MealInsightsViewController: UIViewController {
         title = NSLocalizedString("Måltidsinsikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
     
+        // Set the flag based on whether the view controller is presented modally
+            isComingFromModal = isModalPresentation
+        
         // Add the close button when the view is presented modally
         if isModalPresentation {
             addCloseButton()
@@ -74,13 +79,14 @@ class MealInsightsViewController: UIViewController {
         switchMode(segmentedControl)
         
         // Delay performing the search until the data is fully loaded
-        DispatchQueue.main.async {
-            if let searchText = self.prepopulatedSearchText {
-                self.searchTextField.text = searchText
-                print("searchtext: \(searchText)")  // Now log it before performing the search
-                self.performSearch(with: searchText)
+            DispatchQueue.main.async {
+                if let searchText = self.prepopulatedSearchText {
+                    self.searchTextField.text = searchText
+                    self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
+                    print("searchtext: \(searchText)")  // Now log it before performing the search
+                    self.performSearch(with: searchText)
+                }
             }
-        }
     }
     
     // Function to check if the view controller is presented modally
@@ -206,7 +212,10 @@ class MealInsightsViewController: UIViewController {
             if segmentedControl.selectedSegmentIndex == 1 {
                 // Case: "Insikt livsmedel"
                 filterFoodEntries()
-                updateStats(for: "")
+                if let selectedEntry = selectedEntryName {
+                    // Re-run updateStats with the previously selected entry
+                    updateStats(for: selectedEntry)
+                }
             } else if segmentedControl.selectedSegmentIndex == 0 {
                 // Case: "Insikt måltider"
                 calculateMealStats()
@@ -340,6 +349,8 @@ class MealInsightsViewController: UIViewController {
             fromTimeLabel.isHidden = false
             toTimeLabel.isHidden = false
             mealTimesSegmentedControl.isHidden = false // Show the meal times control
+            statsView.isUserInteractionEnabled = false // Disable statsView tap interaction
+            statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2) // Original color
 
             calculateMealStats()
         } else {
@@ -351,6 +362,14 @@ class MealInsightsViewController: UIViewController {
             fromTimeLabel.isHidden = true
             toTimeLabel.isHidden = true
             mealTimesSegmentedControl.isHidden = true // Hide the meal times control
+            statsView.isUserInteractionEnabled = true // Enable statsView tap interaction
+            if isComingFromModal {
+                statsView.isUserInteractionEnabled = true // Enable statsView tap interaction
+                statsView.backgroundColor = UIColor.systemBlue // Set to blue if coming from modal
+            } else {
+                statsView.isUserInteractionEnabled = false // Disable statsView tap interaction
+                statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2) // Default color
+            }
         }
     }
     
@@ -387,6 +406,7 @@ class MealInsightsViewController: UIViewController {
             return trimmedEntryName == trimmedSearchText
         }) {
             print("match found \(matchingEntry.entryName ?? "")")
+            self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
             updateStats(for: matchingEntry.entryName ?? "")
         } else {
             print("no match found \(searchText)")
@@ -504,6 +524,7 @@ class MealInsightsViewController: UIViewController {
         filterFoodEntries()
 
         if searchTextField.text?.isEmpty ?? true {
+            selectedEntryName = nil // Reset the selected entry if search is cleared
             updateStats(for: "")
         }
     }
@@ -876,6 +897,9 @@ class MealInsightsViewController: UIViewController {
             }
 
             searchTextField.resignFirstResponder()
+            
+            // Store the selected entry name
+            selectedEntryName = selectedEntry
             
             // Perform the updateStats and pass the averagePortion value back via the closure
             updateStats(for: selectedEntry)
