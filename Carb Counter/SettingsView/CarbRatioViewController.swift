@@ -169,10 +169,12 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CarbRatioCell", for: indexPath) as! CarbRatioCell
         let hour = String(format: "%02d:00", indexPath.row)
         let ratio = carbRatios[indexPath.row] ?? 0.0
-        let formattedRatio = ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio)
+
+        // Display an empty string if the ratio is 0.0, otherwise format the ratio
+        let formattedRatio = ratio == 0.0 ? "" : (ratio.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", ratio) : String(format: "%.1f", ratio))
+
         cell.configure(hour: hour, ratio: formattedRatio, delegate: self)
         cell.backgroundColor = .clear
-
         return cell
     }
 
@@ -182,9 +184,13 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         sanitizeInput(textField)
         if let cell = textField.superview?.superview as? CarbRatioCell,
            let indexPath = tableView.indexPath(for: cell),
-           let text = textField.text, let value = Double(text) {
+           let text = textField.text {
+            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+
+            // Save the carb ratio and update the carbRatios dictionary
             CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
             carbRatios[indexPath.row] = value
+
             print("Saved CR \(value) for hour \(indexPath.row)")
         }
     }

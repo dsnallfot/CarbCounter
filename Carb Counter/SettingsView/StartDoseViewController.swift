@@ -132,7 +132,10 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "StartDoseCell", for: indexPath) as! StartDoseCell
         let hour = String(format: "%02d:00", indexPath.row)
         let dose = startDoses[indexPath.row] ?? 0.0
-        let formattedDose = dose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", dose) : String(format: "%.1f", dose)
+        
+        // Display an empty string if dose is 0.0, otherwise format the dose
+        let formattedDose = dose == 0.0 ? "" : (dose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", dose) : String(format: "%.1f", dose))
+        
         cell.configure(hour: hour, dose: formattedDose, delegate: self)
         cell.backgroundColor = .clear
         return cell
@@ -143,8 +146,10 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         sanitizeInput(textField)
         if let cell = textField.superview?.superview as? StartDoseCell,
-           let indexPath = tableView.indexPath(for: cell),
-           let text = textField.text, let value = Double(text) {
+           let indexPath = tableView.indexPath(for: cell) {
+            let text = textField.text ?? ""
+            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+            
             if value == 0.0 {
                 CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
                 startDoses[indexPath.row] = nil
@@ -152,9 +157,9 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
                 CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
                 startDoses[indexPath.row] = value
             }
+            
             tableView.reloadRows(at: [indexPath], with: .automatic)
             print("Saved start dose \(value) for hour \(indexPath.row)")
-            
         }
     }
     
