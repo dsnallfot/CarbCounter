@@ -641,13 +641,20 @@ class MealInsightsViewController: UIViewController {
         paragraphStyle.defaultTabInterval = 300
         paragraphStyle.alignment = .center
 
+        // Use the helper function to format stats values, replacing Inf or 0 with empty string
+        let formattedMedianCarbs = formatStatValue(medianCarbs, format: "%.0f g")
+        let formattedMedianFat = formatStatValue(medianFat, format: "%.0f g")
+        let formattedMedianProtein = formatStatValue(medianProtein, format: "%.0f g")
+        let formattedMedianBolus = formatStatValue(medianBolus, format: "%.2f E")
+        let formattedInsulinRatio = formatStatValue(insulinRatio, format: "%.0f g/E")
+
         // Regular text for the stats, left-aligned labels and right-aligned values
         let regularText = """
-        \(NSLocalizedString("Kolhydrater", comment: "Median Carbs")):\t\(String(format: "%.0f g", medianCarbs))
-        \(NSLocalizedString("Fett", comment: "Median Fat")):\t\(String(format: "%.0f g", medianFat))
-        \(NSLocalizedString("Protein", comment: "Median Protein")):\t\(String(format: "%.0f g", medianProtein))
-        \(NSLocalizedString("Bolus", comment: "Median Bolus")):\t\(String(format: "%.2f E", medianBolus))
-        \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")):\t\(String(format: "%.0f g/E", insulinRatio))
+        \(NSLocalizedString("Kolhydrater", comment: "Median Carbs")):\t\(formattedMedianCarbs)
+        \(NSLocalizedString("Fett", comment: "Median Fat")):\t\(formattedMedianFat)
+        \(NSLocalizedString("Protein", comment: "Median Protein")):\t\(formattedMedianProtein)
+        \(NSLocalizedString("Bolus", comment: "Median Bolus")):\t\(formattedMedianBolus)
+        \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")):\t\(formattedInsulinRatio)
         """
         let regularAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
@@ -750,6 +757,13 @@ class MealInsightsViewController: UIViewController {
         return paragraphStyle
     }
     
+    private func formatStatValue(_ value: Double, format: String) -> String {
+        if value.isNaN || value.isInfinite || value == 0 {
+            return "" // Return an empty string for NaN, Inf, or 0
+        }
+        return String(format: format, value) // Format normally if value is valid
+    }
+    
     private func updateStats(for entryName: String) {
         // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -797,11 +811,16 @@ class MealInsightsViewController: UIViewController {
             paragraphStyle.defaultTabInterval = 300
             paragraphStyle.alignment = .center
 
+            // Use the helper function to format stats values, replacing 0 or NaN with empty string
+            let formattedAveragePortion = formatStatValue(averagePortion, format: portionFormat)
+            let formattedLargestPortion = formatStatValue(largestPortion, format: portionFormat)
+            let formattedSmallestPortion = formatStatValue(smallestPortion, format: portionFormat)
+
             // Regular text for the stats
             let regularText = """
-            \(NSLocalizedString("Genomsnittlig portion", comment: "Average portion label")):\t\(String(format: portionFormat, averagePortion))
-            \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(String(format: portionFormat, largestPortion))
-            \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(String(format: portionFormat, smallestPortion))\n
+            \(NSLocalizedString("Genomsnittlig portion", comment: "Average portion label")):\t\(formattedAveragePortion)
+            \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(formattedLargestPortion)
+            \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(formattedSmallestPortion)\n
             \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)
             """
             let regularAttributes: [NSAttributedString.Key: Any] = [
