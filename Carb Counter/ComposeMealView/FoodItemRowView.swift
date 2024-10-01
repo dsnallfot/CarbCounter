@@ -303,6 +303,8 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
 
         // Prepopulate the search text field with the foodItem name
         mealInsightsVC.prepopulatedSearchText = selectedFoodItem.name ?? ""
+        
+        mealInsightsVC.isComingFromFoodItemRow = true
 
         // Set the completion handler to update the portionServedTextField
         mealInsightsVC.onAveragePortionSelected = { [weak self] averagePortion in

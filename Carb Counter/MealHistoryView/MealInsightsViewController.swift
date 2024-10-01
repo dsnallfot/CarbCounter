@@ -13,6 +13,7 @@ class MealInsightsViewController: UIViewController {
     var onAveragePortionSelected: ((Double) -> Void)?
     private var selectedEntryName: String?
     private var isComingFromModal = false
+    public var isComingFromFoodItemRow = false
 
     // UI Elements
     private let fromDateLabel = UILabel()
@@ -30,13 +31,28 @@ class MealInsightsViewController: UIViewController {
         NSLocalizedString("Mellis", comment: "Snack time period"),
         NSLocalizedString("Middag", comment: "Dinner time period")
     ])
-    private let datePresetsSegmentedControl = UISegmentedControl(items: ["Allt", "3d", "7d", "30d", "90d"])
-    private let searchTextField = UITextField()
+    private let datePresetsSegmentedControl = UISegmentedControl(items: ["∞", "3d", "7d", "30d", "90d"])
     private let statsTableView = UITableView()
     private let fromTimePicker = UIDatePicker()
     private let toTimePicker = UIDatePicker()
     private let fromTimeLabel = UILabel()
     private let toTimeLabel = UILabel()
+    
+    private var searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.backgroundImage = UIImage()
+        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+            textField.tintColor = .label
+            textField.autocorrectionType = .no
+            textField.spellCheckingType = .no
+            textField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+            textField.layer.cornerRadius = 8
+            textField.layer.masksToBounds = true
+        }
+        return searchBar
+    }()
 
     // Stats View
     private let statsView = UIView()
@@ -66,7 +82,7 @@ class MealInsightsViewController: UIViewController {
         setupGradientView()
         setupSegmentedControlAndDatePickers()
         setupMealTimesSegmentedControl()
-        setupSearchTextField()
+        setupSearchBar()
         setupStatsTableView()
         setupStatsView()
         setupTimePickers()
@@ -74,19 +90,22 @@ class MealInsightsViewController: UIViewController {
         loadDefaultDates()
         setDefaultTimePickers()
         fetchMealHistories()
+        
+        statsTableView.separatorStyle = .singleLine
+        statsTableView.separatorColor = UIColor.systemGray3.withAlphaComponent(1)
 
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
         
         // Delay performing the search until the data is fully loaded
-            DispatchQueue.main.async {
-                if let searchText = self.prepopulatedSearchText {
-                    self.searchTextField.text = searchText
-                    self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
-                    print("searchtext: \(searchText)")  // Now log it before performing the search
-                    self.performSearch(with: searchText)
+                DispatchQueue.main.async {
+                    if let searchText = self.prepopulatedSearchText {
+                        self.searchBar.text = searchText
+                        self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
+                        print("searchtext: \(searchText)")  // Now log it before performing the search
+                        self.performSearch(with: searchText)
+                    }
                 }
-            }
     }
     
     // Function to check if the view controller is presented modally
@@ -103,6 +122,7 @@ class MealInsightsViewController: UIViewController {
     // Action to dismiss the view controller
     @objc private func dismissModal() {
         dismiss(animated: true, completion: nil)
+        self.isComingFromFoodItemRow = false
     }
     
     private func setupGradientView() {
@@ -341,8 +361,8 @@ class MealInsightsViewController: UIViewController {
     @objc private func switchMode(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
             // "Insikt måltider" mode
-            searchTextField.isHidden = true
-            searchTextField.resignFirstResponder() // Hide keyboard if it is up
+            searchBar.isHidden = true
+            searchBar.resignFirstResponder() // Hide keyboard if it is up
             statsTableView.isHidden = true
             fromTimePicker.isHidden = false
             toTimePicker.isHidden = false
@@ -355,15 +375,15 @@ class MealInsightsViewController: UIViewController {
             calculateMealStats()
         } else {
             // "Insikt livsmedel" mode
-            searchTextField.isHidden = false
+            searchBar.isHidden = false
             statsTableView.isHidden = false
             fromTimePicker.isHidden = true
             toTimePicker.isHidden = true
             fromTimeLabel.isHidden = true
             toTimeLabel.isHidden = true
             mealTimesSegmentedControl.isHidden = true // Hide the meal times control
-            statsView.isUserInteractionEnabled = true // Enable statsView tap interaction
-            if isComingFromModal {
+            
+            if isComingFromFoodItemRow {
                 statsView.isUserInteractionEnabled = true // Enable statsView tap interaction
                 statsView.backgroundColor = UIColor.systemBlue // Set to blue if coming from modal
             } else {
@@ -373,24 +393,20 @@ class MealInsightsViewController: UIViewController {
         }
     }
     
-    private func setupSearchTextField() {
-        searchTextField.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
-        searchTextField.borderStyle = .roundedRect
-        searchTextField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
-        searchTextField.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
-        searchTextField.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Enable the default clear button
-        searchTextField.clearButtonMode = .whileEditing  // This is the default clear button
-        
-        view.addSubview(searchTextField)
-        
+    private func setupSearchBar() {
+        // Add the search bar to the view
+        view.addSubview(searchBar)
+
+        // Add constraints for the search bar
         NSLayoutConstraint.activate([
-            searchTextField.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 16),
-            searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            searchTextField.heightAnchor.constraint(equalToConstant: 40)
+            searchBar.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 16),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            searchBar.heightAnchor.constraint(equalToConstant: 44) // Adjust the height as necessary
         ])
+
+        // Set the search bar delegate
+        searchBar.delegate = self
     }
     
     private func performSearch(with searchText: String) {
@@ -427,7 +443,7 @@ class MealInsightsViewController: UIViewController {
         view.addSubview(statsView)  // Adding both views before setting constraints
 
         NSLayoutConstraint.activate([
-            statsTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 16),
+            statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 16), // Changed to searchBar
             statsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             statsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -10)  // Adjust the spacing as needed
@@ -437,8 +453,8 @@ class MealInsightsViewController: UIViewController {
     private func setupStatsView() {
         statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
         statsView.layer.cornerRadius = 10
-        statsView.layer.borderWidth = 1
-        statsView.layer.borderColor = UIColor.white.cgColor
+        //statsView.layer.borderWidth = 1
+        //statsView.layer.borderColor = UIColor.white.cgColor
         statsView.translatesAutoresizingMaskIntoConstraints = false
 
         statsLabel.numberOfLines = 0
@@ -457,7 +473,7 @@ class MealInsightsViewController: UIViewController {
             statsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             statsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            statsView.heightAnchor.constraint(equalToConstant: 220),
+            statsView.heightAnchor.constraint(equalToConstant: 200),
 
             statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 16),
             statsLabel.leadingAnchor.constraint(equalTo: statsView.leadingAnchor, constant: 16),
@@ -520,19 +536,10 @@ class MealInsightsViewController: UIViewController {
         }
     }
     
-    @objc private func searchTextChanged() {
-        filterFoodEntries()
-
-        if searchTextField.text?.isEmpty ?? true {
-            selectedEntryName = nil // Reset the selected entry if search is cleared
-            updateStats(for: "")
-        }
-    }
-    
     private func filterFoodEntries() {
         let fromDate = fromDatePicker.date
         let toDate = toDatePicker.date
-        let searchText = searchTextField.text?.lowercased() ?? ""
+        let searchText = searchBar.text?.lowercased() ?? ""
         
         let filteredHistories = mealHistories.filter {
             guard let mealDate = $0.mealDate else { return false }
@@ -761,7 +768,7 @@ class MealInsightsViewController: UIViewController {
         if value.isNaN || value.isInfinite || value == 0 {
             return "" // Return an empty string for NaN, Inf, or 0
         }
-        return String(format: format, value) // Format normally if value is valid
+        return String(format: format, value)
     }
     
     private func updateStats(for entryName: String) {
@@ -820,8 +827,8 @@ class MealInsightsViewController: UIViewController {
             let regularText = """
             \(NSLocalizedString("Genomsnittlig portion", comment: "Average portion label")):\t\(formattedAveragePortion)
             \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(formattedLargestPortion)
-            \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(formattedSmallestPortion)\n
-            \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)
+            \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(formattedSmallestPortion)
+            \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)\n
             """
             let regularAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
@@ -835,7 +842,7 @@ class MealInsightsViewController: UIViewController {
     }
     
     @objc private func handleStatsViewTap() {
-        guard let entryName = searchTextField.text, !entryName.isEmpty else {
+        guard let entryName = searchBar.text, !entryName.isEmpty else {
             return
         }
         
@@ -862,6 +869,7 @@ class MealInsightsViewController: UIViewController {
             }
             // Dismiss the MealInsightsViewController after user confirms
             self.dismiss(animated: true, completion: nil)
+            self.isComingFromFoodItemRow = false
         }
         
         // Add the "Avbryt" (Cancel) action to dismiss the alert
@@ -893,13 +901,12 @@ class MealInsightsViewController: UIViewController {
             if foodEntryName == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
                 cell.textLabel?.textColor = .systemGray
                 cell.textLabel?.font = UIFont.italicSystemFont(ofSize: 16)
-                cell.selectionStyle = .none  // Disable selection for the placeholder row
-                cell.selectedBackgroundView = nil  // No selection effect for placeholder
+                cell.selectionStyle = .none
+                cell.selectedBackgroundView = nil
             } else {
-                cell.textLabel?.textColor = .label  // Default text color
+                cell.textLabel?.textColor = .label
                 cell.textLabel?.font = UIFont.systemFont(ofSize: 16)
-                cell.selectionStyle = .default  // Enable selection for normal rows
-                cell.selectedBackgroundView = customSelectionColor  // Use custom selection color
+                cell.selectionStyle = .default
             }
             
             cell.textLabel?.text = foodEntryName
@@ -915,7 +922,7 @@ class MealInsightsViewController: UIViewController {
                 return
             }
 
-            searchTextField.resignFirstResponder()
+            searchBar.resignFirstResponder()
             
             // Store the selected entry name
             selectedEntryName = selectedEntry
@@ -924,3 +931,19 @@ class MealInsightsViewController: UIViewController {
             updateStats(for: selectedEntry)
         }
     }
+
+extension MealInsightsViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filterFoodEntries()
+
+            if searchBar.text?.isEmpty ?? true {
+                selectedEntryName = nil // Reset the selected entry if search is cleared
+                updateStats(for: "")
+            }
+        performSearch(with: searchText)
+    }
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+}
