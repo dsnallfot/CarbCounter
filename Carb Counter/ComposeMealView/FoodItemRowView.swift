@@ -287,7 +287,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             
             let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
                 self.presentMealInsightsViewController(with: selectedFoodItem)
             }))
             alertController.addAction(okAction)

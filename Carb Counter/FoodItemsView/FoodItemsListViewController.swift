@@ -685,7 +685,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: foodItem)
         }))
         

@@ -419,6 +419,7 @@
 "%.2f E" = "%.2f U";
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
+"Mer insikter" = "More insights";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 "Inga sökträffar inom valt datumintervall" = "No matches in selected date range";
 "Genomsnittlig portion" = "Average serving size";
