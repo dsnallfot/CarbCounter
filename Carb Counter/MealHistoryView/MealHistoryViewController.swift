@@ -6,6 +6,22 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var tableView: UITableView!
     var mealHistories: [MealHistory] = []
     var filteredMealHistories: [MealHistory] = []
+    private var searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.backgroundImage = UIImage()
+        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+            textField.tintColor = .label
+            textField.autocorrectionType = .no
+            textField.spellCheckingType = .no
+            textField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+            textField.layer.cornerRadius = 8
+            textField.layer.masksToBounds = true
+        }
+        return searchBar
+    }()
+    
     var datePicker: UIDatePicker!
     
     var dataSharingVC: DataSharingViewController?
@@ -35,8 +51,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
-        setupDatePicker()
+        setupSearchBarAndDatePicker()
+        //setupSearchBar()
+        //setupDatePicker()
         setupTableView()
         fetchMealHistories()
         
@@ -58,21 +75,115 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         navigationItem.backBarButtonItem = backButton
     }
     
+    private func setupSearchBarAndDatePicker() {
+        // Create a container UIStackView to hold the search bar and date picker
+        let hStackView = UIStackView()
+        hStackView.axis = .horizontal
+        hStackView.distribution = .fill  // Set to .fill to allocate proper space
+        hStackView.alignment = .fill
+        hStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Initialize the searchBar
+        searchBar = UISearchBar()
+        searchBar.placeholder = NSLocalizedString("Sök i historiken", comment: "Search Food Item history")
+        searchBar.delegate = self
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.backgroundImage = UIImage() // Make background clear
+        
+        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+            textField.autocorrectionType = .no
+            textField.autocapitalizationType = .sentences
+            textField.spellCheckingType = .yes
+            textField.inputAssistantItem.leadingBarButtonGroups = []
+            textField.inputAssistantItem.trailingBarButtonGroups = []
+
+            // Add toolbar with custom buttons
+            let toolbar = UIToolbar()
+            toolbar.sizeToFit()
+
+            // Cancel button to dismiss the keyboard
+            let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
+            let cancelButton = UIButton(type: .system)
+            cancelButton.setImage(symbolImage, for: .normal)
+            cancelButton.tintColor = .label
+            cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+            cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+            let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
+
+            // Flexible space to align done button on the right
+            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            
+            // Done button to complete editing
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done button"), style: .done, target: self, action: #selector(doneButtonTapped))
+            
+            // Add buttons to the toolbar
+            toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
+            textField.inputAccessoryView = toolbar
+        }
+        
+        // Initialize the compact datePicker
+        datePicker = UIDatePicker()
+        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .compact
+        datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
+        datePicker.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the searchBar and datePicker to the hStackView
+        hStackView.addArrangedSubview(searchBar)
+        hStackView.addArrangedSubview(datePicker)
+        
+        // Add hStackView to the view and set its constraints
+        view.addSubview(hStackView)
+        
+        NSLayoutConstraint.activate([
+            hStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            hStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            hStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            searchBar.heightAnchor.constraint(equalToConstant: 40),  // Set height for the search bar
+            datePicker.widthAnchor.constraint(equalToConstant: 120)  // Set fixed width for the date picker
+        ])
+    }
+
+    @objc private func cancelButtonTapped() {
+        searchBar.resignFirstResponder() // Dismiss the keyboard when the cancel button is tapped
+    }
+
+    @objc private func doneButtonTapped() {
+        searchBar.resignFirstResponder() // Finish editing and dismiss the keyboard when the done button is tapped
+    }
+    
+    private func filterMealHistories(searchText: String? = nil) {
+        let lowercasedSearchText = searchText?.lowercased() ?? ""
+        
+        filteredMealHistories = mealHistories.filter { mealHistory in
+            // Filter by search text (matching food items)
+            if !lowercasedSearchText.isEmpty {
+                let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
+                let matchesSearch = foodItemNames.contains { $0.contains(lowercasedSearchText) }
+                return matchesSearch
+            } else {
+                return true // Show all meal histories when no search text is entered
+            }
+        }
+        
+        tableView.reloadData()
+    }
+    /*
     private func setupDatePicker() {
         datePicker = UIDatePicker()
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         datePicker.datePickerMode = .date
-        datePicker.preferredDatePickerStyle = .inline
+        datePicker.preferredDatePickerStyle = .compact
         datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
-        
+
         view.addSubview(datePicker)
-        
+
         NSLayoutConstraint.activate([
-            datePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
+            datePicker.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
             datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
-    }
+    }*/
     
     @objc private func datePickerValueChanged() {
         filterMealHistories(by: datePicker.date)
@@ -350,5 +461,15 @@ extension UIView {
             responder = responder?.next
         }
         return nil
+    }
+}
+
+extension MealHistoryViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filterMealHistories(searchText: searchText) // Filter by search text only
+    }
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder() // Hide the keyboard when search is pressed
     }
 }

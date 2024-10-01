@@ -425,6 +425,9 @@
 "Inga sökträffar inom valt datumintervall" = "Inga sökträffar inom valt datumintervall";
 "Genomsnittlig portion" = "Genomsnittlig portion";
 "\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nVill du använda måltidshistorikens genomsnittliga portionsstorlek: \n%.0f g för %@?";
+"Sök i historiken" = "Sök i historiken";
+"  Datum:" = "  Datum:";
+"till  " = "till  ";
 
 /* Settings */
 "Inställningar" = "Inställningar";

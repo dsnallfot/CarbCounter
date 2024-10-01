@@ -165,7 +165,7 @@ class MealInsightsViewController: UIViewController {
     
     private func setupSegmentedControlAndDatePickers() {
         // Configure From Date Picker and Label
-        fromDateLabel.text = NSLocalizedString("Från datum", comment: "From Date Label")
+        fromDateLabel.text = NSLocalizedString("  Datum:", comment: "From Date Label")
         fromDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         fromDateLabel.textColor = .label
         fromDatePicker.datePickerMode = .date
@@ -178,7 +178,7 @@ class MealInsightsViewController: UIViewController {
         fromDateStackView.translatesAutoresizingMaskIntoConstraints = false
 
         // Configure To Date Picker and Label
-        toDateLabel.text = NSLocalizedString("Till datum", comment: "To Date Label")
+        toDateLabel.text = NSLocalizedString("till  ", comment: "To Date Label")
         toDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         toDateLabel.textColor = .label
         toDatePicker.datePickerMode = .date
@@ -192,7 +192,7 @@ class MealInsightsViewController: UIViewController {
 
         // Date pickers stack view
         let datePickersStackView = UIStackView(arrangedSubviews: [fromDateStackView, toDateStackView])
-        datePickersStackView.axis = .vertical
+        datePickersStackView.axis = .horizontal
         datePickersStackView.spacing = 16
         datePickersStackView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -377,6 +377,7 @@ class MealInsightsViewController: UIViewController {
     @objc private func switchMode(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
             // "Insikt måltider" mode
+            resetStatsView()
             searchBar.isHidden = true
             searchBar.resignFirstResponder()
             statsTableView.isHidden = true
@@ -391,6 +392,7 @@ class MealInsightsViewController: UIViewController {
             calculateMealStats()
         } else {
             // "Insikt livsmedel" mode
+            resetStatsView()
             fromTimePicker.isHidden = true
             toTimePicker.isHidden = true
             fromTimeLabel.isHidden = true
@@ -407,6 +409,11 @@ class MealInsightsViewController: UIViewController {
                 segmentedControl.isHidden = false
                 searchBar.isHidden = false
                 statsTableView.isHidden = false
+                filterFoodEntries()
+                if let selectedEntry = selectedEntryName {
+                    // Re-run updateStats with the previously selected entry
+                    updateStats(for: selectedEntry)
+                }
             }
             
         }
@@ -493,6 +500,10 @@ class MealInsightsViewController: UIViewController {
             statsLabel.trailingAnchor.constraint(equalTo: statsView.trailingAnchor, constant: -16),
             statsLabel.bottomAnchor.constraint(equalTo: statsView.bottomAnchor, constant: -16)
         ])
+    }
+    
+    private func resetStatsView() {
+        statsLabel.text = ""  // Clear the stats view
     }
     
     private func setupActionButton() {
