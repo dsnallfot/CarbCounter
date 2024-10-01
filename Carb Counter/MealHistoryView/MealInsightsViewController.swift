@@ -14,6 +14,7 @@ class MealInsightsViewController: UIViewController {
     private var selectedEntryName: String?
     private var isComingFromModal = false
     public var isComingFromFoodItemRow = false
+    private var statsViewBottomConstraint: NSLayoutConstraint!
 
     // UI Elements
     private let fromDateLabel = UILabel()
@@ -232,9 +233,9 @@ class MealInsightsViewController: UIViewController {
         case 0: // Allt - Get the earliest available date from mealHistories
             fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
         case 1: // 3d
-            fromDate = Calendar.current.date(byAdding: .hour, value: -72, to: now)
+            fromDate = Calendar.current.date(byAdding: .day, value: -3, to: now)
         case 2: // 7d
-            fromDate = Calendar.current.date(byAdding: .hour, value: -144, to: now)
+            fromDate = Calendar.current.date(byAdding: .day, value: -7, to: now)
         case 3: // 30d
             fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now)
         case 4: // 90d
@@ -388,6 +389,7 @@ class MealInsightsViewController: UIViewController {
             mealTimesSegmentedControl.isHidden = false
             actionButton.isHidden = true
             segmentedControl.isHidden = false
+            statsViewBottomConstraint.constant = -16
 
             calculateMealStats()
         } else {
@@ -404,15 +406,19 @@ class MealInsightsViewController: UIViewController {
                 segmentedControl.isHidden = true
                 searchBar.isHidden = true
                 statsTableView.isHidden = true
+                statsViewBottomConstraint.constant = -76
             } else {
                 actionButton.isHidden = true
                 segmentedControl.isHidden = false
                 searchBar.isHidden = false
                 statsTableView.isHidden = false
+                statsViewBottomConstraint.constant = -16
                 filterFoodEntries()
                 if let selectedEntry = selectedEntryName {
                     // Re-run updateStats with the previously selected entry
                     updateStats(for: selectedEntry)
+                } else {
+                    updateStats(for: "")
                 }
             }
             
@@ -488,11 +494,13 @@ class MealInsightsViewController: UIViewController {
 
         view.addSubview(statsView)
 
+        // Set the initial constraint for statsView
+        statsViewBottomConstraint = statsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -76)
+        
         NSLayoutConstraint.activate([
             statsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            // Adjust the bottom anchor to leave space for the actionButton
-            statsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -76), // Leaves space for actionButton (height + margin)
+            statsViewBottomConstraint, // Activate the initial bottom constraint
             statsView.heightAnchor.constraint(equalToConstant: 200),
 
             statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 16),
@@ -808,14 +816,154 @@ class MealInsightsViewController: UIViewController {
         }
         return String(format: format, value)
     }
-    
-    private func formatStatValueWithZero(_ value: Double, format: String) -> String {
-        if value.isNaN || value.isInfinite {
-            return "" // Return an empty string for NaN or Inf
+
+    // Food item calculations (MEDIAN VALUE VERSION)
+    private func updateStats(for entryName: String) {
+        // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
+        let matchingEntries = allFilteredFoodEntries.filter {
+            $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
         }
-        return String(format: format, value)
+
+        // Get the emoji from the first matching entry, or default to an empty string if no entries are found
+        let entryEmoji = matchingEntries.first?.entryEmoji ?? ""
+
+        // Determine if the portions are measured in pieces or grams
+        let isPerPiece = matchingEntries.first?.entryPerPiece ?? false
+
+        let timesServed = matchingEntries.count
+        let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
+        
+        // Calculate the median portion safely, handling cases with 0 or 1 portion
+        let medianPortion: Double
+        if portions.isEmpty {
+            medianPortion = 0  // No entries, return 0 or a default value
+        } else if portions.count == 1 {
+            medianPortion = portions.first!  // Only one portion, return that
+        } else {
+            let sortedPortions = portions.sorted()
+            if sortedPortions.count % 2 == 0 {
+                // If even, average the two middle values
+                medianPortion = (sortedPortions[sortedPortions.count / 2 - 1] + sortedPortions[sortedPortions.count / 2]) / 2.0
+            } else {
+                // If odd, take the middle value
+                medianPortion = sortedPortions[sortedPortions.count / 2]
+            }
+        }
+
+        let largestPortion = portions.max() ?? 0.0
+        let smallestPortion = portions.min() ?? 0.0
+
+        // Format based on whether it's measured in pieces or grams
+        let portionFormat = isPerPiece ? NSLocalizedString("%.1f st", comment: "Per piece portion format") : NSLocalizedString("%.0f g", comment: "Grams portion format")
+
+        // Create an attributed string to apply different styles
+        let statsText = NSMutableAttributedString()
+
+        // Check if entryName and entryEmoji are empty, then use placeholder text
+        let boldText: String
+        if entryName.isEmpty && entryEmoji.isEmpty {
+            if isComingFromModal {
+                let searchText = prepopulatedSearchText ?? NSLocalizedString("det valda livsmedlet", comment: "Default text for selected food item")
+                boldText = String(format: NSLocalizedString("Ingen måltidshistorik tillgänglig för\n\"%@\"", comment: "Placeholder text for no selection"), searchText)
+                actionButton.isEnabled = false
+                actionButton.backgroundColor = .systemGray
+            } else {
+                boldText = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+            }
+        } else {
+            boldText = "\(entryName) \(entryEmoji)\n\n"
+        }
+
+        // Bold the first line (either entryName and entryEmoji or placeholder), center-aligned
+        let boldAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize),
+            .paragraphStyle: centeredParagraphStyle()
+        ]
+        statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
+
+        // If the boldText is not the placeholder, add the detailed stats
+        if !(entryName.isEmpty && entryEmoji.isEmpty) {
+            // Create a tab stop for aligning text
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 300)]
+            paragraphStyle.defaultTabInterval = 300
+            paragraphStyle.alignment = .center
+
+            // Use the helper function to format stats values, replacing 0 or NaN with empty string
+            let formattedMedianPortion = formatStatValue(medianPortion, format: portionFormat)
+            let formattedLargestPortion = formatStatValue(largestPortion, format: portionFormat)
+            let formattedSmallestPortion = formatStatValue(smallestPortion, format: portionFormat)
+
+            // Regular text for the stats
+            let regularText = """
+            \(NSLocalizedString("Genomsnittlig portion", comment: "Median portion label")):\t\(formattedMedianPortion)
+            \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(formattedLargestPortion)
+            \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(formattedSmallestPortion)
+            \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)\n
+            """
+            let regularAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
+                .paragraphStyle: paragraphStyle
+            ]
+            statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
+        }
+
+        // Assign the attributed text to the label
+        statsLabel.attributedText = statsText
     }
     
+    @objc private func actionButtonTapped() {
+        guard let entryName = searchBar.text, !entryName.isEmpty else {
+            return
+        }
+        
+        // Calculate the median portion for the currently filtered entry
+        let medianPortion = calculateMedianPortion(for: entryName)
+
+        // Invoke the closure with the median portion directly, skipping the alert
+        if let onAveragePortionSelected = self.onAveragePortionSelected {
+            onAveragePortionSelected(medianPortion)
+        }
+
+        // Dismiss the MealInsightsViewController after user confirms
+        self.dismiss(animated: true, completion: nil)
+        self.isComingFromFoodItemRow = false
+    }
+    private func calculateMedianPortion(for entryName: String) -> Double {
+        // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
+        let matchingEntries = allFilteredFoodEntries.filter {
+            $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
+        }
+
+        // Map the portion sizes (served - not eaten) for the matching entries
+        let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
+
+        // Handle cases where no portions are available
+        guard !portions.isEmpty else {
+            return 0 // No entries, return 0 or any suitable default value
+        }
+
+        // If only one portion is available, return it as the median
+        if portions.count == 1 {
+            return portions.first!
+        }
+
+        // Calculate the median portion
+        let sortedPortions = portions.sorted()
+        let medianPortion: Double
+        if sortedPortions.count % 2 == 0 {
+            // If even, average the two middle values
+            medianPortion = (sortedPortions[sortedPortions.count / 2 - 1] + sortedPortions[sortedPortions.count / 2]) / 2.0
+        } else {
+            // If odd, take the middle value
+            medianPortion = sortedPortions[sortedPortions.count / 2]
+        }
+
+        return medianPortion
+    }
+    
+    /*
+    //Food item calculations (AVERAGE VALUE VERSION)
     private func updateStats(for entryName: String) {
         // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -843,7 +991,14 @@ class MealInsightsViewController: UIViewController {
         // Check if entryName and entryEmoji are empty, then use placeholder text
         let boldText: String
         if entryName.isEmpty && entryEmoji.isEmpty {
-            boldText = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+            if isComingFromModal {
+                let searchText = prepopulatedSearchText ?? NSLocalizedString("det valda livsmedlet", comment: "Default text for selected food item")
+                boldText = String(format: NSLocalizedString("Ingen måltidshistorik tillgänglig för\n\"%@\"", comment: "Placeholder text for no selection"), searchText)
+                actionButton.isEnabled = false
+                actionButton.backgroundColor = .systemGray
+            } else {
+                boldText = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+            }
         } else {
             boldText = "\(entryName) \(entryEmoji)\n\n"
         }
@@ -866,7 +1021,7 @@ class MealInsightsViewController: UIViewController {
             // Use the helper function to format stats values, replacing 0 or NaN with empty string
             let formattedAveragePortion = formatStatValue(averagePortion, format: portionFormat)
             let formattedLargestPortion = formatStatValue(largestPortion, format: portionFormat)
-            let formattedSmallestPortion = formatStatValueWithZero(smallestPortion, format: portionFormat)
+            let formattedSmallestPortion = formatStatValue(smallestPortion, format: portionFormat)
 
             // Regular text for the stats
             let regularText = """
@@ -903,6 +1058,7 @@ class MealInsightsViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
     }
+     */
 }
     extension MealInsightsViewController: UITableViewDataSource, UITableViewDelegate {
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -947,7 +1103,7 @@ class MealInsightsViewController: UIViewController {
             // Store the selected entry name
             selectedEntryName = selectedEntry
             
-            // Perform the updateStats and pass the averagePortion value back via the closure
+            // Perform the updateStats and pass the medianPortion value back via the closure
             updateStats(for: selectedEntry)
         }
     }
