@@ -203,7 +203,7 @@ class MealInsightsViewController: UIViewController {
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
         // Date preset segmented control
-        datePresetsSegmentedControl.selectedSegmentIndex = UISegmentedControl.noSegment
+        datePresetsSegmentedControl.selectedSegmentIndex = 0 //UISegmentedControl.noSegment
         datePresetsSegmentedControl.addTarget(self, action: #selector(datePresetChanged(_:)), for: .valueChanged)
         datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
