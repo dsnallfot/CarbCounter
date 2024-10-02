@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,8 +11,6 @@
 		6502A99F2C29754D00414DC0 /* MealHistoryDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */; };
 		650EF4142C3CA05800ADF8B0 /* CustomTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650EF4132C3CA05800ADF8B0 /* CustomTabBarController.swift */; };
 		6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
-		6518ACB92C2434E100C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
-		6518ACBA2C2434E200C3BF63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6553EE042C20DA9400B0FDF5 /* Assets.xcassets */; };
 		6520898B2C661EBD00B85643 /* MealViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6520898A2C661EBD00B85643 /* MealViewController.swift */; };
 		6522DDC02C9AB6C300C0BF49 /* EditRegistrationPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6522DDBF2C9AB6C300C0BF49 /* EditRegistrationPopoverView.swift */; };
 		6522DDC22C9AB6E700C0BF49 /* UIHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6522DDC12C9AB6E700C0BF49 /* UIHostingController.swift */; };
@@ -34,8 +32,6 @@
 		6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */; };
 		656C64A52C6C007000431374 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 656C64A32C6C007000431374 /* Localizable.strings */; };
 		659632852C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
-		659632862C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
-		659632872C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */; };
 		65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */; };
 		65BAB4EE2C5AE76C0055638D /* RSSHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4ED2C5AE76B0055638D /* RSSHelper.swift */; };
@@ -55,31 +51,9 @@
 		65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		6553EE0F2C20DA9400B0FDF5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6553EDED2C20DA9100B0FDF5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6553EDF42C20DA9200B0FDF5;
-			remoteInfo = "Carb Counter";
-		};
-		6553EE192C20DA9400B0FDF5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6553EDED2C20DA9100B0FDF5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6553EDF42C20DA9200B0FDF5;
-			remoteInfo = "Carb Counter";
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealHistoryViewController.swift; sourceTree = "<group>"; };
 		6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealHistoryDetailViewController.swift; sourceTree = "<group>"; };
-		6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MealHistory+CoreDataClass.swift"; path = "Carb Counter/MealHistory+CoreDataClass.swift"; sourceTree = "<group>"; };
-		6502A9AB2C2980D800414DC0 /* MealHistory+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MealHistory+CoreDataProperties.swift"; path = "Carb Counter/MealHistory+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataClass.swift"; path = "Carb Counter/FoodItemEntry+CoreDataClass.swift"; sourceTree = "<group>"; };
-		6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemEntry+CoreDataProperties.swift"; path = "Carb Counter/FoodItemEntry+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItemRow+CoreDataProperties.swift"; path = "Carb Counter/FoodItemRow+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		650EF4132C3CA05800ADF8B0 /* CustomTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBarController.swift; sourceTree = "<group>"; };
 		6520898A2C661EBD00B85643 /* MealViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealViewController.swift; sourceTree = "<group>"; };
 		6522DDBF2C9AB6C300C0BF49 /* EditRegistrationPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRegistrationPopoverView.swift; sourceTree = "<group>"; };
@@ -89,8 +63,6 @@
 		653A93792C6BE35900AA10EE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		653A937A2C6BE35900AA10EE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		653DE79F2C27520700A639D1 /* DataSharingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSharingViewController.swift; sourceTree = "<group>"; };
-		653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataClass.swift"; path = "Carb Counter/FoodItem+CoreDataClass.swift"; sourceTree = "<group>"; };
-		653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FoodItem+CoreDataProperties.swift"; path = "Carb Counter/FoodItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		653DE7A32C278F7600A639D1 /* Twilio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Twilio.swift; sourceTree = "<group>"; };
 		653DE7A52C27930F00A639D1 /* RemoteSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSettingsViewController.swift; sourceTree = "<group>"; };
 		653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsRepository.swift; sourceTree = "<group>"; };
@@ -102,8 +74,6 @@
 		6553EE042C20DA9400B0FDF5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6553EE072C20DA9400B0FDF5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6553EE092C20DA9400B0FDF5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6553EE0E2C20DA9400B0FDF5 /* Carb CounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Carb CounterTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6553EE182C20DA9400B0FDF5 /* Carb CounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Carb CounterUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6553EE2F2C20DEA600B0FDF5 /* FoodItemsListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemsListViewController.swift; sourceTree = "<group>"; };
 		6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeMealViewController.swift; sourceTree = "<group>"; };
 		6553EE332C20E58B00B0FDF5 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -136,20 +106,6 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		6553EDF22C20DA9200B0FDF5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6553EE0B2C20DA9400B0FDF5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6553EE152C20DA9400B0FDF5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -255,8 +211,6 @@
 			isa = PBXGroup;
 			children = (
 				6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */,
-				6553EE0E2C20DA9400B0FDF5 /* Carb CounterTests.xctest */,
-				6553EE182C20DA9400B0FDF5 /* Carb CounterUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -288,13 +242,6 @@
 			isa = PBXGroup;
 			children = (
 				6553EE012C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld */,
-				650EF4122C39893C00ADF8B0 /* FoodItemRow+CoreDataProperties.swift */,
-				6502A9CF2C2A465E00414DC0 /* FoodItemEntry+CoreDataClass.swift */,
-				6502A9D02C2A465E00414DC0 /* FoodItemEntry+CoreDataProperties.swift */,
-				6502A9AA2C2980D800414DC0 /* MealHistory+CoreDataClass.swift */,
-				6502A9AB2C2980D800414DC0 /* MealHistory+CoreDataProperties.swift */,
-				653DE7A12C2765A900A639D1 /* FoodItem+CoreDataClass.swift */,
-				653DE7A22C2765A900A639D1 /* FoodItem+CoreDataProperties.swift */,
 			);
 			name = CoreData;
 			path = ..;
@@ -328,42 +275,6 @@
 			productReference = 6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */;
 			productType = "com.apple.product-type.application";
 		};
-		6553EE0D2C20DA9400B0FDF5 /* Carb CounterTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6553EE252C20DA9400B0FDF5 /* Build configuration list for PBXNativeTarget "Carb CounterTests" */;
-			buildPhases = (
-				6553EE0A2C20DA9400B0FDF5 /* Sources */,
-				6553EE0B2C20DA9400B0FDF5 /* Frameworks */,
-				6553EE0C2C20DA9400B0FDF5 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6553EE102C20DA9400B0FDF5 /* PBXTargetDependency */,
-			);
-			name = "Carb CounterTests";
-			productName = "Carb CounterTests";
-			productReference = 6553EE0E2C20DA9400B0FDF5 /* Carb CounterTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		6553EE172C20DA9400B0FDF5 /* Carb CounterUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6553EE282C20DA9400B0FDF5 /* Build configuration list for PBXNativeTarget "Carb CounterUITests" */;
-			buildPhases = (
-				6553EE142C20DA9400B0FDF5 /* Sources */,
-				6553EE152C20DA9400B0FDF5 /* Frameworks */,
-				6553EE162C20DA9400B0FDF5 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6553EE1A2C20DA9400B0FDF5 /* PBXTargetDependency */,
-			);
-			name = "Carb CounterUITests";
-			productName = "Carb CounterUITests";
-			productReference = 6553EE182C20DA9400B0FDF5 /* Carb CounterUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -377,18 +288,10 @@
 					6553EDF42C20DA9200B0FDF5 = {
 						CreatedOnToolsVersion = 15.2;
 					};
-					6553EE0D2C20DA9400B0FDF5 = {
-						CreatedOnToolsVersion = 15.2;
-						TestTargetID = 6553EDF42C20DA9200B0FDF5;
-					};
-					6553EE172C20DA9400B0FDF5 = {
-						CreatedOnToolsVersion = 15.2;
-						TestTargetID = 6553EDF42C20DA9200B0FDF5;
-					};
 				};
 			};
 			buildConfigurationList = 6553EDF02C20DA9100B0FDF5 /* Build configuration list for PBXProject "Carb Counter" */;
-			compatibilityVersion = "Xcode 14.0";
+			compatibilityVersion = "Xcode 15.3";
 			developmentRegion = sv;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -402,8 +305,6 @@
 			projectRoot = "";
 			targets = (
 				6553EDF42C20DA9200B0FDF5 /* Carb Counter */,
-				6553EE0D2C20DA9400B0FDF5 /* Carb CounterTests */,
-				6553EE172C20DA9400B0FDF5 /* Carb CounterUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -418,24 +319,6 @@
 				6553EE082C20DA9400B0FDF5 /* LaunchScreen.storyboard in Resources */,
 				6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */,
 				6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6553EE0C2C20DA9400B0FDF5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				659632862C2436470098DF69 /* launch.png in Resources */,
-				6518ACB92C2434E100C3BF63 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6553EE162C20DA9400B0FDF5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				659632872C2436470098DF69 /* launch.png in Resources */,
-				6518ACBA2C2434E200C3BF63 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -486,34 +369,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6553EE0A2C20DA9400B0FDF5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6553EE142C20DA9400B0FDF5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		6553EE102C20DA9400B0FDF5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6553EDF42C20DA9200B0FDF5 /* Carb Counter */;
-			targetProxy = 6553EE0F2C20DA9400B0FDF5 /* PBXContainerItemProxy */;
-		};
-		6553EE1A2C20DA9400B0FDF5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6553EDF42C20DA9200B0FDF5 /* Carb Counter */;
-			targetProxy = 6553EE192C20DA9400B0FDF5 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */ = {
@@ -741,82 +597,6 @@
 			};
 			name = Release;
 		};
-		6553EE262C20DA9400B0FDF5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dsnallfot.CarbsCounterTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Carb Counter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Carb Counter";
-			};
-			name = Debug;
-		};
-		6553EE272C20DA9400B0FDF5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dsnallfot.CarbsCounterTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Carb Counter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Carb Counter";
-			};
-			name = Release;
-		};
-		6553EE292C20DA9400B0FDF5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dsnallfot.CarbsCounterUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Carb Counter";
-			};
-			name = Debug;
-		};
-		6553EE2A2C20DA9400B0FDF5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dsnallfot.CarbsCounterUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Carb Counter";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -834,24 +614,6 @@
 			buildConfigurations = (
 				6553EE232C20DA9400B0FDF5 /* Debug */,
 				6553EE242C20DA9400B0FDF5 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6553EE252C20DA9400B0FDF5 /* Build configuration list for PBXNativeTarget "Carb CounterTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6553EE262C20DA9400B0FDF5 /* Debug */,
-				6553EE272C20DA9400B0FDF5 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6553EE282C20DA9400B0FDF5 /* Build configuration list for PBXNativeTarget "Carb CounterUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6553EE292C20DA9400B0FDF5 /* Debug */,
-				6553EE2A2C20DA9400B0FDF5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

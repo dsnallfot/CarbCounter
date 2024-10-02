@@ -15,6 +15,10 @@ class MealInsightsViewController: UIViewController {
     private var isComingFromModal = false
     public var isComingFromFoodItemRow = false
     private var statsViewBottomConstraint: NSLayoutConstraint!
+    private var statsTableTopConstraint: NSLayoutConstraint?
+    private var statsTableBottomConstraint: NSLayoutConstraint?
+    private let combinedStackView = UIStackView()
+
 
     // UI Elements
     private let fromDateLabel = UILabel()
@@ -208,10 +212,12 @@ class MealInsightsViewController: UIViewController {
         datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
         // Combine the controls and stack views
-        let combinedStackView = UIStackView(arrangedSubviews: [segmentedControl, datePresetsSegmentedControl, datePickersStackView])
         combinedStackView.axis = .vertical
-        combinedStackView.spacing = 16
+        combinedStackView.spacing = isComingFromFoodItemRow ? 12 : 16  // Set initial spacing here
         combinedStackView.translatesAutoresizingMaskIntoConstraints = false
+        combinedStackView.addArrangedSubview(segmentedControl)
+        combinedStackView.addArrangedSubview(datePresetsSegmentedControl)
+        combinedStackView.addArrangedSubview(datePickersStackView)
 
         // Add the combined stack view to the main view
         view.addSubview(combinedStackView)
@@ -223,6 +229,7 @@ class MealInsightsViewController: UIViewController {
             combinedStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
     }
+
 
     // Action for date presets
     @objc private func datePresetChanged(_ sender: UISegmentedControl) {
@@ -391,7 +398,11 @@ class MealInsightsViewController: UIViewController {
             segmentedControl.isHidden = false
             statsViewBottomConstraint.constant = -16
 
+            // Modify spacing to 16 when in "Insikt måltider" mode
+            combinedStackView.spacing = 16
+
             calculateMealStats()
+            updateStatsTableConstraints()
         } else {
             // "Insikt livsmedel" mode
             resetStatsView()
@@ -400,13 +411,16 @@ class MealInsightsViewController: UIViewController {
             fromTimeLabel.isHidden = true
             toTimeLabel.isHidden = true
             mealTimesSegmentedControl.isHidden = true
-            
+
             if isComingFromFoodItemRow {
                 actionButton.isHidden = false
                 segmentedControl.isHidden = true
                 searchBar.isHidden = true
                 statsTableView.isHidden = true
                 statsViewBottomConstraint.constant = -76
+
+                // Modify spacing to 12 when `isComingFromFoodItemRow` is true
+                combinedStackView.spacing = 12
             } else {
                 actionButton.isHidden = true
                 segmentedControl.isHidden = false
@@ -414,16 +428,20 @@ class MealInsightsViewController: UIViewController {
                 statsTableView.isHidden = false
                 statsViewBottomConstraint.constant = -16
                 filterFoodEntries()
+
                 if let selectedEntry = selectedEntryName {
-                    // Re-run updateStats with the previously selected entry
                     updateStats(for: selectedEntry)
                 } else {
                     updateStats(for: "")
                 }
+
+                // Reset spacing to 16 when not coming from food item row
+                combinedStackView.spacing = 16
             }
-            
+            updateStatsTableConstraints()
         }
     }
+
     
     private func setupSearchBar() {
         // Add the search bar to the view
@@ -463,24 +481,46 @@ class MealInsightsViewController: UIViewController {
     }
     
     private func setupStatsTableView() {
-        statsTableView.dataSource = self
-        statsTableView.delegate = self
-        statsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StatsCell")
-        statsTableView.translatesAutoresizingMaskIntoConstraints = false
-        statsTableView.separatorStyle = .none
-        statsTableView.backgroundColor = .clear
+            statsTableView.dataSource = self
+            statsTableView.delegate = self
+            statsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StatsCell")
+            statsTableView.translatesAutoresizingMaskIntoConstraints = false
+            statsTableView.separatorStyle = .none
+            statsTableView.backgroundColor = .clear
 
-        // Add both statsTableView and statsView to the hierarchy first
-        view.addSubview(statsTableView)
-        view.addSubview(statsView)
+            // Add both statsTableView and statsView to the hierarchy first
+            view.addSubview(statsTableView)
+            view.addSubview(statsView)
 
-        NSLayoutConstraint.activate([
-            statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 16), // Changed to searchBar
-            statsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            statsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -10)  // Adjust the spacing as needed
-        ])
-    }
+            // Create constraints but don't activate them yet
+            statsTableTopConstraint = statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 16)
+            statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -10)
+
+            // Other necessary constraints
+            NSLayoutConstraint.activate([
+                statsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                statsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+
+            // Optionally, activate the constraints based on isComingFromFoodItemRow
+            updateStatsTableConstraints()
+        }
+
+        // Method to enable or disable the constraints dynamically
+        private func updateStatsTableConstraints() {
+            if isComingFromFoodItemRow {
+                // Disable top and bottom constraints to make space in the smaller modal
+                statsTableTopConstraint?.isActive = false
+                statsTableBottomConstraint?.isActive = false
+            } else {
+                // Enable the top and bottom constraints for the full view
+                statsTableTopConstraint?.isActive = true
+                statsTableBottomConstraint?.isActive = true
+            }
+
+            // Force layout update after changing constraints
+            view.layoutIfNeeded()
+        }
 
     private func setupStatsView() {
         statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
@@ -501,12 +541,12 @@ class MealInsightsViewController: UIViewController {
             statsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             statsViewBottomConstraint, // Activate the initial bottom constraint
-            statsView.heightAnchor.constraint(equalToConstant: 200),
+            statsView.heightAnchor.constraint(equalToConstant: 165),
 
-            statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 16),
+            statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 8),
             statsLabel.leadingAnchor.constraint(equalTo: statsView.leadingAnchor, constant: 16),
             statsLabel.trailingAnchor.constraint(equalTo: statsView.trailingAnchor, constant: -16),
-            statsLabel.bottomAnchor.constraint(equalTo: statsView.bottomAnchor, constant: -16)
+            statsLabel.bottomAnchor.constraint(equalTo: statsView.bottomAnchor, constant: -8)
         ])
     }
     
@@ -825,14 +865,20 @@ class MealInsightsViewController: UIViewController {
         }
 
         // Get the emoji from the first matching entry, or default to an empty string if no entries are found
-        let entryEmoji = matchingEntries.first?.entryEmoji ?? ""
+        var entryEmoji = matchingEntries.first?.entryEmoji ?? ""
+
+        // Clean up the emoji string by trimming unnecessary whitespace or newlines
+        entryEmoji = entryEmoji.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Normalize the emoji string to avoid formatting issues
+        entryEmoji = entryEmoji.precomposedStringWithCanonicalMapping
 
         // Determine if the portions are measured in pieces or grams
         let isPerPiece = matchingEntries.first?.entryPerPiece ?? false
 
         let timesServed = matchingEntries.count
         let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
-        
+
         // Calculate the median portion safely, handling cases with 0 or 1 portion
         let medianPortion: Double
         if portions.isEmpty {
@@ -871,7 +917,7 @@ class MealInsightsViewController: UIViewController {
                 boldText = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
             }
         } else {
-            boldText = "\(entryName) \(entryEmoji)\n\n"
+            boldText = "\(entryEmoji) \(entryName)\n\n"
         }
 
         // Bold the first line (either entryName and entryEmoji or placeholder), center-aligned
@@ -899,7 +945,7 @@ class MealInsightsViewController: UIViewController {
             \(NSLocalizedString("Genomsnittlig portion", comment: "Median portion label")):\t\(formattedMedianPortion)
             \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(formattedLargestPortion)
             \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(formattedSmallestPortion)
-            \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)\n
+            \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)
             """
             let regularAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
@@ -911,6 +957,7 @@ class MealInsightsViewController: UIViewController {
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
     }
+
     
     @objc private func actionButtonTapped() {
         guard let entryName = searchBar.text, !entryName.isEmpty else {
