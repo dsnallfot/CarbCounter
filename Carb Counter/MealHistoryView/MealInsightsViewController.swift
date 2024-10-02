@@ -360,7 +360,7 @@ class MealInsightsViewController: UIViewController {
         // Combine both time pickers into one stack
         let timePickersStackView = UIStackView(arrangedSubviews: [fromTimeStackView, toTimeStackView])
         timePickersStackView.axis = .vertical
-        timePickersStackView.spacing = 16
+        timePickersStackView.spacing = 12
         timePickersStackView.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(timePickersStackView)
@@ -449,7 +449,7 @@ class MealInsightsViewController: UIViewController {
 
         // Add constraints for the search bar
         NSLayoutConstraint.activate([
-            searchBar.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 16),
+            searchBar.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 12),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchBar.heightAnchor.constraint(equalToConstant: 44) // Adjust the height as necessary
