@@ -28,7 +28,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = NSLocalizedString("Måltidshistorik", comment: "Title for Meal History screen")
+        title = NSLocalizedString("Historik", comment: "Title for Meal History screen")
         view.backgroundColor = .systemBackground
         
         // Create the gradient view
@@ -389,8 +389,13 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     @objc private func navigateToMealInsights() {
-        // Create an instance of MealInsightsViewController and push it to the navigation stack
+        // Create an instance of MealInsightsViewController
         let mealInsightsVC = MealInsightsViewController()
+
+        // Pass the search text from the MealHistoryVC's search bar to MealInsightsVC
+        mealInsightsVC.prepopulatedSearchText = searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Push the MealInsightsViewController to the navigation stack
         navigationController?.pushViewController(mealInsightsVC, animated: true)
     }
     

@@ -466,23 +466,37 @@ class MealInsightsViewController: UIViewController {
     }
     
     private func performSearch(with searchText: String) {
-        // Trim the search text to remove any leading/trailing whitespace
-        let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-
-        // Filter entries based on the trimmed search text
-        self.filterFoodEntries()
-
-        // Try to find the matching entry
-        if let matchingEntry = allFilteredFoodEntries.first(where: {
-            let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
-            return trimmedEntryName == trimmedSearchText
-        }) {
-            print("match found \(matchingEntry.entryName ?? "")")
-            self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
-            updateStats(for: matchingEntry.entryName ?? "")
+        if isComingFromFoodItemRow {
+            // Trim the search text to remove any leading/trailing whitespace
+            let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            
+            // Filter entries based on the trimmed search text
+            self.filterFoodEntries()
+            
+            // Try to find the matching entry
+            if let matchingEntry = allFilteredFoodEntries.first(where: {
+                let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+                return trimmedEntryName == trimmedSearchText
+            }) {
+                print("match found \(matchingEntry.entryName ?? "")")
+                self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
+                updateStats(for: matchingEntry.entryName ?? "")
+            } else {
+                print("no match found \(searchText)")
+                updateStats(for: "")
+            }
         } else {
-            print("no match found \(searchText)")
-            updateStats(for: "")
+            // Execute the same search as when the user manually types into the search bar
+            self.filterFoodEntries()
+            if let selectedEntry = selectedEntryName {
+                updateStats(for: selectedEntry)
+            } else {
+                if searchBar.text?.isEmpty ?? true {
+                    self.selectedEntryName = nil // Reset the selected entry if search is cleared
+                    print("no match found \(searchText)")
+                    updateStats(for: "")
+                }
+            }
         }
     }
     
