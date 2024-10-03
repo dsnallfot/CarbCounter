@@ -72,6 +72,7 @@ class MealInsightsViewController: UIViewController {
         searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.backgroundImage = UIImage()
+        
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.tintColor = .label
             textField.autocorrectionType = .no
@@ -79,6 +80,26 @@ class MealInsightsViewController: UIViewController {
             textField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
             textField.layer.cornerRadius = 8
             textField.layer.masksToBounds = true
+            
+            // Toolbar setup
+            let toolbar = UIToolbar()
+            toolbar.sizeToFit()
+            
+            let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
+            let cancelButton = UIButton(type: .system)
+            cancelButton.setImage(symbolImage, for: .normal)
+            cancelButton.tintColor = .label
+            cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+            cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+            let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
+            
+            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done button"), style: .done, target: self, action: #selector(doneButtonTapped))
+            
+            toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
+            
+            // Attach toolbar to textField's inputAccessoryView
+            textField.inputAccessoryView = toolbar
         }
         return searchBar
     }()
@@ -448,41 +469,74 @@ class MealInsightsViewController: UIViewController {
         }
     }
 
-    
     private func setupSearchBar() {
-        // Add the search bar to the view
+        // Add the already initialized searchBar to the view
         view.addSubview(searchBar)
-
-        // Add constraints for the search bar
+        
+        // Apply the constraints
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 12),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchBar.heightAnchor.constraint(equalToConstant: 44) // Adjust the height as necessary
         ])
-
+        
         // Set the search bar delegate
         searchBar.delegate = self
     }
+
+    @objc private func cancelButtonTapped() {
+        // Dismiss the keyboard
+        searchBar.resignFirstResponder()
+    }
+
+    @objc private func doneButtonTapped() {
+        // Dismiss the keyboard
+        searchBar.resignFirstResponder()
+
+        // Set the search text as selectedEntryName
+        if let searchText = searchBar.text, !searchText.isEmpty {
+            selectedEntryName = searchText
+        } else {
+            selectedEntryName = nil // Reset if the search text is empty
+        }
+
+        // Perform the search with the current search text
+        performSearch(with: searchBar.text ?? "")
+    }
     
     private func performSearch(with searchText: String) {
-        // Trim the search text to remove any leading/trailing whitespace
-        let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-
-        // Filter entries based on the trimmed search text
-        self.filterFoodEntries()
-
-        // Try to find the matching entry
-        if let matchingEntry = allFilteredFoodEntries.first(where: {
-            let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
-            return trimmedEntryName == trimmedSearchText
-        }) {
-            print("match found \(matchingEntry.entryName ?? "")")
-            self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
-            updateStats(for: matchingEntry.entryName ?? "")
+        if isComingFromFoodItemRow {
+            // Trim the search text to remove any leading/trailing whitespace
+            let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            
+            // Filter entries based on the trimmed search text
+            self.filterFoodEntries()
+            
+            // Try to find the matching entry
+            if let matchingEntry = allFilteredFoodEntries.first(where: {
+                let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+                return trimmedEntryName == trimmedSearchText
+            }) {
+                print("match found \(matchingEntry.entryName ?? "")")
+                self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
+                updateStats(for: matchingEntry.entryName ?? "")
+            } else {
+                print("no match found \(searchText)")
+                updateStats(for: "")
+            }
         } else {
-            print("no match found \(searchText)")
-            updateStats(for: "")
+            // Execute the same search as when the user manually types into the search bar
+            self.filterFoodEntries()
+            if let selectedEntry = selectedEntryName {
+                updateStats(for: selectedEntry)
+            } else {
+                if searchBar.text?.isEmpty ?? true {
+                    self.selectedEntryName = nil // Reset the selected entry if search is cleared
+                    print("no match found \(searchText)")
+                    updateStats(for: "")
+                }
+            }
         }
     }
     
@@ -1173,6 +1227,17 @@ extension MealInsightsViewController: UISearchBarDelegate {
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-    }
+            // Dismiss the keyboard when the search button is clicked
+            searchBar.resignFirstResponder()
+
+            // Set the search text as selectedEntryName
+            if let searchText = searchBar.text, !searchText.isEmpty {
+                selectedEntryName = searchText
+            } else {
+                selectedEntryName = nil // Reset if the search text is empty
+            }
+
+            // Perform the search with the current search text
+            performSearch(with: searchBar.text ?? "")
+        }
 }
