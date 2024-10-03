@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class SearchableDropdownViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, AddFoodItemDelegate {
+class SearchableDropdownViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, AddFoodItemDelegate {
     
     var onSelectItems: (([FoodItem]) -> Void)?
     var onDoneButtonTapped: (([FoodItem]) -> Void)?
@@ -78,6 +78,22 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
                     sortFoodItems()
                     tableView.reloadData()
                 }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Restore the saved search text, but only if it's not empty
+        if let savedSearchText = UserDefaultsRepository.dropdownSearchText, !savedSearchText.isEmpty {
+            searchBar.text = savedSearchText
+            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
+        } else {
+            // If no saved search text or the text is empty, show all food items
+            filteredFoodItems = foodItems
+        }
+        
+        sortFoodItems()
+        tableView.reloadData()
     }
     
     private func setupNavigationBar() {
@@ -188,23 +204,26 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }
     
     @objc private func doneButtonTapped() {
+        // Clear the search and reset UserDefaults
         searchBar.text = ""
         UserDefaultsRepository.dropdownSearchText = nil
+        
+        // Reset the filtered items to show all food items
         filteredFoodItems = foodItems
         sortFoodItems()
         tableView.reloadData()
 
+        // Save context and resign the search bar
         let context = CoreDataStack.shared.context
-
         do {
             try context.save()
         } catch {
+            print("Failed to save context: \(error)")
         }
         
         searchBar.resignFirstResponder()
         onDoneButtonTapped?(selectedFoodItems)
         clearSelection()
-        tableView.reloadData()
         dismiss(animated: true, completion: nil)
     }
     
@@ -326,7 +345,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         }
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
-
+/*
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         UserDefaultsRepository.dropdownSearchText = searchText
         if searchText.isEmpty {
@@ -340,7 +359,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         }
         sortFoodItems()
         tableView.reloadData()
-    }
+    }*/
     
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -366,6 +385,37 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
 
 extension Notification.Name {
 static let foodItemsDidChange = Notification.Name("foodItemsDidChange")
+}
+
+extension SearchableDropdownViewController: UISearchBarDelegate {
+    
+    // Called when the "Search" button on the keyboard is tapped
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        // Simply dismiss the keyboard
+        searchBar.resignFirstResponder()
+    }
+    
+    // The existing textDidChange method
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // Save the current search text in UserDefaults
+        UserDefaultsRepository.dropdownSearchText = searchText
+        
+        if searchText.isEmpty {
+            // If search text is empty, show all items
+            filteredFoodItems = foodItems
+        } else {
+            // Otherwise, filter based on the search text
+            filteredFoodItems = foodItems.filter { foodItem in
+                let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
+                let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
+                return nameMatches || emojiMatches
+            }
+        }
+        
+        // Sort and reload the table
+        sortFoodItems()
+        tableView.reloadData()
+    }
 }
 
 

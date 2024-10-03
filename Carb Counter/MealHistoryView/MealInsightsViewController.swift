@@ -1227,6 +1227,17 @@ extension MealInsightsViewController: UISearchBarDelegate {
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-    }
+            // Dismiss the keyboard when the search button is clicked
+            searchBar.resignFirstResponder()
+
+            // Set the search text as selectedEntryName
+            if let searchText = searchBar.text, !searchText.isEmpty {
+                selectedEntryName = searchText
+            } else {
+                selectedEntryName = nil // Reset if the search text is empty
+            }
+
+            // Perform the search with the current search text
+            performSearch(with: searchBar.text ?? "")
+        }
 }

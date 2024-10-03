@@ -4,23 +4,24 @@ import CoreData
 class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPopoverPresentationControllerDelegate {
     
     var tableView: UITableView!
+    var tableViewBottomConstraint: NSLayoutConstraint!
     var mealHistories: [MealHistory] = []
     var filteredMealHistories: [MealHistory] = []
     private var searchBar: UISearchBar = {
-        let searchBar = UISearchBar()
-        searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.backgroundImage = UIImage()
-        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
-            textField.tintColor = .label
-            textField.autocorrectionType = .no
-            textField.spellCheckingType = .no
-            textField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
-            textField.layer.cornerRadius = 8
-            textField.layer.masksToBounds = true
-        }
-        return searchBar
-    }()
+            let searchBar = UISearchBar()
+            searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
+            searchBar.translatesAutoresizingMaskIntoConstraints = false
+            searchBar.backgroundImage = UIImage()
+            if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+                textField.tintColor = .label
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+                textField.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+                textField.layer.cornerRadius = 8
+                textField.layer.masksToBounds = true
+            }
+            return searchBar
+        }()
     
     var datePicker: UIDatePicker!
     
@@ -55,6 +56,10 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         setupTableView()
         fetchMealHistories()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+
+        
         // Add an info button in the navigation bar
                 let infoButton = UIBarButtonItem(image: UIImage(systemName: "wand.and.rays"), style: .plain, target: self, action: #selector(navigateToMealInsights))
                 navigationItem.rightBarButtonItem = infoButton
@@ -73,12 +78,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         navigationItem.backBarButtonItem = backButton
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Remove the observers when the view disappears
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
     private func setupSearchBarAndDatePicker() {
         // Create a container UIStackView to hold the search bar, date picker, and reset button
         let hStackView = UIStackView()
         hStackView.axis = .horizontal
-        hStackView.distribution = .fill  // Allow elements to adjust proportionally
-        hStackView.alignment = .center  // Center items vertically
+        hStackView.distribution = .fill
+        hStackView.alignment = .center
         hStackView.spacing = 8
         hStackView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -90,8 +102,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         searchBar.backgroundImage = UIImage() // Make background clear
         
         // Set content hugging and compression resistance priorities to keep the search bar visible
-        searchBar.setContentHuggingPriority(.defaultLow, for: .horizontal)  // Low priority to let others compress first
-        searchBar.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)  // Resist being compressed
+        searchBar.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        searchBar.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
@@ -130,7 +142,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         datePicker.preferredDatePickerStyle = .compact
         datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
         datePicker.translatesAutoresizingMaskIntoConstraints = false
-        datePicker.setContentHuggingPriority(.defaultHigh, for: .horizontal)  // Prioritize showing this if space is tight
+        datePicker.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         
         // Initialize the reset button
         let resetButton = UIButton(type: .system)
@@ -141,7 +153,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         // Set the image size for the reset button
         resetButton.imageView?.contentMode = .scaleAspectFit
-        resetButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)  // Ensure this takes minimal space
+        resetButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         
         // Add the searchBar, datePicker, and reset button to the hStackView
         hStackView.addArrangedSubview(searchBar)
@@ -156,18 +168,18 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             hStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
             hStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             searchBar.heightAnchor.constraint(equalToConstant: 40),
-            datePicker.widthAnchor.constraint(equalToConstant: 120),  // Fixed width for datePicker
-            resetButton.widthAnchor.constraint(equalToConstant: 20),  // Fixed width for resetButton (small size)
-            resetButton.heightAnchor.constraint(equalToConstant: 20), // Fixed height for resetButton (small size)
+            datePicker.widthAnchor.constraint(equalToConstant: 120),
+            resetButton.widthAnchor.constraint(equalToConstant: 20),
+            resetButton.heightAnchor.constraint(equalToConstant: 20),
         ])
     }
 
     @objc private func cancelButtonTapped() {
-        searchBar.resignFirstResponder() // Dismiss the keyboard when the cancel button is tapped
+        searchBar.resignFirstResponder()
     }
 
     @objc private func doneButtonTapped() {
-        searchBar.resignFirstResponder() // Finish editing and dismiss the keyboard when the done button is tapped
+        searchBar.resignFirstResponder()
     }
     
     private func filterMealHistories(searchText: String? = nil) {
@@ -194,9 +206,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         // Reset the searchBar and datePicker
         searchBar.text = ""
-        datePicker.date = Date()  // Set to current date or your desired default
-        
-        // Optionally: dismiss the keyboard if it is active
+        datePicker.date = Date()
+
         searchBar.resignFirstResponder()
     }
     
@@ -205,21 +216,37 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func setupTableView() {
-        tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.backgroundColor = .clear
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MealHistoryCell")
-        view.addSubview(tableView)
-        
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 8),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-    }
+            tableView = UITableView()
+            tableView.translatesAutoresizingMaskIntoConstraints = false
+            tableView.delegate = self
+            tableView.dataSource = self
+            tableView.backgroundColor = .clear
+            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MealHistoryCell")
+            view.addSubview(tableView)
+            
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90)
+            
+            NSLayoutConstraint.activate([
+                tableView.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 8),
+                tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                tableViewBottomConstraint
+            ])
+        }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+            if let userInfo = notification.userInfo {
+                if let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                    tableViewBottomConstraint.constant = -keyboardFrame.height + 2
+                    view.layoutIfNeeded()
+                }
+            }
+        }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+            tableViewBottomConstraint.constant = -90 // Reset to the original value when the keyboard hides
+            view.layoutIfNeeded()
+        }
     
     private func fetchMealHistories() {
         let context = CoreDataStack.shared.context
