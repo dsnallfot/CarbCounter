@@ -148,6 +148,10 @@ class MealInsightsViewController: UIViewController {
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
         
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+
+        
         // Delay performing the search until the data is fully loaded
                 DispatchQueue.main.async {
                     if let searchText = self.prepopulatedSearchText {
@@ -158,7 +162,7 @@ class MealInsightsViewController: UIViewController {
                     }
                 }
     }
-    
+
     // Function to check if the view controller is presented modally
     private var isModalPresentation: Bool {
         return presentingViewController != nil || navigationController?.presentingViewController?.presentedViewController == navigationController || tabBarController?.presentingViewController is UITabBarController
@@ -193,6 +197,35 @@ class MealInsightsViewController: UIViewController {
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+    
+    @objc private func keyboardWillShow(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        
+        let keyboardHeight = keyboardFrame.height
+        statsTableBottomConstraint?.constant = -keyboardHeight + 257 // Move the table up by the keyboard height minus the statsview+actionbuttonheight (10+165+16+50+16 = 257)
+        
+        UIView.animate(withDuration: animationDuration) {
+            self.view.layoutIfNeeded() // Animate the layout change
+        }
+    }
+
+    @objc private func keyboardWillHide(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        
+        statsTableBottomConstraint?.constant = -10 // Reset the bottom constraint
+        
+        UIView.animate(withDuration: animationDuration) {
+            self.view.layoutIfNeeded() // Animate the layout change
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     private func setupSegmentedControlAndDatePickers() {
@@ -488,11 +521,13 @@ class MealInsightsViewController: UIViewController {
     @objc private func cancelButtonTapped() {
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
+        statsTableBottomConstraint?.constant = -10 // Reset the bottom constraint
     }
 
     @objc private func doneButtonTapped() {
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
+        statsTableBottomConstraint?.constant = -10 // Reset the bottom constraint
 
         // Set the search text as selectedEntryName
         if let searchText = searchBar.text, !searchText.isEmpty {

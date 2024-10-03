@@ -56,10 +56,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         setupTableView()
         fetchMealHistories()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-
-        
         // Add an info button in the navigation bar
                 let infoButton = UIBarButtonItem(image: UIImage(systemName: "wand.and.rays"), style: .plain, target: self, action: #selector(navigateToMealInsights))
                 navigationItem.rightBarButtonItem = infoButton
@@ -76,6 +72,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let backButton = UIBarButtonItem()
         backButton.title = NSLocalizedString("Historik", comment: "Back button title for history")
         navigationItem.backBarButtonItem = backButton
+        
+        // Re-add the observers every time the view appears
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -83,7 +84,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Remove the observers when the view disappears
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
+
+        // Dismiss the keyboard when navigating away from the view controller
+        searchBar.resignFirstResponder()}
     
     private func setupSearchBarAndDatePicker() {
         // Create a container UIStackView to hold the search bar, date picker, and reset button
@@ -416,6 +419,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     @objc private func navigateToMealInsights() {
+        // Dismiss the keyboard before navigating to the next view
+        searchBar.resignFirstResponder()
+        
         // Create an instance of MealInsightsViewController
         let mealInsightsVC = MealInsightsViewController()
 

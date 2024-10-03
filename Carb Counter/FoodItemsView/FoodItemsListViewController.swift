@@ -598,14 +598,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         switch searchMode {
         case .local:
             let cell = tableView.dequeueReusableCell(withIdentifier: "FoodItemCell", for: indexPath) as! FoodItemTableViewCell
-            let foodItem = filteredFoodItems[indexPath.row]
-            cell.configure(with: foodItem)
+            let foodItem = filteredFoodItems[safe: indexPath.row] // Safely access the index
+            if let foodItem = foodItem {
+                cell.configure(with: foodItem)
+            }
             cell.backgroundColor = .clear // Set cell background to clear
             return cell
         case .online:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ArticleCell", for: indexPath) as! ArticleTableViewCell
-            let article = articles[indexPath.row]
-            cell.configure(with: article)
+            if let article = articles[safe: indexPath.row] {
+                cell.configure(with: article)
+            }
             cell.backgroundColor = .clear // Set cell background to clear
             return cell
         }
@@ -1208,5 +1211,11 @@ extension Double {
     public func roundToDecimal(_ fractionDigits: Int) -> Double {
         let multiplier = pow(10.0, Double(fractionDigits))
         return (self * multiplier).rounded() / multiplier
+    }
+}
+
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        return index >= 0 && index < count ? self[index] : nil
     }
 }
