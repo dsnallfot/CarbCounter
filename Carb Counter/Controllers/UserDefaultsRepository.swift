@@ -254,6 +254,14 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "savedSearchText")
         }
         }
+    static var savedHistorySearchText: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "savedHistorySearchText")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "savedHistorySearchText")
+        }
+        }
     static var excludeWords: String? {
         get {
             return UserDefaults.standard.string(forKey: "excludeWords")

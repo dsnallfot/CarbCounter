@@ -54,7 +54,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         ])
         setupSearchBarAndDatePicker()
         setupTableView()
-        fetchMealHistories()
         
         // Add an info button in the navigation bar
                 let infoButton = UIBarButtonItem(image: UIImage(systemName: "wand.and.rays"), style: .plain, target: self, action: #selector(navigateToMealInsights))
@@ -184,38 +183,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
     }
-    
-    private func filterMealHistories(searchText: String? = nil) {
-        let lowercasedSearchText = searchText?.lowercased() ?? ""
-        
-        filteredMealHistories = mealHistories.filter { mealHistory in
-            // Filter by search text (matching food items)
-            if !lowercasedSearchText.isEmpty {
-                let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
-                let matchesSearch = foodItemNames.contains { $0.contains(lowercasedSearchText) }
-                return matchesSearch
-            } else {
-                return true // Show all meal histories when no search text is entered
-            }
-        }
-        
-        tableView.reloadData()
-    }
-    
+
     @objc private func resetFilters() {
-        // Reset filteredMealHistories to show all meal histories
-        filteredMealHistories = mealHistories
-        tableView.reloadData()
-        
-        // Reset the searchBar and datePicker
-        searchBar.text = ""
         datePicker.date = Date()
+        datePickerValueChanged()
+        tableView.reloadData()
 
         searchBar.resignFirstResponder()
     }
     
     @objc private func datePickerValueChanged() {
-        filterMealHistories(by: datePicker.date)
+        // Get the saved search text and filter by both search text and date
+        let savedSearchText = UserDefaultsRepository.savedHistorySearchText
+        filterMealHistories(searchText: savedSearchText, by: datePicker.date)
     }
     
     private func setupTableView() {
@@ -263,9 +243,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         do {
             let mealHistories = try context.fetch(fetchRequest)
             DispatchQueue.main.async {
-                self.mealHistories = mealHistories
-                self.filteredMealHistories = mealHistories
-                self.tableView.reloadData()
+                self.mealHistories = mealHistories // Update the mealHistories array
+                
+                // Apply filtering based on both search text and date
+                let savedSearchText = UserDefaultsRepository.savedHistorySearchText
+                self.filterMealHistories(searchText: savedSearchText, by: self.datePicker.date)
             }
         } catch {
             DispatchQueue.main.async {
@@ -407,17 +389,39 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         detailVC.mealHistory = mealHistory
         navigationController?.pushViewController(detailVC, animated: true)
     }
-    
-    private func filterMealHistories(by date: Date) {
+    private func filterMealHistories(searchText: String? = nil, by date: Date? = nil) {
+        let lowercasedSearchText = searchText?.lowercased() ?? ""
+        
+        // Check if the date picker is altered or if it's still at its default state (today's date)
+        let isDatePickerUnaltered = Calendar.current.isDateInToday(date ?? Date())
+        
         filteredMealHistories = mealHistories.filter { mealHistory in
-            if let mealDate = mealHistory.mealDate {
-                return Calendar.current.isDate(mealDate, inSameDayAs: date)
+            // First, filter by search text (if provided)
+            if !lowercasedSearchText.isEmpty {
+                let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
+                let matchesSearch = foodItemNames.contains { $0.contains(lowercasedSearchText) }
+                
+                if !matchesSearch {
+                    return false // Exclude this item if search text doesn't match
+                }
             }
-            return false
+            
+            // If the date picker hasn't been altered, ignore the date filter
+            if isDatePickerUnaltered {
+                return true // Don't apply date filtering if date picker is unaltered
+            }
+            
+            // Otherwise, filter by date (if provided)
+            if let mealDate = mealHistory.mealDate, let filterDate = date {
+                return Calendar.current.isDate(mealDate, inSameDayAs: filterDate)
+            }
+            
+            return true // Default to include if no date filtering is applied
         }
+        
         tableView.reloadData()
     }
-    
+   
     @objc private func navigateToMealInsights() {
         // Dismiss the keyboard before navigating to the next view
         searchBar.resignFirstResponder()
@@ -519,10 +523,14 @@ extension UIView {
 
 extension MealHistoryViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        filterMealHistories(searchText: searchText) // Filter by search text only
+        // Save the search text in UserDefaultsRepository
+        UserDefaultsRepository.savedHistorySearchText = searchText.isEmpty ? nil : searchText
+        
+        // Filter meal histories based on the entered text and selected date
+        filterMealHistories(searchText: searchText.isEmpty ? nil : searchText, by: datePicker.date)
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder() // Hide the keyboard when search is pressed
+        searchBar.resignFirstResponder() // Hide the keyboard when the search button is pressed
     }
 }
