@@ -2,11 +2,11 @@
 /* Class = "UITextField"; text = "Förslag bolus:"; ObjectID = "1fh-wh-zY3"; */
 "1fh-wh-zY3.text" = "Beräknad bolus:";
 
-/* Class = "UILabel"; text = "⌚️ Tid"; ObjectID = "7Og-yn-C4M"; */
-"7Og-yn-C4M.text" = "⌚️ Tid";
+/* Class = "UILabel"; text = "Tid"; ObjectID = "7Og-yn-C4M"; */
+"7Og-yn-C4M.text" = "Tid";
 
-/* Class = "UILabel"; text = "💧 Bolus"; ObjectID = "7Ry-Bf-akX"; */
-"7Ry-Bf-akX.text" = "💧 Bolus";
+/* Class = "UILabel"; text = "Bolus"; ObjectID = "7Ry-Bf-akX"; */
+"7Ry-Bf-akX.text" = "Bolus";
 
 /* Class = "UITextField"; placeholder = "..."; ObjectID = "7kw-Ua-cCd"; */
 "7kw-Ua-cCd.placeholder" = "...";
@@ -47,8 +47,8 @@
 /* Class = "UILabel"; text = "g"; ObjectID = "IPh-Jy-RLa"; */
 "IPh-Jy-RLa.text" = "g";
 
-/* Class = "UILabel"; text = "📝 Noteringar"; ObjectID = "Icp-9G-Z9E"; */
-"Icp-9G-Z9E.text" = "📝 Noteringar";
+/* Class = "UILabel"; text = "Noteringar"; ObjectID = "Icp-9G-Z9E"; */
+"Icp-9G-Z9E.text" = "Noteringar";
 
 /* Class = "UITextField"; placeholder = "--"; ObjectID = "QiM-g0-oiq"; */
 "QiM-g0-oiq.placeholder" = "--";
@@ -62,8 +62,8 @@
 /* Class = "UITextField"; placeholder = "..."; ObjectID = "XNP-0Y-Zdb"; */
 "XNP-0Y-Zdb.placeholder" = "...";
 
-/* Class = "UILabel"; text = "🥨 Kolhydrater"; ObjectID = "XQi-Yx-BhK"; */
-"XQi-Yx-BhK.text" = "🥨 Kolhydrater";
+/* Class = "UILabel"; text = "Kolhydrater"; ObjectID = "XQi-Yx-BhK"; */
+"XQi-Yx-BhK.text" = "Kolhydrater";
 
 /* Class = "UITabBarItem"; title = "Hem"; ObjectID = "Xuu-Go-pzw"; */
 "Xuu-Go-pzw.title" = "Hem";
@@ -107,8 +107,8 @@
 /* Class = "UILabel"; text = "Anteckningar"; ObjectID = "mTI-gT-iKj"; */
 "mTI-gT-iKj.text" = "Anteckningar";
 
-/* Class = "UILabel"; text = "🍗 Protein"; ObjectID = "nTd-7W-kOi"; */
-"nTd-7W-kOi.text" = "🍗 Protein";
+/* Class = "UILabel"; text = "Protein"; ObjectID = "nTd-7W-kOi"; */
+"nTd-7W-kOi.text" = "Protein";
 
 /* Class = "UILabel"; text = "Protein"; ObjectID = "qDh-Gu-sQr"; */
 "qDh-Gu-sQr.text" = "Protein";
@@ -143,5 +143,5 @@
 /* Class = "UIButton"; normalTitle = "Button"; ObjectID = "z3H-dk-YIf"; */
 "z3H-dk-YIf.normalTitle" = "Button";
 
-/* Class = "UILabel"; text = "🧀 Fett"; ObjectID = "zxL-Gj-HYt"; */
-"zxL-Gj-HYt.text" = "🧀 Fett";
+/* Class = "UILabel"; text = "Fett"; ObjectID = "zxL-Gj-HYt"; */
+"zxL-Gj-HYt.text" = "Fett";
