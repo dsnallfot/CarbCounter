@@ -52,8 +52,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         setupSearchBarAndDatePicker()
-        //setupSearchBar()
-        //setupDatePicker()
         setupTableView()
         fetchMealHistories()
         
@@ -76,11 +74,12 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func setupSearchBarAndDatePicker() {
-        // Create a container UIStackView to hold the search bar and date picker
+        // Create a container UIStackView to hold the search bar, date picker, and reset button
         let hStackView = UIStackView()
         hStackView.axis = .horizontal
-        hStackView.distribution = .fill  // Set to .fill to allocate proper space
-        hStackView.alignment = .fill
+        hStackView.distribution = .fill  // Allow elements to adjust proportionally
+        hStackView.alignment = .center  // Center items vertically
+        hStackView.spacing = 8
         hStackView.translatesAutoresizingMaskIntoConstraints = false
         
         // Initialize the searchBar
@@ -89,6 +88,10 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         searchBar.delegate = self
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.backgroundImage = UIImage() // Make background clear
+        
+        // Set content hugging and compression resistance priorities to keep the search bar visible
+        searchBar.setContentHuggingPriority(.defaultLow, for: .horizontal)  // Low priority to let others compress first
+        searchBar.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)  // Resist being compressed
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
@@ -127,20 +130,35 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         datePicker.preferredDatePickerStyle = .compact
         datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
         datePicker.translatesAutoresizingMaskIntoConstraints = false
+        datePicker.setContentHuggingPriority(.defaultHigh, for: .horizontal)  // Prioritize showing this if space is tight
         
-        // Add the searchBar and datePicker to the hStackView
+        // Initialize the reset button
+        let resetButton = UIButton(type: .system)
+        resetButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        resetButton.tintColor = .systemGray
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
+        
+        // Set the image size for the reset button
+        resetButton.imageView?.contentMode = .scaleAspectFit
+        resetButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)  // Ensure this takes minimal space
+        
+        // Add the searchBar, datePicker, and reset button to the hStackView
         hStackView.addArrangedSubview(searchBar)
         hStackView.addArrangedSubview(datePicker)
+        hStackView.addArrangedSubview(resetButton)
         
         // Add hStackView to the view and set its constraints
         view.addSubview(hStackView)
         
         NSLayoutConstraint.activate([
             hStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-            hStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            hStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            searchBar.heightAnchor.constraint(equalToConstant: 40),  // Set height for the search bar
-            datePicker.widthAnchor.constraint(equalToConstant: 120)  // Set fixed width for the date picker
+            hStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            hStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            searchBar.heightAnchor.constraint(equalToConstant: 40),
+            datePicker.widthAnchor.constraint(equalToConstant: 120),  // Fixed width for datePicker
+            resetButton.widthAnchor.constraint(equalToConstant: 20),  // Fixed width for resetButton (small size)
+            resetButton.heightAnchor.constraint(equalToConstant: 20), // Fixed height for resetButton (small size)
         ])
     }
 
@@ -168,22 +186,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         tableView.reloadData()
     }
-    /*
-    private func setupDatePicker() {
-        datePicker = UIDatePicker()
-        datePicker.translatesAutoresizingMaskIntoConstraints = false
-        datePicker.datePickerMode = .date
-        datePicker.preferredDatePickerStyle = .compact
-        datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
-
-        view.addSubview(datePicker)
-
-        NSLayoutConstraint.activate([
-            datePicker.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
-            datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-        ])
-    }*/
+    
+    @objc private func resetFilters() {
+        // Reset filteredMealHistories to show all meal histories
+        filteredMealHistories = mealHistories
+        tableView.reloadData()
+        
+        // Reset the searchBar and datePicker
+        searchBar.text = ""
+        datePicker.date = Date()  // Set to current date or your desired default
+        
+        // Optionally: dismiss the keyboard if it is active
+        searchBar.resignFirstResponder()
+    }
     
     @objc private func datePickerValueChanged() {
         filterMealHistories(by: datePicker.date)

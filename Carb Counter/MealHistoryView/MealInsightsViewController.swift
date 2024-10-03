@@ -54,7 +54,13 @@ class MealInsightsViewController: UIViewController {
         
     }()
     
-    private let datePresetsSegmentedControl = UISegmentedControl(items: ["∞", "3d", "7d", "30d", "90d"])
+    private let datePresetsSegmentedControl: UISegmentedControl = {
+        let control = UISegmentedControl(items: ["", "3d", "7d", "30d", "90d"]) // Leave the first item empty
+        if let infinitySymbol = UIImage(systemName: "infinity") {
+            control.setImage(infinitySymbol, forSegmentAt: 0) // Set the infinity SF Symbol for the first segment
+        }
+        return control
+    }()
     private let statsTableView = UITableView()
     private let fromTimePicker = UIDatePicker()
     private let toTimePicker = UIDatePicker()
