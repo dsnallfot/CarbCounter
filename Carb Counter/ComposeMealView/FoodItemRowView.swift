@@ -234,68 +234,75 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             notEatenTextField.inputAccessoryView = toolbar
         }
         
-        @objc private func foodItemLabelTapped() {
-            guard let selectedFoodItem = selectedFoodItem else { return }
-            
-            let title = "\(selectedFoodItem.emoji ?? "") \(selectedFoodItem.name ?? "")"
-            var message = ""
-            
-            if let notes = selectedFoodItem.notes, !notes.isEmpty {
-                message += String(format: NSLocalizedString("\nNot: %@\n", comment: "\nNot: %@\n"), notes)
+    @objc private func foodItemLabelTapped() {
+        guard let selectedFoodItem = selectedFoodItem else { return }
+
+        // Clean up the emoji string by trimming unnecessary whitespace or newlines
+        var emoji = selectedFoodItem.emoji ?? ""
+        emoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
+        emoji = emoji.precomposedStringWithCanonicalMapping  // Normalize emoji
+
+        // Format the title string with the cleaned emoji
+        let title = "\(emoji) \(selectedFoodItem.name ?? "")"
+        var message = ""
+
+        if let notes = selectedFoodItem.notes, !notes.isEmpty {
+            message += String(format: NSLocalizedString("\nNot: %@\n", comment: "\nNot: %@\n"), notes)
+        }
+
+        if selectedFoodItem.perPiece {
+            let carbsPP = selectedFoodItem.carbsPP
+            let fatPP = selectedFoodItem.fatPP
+            let proteinPP = selectedFoodItem.proteinPP
+
+            if carbsPP > 0 {
+                message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / st", comment: "\nKolhydrater: %.1f g / st"), carbsPP)
             }
-            
-            if selectedFoodItem.perPiece {
-                let carbsPP = selectedFoodItem.carbsPP
-                let fatPP = selectedFoodItem.fatPP
-                let proteinPP = selectedFoodItem.proteinPP
-                
-                if carbsPP > 0 {
-                    message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / st", comment: "\nKolhydrater: %.1f g / st"), carbsPP)
-                }
-                if fatPP > 0 {
-                    message += String(format: NSLocalizedString("\nFett: %.1f g / st", comment: "\nFett: %.1f g / st"), fatPP)
-                }
-                if proteinPP > 0 {
-                    message += String(format: NSLocalizedString("\nProtein: %.1f g / st", comment: "\nProtein: %.1f g / st"), proteinPP)
-                }
-            } else {
-                let carbohydrates = selectedFoodItem.carbohydrates
-                let fat = selectedFoodItem.fat
-                let protein = selectedFoodItem.protein
-                
-                if carbohydrates > 0 {
-                    message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / 100 g ", comment: "\nKolhydrater: %.1f g / 100 g "), carbohydrates)
-                }
-                if fat > 0 {
-                    message += String(format: NSLocalizedString("\nFett: %.1f g / 100 g ", comment: "\nFett: %.1f g / 100 g "), fat)
-                }
-                if protein > 0 {
-                    message += String(format: NSLocalizedString("\nProtein: %.1f g / 100 g ", comment: "\nProtein: %.1f g / 100 g "), protein)
-                }
+            if fatPP > 0 {
+                message += String(format: NSLocalizedString("\nFett: %.1f g / st", comment: "\nFett: %.1f g / st"), fatPP)
             }
-            
-            if message.isEmpty {
-                message = NSLocalizedString("Ingen näringsinformation tillgänglig.", comment: "Ingen näringsinformation tillgänglig.")
-            } else {
-                // Remove the last newline character
-                message = String(message.dropLast())
-                
-                // Regex replacement for ".0"
-                let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
-                message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
+            if proteinPP > 0 {
+                message += String(format: NSLocalizedString("\nProtein: %.1f g / st", comment: "\nProtein: %.1f g / st"), proteinPP)
             }
-            
-            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
-                self.presentMealInsightsViewController(with: selectedFoodItem)
-            }))
-            alertController.addAction(okAction)
-            
-            if let viewController = self.getViewController() {
-                viewController.present(alertController, animated: true, completion: nil)
+        } else {
+            let carbohydrates = selectedFoodItem.carbohydrates
+            let fat = selectedFoodItem.fat
+            let protein = selectedFoodItem.protein
+
+            if carbohydrates > 0 {
+                message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / 100 g", comment: "\nKolhydrater: %.1f g / 100 g"), carbohydrates)
+            }
+            if fat > 0 {
+                message += String(format: NSLocalizedString("\nFett: %.1f g / 100 g", comment: "\nFett: %.1f g / 100 g"), fat)
+            }
+            if protein > 0 {
+                message += String(format: NSLocalizedString("\nProtein: %.1f g / 100 g", comment: "\nProtein: %.1f g / 100 g"), protein)
             }
         }
+
+        if message.isEmpty {
+            message = NSLocalizedString("Ingen näringsinformation tillgänglig.", comment: "Ingen näringsinformation tillgänglig.")
+        } else {
+            // Remove the last newline character
+            message = String(message.dropLast())
+            
+            // Regex replacement for ".0"
+            let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
+            message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
+        }
+
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
+            self.presentMealInsightsViewController(with: selectedFoodItem)
+        }))
+        alertController.addAction(okAction)
+
+        if let viewController = self.getViewController() {
+            viewController.present(alertController, animated: true, completion: nil)
+        }
+    }
+
     
     private func presentMealInsightsViewController(with selectedFoodItem: FoodItem) {
         // Create an instance of MealInsightsViewController
@@ -303,6 +310,8 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
 
         // Prepopulate the search text field with the foodItem name
         mealInsightsVC.prepopulatedSearchText = selectedFoodItem.name ?? ""
+        
+        mealInsightsVC.isComingFromFoodItemRow = true
 
         // Set the completion handler to update the portionServedTextField
         mealInsightsVC.onAveragePortionSelected = { [weak self] averagePortion in
@@ -317,11 +326,20 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         // Set the modal presentation style
         navController.modalPresentationStyle = .pageSheet
 
+        // Customize the sheet behavior
+        if let sheet = navController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = false
+            sheet.largestUndimmedDetentIdentifier = .medium
+            sheet.preferredCornerRadius = 24
+        }
+
         // Get the top view controller and present the modal
         if let topVC = getTopViewController() {
             topVC.present(navController, animated: true, completion: nil)
         }
     }
+
     
     func getTopViewController() -> UIViewController? {
         guard let windowScene = UIApplication.shared.connectedScenes

@@ -507,12 +507,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         
+        // Apply predicate to filter out items where delete is true
+        fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        
         do {
-            // Fetch all items
+            // Fetch filtered items
             foodItems = try context.fetch(fetchRequest)
-            
-            // Filter out items where delete flag is true
-            filteredFoodItems = foodItems.filter { !$0.delete }
             
             DispatchQueue.main.async {
                 self.sortFoodItems()
@@ -685,7 +685,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             self.addToComposeMealViewController(foodItem: foodItem)
         }))
         
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Insikter", comment: "Insights button"), style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: foodItem)
         }))
         

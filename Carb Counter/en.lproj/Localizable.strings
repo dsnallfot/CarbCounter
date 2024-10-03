@@ -419,10 +419,16 @@
 "%.2f E" = "%.2f U";
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
+"Mer insikter" = "More insights";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
+"Ingen måltidshistorik tillgänglig för\n\"%@\"" = "No meal history found for\n\"%@\"";
+"det valda livsmedlet" = "the selected food item";
 "Inga sökträffar inom valt datumintervall" = "No matches in selected date range";
 "Genomsnittlig portion" = "Average serving size";
 "\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nDo you want to use the average serving size from meal history: \n%.0f g for %@?";
+"Sök i historiken" = "Search history";
+"  Datum:" = "  Dates:";
+"till  " = "to  ";
 
 /* Settings */
 "Inställningar" = "Settings";
