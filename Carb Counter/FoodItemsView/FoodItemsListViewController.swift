@@ -654,7 +654,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func showLocalFoodItemDetails(_ foodItem: FoodItem) {
-        let title = "\(foodItem.emoji ?? "") \(foodItem.name ?? NSLocalizedString("Produkt", comment: "Default product name if none is provided"))"
+        // Clean up the emoji string by trimming unnecessary whitespace or newlines
+        var emoji = foodItem.emoji ?? ""
+        emoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
+        emoji = emoji.precomposedStringWithCanonicalMapping  // Normalize emoji
+        
+        // Format the title string with the cleaned emoji
+        let title = "\(emoji) \(foodItem.name ?? NSLocalizedString("Produkt", comment: "Default product name if none is provided"))"
+        
         var message = ""
 
         if let notes = foodItem.notes, !notes.isEmpty {
