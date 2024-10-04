@@ -112,7 +112,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
             textField.autocapitalizationType = .sentences
-            textField.spellCheckingType = .yes
+            textField.spellCheckingType = .no
             textField.inputAssistantItem.leadingBarButtonGroups = []
             textField.inputAssistantItem.trailingBarButtonGroups = []
 

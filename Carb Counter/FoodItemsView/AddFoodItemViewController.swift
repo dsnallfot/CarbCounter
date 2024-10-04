@@ -1,6 +1,7 @@
 // Daniel: 600+ lines - To be cleaned
 import UIKit
 import CoreData
+import ISEmojiView
 
 protocol AddFoodItemDelegate: AnyObject {
     func didAddFoodItem()
@@ -50,6 +51,28 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Create keyboard settings with default initialization
+            let keyboardSettings = KeyboardSettings(bottomType: .categories)
+
+            // Now set the additional properties on the KeyboardSettings object
+            keyboardSettings.countOfRecentsEmojis = 42 // Example: change the number of recent emojis
+            keyboardSettings.needToShowAbcButton = false // Show the ABC button
+            keyboardSettings.needToShowDeleteButton = true // Show the delete button
+            keyboardSettings.updateRecentEmojiImmediately = true // Update recent emojis immediately
+
+            // Initialize EmojiView with the custom settings
+            let emojiView = EmojiView(keyboardSettings: keyboardSettings)
+            emojiView.translatesAutoresizingMaskIntoConstraints = false
+            emojiView.delegate = self
+        
+        let bottomView = emojiView.subviews.last?.subviews.last
+        let collecitonViewToSuperViewTrailingConstraint = bottomView?.value(forKey: "collecitonViewToSuperViewTrailingConstraint") as? NSLayoutConstraint
+        collecitonViewToSuperViewTrailingConstraint?.priority = .defaultLow
+
+            // Assign the custom emoji keyboard to the emojiTextField
+            emojiTextField.inputView = emojiView
+        
         view.backgroundColor = .systemBackground
         // Create the gradient view
             let colors: [CGColor] = [
@@ -634,5 +657,25 @@ extension ComposeMealViewController: AddFoodItemDelegate {
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
+    }
+}
+
+extension AddFoodItemViewController: EmojiViewDelegate {
+    func emojiViewDidSelectEmoji(_ emoji: String, emojiView: EmojiView) {
+        emojiTextField.insertText(emoji)
+    }
+
+    func emojiViewDidPressChangeKeyboardButton(_ emojiView: EmojiView) {
+        emojiTextField.inputView = nil
+        emojiTextField.keyboardType = .default
+        emojiTextField.reloadInputViews()
+    }
+
+    func emojiViewDidPressDeleteBackwardButton(_ emojiView: EmojiView) {
+        emojiTextField.deleteBackward()
+    }
+
+    func emojiViewDidPressDismissKeyboardButton(_ emojiView: EmojiView) {
+        emojiTextField.resignFirstResponder()
     }
 }

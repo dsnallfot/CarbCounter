@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5ACF73432CAFEAF700C48000 /* ISEmojiView in Frameworks */ = {isa = PBXBuildFile; productRef = 5ACF73422CAFEAF700C48000 /* ISEmojiView */; };
 		6502A99D2C29681E00414DC0 /* MealHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6502A99C2C29681E00414DC0 /* MealHistoryViewController.swift */; };
 		6502A99F2C29754D00414DC0 /* MealHistoryDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6502A99E2C29754D00414DC0 /* MealHistoryDetailViewController.swift */; };
 		650EF4142C3CA05800ADF8B0 /* CustomTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650EF4132C3CA05800ADF8B0 /* CustomTabBarController.swift */; };
@@ -109,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5ACF73432CAFEAF700C48000 /* ISEmojiView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,6 +273,9 @@
 			dependencies = (
 			);
 			name = "Carb Counter";
+			packageProductDependencies = (
+				5ACF73422CAFEAF700C48000 /* ISEmojiView */,
+			);
 			productName = "Carb Counter";
 			productReference = 6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */;
 			productType = "com.apple.product-type.application";
@@ -300,6 +305,9 @@
 				en,
 			);
 			mainGroup = 6553EDEC2C20DA9100B0FDF5;
+			packageReferences = (
+				5ACF73412CAFEAF700C48000 /* XCRemoteSwiftPackageReference "ISEmojiView" */,
+			);
 			productRefGroup = 6553EDF62C20DA9200B0FDF5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -619,6 +627,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5ACF73412CAFEAF700C48000 /* XCRemoteSwiftPackageReference "ISEmojiView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/isaced/ISEmojiView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5ACF73422CAFEAF700C48000 /* ISEmojiView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5ACF73412CAFEAF700C48000 /* XCRemoteSwiftPackageReference "ISEmojiView" */;
+			productName = ISEmojiView;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		6553EE012C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld */ = {

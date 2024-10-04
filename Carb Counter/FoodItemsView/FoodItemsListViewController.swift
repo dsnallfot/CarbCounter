@@ -246,7 +246,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
             textField.autocapitalizationType = .sentences
-            textField.spellCheckingType = .yes
+            textField.spellCheckingType = .yes //Other keyboards are set without spell checking, but this one has it since online search will be triggered by this search text
             textField.inputAssistantItem.leadingBarButtonGroups = []
             textField.inputAssistantItem.trailingBarButtonGroups = []
             
@@ -513,6 +513,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         do {
             // Fetch filtered items
             foodItems = try context.fetch(fetchRequest)
+            
+            // Ensure that filteredFoodItems is updated to reflect changes
+            filteredFoodItems = foodItems
             
             DispatchQueue.main.async {
                 self.sortFoodItems()
@@ -810,10 +813,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func editFoodItem(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
-            addFoodItemVC.delegate = self
+            addFoodItemVC.delegate = self // Set the delegate
             addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
             let navController = UINavigationController(rootViewController: addFoodItemVC)
-            navController.modalPresentationStyle = .pageSheet // or .automatic depending on your needs
+            navController.modalPresentationStyle = .pageSheet
             
             present(navController, animated: true, completion: nil)
         }
@@ -1057,7 +1060,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     // AddFoodItemDelegate conformance
     func didAddFoodItem() {
+        // Fetch updated list of food items
         fetchFoodItems()
+        
+        // Update the filtered list and reload the table view
+        filteredFoodItems = foodItems // Ensure filtered list is updated
+        sortFoodItems()
+        tableView.reloadData()
     }
 }
 
@@ -1219,3 +1228,4 @@ extension Array {
         return index >= 0 && index < count ? self[index] : nil
     }
 }
+
