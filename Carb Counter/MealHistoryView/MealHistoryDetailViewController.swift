@@ -166,12 +166,9 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MealHistoryCell")
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .singleLine
-        
-        // Disable user interaction for the table view
-        tableView.isUserInteractionEnabled = false
-        
+
         view.addSubview(tableView)
-        
+
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -179,50 +176,96 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80)
         ])
     }
-    
+
     // MARK: - UITableView DataSource and Delegate
-        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return mealHistory?.foodEntries?.count ?? 0
-        }
-    
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return mealHistory?.foodEntries?.count ?? 0
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "MealHistoryCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MealHistoryCell", for: indexPath)
+        
+        if let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] {
+            let foodEntry = foodEntries[indexPath.row]
             
-            if let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] {
-                let foodEntry = foodEntries[indexPath.row]
-                
-                // Create food name label
-                let foodNameLabel = UILabel()
-                foodNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-                foodNameLabel.text = foodEntry.entryName
-                
-                // Create details label (smaller, gray text)
-                let foodDetailLabel = UILabel()
-                foodDetailLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-                foodDetailLabel.textColor = .gray
-                foodDetailLabel.text = formatFoodEntry(foodEntry)
-                
-                // Setup stack view to hold both labels
-                let stackView = UIStackView(arrangedSubviews: [foodNameLabel, foodDetailLabel])
-                stackView.axis = .vertical
-                stackView.spacing = 2
-                stackView.translatesAutoresizingMaskIntoConstraints = false
-                
-                // Add stack view to the cell's content view
-                cell.contentView.addSubview(stackView)
-                cell.backgroundColor = .clear
-                
-                NSLayoutConstraint.activate([
-                    stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
-                    stackView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
-                    stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 8),
-                    stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -8)
-                ])
-            }
+            // Create food name label
+            let foodNameLabel = UILabel()
+            foodNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            foodNameLabel.text = foodEntry.entryName
             
-            return cell
+            // Create details label (smaller, gray text)
+            let foodDetailLabel = UILabel()
+            foodDetailLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+            foodDetailLabel.textColor = .gray
+            foodDetailLabel.text = formatFoodEntry(foodEntry)
+            
+            // Setup stack view to hold both labels
+            let stackView = UIStackView(arrangedSubviews: [foodNameLabel, foodDetailLabel])
+            stackView.axis = .vertical
+            stackView.spacing = 2
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add stack view to the cell's content view
+            cell.contentView.addSubview(stackView)
+            cell.backgroundColor = .clear
+            
+            NSLayoutConstraint.activate([
+                stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+                stackView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+                stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 8),
+                stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -8)
+            ])
         }
-    
+        
+        return cell
+    }
+
+    // Handle row selection to present MealInsightsViewController
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] else {
+            return
+        }
+        let foodEntry = foodEntries[indexPath.row]
+        
+        presentMealInsightsViewController(with: foodEntry)
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+
+    // Present MealInsightsViewController
+    private func presentMealInsightsViewController(with foodEntry: FoodItemEntry) {
+        // Create an instance of MealInsightsViewController
+        let mealInsightsVC = MealInsightsViewController()
+
+        // Prepopulate the search text field with the foodEntry name
+        mealInsightsVC.prepopulatedSearchText = foodEntry.entryName ?? ""
+        
+        mealInsightsVC.isComingFromDetailView = true
+
+        // Since you mentioned it's not necessary, we can remove the completion handler
+        // that updates the portionServedTextField
+
+        // Embed the MealInsightsViewController in a UINavigationController
+        let navController = UINavigationController(rootViewController: mealInsightsVC)
+
+        // Set the modal presentation style
+        navController.modalPresentationStyle = .pageSheet
+
+        // Customize the sheet behavior
+        if let sheet = navController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = false
+            sheet.largestUndimmedDetentIdentifier = .medium
+            sheet.preferredCornerRadius = 24
+        }
+
+        // Present the modal
+        present(navController, animated: true, completion: nil)
+    }
+
+
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
         actionButton.setTitle(NSLocalizedString("Servera samma måltid igen", comment: "Serve the same meal again"), for: .normal)

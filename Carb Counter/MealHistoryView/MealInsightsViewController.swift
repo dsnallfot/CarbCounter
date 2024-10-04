@@ -14,6 +14,7 @@ class MealInsightsViewController: UIViewController {
     private var selectedEntryName: String?
     private var isComingFromModal = false
     public var isComingFromFoodItemRow = false
+    public var isComingFromDetailView = false
     private var statsViewBottomConstraint: NSLayoutConstraint!
     private var statsTableTopConstraint: NSLayoutConstraint?
     private var statsTableBottomConstraint: NSLayoutConstraint?
@@ -178,6 +179,7 @@ class MealInsightsViewController: UIViewController {
     @objc private func dismissModal() {
         dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
+        self.isComingFromDetailView = false
     }
     
     private func setupGradientView() {
@@ -273,7 +275,7 @@ class MealInsightsViewController: UIViewController {
 
         // Combine the controls and stack views
         combinedStackView.axis = .vertical
-        combinedStackView.spacing = isComingFromFoodItemRow ? 12 : 16  // Set initial spacing here
+        combinedStackView.spacing = isComingFromFoodItemRow || isComingFromDetailView ? 12 : 16  // Set initial spacing here
         combinedStackView.translatesAutoresizingMaskIntoConstraints = false
         combinedStackView.addArrangedSubview(segmentedControl)
         combinedStackView.addArrangedSubview(datePresetsSegmentedControl)
@@ -478,8 +480,13 @@ class MealInsightsViewController: UIViewController {
                 searchBar.isHidden = true
                 statsTableView.isHidden = true
                 statsViewBottomConstraint.constant = -76
-
-                // Modify spacing to 12 when `isComingFromFoodItemRow` is true
+                combinedStackView.spacing = 12
+            } else if isComingFromDetailView {
+                actionButton.isHidden = true
+                segmentedControl.isHidden = true
+                searchBar.isHidden = true
+                statsTableView.isHidden = true
+                statsViewBottomConstraint.constant = -16
                 combinedStackView.spacing = 12
             } else {
                 actionButton.isHidden = true
@@ -494,8 +501,6 @@ class MealInsightsViewController: UIViewController {
                 } else {
                     updateStats(for: "")
                 }
-
-                // Reset spacing to 16 when not coming from food item row
                 combinedStackView.spacing = 16
             }
             updateStatsTableConstraints()
@@ -603,7 +608,7 @@ class MealInsightsViewController: UIViewController {
 
         // Method to enable or disable the constraints dynamically
         private func updateStatsTableConstraints() {
-            if isComingFromFoodItemRow {
+            if isComingFromFoodItemRow || isComingFromDetailView {
                 // Disable top and bottom constraints to make space in the smaller modal
                 statsTableTopConstraint?.isActive = false
                 statsTableBottomConstraint?.isActive = false
