@@ -81,7 +81,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             textField.textAlignment = .right
             textField.translatesAutoresizingMaskIntoConstraints = false
             textField.widthAnchor.constraint(equalToConstant: 48).isActive = true
-            textField.backgroundColor = .secondarySystemBackground
+            textField.backgroundColor = .systemGray2.withAlphaComponent(0.2)
             textField.textColor = .label
             textField.adjustsFontSizeToFitWidth = true
             return textField
@@ -106,7 +106,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             textField.textAlignment = .right
             textField.translatesAutoresizingMaskIntoConstraints = false
             textField.widthAnchor.constraint(equalToConstant: 48).isActive = true
-            textField.backgroundColor = .secondarySystemBackground
+            textField.backgroundColor = .systemGray2.withAlphaComponent(0.2)
             textField.textColor = .label
             textField.adjustsFontSizeToFitWidth = true
             return textField
