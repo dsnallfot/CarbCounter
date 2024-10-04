@@ -1,11 +1,33 @@
 import UIKit
 
-class MealHistoryDetailViewController: UIViewController {
+class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var mealHistory: MealHistory?
     
+    // Summary labels
+    var totalBolusAmountLabel: UILabel!
+    var totalNetCarbsLabel: UILabel!
+    var totalNetFatLabel: UILabel!
+    var totalNetProteinLabel: UILabel!
+    
+    // Container views for bolus, fat, protein, and carbs
+    var bolusContainer: UIView!
+    var fatContainer: UIView!
+    var proteinContainer: UIView!
+    var carbsContainer: UIView!
+    
+    // TableView for food entries
+    var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMM HH:mm"
+        let mealTimeStr = dateFormatter.string(from: mealHistory?.mealDate ?? Date())
+        
+        title = String(format: NSLocalizedString("Måltid %@", comment: "Meal time format"), mealTimeStr)
+        
         view.backgroundColor = .systemBackground
         // Create the gradient view
             let colors: [CGColor] = [
@@ -27,10 +49,158 @@ class MealHistoryDetailViewController: UIViewController {
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
-        
-        setupDetailView()
+        setupSummaryView()
+        setupTableView()
         setupActionButton()
     }
+    
+    private func setupSummaryView() {
+        let summaryContainer = UIView()
+        summaryContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(summaryContainer)
+        
+        // Create and add the container views
+        bolusContainer = createContainerView(backgroundColor: .systemIndigo)
+        totalBolusAmountLabel = createLabel(text: formatBolusAmount(mealHistory?.totalNetBolus ?? 0, unit: "E"))
+        setupContainer(bolusContainer, title: "BOLUS", valueLabel: totalBolusAmountLabel)
+        
+        fatContainer = createContainerView(backgroundColor: .systemBrown)
+        totalNetFatLabel = createLabel(text: formatAmount(mealHistory?.totalNetFat ?? 0, unit: "g"))
+        setupContainer(fatContainer, title: "FETT", valueLabel: totalNetFatLabel)
+        
+        proteinContainer = createContainerView(backgroundColor: .systemBrown)
+        totalNetProteinLabel = createLabel(text: formatAmount(mealHistory?.totalNetProtein ?? 0, unit: "g"))
+        setupContainer(proteinContainer, title: "PROTEIN", valueLabel: totalNetProteinLabel)
+        
+        carbsContainer = createContainerView(backgroundColor: .systemOrange)
+        totalNetCarbsLabel = createLabel(text: formatAmount(mealHistory?.totalNetCarbs ?? 0, unit: "g"))
+        setupContainer(carbsContainer, title: "KOLHYDRATER", valueLabel: totalNetCarbsLabel)
+        
+        // Add all containers into a horizontal stack
+        let hStack = UIStackView(arrangedSubviews: [bolusContainer, fatContainer, proteinContainer, carbsContainer])
+        hStack.axis = .horizontal
+        hStack.spacing = 8
+        hStack.distribution = .fillEqually
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        summaryContainer.addSubview(hStack)
+        
+        NSLayoutConstraint.activate([
+            summaryContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            summaryContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            summaryContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            hStack.leadingAnchor.constraint(equalTo: summaryContainer.leadingAnchor),
+            hStack.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor),
+            hStack.topAnchor.constraint(equalTo: summaryContainer.topAnchor),
+            hStack.bottomAnchor.constraint(equalTo: summaryContainer.bottomAnchor),
+            summaryContainer.heightAnchor.constraint(equalToConstant: 45)
+        ])
+    }
+
+    
+    private func setupContainer(_ container: UIView, title: String, valueLabel: UILabel) {
+        let titleLabel = createLabel(text: NSLocalizedString(title, comment: title), fontSize: 9, weight: .bold, color: .white)
+        
+        let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+        ])
+    }
+
+    private func createContainerView(backgroundColor: UIColor) -> UIView {
+        let container = UIView()
+        container.backgroundColor = backgroundColor
+        container.layer.cornerRadius = 8
+        container.translatesAutoresizingMaskIntoConstraints = false
+        return container
+    }
+    
+    private func createLabel(text: String, fontSize: CGFloat = 18, weight: UIFont.Weight = .bold, color: UIColor = .white) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        label.textColor = color
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }
+    
+    private func formatAmount(_ amount: Double, unit: String) -> String {
+        return amount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f %@", amount, unit) : String(format: "%.0f %@", amount, unit)
+    }
+    
+    private func formatBolusAmount(_ amount: Double, unit: String) -> String {
+        return amount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f %@", amount, unit) : String(format: "%.2f %@", amount, unit)
+    }
+    
+    private func setupTableView() {
+        tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MealHistoryCell")
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .singleLine
+        
+        view.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80)
+        ])
+    }
+    
+    // MARK: - UITableView DataSource and Delegate
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return mealHistory?.foodEntries?.count ?? 0
+        }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MealHistoryCell", for: indexPath)
+            
+            if let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] {
+                let foodEntry = foodEntries[indexPath.row]
+                
+                // Create food name label
+                let foodNameLabel = UILabel()
+                foodNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+                foodNameLabel.text = foodEntry.entryName
+                
+                // Create details label (smaller, gray text)
+                let foodDetailLabel = UILabel()
+                foodDetailLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+                foodDetailLabel.textColor = .gray
+                foodDetailLabel.text = formatFoodEntry(foodEntry)
+                
+                // Setup stack view to hold both labels
+                let stackView = UIStackView(arrangedSubviews: [foodNameLabel, foodDetailLabel])
+                stackView.axis = .vertical
+                stackView.spacing = 2
+                stackView.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Add stack view to the cell's content view
+                cell.contentView.addSubview(stackView)
+                cell.backgroundColor = .clear
+                
+                NSLayoutConstraint.activate([
+                    stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+                    stackView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+                    stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 8),
+                    stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -8)
+                ])
+            }
+            
+            return cell
+        }
     
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
@@ -85,116 +255,27 @@ class MealHistoryDetailViewController: UIViewController {
         }
     }
     
-    private func setupDetailView() {
-        guard let mealHistory = mealHistory else { return }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm"
-        let mealTimeStr = dateFormatter.string(from: mealHistory.mealDate ?? Date())
-        
-        title = String(format: NSLocalizedString("Måltid %@", comment: "Meal time format"), mealTimeStr)
-        
-        let summaryLabel = UILabel()
-        summaryLabel.translatesAutoresizingMaskIntoConstraints = false
-        summaryLabel.numberOfLines = 0
-        summaryLabel.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-        summaryLabel.text = formatSummary(mealHistory)
-        view.addSubview(summaryLabel)
-        
-        NSLayoutConstraint.activate([
-            summaryLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            summaryLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            summaryLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-        ])
-        
-        var lastView: UIView = summaryLabel
-        
-        for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
-            let foodNameLabel = UILabel()
-            foodNameLabel.translatesAutoresizingMaskIntoConstraints = false
-            foodNameLabel.numberOfLines = 0
-            foodNameLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-            foodNameLabel.text = "\(foodEntry.entryName ?? "")"
-            view.addSubview(foodNameLabel)
-            
-            NSLayoutConstraint.activate([
-                foodNameLabel.topAnchor.constraint(equalTo: lastView.bottomAnchor, constant: 18),
-                foodNameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-                foodNameLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-            ])
-            
-            let foodDetailLabel = UILabel()
-            foodDetailLabel.translatesAutoresizingMaskIntoConstraints = false
-            foodDetailLabel.numberOfLines = 0
-            foodDetailLabel.font = UIFont.systemFont(ofSize: 14, weight: .light)
-            foodDetailLabel.textColor = .gray
-            foodDetailLabel.text = formatFoodEntry(foodEntry)
-            view.addSubview(foodDetailLabel)
-            
-            NSLayoutConstraint.activate([
-                foodDetailLabel.topAnchor.constraint(equalTo: foodNameLabel.bottomAnchor, constant: 4),
-                foodDetailLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-                foodDetailLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-            ])
-            
-            lastView = foodDetailLabel
-        }
-    }
-    
-    private func formatSummary(_ mealHistory: MealHistory) -> String {
-        var summaryText = ""
-        
-        if mealHistory.totalNetCarbs > 0 {
-            let carbs = mealHistory.totalNetCarbs.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.0f", mealHistory.totalNetCarbs) :
-                String(format: "%.0f", mealHistory.totalNetCarbs)
-            summaryText += String(format: NSLocalizedString("KH %@ g", comment: "Carbs amount format"), carbs)
-        }
-        if mealHistory.totalNetFat > 0 {
-            if !summaryText.isEmpty { summaryText += " • " }
-            let fat = mealHistory.totalNetFat.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.0f", mealHistory.totalNetFat) :
-                String(format: "%.0f", mealHistory.totalNetFat)
-            summaryText += String(format: NSLocalizedString("Fett %@ g", comment: "Fat amount format"), fat)
-        }
-        if mealHistory.totalNetProtein > 0 {
-            if !summaryText.isEmpty { summaryText += " • " }
-            let protein = mealHistory.totalNetProtein.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.0f", mealHistory.totalNetProtein) :
-                String(format: "%.0f", mealHistory.totalNetProtein)
-            summaryText += String(format: NSLocalizedString("Protein %@ g", comment: "Protein amount format"), protein)
-        }
-        if mealHistory.totalNetBolus > 0 {
-            if !summaryText.isEmpty { summaryText += " • " }
-            let bolus = mealHistory.totalNetBolus.truncatingRemainder(dividingBy: 1) == 0 ?
-                String(format: "%.2f", mealHistory.totalNetBolus) :
-                String(format: "%.2f", mealHistory.totalNetBolus)
-            summaryText += String(format: NSLocalizedString("Bolus %@ E", comment: "Bolus amount format"), bolus)
-        }
-        
-        return "\(summaryText)"
-    }
-    
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {
-        var detailText = ""
-        let portionServedFormatted = foodEntry.entryPortionServed.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryPortionServed) : String(format: "%.1f", foodEntry.entryPortionServed)
-        let notEatenFormatted = foodEntry.entryNotEaten.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", foodEntry.entryNotEaten) : String(format: "%.1f", foodEntry.entryNotEaten)
+        let portionServedFormatted = String(format: "%.0f", foodEntry.entryPortionServed)
+        let portionServedFormattedPP = String(format: "%.1f", foodEntry.entryPortionServed)
+        let notEatenFormatted = String(format: "%.0f", foodEntry.entryNotEaten)
+        let notEatenFormattedPP = String(format: "%.1f", foodEntry.entryNotEaten)
         let eatenAmount = foodEntry.entryPortionServed - foodEntry.entryNotEaten
-        let eatenAmountFormatted = eatenAmount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", eatenAmount) : String(format: "%.1f", eatenAmount)
-
+        let eatenAmountFormatted = String(format: "%.0f", eatenAmount)
+        let eatenAmountFormattedPP = String(format: "%.1f", eatenAmount)
+        
         if foodEntry.entryNotEaten > 0 {
             if foodEntry.entryPerPiece {
-                detailText = String(format: NSLocalizedString("Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]", comment: "Ate up format (pieces)"), eatenAmountFormatted, portionServedFormatted, notEatenFormatted)
+                return String(format: NSLocalizedString("Åt upp %@ st [Serverades %@ st - Lämnade %@ st]", comment: "Ate up format (pieces)"), eatenAmountFormattedPP, portionServedFormattedPP, notEatenFormattedPP)
             } else {
-                detailText = String(format: NSLocalizedString("Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]", comment: "Ate up format (grams)"), eatenAmountFormatted, portionServedFormatted, notEatenFormatted)
+                return String(format: NSLocalizedString("Åt upp %@ g [Serverades %@ g - Lämnade %@ g]", comment: "Ate up format (grams)"), eatenAmountFormatted, portionServedFormatted, notEatenFormatted)
             }
         } else {
             if foodEntry.entryPerPiece {
-                detailText = String(format: NSLocalizedString("Åt upp %@ st", comment: "Ate up format (pieces)"), portionServedFormatted)
+                return String(format: NSLocalizedString("Åt upp %@ st", comment: "Ate up format (pieces)"), portionServedFormattedPP)
             } else {
-                detailText = String(format: NSLocalizedString("Åt upp %@ g", comment: "Ate up format (grams)"), portionServedFormatted)
+                return String(format: NSLocalizedString("Åt upp %@ g", comment: "Ate up format (grams)"), portionServedFormatted)
             }
         }
-        return detailText
     }
 }
