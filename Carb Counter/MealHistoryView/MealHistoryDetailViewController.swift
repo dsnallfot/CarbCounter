@@ -133,11 +133,29 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func formatAmount(_ amount: Double, unit: String) -> String {
-        return amount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f %@", amount, unit) : String(format: "%.0f %@", amount, unit)
+        return String(format: "%.0f %@", amount, unit) // Always show 0 decimals
     }
     
     private func formatBolusAmount(_ amount: Double, unit: String) -> String {
-        return amount.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f %@", amount, unit) : String(format: "%.2f %@", amount, unit)
+        if amount.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f %@", amount, unit) // No decimals for whole numbers
+        } else if amount * 10 == floor(amount * 10) {
+            return String(format: "%.1f %@", amount, unit) // 1 decimal place if there is only one non-zero decimal
+        } else {
+            return String(format: "%.2f %@", amount, unit) // 2 decimal places otherwise
+        }
+    }
+    
+    private func formatGramsAmount(_ amount: Double) -> String {
+        return String(format: "%.0f", amount) // Always 0 decimals
+    }
+    
+    private func formatPPAmount(_ amount: Double) -> String {
+        if amount.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", amount) // No decimals if whole number
+        } else {
+            return String(format: "%.1f", amount) // 1 decimal otherwise
+        }
     }
     
     private func setupTableView() {
@@ -148,6 +166,9 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MealHistoryCell")
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .singleLine
+        
+        // Disable user interaction for the table view
+        tableView.isUserInteractionEnabled = false
         
         view.addSubview(tableView)
         
@@ -256,13 +277,15 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func formatFoodEntry(_ foodEntry: FoodItemEntry) -> String {
-        let portionServedFormatted = String(format: "%.0f", foodEntry.entryPortionServed)
-        let portionServedFormattedPP = String(format: "%.1f", foodEntry.entryPortionServed)
-        let notEatenFormatted = String(format: "%.0f", foodEntry.entryNotEaten)
-        let notEatenFormattedPP = String(format: "%.1f", foodEntry.entryNotEaten)
+        let portionServedFormatted = formatGramsAmount(foodEntry.entryPortionServed) // Always 0 decimals for grams
+        let portionServedFormattedPP = formatPPAmount(foodEntry.entryPortionServed) // 0 or 1 decimals for pieces
+        
+        let notEatenFormatted = formatGramsAmount(foodEntry.entryNotEaten) // Always 0 decimals for grams
+        let notEatenFormattedPP = formatPPAmount(foodEntry.entryNotEaten) // 0 or 1 decimals for pieces
+        
         let eatenAmount = foodEntry.entryPortionServed - foodEntry.entryNotEaten
-        let eatenAmountFormatted = String(format: "%.0f", eatenAmount)
-        let eatenAmountFormattedPP = String(format: "%.1f", eatenAmount)
+        let eatenAmountFormatted = formatGramsAmount(eatenAmount) // Always 0 decimals for grams
+        let eatenAmountFormattedPP = formatPPAmount(eatenAmount) // 0 or 1 decimals for pieces
         
         if foodEntry.entryNotEaten > 0 {
             if foodEntry.entryPerPiece {
@@ -278,4 +301,5 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             }
         }
     }
+
 }
