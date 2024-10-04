@@ -65,6 +65,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        let searchText = UserDefaultsRepository.savedHistorySearchText
+        searchBar.text = searchText
         fetchMealHistories()
         
         // Set the back button title for the next view controller
