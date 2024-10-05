@@ -475,6 +475,29 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             
             if addToMeal {
                 addToComposeMealViewController()
+
+                // Show SuccessView when adding to meal
+                let successView = SuccessView()
+                if let window = self.view.window {
+                    successView.showInView(window)
+                }
+
+                // Wait for the success view animation to finish before dismissing or popping
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    // Dismiss or pop view controller based on the presentation style
+                    if let navigationController = self.navigationController, navigationController.viewControllers.count > 1 {
+                        navigationController.popViewController(animated: true)
+                    } else {
+                        self.dismiss(animated: true, completion: nil)
+                    }
+                }
+            } else {
+                // If not adding to meal, just dismiss or pop immediately
+                if let navigationController = self.navigationController, navigationController.viewControllers.count > 1 {
+                    navigationController.popViewController(animated: true)
+                } else {
+                    self.dismiss(animated: true, completion: nil)
+                }
             }
             
             // Trigger CSV export
@@ -484,12 +507,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 await dataSharingVC.exportFoodItemsToCSV()
             }
             
-            // Dismiss or pop view controller based on the presentation style
-            if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
-                navigationController.popViewController(animated: true)
-            } else {
-                dismiss(animated: true, completion: nil)
-            }
         } catch {
             print("Failed to save food item: \(error)")
         }

@@ -277,7 +277,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
-        actionButton.setTitle(NSLocalizedString("Servera samma måltid igen", comment: "Serve the same meal again"), for: .normal)
+        actionButton.setTitle(NSLocalizedString("Servera hela måltiden igen", comment: "Serve the same meal again"), for: .normal)
 
         let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
         if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {

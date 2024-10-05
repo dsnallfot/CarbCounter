@@ -1087,14 +1087,24 @@ class MealInsightsViewController: UIViewController {
         guard let entryName = searchBar.text, !entryName.isEmpty else {
             return
         }
-        
+
         if isComingFromDetailView {
             // Attempt to find the corresponding FoodItem by entryId
             if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
                 if let matchedFoodItem = findFoodItemById(entryId: entryId) {
                     // FoodItem found, call delegate method to add it to ComposeMealViewController
                     delegate?.didAddFoodItem(matchedFoodItem)
-                    self.dismiss(animated: true, completion: nil)
+
+                    // Dismiss the modal and show the success view after dismissal
+                    self.dismiss(animated: true) {
+                        let successView = SuccessView()
+                        
+                        // Use the key window for showing the success view
+                        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                            successView.showInView(keyWindow) // Use the key window
+                        }
+                    }
+
                     self.isComingFromDetailView = false
                 } else {
                     // No match found, show an alert
@@ -1109,10 +1119,10 @@ class MealInsightsViewController: UIViewController {
             }
             return
         }
-        
+
         // Original logic for handling the action button
         let medianPortion = calculateMedianPortion(for: entryName)
-        
+
         if let onAveragePortionSelected = self.onAveragePortionSelected {
             onAveragePortionSelected(medianPortion)
         }

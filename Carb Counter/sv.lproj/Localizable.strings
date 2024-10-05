@@ -384,7 +384,7 @@
 "Radera" = "Radera";
 "Meal history export triggered" = "Meal history export triggered";
 "Failed to delete meal history: %@" = "Failed to delete meal history: %@";
-"Servera samma måltid igen" = "Servera samma måltid igen";
+"Servera hela måltiden igen" = "Servera hela måltiden igen";
 "Måltid %@" = "Måltid %@";
 "KH %@ g" = "Kolh. %@g";
 "Fett %@ g" = "Fett %@g";
@@ -420,7 +420,7 @@
 "%.2f E" = "%.2f E";
 "%.0f g/E" = "%.0f g/E";
 "Insikter" = "Insikter";
-"Mer insikter" = "Mer insikter";
+"Mer insikter" = "Visa insikter";
 "Välj datum och ett livsmedel för att visa mer information" = "Välj datumintervall och ett livsmedel för att visa mer information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "Ingen måltidshistorik tillgänglig för\n\"%@\"";
 "det valda livsmedlet" = "det valda livsmedlet";
@@ -430,6 +430,7 @@
 "Sök i historiken" = "Sök i historiken";
 "  Datum:" = "  Datum:";
 "till  " = "till  ";
+"+ Lägg till i måltid" = "+ Lägg till i måltid";
 
 /* Settings */
 "Inställningar" = "Inställningar";

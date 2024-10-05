@@ -765,11 +765,21 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     if let composeMealVC = vc as? ComposeMealViewController {
                         print("Adding food item to ComposeMealViewController: \(foodItem.name ?? "")")
                         composeMealVC.addFoodItemRow(with: foodItem)
+                        
+                        // Show the success view after adding the food item
+                        let successView = SuccessView()
+                        
+                        // Use the key window for showing the success view
+                        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                            successView.showInView(keyWindow) // Use the key window
+                        }
+                        
                         return
                     }
                 }
             }
         }
+        
         print("ComposeMealViewController not found in tab bar controller")
     }
     
