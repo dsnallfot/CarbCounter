@@ -545,7 +545,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Carb Counter/CarbsCounter.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = RMSRR5SURS;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = CarbsCounter;
@@ -581,7 +581,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Carb Counter/CarbsCounterRelease.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = RMSRR5SURS;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = CarbsCounter;

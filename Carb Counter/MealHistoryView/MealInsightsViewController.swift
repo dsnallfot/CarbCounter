@@ -14,6 +14,7 @@ class MealInsightsViewController: UIViewController {
     var prepopulatedSearchText: String?
     var onAveragePortionSelected: ((Double) -> Void)?
     private var selectedEntryName: String?
+    private var selectedEntryId: UUID?
     private var isComingFromModal = false
     public var isComingFromFoodItemRow = false
     public var isComingFromDetailView = false
@@ -130,7 +131,7 @@ class MealInsightsViewController: UIViewController {
         if isModalPresentation {
             addCloseButton()
         } else {
-            updateStats(for: "")
+            updateStats(for: nil)
         }
         
         setupGradientView()
@@ -338,9 +339,9 @@ class MealInsightsViewController: UIViewController {
             if segmentedControl.selectedSegmentIndex == 1 {
                 // Case: "Insikt livsmedel"
                 filterFoodEntries()
-                if let selectedEntry = selectedEntryName {
-                    // Re-run updateStats with the previously selected entry
-                    updateStats(for: selectedEntry)
+                if let selectedEntryId = selectedEntryId {
+                    // Re-run updateStats with the previously selected entryId
+                    updateStats(for: selectedEntryId)
                 }
             } else if segmentedControl.selectedSegmentIndex == 0 {
                 // Case: "Insikt måltider"
@@ -506,11 +507,11 @@ class MealInsightsViewController: UIViewController {
                 statsViewBottomConstraint.constant = -16
                 filterFoodEntries()
 
-                if let selectedEntry = selectedEntryName {
-                    updateStats(for: selectedEntry)
-                } else {
-                    updateStats(for: "")
-                }
+                if let selectedEntryId = selectedEntryId {
+                                updateStats(for: selectedEntryId) // Use the UUID for stats update
+                            } else {
+                                updateStats(for: nil) // Pass nil if there's no selected entry
+                            }
                 combinedStackView.spacing = 16
             }
             updateStatsTableConstraints()
@@ -582,23 +583,33 @@ class MealInsightsViewController: UIViewController {
                 let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
                 return trimmedEntryName == trimmedSearchText
             }) {
-                print("match found \(matchingEntry.entryName ?? "")")
-                self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
-                updateStats(for: matchingEntry.entryName ?? "")
+                print("Exact match found \(matchingEntry.entryName ?? "")")
+                self.selectedEntryName = matchingEntry.entryName // Store the selected entry name
+                self.selectedEntryId = matchingEntry.entryId // Store the entryId for further filtering
+
+                // Update stats using entryId
+                updateStats(for: matchingEntry.entryId)
             } else {
-                print("no match found \(searchText)")
-                updateStats(for: "")
+                print("No exact match found for \(searchText)")
+                updateStats(for: nil) // Clear stats if no match
             }
         } else {
             // Execute the same search as when the user manually types into the search bar
             self.filterFoodEntries()
+
             if let selectedEntry = selectedEntryName {
-                updateStats(for: selectedEntry)
+                // Use the stored entry name to update stats
+                if let matchingEntry = allFilteredFoodEntries.first(where: { $0.entryName?.lowercased() == selectedEntry.lowercased() }) {
+                    self.selectedEntryId = matchingEntry.entryId // Update the selected entryId for the matched name
+                    updateStats(for: matchingEntry.entryId)
+                } else {
+                    updateStats(for: nil) // No match, clear stats
+                }
             } else {
                 if searchBar.text?.isEmpty ?? true {
                     self.selectedEntryName = nil // Reset the selected entry if search is cleared
-                    print("no match found \(searchText)")
-                    updateStats(for: "")
+                    print("Search text is empty, no match found")
+                    updateStats(for: nil) // Clear stats
                 }
             }
         }
@@ -691,7 +702,7 @@ class MealInsightsViewController: UIViewController {
             actionButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-
+/*
     private func calculateAveragePortion(for entryName: String) -> Double {
         // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -703,7 +714,7 @@ class MealInsightsViewController: UIViewController {
         
         // Calculate the average portion size, ensuring there's no division by zero
         return portions.isEmpty ? 0 : portions.reduce(0, +) / Double(portions.count)
-    }
+    }*/
     
     private func loadDefaultDates() {
         if let earliestMealDate = mealHistories.map({ $0.mealDate ?? Date() }).min() {
@@ -739,7 +750,7 @@ class MealInsightsViewController: UIViewController {
         if segmentedControl.selectedSegmentIndex == 1 {
             // Case: "Insikt livsmedel"
             filterFoodEntries()
-            updateStats(for: "")
+            updateStats(for: nil)
         } else if segmentedControl.selectedSegmentIndex == 0 {
             // Case: "Insikt måltider"
             calculateMealStats()
@@ -982,13 +993,20 @@ class MealInsightsViewController: UIViewController {
     }
 
     // Food item calculations (MEDIAN VALUE VERSION)
-    private func updateStats(for entryName: String) {
-        // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
-        let matchingEntries = allFilteredFoodEntries.filter {
-            $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
+    private func updateStats(for entryId: UUID?) {
+        guard let entryId = entryId else {
+            // Reset stats if no entryId
+            statsLabel.text = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+            return
         }
 
-        // Get the emoji from the first matching entry, or default to an empty string if no entries are found
+        // Filter matching entries based on the entryId and entryPortionServed > 0
+        let matchingEntries = allFilteredFoodEntries.filter {
+            $0.entryId == entryId && $0.entryPortionServed > 0
+        }
+
+        // Get the entryName and entryEmoji from the first matching entry, or default to empty string if no entries are found
+        let entryName = matchingEntries.first?.entryName ?? ""
         var entryEmoji = matchingEntries.first?.entryEmoji ?? ""
 
         // Clean up the emoji string by trimming unnecessary whitespace or newlines
@@ -1313,19 +1331,28 @@ class MealInsightsViewController: UIViewController {
         }
 
         func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            let selectedEntry = uniqueFoodEntries[indexPath.row]
+            let selectedEntryName = uniqueFoodEntries[indexPath.row]
             
             // Prevent selection if the placeholder is being shown
-            if selectedEntry == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
+            if selectedEntryName == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
                 return
             }
+            
             searchBar.resignFirstResponder()
             
             // Store the selected entry name
-            selectedEntryName = selectedEntry
+            self.selectedEntryName = selectedEntryName
             
-            // Perform the updateStats and pass the medianPortion value back via the closure
-            updateStats(for: selectedEntry)
+            // Find the corresponding entryId for the selected entry name
+            if let matchingEntry = allFilteredFoodEntries.first(where: {
+                $0.entryName == selectedEntryName
+            }) {
+                // Store the corresponding entryId
+                selectedEntryId = matchingEntry.entryId
+                
+                // Perform the updateStats with the entryId
+                updateStats(for: selectedEntryId)
+            }
         }
     }
 
@@ -1335,7 +1362,7 @@ extension MealInsightsViewController: UISearchBarDelegate {
 
             if searchBar.text?.isEmpty ?? true {
                 selectedEntryName = nil // Reset the selected entry if search is cleared
-                updateStats(for: "")
+                updateStats(for: nil)
             }
         performSearch(with: searchText)
     }
