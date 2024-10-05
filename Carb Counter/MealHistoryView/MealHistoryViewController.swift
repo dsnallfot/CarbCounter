@@ -54,11 +54,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         ])
         setupSearchBarAndDatePicker()
         setupTableView()
-        fetchMealHistories()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-
         
         // Add an info button in the navigation bar
                 let infoButton = UIBarButtonItem(image: UIImage(systemName: "wand.and.rays"), style: .plain, target: self, action: #selector(navigateToMealInsights))
@@ -70,12 +65,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        let searchText = UserDefaultsRepository.savedHistorySearchText
+        searchBar.text = searchText
         fetchMealHistories()
         
         // Set the back button title for the next view controller
         let backButton = UIBarButtonItem()
         backButton.title = NSLocalizedString("Historik", comment: "Back button title for history")
         navigationItem.backBarButtonItem = backButton
+        
+        // Re-add the observers every time the view appears
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -83,7 +85,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Remove the observers when the view disappears
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
+
+        // Dismiss the keyboard when navigating away from the view controller
+        searchBar.resignFirstResponder()}
     
     private func setupSearchBarAndDatePicker() {
         // Create a container UIStackView to hold the search bar, date picker, and reset button
@@ -108,7 +112,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
             textField.autocapitalizationType = .sentences
-            textField.spellCheckingType = .yes
+            textField.spellCheckingType = .no
             textField.inputAssistantItem.leadingBarButtonGroups = []
             textField.inputAssistantItem.trailingBarButtonGroups = []
 
@@ -181,38 +185,19 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     @objc private func doneButtonTapped() {
         searchBar.resignFirstResponder()
     }
-    
-    private func filterMealHistories(searchText: String? = nil) {
-        let lowercasedSearchText = searchText?.lowercased() ?? ""
-        
-        filteredMealHistories = mealHistories.filter { mealHistory in
-            // Filter by search text (matching food items)
-            if !lowercasedSearchText.isEmpty {
-                let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
-                let matchesSearch = foodItemNames.contains { $0.contains(lowercasedSearchText) }
-                return matchesSearch
-            } else {
-                return true // Show all meal histories when no search text is entered
-            }
-        }
-        
-        tableView.reloadData()
-    }
-    
+
     @objc private func resetFilters() {
-        // Reset filteredMealHistories to show all meal histories
-        filteredMealHistories = mealHistories
-        tableView.reloadData()
-        
-        // Reset the searchBar and datePicker
-        searchBar.text = ""
         datePicker.date = Date()
+        datePickerValueChanged()
+        tableView.reloadData()
 
         searchBar.resignFirstResponder()
     }
     
     @objc private func datePickerValueChanged() {
-        filterMealHistories(by: datePicker.date)
+        // Get the saved search text and filter by both search text and date
+        let savedSearchText = UserDefaultsRepository.savedHistorySearchText
+        filterMealHistories(searchText: savedSearchText, by: datePicker.date)
     }
     
     private func setupTableView() {
@@ -260,9 +245,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         do {
             let mealHistories = try context.fetch(fetchRequest)
             DispatchQueue.main.async {
-                self.mealHistories = mealHistories
-                self.filteredMealHistories = mealHistories
-                self.tableView.reloadData()
+                self.mealHistories = mealHistories // Update the mealHistories array
+                
+                // Apply filtering based on both search text and date
+                let savedSearchText = UserDefaultsRepository.savedHistorySearchText
+                self.filterMealHistories(searchText: savedSearchText, by: self.datePicker.date)
             }
         } catch {
             DispatchQueue.main.async {
@@ -404,18 +391,43 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         detailVC.mealHistory = mealHistory
         navigationController?.pushViewController(detailVC, animated: true)
     }
-    
-    private func filterMealHistories(by date: Date) {
+    private func filterMealHistories(searchText: String? = nil, by date: Date? = nil) {
+        let lowercasedSearchText = searchText?.lowercased() ?? ""
+        
+        // Check if the date picker is altered or if it's still at its default state (today's date)
+        let isDatePickerUnaltered = Calendar.current.isDateInToday(date ?? Date())
+        
         filteredMealHistories = mealHistories.filter { mealHistory in
-            if let mealDate = mealHistory.mealDate {
-                return Calendar.current.isDate(mealDate, inSameDayAs: date)
+            // First, filter by search text (if provided)
+            if !lowercasedSearchText.isEmpty {
+                let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
+                let matchesSearch = foodItemNames.contains { $0.contains(lowercasedSearchText) }
+                
+                if !matchesSearch {
+                    return false // Exclude this item if search text doesn't match
+                }
             }
-            return false
+            
+            // If the date picker hasn't been altered, ignore the date filter
+            if isDatePickerUnaltered {
+                return true // Don't apply date filtering if date picker is unaltered
+            }
+            
+            // Otherwise, filter by date (if provided)
+            if let mealDate = mealHistory.mealDate, let filterDate = date {
+                return Calendar.current.isDate(mealDate, inSameDayAs: filterDate)
+            }
+            
+            return true // Default to include if no date filtering is applied
         }
+        
         tableView.reloadData()
     }
-    
+   
     @objc private func navigateToMealInsights() {
+        // Dismiss the keyboard before navigating to the next view
+        searchBar.resignFirstResponder()
+        
         // Create an instance of MealInsightsViewController
         let mealInsightsVC = MealInsightsViewController()
 
@@ -513,10 +525,14 @@ extension UIView {
 
 extension MealHistoryViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        filterMealHistories(searchText: searchText) // Filter by search text only
+        // Save the search text in UserDefaultsRepository
+        UserDefaultsRepository.savedHistorySearchText = searchText.isEmpty ? nil : searchText
+        
+        // Filter meal histories based on the entered text and selected date
+        filterMealHistories(searchText: searchText.isEmpty ? nil : searchText, by: datePicker.date)
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder() // Hide the keyboard when search is pressed
+        searchBar.resignFirstResponder() // Hide the keyboard when the search button is pressed
     }
 }

@@ -8,6 +8,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     var clearButton: UIBarButtonItem!
     var favoriteMeals: [FavoriteMeals] = []
     var filteredFavoriteMeals: [FavoriteMeals] = []
+    private var tableBottomConstraint: NSLayoutConstraint?
     
     var dataSharingVC: DataSharingViewController?
 
@@ -48,6 +49,8 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         // Listen for changes to allowDataClearing setting
         NotificationCenter.default.addObserver(self, selector: #selector(updateButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         
         setupSearchBar()
         setupTableView()
@@ -75,6 +78,30 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         updateButtonVisibility()
     }
     
+    @objc private func keyboardWillShow(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        
+        let keyboardHeight = keyboardFrame.height
+        tableBottomConstraint?.constant = -keyboardHeight // Move the table up by the keyboard height
+        
+        UIView.animate(withDuration: animationDuration) {
+            self.view.layoutIfNeeded() // Animate the layout change
+        }
+    }
+
+    @objc private func keyboardWillHide(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        
+        tableBottomConstraint?.constant = -90 // Reset the bottom constraint
+        
+        UIView.animate(withDuration: animationDuration) {
+            self.view.layoutIfNeeded() // Animate the layout change
+        }
+    }
+    
     func favoriteMealDetailViewControllerDidSave(_ controller: FavoriteMealDetailViewController) {
         fetchFavoriteMeals()
     }
@@ -87,6 +114,33 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         searchBar.barTintColor = .clear
         searchBar.backgroundColor = .clear
         searchBar.backgroundImage = UIImage()
+        
+        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+            textField.autocorrectionType = .no
+            textField.autocapitalizationType = .sentences
+            textField.spellCheckingType = .no
+            textField.inputAssistantItem.leadingBarButtonGroups = []
+            textField.inputAssistantItem.trailingBarButtonGroups = []
+            
+            let toolbar = UIToolbar()
+            toolbar.sizeToFit()
+            
+            let symbolImage = UIImage(systemName: "keyboard.chevron.compact.down")
+            let cancelButton = UIButton(type: .system)
+            cancelButton.setImage(symbolImage, for: .normal)
+            cancelButton.tintColor = .label
+            cancelButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+            cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+            let cancelBarButtonItem = UIBarButtonItem(customView: cancelButton)
+            
+            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
+            
+            toolbar.setItems([cancelBarButtonItem, flexSpace, doneButton], animated: false)
+            
+            textField.inputAccessoryView = toolbar
+        }
+        
         view.addSubview(searchBar)
         
         NSLayoutConstraint.activate([
@@ -94,6 +148,16 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+    }
+    
+    @objc private func cancelButtonTapped() {
+        // Dismiss the keyboard
+        searchBar.resignFirstResponder()
+    }
+
+    @objc private func doneButtonTapped() {
+        // Dismiss the keyboard
+        searchBar.resignFirstResponder()
     }
     
     private func setupTableView() {
@@ -105,9 +169,12 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
         
+        tableBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90)
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
+            //tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
+            tableBottomConstraint!,
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])

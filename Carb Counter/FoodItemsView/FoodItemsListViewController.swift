@@ -246,7 +246,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.autocorrectionType = .no
             textField.autocapitalizationType = .sentences
-            textField.spellCheckingType = .yes
+            textField.spellCheckingType = .yes //Other keyboards are set without spell checking, but this one has it since online search will be triggered by this search text
             textField.inputAssistantItem.leadingBarButtonGroups = []
             textField.inputAssistantItem.trailingBarButtonGroups = []
             
@@ -514,6 +514,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             // Fetch filtered items
             foodItems = try context.fetch(fetchRequest)
             
+            // Ensure that filteredFoodItems is updated to reflect changes
+            filteredFoodItems = foodItems
+            
             DispatchQueue.main.async {
                 self.sortFoodItems()
                 self.tableView.reloadData()
@@ -598,14 +601,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         switch searchMode {
         case .local:
             let cell = tableView.dequeueReusableCell(withIdentifier: "FoodItemCell", for: indexPath) as! FoodItemTableViewCell
-            let foodItem = filteredFoodItems[indexPath.row]
-            cell.configure(with: foodItem)
+            let foodItem = filteredFoodItems[safe: indexPath.row] // Safely access the index
+            if let foodItem = foodItem {
+                cell.configure(with: foodItem)
+            }
             cell.backgroundColor = .clear // Set cell background to clear
             return cell
         case .online:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ArticleCell", for: indexPath) as! ArticleTableViewCell
-            let article = articles[indexPath.row]
-            cell.configure(with: article)
+            if let article = articles[safe: indexPath.row] {
+                cell.configure(with: article)
+            }
             cell.backgroundColor = .clear // Set cell background to clear
             return cell
         }
@@ -648,7 +654,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func showLocalFoodItemDetails(_ foodItem: FoodItem) {
-        let title = "\(foodItem.emoji ?? "") \(foodItem.name ?? NSLocalizedString("Produkt", comment: "Default product name if none is provided"))"
+        // Clean up the emoji string by trimming unnecessary whitespace or newlines
+        var emoji = foodItem.emoji ?? ""
+        emoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
+        emoji = emoji.precomposedStringWithCanonicalMapping  // Normalize emoji
+        
+        // Format the title string with the cleaned emoji
+        let title = "\(emoji) \(foodItem.name ?? NSLocalizedString("Produkt", comment: "Default product name if none is provided"))"
+        
         var message = ""
 
         if let notes = foodItem.notes, !notes.isEmpty {
@@ -752,11 +765,21 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     if let composeMealVC = vc as? ComposeMealViewController {
                         print("Adding food item to ComposeMealViewController: \(foodItem.name ?? "")")
                         composeMealVC.addFoodItemRow(with: foodItem)
+                        
+                        // Show the success view after adding the food item
+                        let successView = SuccessView()
+                        
+                        // Use the key window for showing the success view
+                        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                            successView.showInView(keyWindow) // Use the key window
+                        }
+                        
                         return
                     }
                 }
             }
         }
+        
         print("ComposeMealViewController not found in tab bar controller")
     }
     
@@ -807,10 +830,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func editFoodItem(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
-            addFoodItemVC.delegate = self
+            addFoodItemVC.delegate = self // Set the delegate
             addFoodItemVC.foodItem = filteredFoodItems[indexPath.row]
             let navController = UINavigationController(rootViewController: addFoodItemVC)
-            navController.modalPresentationStyle = .pageSheet // or .automatic depending on your needs
+            navController.modalPresentationStyle = .pageSheet
             
             present(navController, animated: true, completion: nil)
         }
@@ -1054,7 +1077,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     // AddFoodItemDelegate conformance
     func didAddFoodItem() {
+        // Fetch updated list of food items
         fetchFoodItems()
+        
+        // Update the filtered list and reload the table view
+        filteredFoodItems = foodItems // Ensure filtered list is updated
+        sortFoodItems()
+        tableView.reloadData()
     }
 }
 
@@ -1210,3 +1239,10 @@ extension Double {
         return (self * multiplier).rounded() / multiplier
     }
 }
+
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        return index >= 0 && index < count ? self[index] : nil
+    }
+}
+

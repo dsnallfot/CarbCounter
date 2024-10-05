@@ -1190,12 +1190,24 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         AudioServicesPlaySystemSound(SystemSoundID(1322))
         
         // Only now call the delegate method after successful completion
-        delegate?.didUpdateMealValues(khValue: carbsEntryField.text ?? "", fatValue: fatEntryField.text ?? "", proteinValue: proteinEntryField.text ?? "", bolusValue: bolusEntryField.text ?? "", startDose: self.startDose)
+        delegate?.didUpdateMealValues(
+            khValue: carbsEntryField.text ?? "",
+            fatValue: fatEntryField.text ?? "",
+            proteinValue: proteinEntryField.text ?? "",
+            bolusValue: bolusEntryField.text ?? "",
+            startDose: self.startDose
+        )
         
-        // Show success alert with "Lyckades"
-        showAlert(title: NSLocalizedString("Lyckades", comment: "Lyckades"), message: NSLocalizedString("Måltidsregistreringen skickades", comment: "Måltidsregistreringen skickades"), completion: {
-            self.dismiss(animated: true, completion: nil)  // Dismiss the view controller after showing the alert
-        })
+        // Display the success view instead of an alert
+        let successView = SuccessView()
+        if let window = self.view.window {
+            successView.showInView(window) // Show the success view in the window
+        }
+
+        // Dismiss the view controller after showing the success view
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { // Wait for the success view animation to complete
+            self.dismiss(animated: true, completion: nil)
+        }
     }
 
     @objc private func handleShortcutError() {
@@ -1244,17 +1256,38 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         twilioRequest(combinedString: combinedString) { result in
             switch result {
             case .success:
+                // Play success sound
                 AudioServicesPlaySystemSound(SystemSoundID(1322))
-                let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("Måltidsregistreringen skickades", comment: "Måltidsregistreringen skickades"), preferredStyle: .alert)
-                alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: { _ in
-                    self.delegate?.didUpdateMealValues(khValue: carbs, fatValue: fats, proteinValue: proteins, bolusValue: bolus, startDose: self.startDose)
-                                    print("Dismissing MealViewController after successful SMS API call")
-                                    self.dismiss(animated: true, completion: nil)
-                                }))
-                self.present(alertController, animated: true, completion: nil)
+                
+                // Show SuccessView
+                let successView = SuccessView()
+                if let window = self.view.window {
+                    successView.showInView(window) // Show the success view in the window
+                }
+
+                // Wait for the success view animation to finish before dismissing the view controller
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.delegate?.didUpdateMealValues(
+                        khValue: carbs,
+                        fatValue: fats,
+                        proteinValue: proteins,
+                        bolusValue: bolus,
+                        startDose: self.startDose
+                    )
+                    print("Dismissing MealViewController after successful SMS API call")
+                    self.dismiss(animated: true, completion: nil)
+                }
+                
             case .failure(let error):
+                // Play failure sound
                 AudioServicesPlaySystemSound(SystemSoundID(1053))
-                let alertController = UIAlertController(title: NSLocalizedString("Fel", comment: "Fel"), message: error.localizedDescription, preferredStyle: .alert)
+                
+                // Show failure alert
+                let alertController = UIAlertController(
+                    title: NSLocalizedString("Fel", comment: "Error"),
+                    message: error.localizedDescription,
+                    preferredStyle: .alert
+                )
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
                 self.present(alertController, animated: true, completion: nil)
             }

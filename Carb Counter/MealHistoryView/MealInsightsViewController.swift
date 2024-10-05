@@ -9,15 +9,19 @@ import CoreData
 
 class MealInsightsViewController: UIViewController {
     
+    weak var delegate: MealInsightsDelegate?
+    
     var prepopulatedSearchText: String?
     var onAveragePortionSelected: ((Double) -> Void)?
     private var selectedEntryName: String?
     private var isComingFromModal = false
     public var isComingFromFoodItemRow = false
+    public var isComingFromDetailView = false
     private var statsViewBottomConstraint: NSLayoutConstraint!
     private var statsTableTopConstraint: NSLayoutConstraint?
     private var statsTableBottomConstraint: NSLayoutConstraint?
     private let combinedStackView = UIStackView()
+    public var selectedFoodEntry: FoodItemEntry?
 
 
     // UI Elements
@@ -148,6 +152,10 @@ class MealInsightsViewController: UIViewController {
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
         
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+
+        
         // Delay performing the search until the data is fully loaded
                 DispatchQueue.main.async {
                     if let searchText = self.prepopulatedSearchText {
@@ -159,6 +167,20 @@ class MealInsightsViewController: UIViewController {
                 }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Check the variables and update the button title accordingly
+        if isComingFromFoodItemRow {
+            actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
+        } else if isComingFromDetailView {
+            actionButton.setTitle(NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button label"), for: .normal)
+        } else {
+            // Fallback or default title, if neither condition is met
+            actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
+        }
+    }
+
     // Function to check if the view controller is presented modally
     private var isModalPresentation: Bool {
         return presentingViewController != nil || navigationController?.presentingViewController?.presentedViewController == navigationController || tabBarController?.presentingViewController is UITabBarController
@@ -174,6 +196,7 @@ class MealInsightsViewController: UIViewController {
     @objc private func dismissModal() {
         dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
+        self.isComingFromDetailView = false
     }
     
     private func setupGradientView() {
@@ -193,6 +216,35 @@ class MealInsightsViewController: UIViewController {
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+    
+    @objc private func keyboardWillShow(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        
+        let keyboardHeight = keyboardFrame.height
+        statsTableBottomConstraint?.constant = -keyboardHeight + 257 // Move the table up by the keyboard height minus the statsview+actionbuttonheight (10+165+16+50+16 = 257)
+        
+        UIView.animate(withDuration: animationDuration) {
+            self.view.layoutIfNeeded() // Animate the layout change
+        }
+    }
+
+    @objc private func keyboardWillHide(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        
+        statsTableBottomConstraint?.constant = -10 // Reset the bottom constraint
+        
+        UIView.animate(withDuration: animationDuration) {
+            self.view.layoutIfNeeded() // Animate the layout change
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     private func setupSegmentedControlAndDatePickers() {
@@ -240,7 +292,7 @@ class MealInsightsViewController: UIViewController {
 
         // Combine the controls and stack views
         combinedStackView.axis = .vertical
-        combinedStackView.spacing = isComingFromFoodItemRow ? 12 : 16  // Set initial spacing here
+        combinedStackView.spacing = isComingFromFoodItemRow || isComingFromDetailView ? 12 : 16  // Set initial spacing here
         combinedStackView.translatesAutoresizingMaskIntoConstraints = false
         combinedStackView.addArrangedSubview(segmentedControl)
         combinedStackView.addArrangedSubview(datePresetsSegmentedControl)
@@ -439,14 +491,12 @@ class MealInsightsViewController: UIViewController {
             toTimeLabel.isHidden = true
             mealTimesSegmentedControl.isHidden = true
 
-            if isComingFromFoodItemRow {
+            if isComingFromFoodItemRow || isComingFromDetailView {
                 actionButton.isHidden = false
                 segmentedControl.isHidden = true
                 searchBar.isHidden = true
                 statsTableView.isHidden = true
                 statsViewBottomConstraint.constant = -76
-
-                // Modify spacing to 12 when `isComingFromFoodItemRow` is true
                 combinedStackView.spacing = 12
             } else {
                 actionButton.isHidden = true
@@ -461,8 +511,6 @@ class MealInsightsViewController: UIViewController {
                 } else {
                     updateStats(for: "")
                 }
-
-                // Reset spacing to 16 when not coming from food item row
                 combinedStackView.spacing = 16
             }
             updateStatsTableConstraints()
@@ -488,11 +536,13 @@ class MealInsightsViewController: UIViewController {
     @objc private func cancelButtonTapped() {
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
+        statsTableBottomConstraint?.constant = -10 // Reset the bottom constraint
     }
 
     @objc private func doneButtonTapped() {
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
+        statsTableBottomConstraint?.constant = -10 // Reset the bottom constraint
 
         // Set the search text as selectedEntryName
         if let searchText = searchBar.text, !searchText.isEmpty {
@@ -503,6 +553,20 @@ class MealInsightsViewController: UIViewController {
 
         // Perform the search with the current search text
         performSearch(with: searchBar.text ?? "")
+    }
+    
+    private func findFoodItemById(entryId: UUID) -> FoodItem? {
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", entryId as CVarArg)
+
+        do {
+            let foodItems = try context.fetch(fetchRequest)
+            return foodItems.first
+        } catch {
+            print("Failed to fetch food item by id: \(error.localizedDescription)")
+            return nil
+        }
     }
     
     private func performSearch(with searchText: String) {
@@ -568,7 +632,7 @@ class MealInsightsViewController: UIViewController {
 
         // Method to enable or disable the constraints dynamically
         private func updateStatsTableConstraints() {
-            if isComingFromFoodItemRow {
+            if isComingFromFoodItemRow || isComingFromDetailView {
                 // Disable top and bottom constraints to make space in the smaller modal
                 statsTableTopConstraint?.isActive = false
                 statsTableBottomConstraint?.isActive = false
@@ -1023,19 +1087,69 @@ class MealInsightsViewController: UIViewController {
         guard let entryName = searchBar.text, !entryName.isEmpty else {
             return
         }
-        
-        // Calculate the median portion for the currently filtered entry
+
+        if isComingFromDetailView {
+            // Attempt to find the corresponding FoodItem by entryId
+            if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
+                if let matchedFoodItem = findFoodItemById(entryId: entryId) {
+                    // FoodItem found, call delegate method to add it to ComposeMealViewController
+                    delegate?.didAddFoodItem(matchedFoodItem)
+
+                    // Dismiss the modal and show the success view after dismissal
+                    self.dismiss(animated: true) {
+                        let successView = SuccessView()
+                        
+                        // Use the key window for showing the success view
+                        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                            successView.showInView(keyWindow) // Use the key window
+                        }
+                    }
+
+                    self.isComingFromDetailView = false
+                } else {
+                    // No match found, show an alert
+                    let alert = UIAlertController(
+                        title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
+                        message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+                    present(alert, animated: true, completion: nil)
+                }
+            }
+            return
+        }
+
+        // Original logic for handling the action button
         let medianPortion = calculateMedianPortion(for: entryName)
 
-        // Invoke the closure with the median portion directly, skipping the alert
         if let onAveragePortionSelected = self.onAveragePortionSelected {
             onAveragePortionSelected(medianPortion)
         }
-
-        // Dismiss the MealInsightsViewController after user confirms
+        
         self.dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
     }
+    
+    private func addToComposeMealViewController(foodItem: FoodItem) {
+        guard let tabBarController = tabBarController else {
+            print("Tab bar controller not found")
+            return
+        }
+        
+        for viewController in tabBarController.viewControllers ?? [] {
+            if let navController = viewController as? UINavigationController {
+                for vc in navController.viewControllers {
+                    if let composeMealVC = vc as? ComposeMealViewController {
+                        // Use the delegate to pass the food item
+                        composeMealVC.didAddFoodItem(foodItem)
+                        return
+                    }
+                }
+            }
+        }
+    }
+    
     private func calculateMedianPortion(for entryName: String) -> Double {
         // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -1240,4 +1354,8 @@ extension MealInsightsViewController: UISearchBarDelegate {
             // Perform the search with the current search text
             performSearch(with: searchBar.text ?? "")
         }
+}
+
+protocol MealInsightsDelegate: AnyObject {
+    func didAddFoodItem(_ foodItem: FoodItem)
 }

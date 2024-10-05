@@ -383,7 +383,7 @@
 "Radera" = "Delete";
 "Meal history export triggered" = "Meal history export triggered";
 "Failed to delete meal history: %@" = "Failed to delete meal history: %@";
-"Servera samma måltid igen" = "Serve the same meal again";
+"Servera hela måltiden igen" = "Serve the same meal again";
 "Måltid %@" = "Meal %@";
 "KH %@ g" = "Carbs %@g";
 "Fett %@ g" = "Fat %@g";
@@ -419,7 +419,7 @@
 "%.2f E" = "%.2f U";
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
-"Mer insikter" = "More insights";
+"Mer insikter" = "Show insights";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "No meal history found for\n\"%@\"";
 "det valda livsmedlet" = "the selected food item";
@@ -429,6 +429,8 @@
 "Sök i historiken" = "Search history";
 "  Datum:" = "  Dates:";
 "till  " = "to  ";
+"+ Lägg till i måltid" = "+ Add to meal";
+
 
 /* Settings */
 "Inställningar" = "Settings";

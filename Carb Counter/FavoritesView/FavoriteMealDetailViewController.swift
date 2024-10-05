@@ -56,8 +56,8 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         nameTextField.borderStyle = .roundedRect
         nameTextField.translatesAutoresizingMaskIntoConstraints = false
         nameTextField.autocorrectionType = .no
-        nameTextField.spellCheckingType = .yes
-        nameTextField.backgroundColor = .systemGray6
+        nameTextField.spellCheckingType = .no
+        nameTextField.backgroundColor = .systemGray2.withAlphaComponent(0.2)
         addDoneButtonOnKeyboard()
         view.addSubview(nameTextField)
         

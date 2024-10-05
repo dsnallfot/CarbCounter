@@ -1,6 +1,7 @@
 // Daniel: 600+ lines - To be cleaned
 import UIKit
 import CoreData
+import ISEmojiView
 
 protocol AddFoodItemDelegate: AnyObject {
     func didAddFoodItem()
@@ -50,6 +51,28 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Create keyboard settings with default initialization
+            let keyboardSettings = KeyboardSettings(bottomType: .categories)
+
+            // Now set the additional properties on the KeyboardSettings object
+            keyboardSettings.countOfRecentsEmojis = 42 // Example: change the number of recent emojis
+            keyboardSettings.needToShowAbcButton = false // Show the ABC button
+            keyboardSettings.needToShowDeleteButton = true // Show the delete button
+            keyboardSettings.updateRecentEmojiImmediately = true // Update recent emojis immediately
+
+            // Initialize EmojiView with the custom settings
+            let emojiView = EmojiView(keyboardSettings: keyboardSettings)
+            emojiView.translatesAutoresizingMaskIntoConstraints = false
+            emojiView.delegate = self
+        
+        let bottomView = emojiView.subviews.last?.subviews.last
+        let collecitonViewToSuperViewTrailingConstraint = bottomView?.value(forKey: "collecitonViewToSuperViewTrailingConstraint") as? NSLayoutConstraint
+        collecitonViewToSuperViewTrailingConstraint?.priority = .defaultLow
+
+            // Assign the custom emoji keyboard to the emojiTextField
+            emojiTextField.inputView = emojiView
+        
         view.backgroundColor = .systemBackground
         // Create the gradient view
             let colors: [CGColor] = [
@@ -452,6 +475,29 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             
             if addToMeal {
                 addToComposeMealViewController()
+
+                // Show SuccessView when adding to meal
+                let successView = SuccessView()
+                if let window = self.view.window {
+                    successView.showInView(window)
+                }
+
+                // Wait for the success view animation to finish before dismissing or popping
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    // Dismiss or pop view controller based on the presentation style
+                    if let navigationController = self.navigationController, navigationController.viewControllers.count > 1 {
+                        navigationController.popViewController(animated: true)
+                    } else {
+                        self.dismiss(animated: true, completion: nil)
+                    }
+                }
+            } else {
+                // If not adding to meal, just dismiss or pop immediately
+                if let navigationController = self.navigationController, navigationController.viewControllers.count > 1 {
+                    navigationController.popViewController(animated: true)
+                } else {
+                    self.dismiss(animated: true, completion: nil)
+                }
             }
             
             // Trigger CSV export
@@ -461,12 +507,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 await dataSharingVC.exportFoodItemsToCSV()
             }
             
-            // Dismiss or pop view controller based on the presentation style
-            if let navigationController = navigationController, navigationController.viewControllers.count > 1 {
-                navigationController.popViewController(animated: true)
-            } else {
-                dismiss(animated: true, completion: nil)
-            }
         } catch {
             print("Failed to save food item: \(error)")
         }
@@ -634,5 +674,25 @@ extension ComposeMealViewController: AddFoodItemDelegate {
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
+    }
+}
+
+extension AddFoodItemViewController: EmojiViewDelegate {
+    func emojiViewDidSelectEmoji(_ emoji: String, emojiView: EmojiView) {
+        emojiTextField.insertText(emoji)
+    }
+
+    func emojiViewDidPressChangeKeyboardButton(_ emojiView: EmojiView) {
+        emojiTextField.inputView = nil
+        emojiTextField.keyboardType = .default
+        emojiTextField.reloadInputViews()
+    }
+
+    func emojiViewDidPressDeleteBackwardButton(_ emojiView: EmojiView) {
+        emojiTextField.deleteBackward()
+    }
+
+    func emojiViewDidPressDismissKeyboardButton(_ emojiView: EmojiView) {
+        emojiTextField.resignFirstResponder()
     }
 }

@@ -1,0 +1,15 @@
+{
+  "originHash" : "10f686b65003ff8eb92f1e7b361e56796939a6535344f80676ea4c17e264e0dc",
+  "pins" : [
+    {
+      "identity" : "isemojiview",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/isaced/ISEmojiView.git",
+      "state" : {
+        "revision" : "4b16e07b9265eedad2ea25b9aa042f230486234f",
+        "version" : "0.3.4"
+      }
+    }
+  ],
+  "version" : 3
+}

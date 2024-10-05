@@ -13,7 +13,7 @@ import QuartzCore
 import SwiftUI
 
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate, MealInsightsDelegate {
     static weak var current: ComposeMealViewController?
     static var shared: ComposeMealViewController?
     
@@ -143,7 +143,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
+        /*
         let plateImageView = UIImageView(image: UIImage(named: "Plate"))
         plateImageView.contentMode = .scaleAspectFit
         plateImageView.alpha = 0.05
@@ -154,7 +154,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             plateImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 20),
             plateImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9), // Adjust size as needed
             plateImageView.heightAnchor.constraint(equalTo: plateImageView.widthAnchor)
-        ])
+        ])*/
         
         title = NSLocalizedString("Måltid", comment: "Måltid")
         
@@ -1056,6 +1056,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 self.showAlert(title: alertTitle, message: alertMessage)
             }
         }
+    }
+    
+    // Implement the delegate method
+    func didAddFoodItem(_ foodItem: FoodItem) {
+        print("Adding food item to ComposeMealViewController: \(foodItem.name ?? "")")
+        addFoodItemRow(with: foodItem)
     }
     
     private func updateStartAmountLabel() {
