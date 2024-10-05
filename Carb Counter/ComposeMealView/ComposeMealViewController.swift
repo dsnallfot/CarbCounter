@@ -13,7 +13,7 @@ import QuartzCore
 import SwiftUI
 
 
-class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate {
+class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate, MealInsightsDelegate {
     static weak var current: ComposeMealViewController?
     static var shared: ComposeMealViewController?
     
@@ -1056,6 +1056,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 self.showAlert(title: alertTitle, message: alertMessage)
             }
         }
+    }
+    
+    // Implement the delegate method
+    func didAddFoodItem(_ foodItem: FoodItem) {
+        print("Adding food item to ComposeMealViewController: \(foodItem.name ?? "")")
+        addFoodItemRow(with: foodItem)
     }
     
     private func updateStartAmountLabel() {

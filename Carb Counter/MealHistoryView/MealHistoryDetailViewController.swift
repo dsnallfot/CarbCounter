@@ -236,24 +236,34 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
     // Present MealInsightsViewController
     private func presentMealInsightsViewController(with foodEntry: FoodItemEntry) {
-        // Create an instance of MealInsightsViewController
         let mealInsightsVC = MealInsightsViewController()
 
-        // Prepopulate the search text field with the foodEntry name
+        // Attempt to find ComposeMealViewController from the tab bar controller
+        if let tabBarController = self.tabBarController {
+            for viewController in tabBarController.viewControllers ?? [] {
+                if let navController = viewController as? UINavigationController {
+                    for vc in navController.viewControllers {
+                        if let composeMealVC = vc as? ComposeMealViewController {
+                            mealInsightsVC.delegate = composeMealVC // Set the delegate
+                            break
+                        }
+                    }
+                }
+            }
+        } else {
+            // If tabBarController is nil, use another way to find ComposeMealViewController, maybe via a delegate or navigation stack
+            print("Tab bar controller not found")
+        }
+
+        // Pass the foodEntry to MealInsightsViewController
         mealInsightsVC.prepopulatedSearchText = foodEntry.entryName ?? ""
-        
         mealInsightsVC.isComingFromDetailView = true
+        mealInsightsVC.selectedFoodEntry = foodEntry  // Pass the foodEntry with entryId
 
-        // Since you mentioned it's not necessary, we can remove the completion handler
-        // that updates the portionServedTextField
-
-        // Embed the MealInsightsViewController in a UINavigationController
+        // Present MealInsightsViewController in a sheet
         let navController = UINavigationController(rootViewController: mealInsightsVC)
-
-        // Set the modal presentation style
         navController.modalPresentationStyle = .pageSheet
 
-        // Customize the sheet behavior
         if let sheet = navController.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = false
@@ -261,7 +271,6 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             sheet.preferredCornerRadius = 24
         }
 
-        // Present the modal
         present(navController, animated: true, completion: nil)
     }
 
@@ -346,3 +355,4 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     }
 
 }
+

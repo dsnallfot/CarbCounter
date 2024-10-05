@@ -9,6 +9,8 @@ import CoreData
 
 class MealInsightsViewController: UIViewController {
     
+    weak var delegate: MealInsightsDelegate?
+    
     var prepopulatedSearchText: String?
     var onAveragePortionSelected: ((Double) -> Void)?
     private var selectedEntryName: String?
@@ -19,6 +21,7 @@ class MealInsightsViewController: UIViewController {
     private var statsTableTopConstraint: NSLayoutConstraint?
     private var statsTableBottomConstraint: NSLayoutConstraint?
     private let combinedStackView = UIStackView()
+    public var selectedFoodEntry: FoodItemEntry?
 
 
     // UI Elements
@@ -162,6 +165,20 @@ class MealInsightsViewController: UIViewController {
                         self.performSearch(with: searchText)
                     }
                 }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Check the variables and update the button title accordingly
+        if isComingFromFoodItemRow {
+            actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
+        } else if isComingFromDetailView {
+            actionButton.setTitle(NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button label"), for: .normal)
+        } else {
+            // Fallback or default title, if neither condition is met
+            actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
+        }
     }
 
     // Function to check if the view controller is presented modally
@@ -474,19 +491,12 @@ class MealInsightsViewController: UIViewController {
             toTimeLabel.isHidden = true
             mealTimesSegmentedControl.isHidden = true
 
-            if isComingFromFoodItemRow {
+            if isComingFromFoodItemRow || isComingFromDetailView {
                 actionButton.isHidden = false
                 segmentedControl.isHidden = true
                 searchBar.isHidden = true
                 statsTableView.isHidden = true
                 statsViewBottomConstraint.constant = -76
-                combinedStackView.spacing = 12
-            } else if isComingFromDetailView {
-                actionButton.isHidden = true
-                segmentedControl.isHidden = true
-                searchBar.isHidden = true
-                statsTableView.isHidden = true
-                statsViewBottomConstraint.constant = -16
                 combinedStackView.spacing = 12
             } else {
                 actionButton.isHidden = true
@@ -543,6 +553,20 @@ class MealInsightsViewController: UIViewController {
 
         // Perform the search with the current search text
         performSearch(with: searchBar.text ?? "")
+    }
+    
+    private func findFoodItemById(entryId: UUID) -> FoodItem? {
+        let context = CoreDataStack.shared.context
+        let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", entryId as CVarArg)
+
+        do {
+            let foodItems = try context.fetch(fetchRequest)
+            return foodItems.first
+        } catch {
+            print("Failed to fetch food item by id: \(error.localizedDescription)")
+            return nil
+        }
     }
     
     private func performSearch(with searchText: String) {
@@ -1064,18 +1088,58 @@ class MealInsightsViewController: UIViewController {
             return
         }
         
-        // Calculate the median portion for the currently filtered entry
+        if isComingFromDetailView {
+            // Attempt to find the corresponding FoodItem by entryId
+            if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
+                if let matchedFoodItem = findFoodItemById(entryId: entryId) {
+                    // FoodItem found, call delegate method to add it to ComposeMealViewController
+                    delegate?.didAddFoodItem(matchedFoodItem)
+                    self.dismiss(animated: true, completion: nil)
+                    self.isComingFromDetailView = false
+                } else {
+                    // No match found, show an alert
+                    let alert = UIAlertController(
+                        title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
+                        message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+                    present(alert, animated: true, completion: nil)
+                }
+            }
+            return
+        }
+        
+        // Original logic for handling the action button
         let medianPortion = calculateMedianPortion(for: entryName)
-
-        // Invoke the closure with the median portion directly, skipping the alert
+        
         if let onAveragePortionSelected = self.onAveragePortionSelected {
             onAveragePortionSelected(medianPortion)
         }
-
-        // Dismiss the MealInsightsViewController after user confirms
+        
         self.dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
     }
+    
+    private func addToComposeMealViewController(foodItem: FoodItem) {
+        guard let tabBarController = tabBarController else {
+            print("Tab bar controller not found")
+            return
+        }
+        
+        for viewController in tabBarController.viewControllers ?? [] {
+            if let navController = viewController as? UINavigationController {
+                for vc in navController.viewControllers {
+                    if let composeMealVC = vc as? ComposeMealViewController {
+                        // Use the delegate to pass the food item
+                        composeMealVC.didAddFoodItem(foodItem)
+                        return
+                    }
+                }
+            }
+        }
+    }
+    
     private func calculateMedianPortion(for entryName: String) -> Double {
         // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -1280,4 +1344,8 @@ extension MealInsightsViewController: UISearchBarDelegate {
             // Perform the search with the current search text
             performSearch(with: searchBar.text ?? "")
         }
+}
+
+protocol MealInsightsDelegate: AnyObject {
+    func didAddFoodItem(_ foodItem: FoodItem)
 }
