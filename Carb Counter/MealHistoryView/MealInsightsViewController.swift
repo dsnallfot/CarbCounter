@@ -6,6 +6,7 @@
 //
 import UIKit
 import CoreData
+import DGCharts
 
 class MealInsightsViewController: UIViewController {
     
@@ -14,6 +15,7 @@ class MealInsightsViewController: UIViewController {
     var prepopulatedSearchText: String?
     var onAveragePortionSelected: ((Double) -> Void)?
     private var selectedEntryName: String?
+    private var selectedEntryId: UUID?
     private var isComingFromModal = false
     public var isComingFromFoodItemRow = false
     public var isComingFromDetailView = false
@@ -59,9 +61,9 @@ class MealInsightsViewController: UIViewController {
     }()
     
     private let datePresetsSegmentedControl: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["", "3d", "7d", "30d", "90d"]) // Leave the first item empty
+        let control = UISegmentedControl(items: ["3d", "7d", "30d", "90d", ""]) // Leave the first item empty
         if let infinitySymbol = UIImage(systemName: "infinity") {
-            control.setImage(infinitySymbol, forSegmentAt: 0) // Set the infinity SF Symbol for the first segment
+            control.setImage(infinitySymbol, forSegmentAt: 4) // Set the infinity SF Symbol for the last segment
         }
         return control
     }()
@@ -116,6 +118,140 @@ class MealInsightsViewController: UIViewController {
     private var mealHistories: [MealHistory] = []
     private var uniqueFoodEntries: [String] = []
     private var allFilteredFoodEntries: [FoodItemEntry] = []
+    
+    // Chart setup
+    // Define the LineChartView
+    private var lineChartView: LineChartView!
+
+    // Update your setupChartView function to configure the LineChartView
+    private func setupChartView() {
+        // Initialize the LineChartView
+        lineChartView = LineChartView()
+        lineChartView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+        lineChartView.layer.cornerRadius = 10
+        lineChartView.clipsToBounds = true // Ensure content is clipped to rounded corners
+        lineChartView.translatesAutoresizingMaskIntoConstraints = false
+
+        
+        // Set the maxVisibleCount to 15 (or your desired number)
+        lineChartView.maxVisibleCount = 15
+
+        // Add it to your view
+        view.addSubview(lineChartView)
+
+        NSLayoutConstraint.activate([
+            lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            lineChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -191),
+            lineChartView.heightAnchor.constraint(equalToConstant: 180),
+        ])
+    }
+
+    // Call this function after fetching data to populate the chart
+    private func updateChartWithCarbsData(_ filteredMeals: [MealHistory]) {
+        var carbsEntries: [ChartDataEntry] = []
+        
+        var minDate: TimeInterval = .greatestFiniteMagnitude
+        var maxDate: TimeInterval = 0
+        
+        // Sort meals by date
+        let sortedMeals = filteredMeals.sorted { $0.mealDate ?? Date() < $1.mealDate ?? Date() }
+        
+        for meal in sortedMeals {
+            if let mealDate = meal.mealDate {
+                let timeIntervalForXAxis = mealDate.timeIntervalSince1970
+                let carbsValue = meal.totalNetCarbs
+                
+                minDate = min(minDate, timeIntervalForXAxis)
+                maxDate = max(maxDate, timeIntervalForXAxis)
+
+                // Attach the MealHistory object to the ChartDataEntry
+                let carbsEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue, data: meal)
+                carbsEntries.append(carbsEntry)
+            }
+        }
+
+        let carbsDataSet = LineChartDataSet(entries: carbsEntries, label: NSLocalizedString("Kolhydrater", comment: "Carbohydrates"))
+        carbsDataSet.colors = [.systemOrange]
+        carbsDataSet.circleColors = [.systemOrange]
+        carbsDataSet.circleHoleColor = .white
+        carbsDataSet.circleRadius = 4.0
+        carbsDataSet.lineWidth = 1
+        carbsDataSet.axisDependency = .left
+        carbsDataSet.drawValuesEnabled = false
+        
+        // Enable highlighting for the dataset
+        carbsDataSet.highlightEnabled = true
+        carbsDataSet.highlightColor = .label
+
+        let chartData = LineChartData(dataSets: [carbsDataSet])
+
+        let xAxis = lineChartView.xAxis
+        xAxis.valueFormatter = DateValueFormatter()
+        xAxis.labelPosition = .bottom
+        xAxis.drawGridLinesEnabled = false
+        
+        let labelCount = calculateLabelCount(minDate: minDate, maxDate: maxDate)
+        xAxis.setLabelCount(labelCount, force: true)
+
+        // Re-enable granularity
+        xAxis.granularity = 1  // 1 second
+        xAxis.granularityEnabled = true
+        
+        xAxis.axisMinimum = minDate
+        xAxis.axisMaximum = maxDate
+
+        lineChartView.leftAxis.drawGridLinesEnabled = true
+        lineChartView.leftAxis.axisMinimum = 0
+
+        lineChartView.rightAxis.enabled = false
+        lineChartView.rightAxis.drawGridLinesEnabled = false
+
+        lineChartView.isUserInteractionEnabled = true
+        lineChartView.dragEnabled = true
+        lineChartView.setScaleEnabled(true)
+        lineChartView.pinchZoomEnabled = true
+        lineChartView.highlightPerDragEnabled = true
+        lineChartView.highlightPerTapEnabled = true
+
+        lineChartView.data = chartData
+
+        let marker = TooltipMarkerView()
+        marker.chartView = lineChartView
+        lineChartView.marker = marker
+
+        lineChartView.notifyDataSetChanged()
+    }
+
+    private func calculateLabelCount(minDate: TimeInterval, maxDate: TimeInterval) -> Int {
+        let totalSeconds = maxDate - minDate
+        let days = totalSeconds / (24 * 60 * 60)
+        
+        // Choose a sensible label count based on the range (e.g., 7 labels per week)
+        if days < 1 {
+            return 7
+        } else if days <= 7 {
+            return 7
+        } else if days <= 30 {
+            return 7
+        } else {
+            return 7
+        }
+    }
+
+    // Helper function to convert Date to a readable format for the X-axis
+    class DateValueFormatter: AxisValueFormatter {
+        private let dateFormatter = DateFormatter()
+
+        init() {
+            dateFormatter.dateFormat = "d MMM" // Customize the format
+        }
+
+        func stringForValue(_ value: Double, axis: AxisBase?) -> String {
+            let date = Date(timeIntervalSince1970: value)
+            return dateFormatter.string(from: date)
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -130,7 +266,7 @@ class MealInsightsViewController: UIViewController {
         if isModalPresentation {
             addCloseButton()
         } else {
-            updateStats(for: "")
+            updateStats(for: nil)
         }
         
         setupGradientView()
@@ -138,6 +274,7 @@ class MealInsightsViewController: UIViewController {
         setupMealTimesSegmentedControl()
         setupSearchBar()
         setupStatsTableView()
+        setupChartView()
         setupStatsView()
         setupActionButton()
         setupTimePickers()
@@ -249,7 +386,7 @@ class MealInsightsViewController: UIViewController {
     
     private func setupSegmentedControlAndDatePickers() {
         // Configure From Date Picker and Label
-        fromDateLabel.text = NSLocalizedString("  Datum:", comment: "From Date Label")
+        fromDateLabel.text = NSLocalizedString("Datum", comment: "From Date Label")
         fromDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         fromDateLabel.textColor = .label
         fromDatePicker.datePickerMode = .date
@@ -262,7 +399,7 @@ class MealInsightsViewController: UIViewController {
         fromDateStackView.translatesAutoresizingMaskIntoConstraints = false
 
         // Configure To Date Picker and Label
-        toDateLabel.text = NSLocalizedString("till  ", comment: "To Date Label")
+        toDateLabel.text = NSLocalizedString("→", comment: "To Date Label")
         toDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         toDateLabel.textColor = .label
         toDatePicker.datePickerMode = .date
@@ -286,7 +423,7 @@ class MealInsightsViewController: UIViewController {
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
         // Date preset segmented control
-        datePresetsSegmentedControl.selectedSegmentIndex = 0 //UISegmentedControl.noSegment
+        datePresetsSegmentedControl.selectedSegmentIndex = 2 //UISegmentedControl.noSegment
         datePresetsSegmentedControl.addTarget(self, action: #selector(datePresetChanged(_:)), for: .valueChanged)
         datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
@@ -316,16 +453,16 @@ class MealInsightsViewController: UIViewController {
         var fromDate: Date?
 
         switch sender.selectedSegmentIndex {
-        case 0: // Allt - Get the earliest available date from mealHistories
-            fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
-        case 1: // 3d
+        case 0: // 3d
             fromDate = Calendar.current.date(byAdding: .day, value: -3, to: now)
-        case 2: // 7d
+        case 1: // 7d
             fromDate = Calendar.current.date(byAdding: .day, value: -7, to: now)
-        case 3: // 30d
+        case 2: // 30d
             fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now)
-        case 4: // 90d
+        case 3: // 90d
             fromDate = Calendar.current.date(byAdding: .day, value: -90, to: now)
+        case 4: // Allt - Get the earliest available date from mealHistories
+            fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
         default:
             break
         }
@@ -338,9 +475,9 @@ class MealInsightsViewController: UIViewController {
             if segmentedControl.selectedSegmentIndex == 1 {
                 // Case: "Insikt livsmedel"
                 filterFoodEntries()
-                if let selectedEntry = selectedEntryName {
-                    // Re-run updateStats with the previously selected entry
-                    updateStats(for: selectedEntry)
+                if let selectedEntryId = selectedEntryId {
+                    // Re-run updateStats with the previously selected entryId
+                    updateStats(for: selectedEntryId)
                 }
             } else if segmentedControl.selectedSegmentIndex == 0 {
                 // Case: "Insikt måltider"
@@ -381,11 +518,11 @@ class MealInsightsViewController: UIViewController {
         case 1: // Frukost
             setTimePickers(fromHour: 6, fromMinute: 0, toHour: 10, toMinute: 0)
         case 2: // Lunch
-            setTimePickers(fromHour: 10, fromMinute: 0, toHour: 14, toMinute: 0)
+            setTimePickers(fromHour: 10, fromMinute: 0, toHour: 13, toMinute: 0)
         case 3: // Mellis
-            setTimePickers(fromHour: 14, fromMinute: 0, toHour: 17, toMinute: 0)
+            setTimePickers(fromHour: 13, fromMinute: 0, toHour: 16, toMinute: 30)
         case 4: // Middag
-            setTimePickers(fromHour: 17, fromMinute: 0, toHour: 20, toMinute: 0)
+            setTimePickers(fromHour: 16, fromMinute: 30, toHour: 20, toMinute: 0)
         default:
             break
         }
@@ -406,7 +543,7 @@ class MealInsightsViewController: UIViewController {
     // Time pickers for "Insikt måltider" mode
     private func setupTimePickers() {
         // Configure "Från tid" label and picker
-        fromTimeLabel.text = NSLocalizedString("Från tid", comment: "From Time Label")
+        fromTimeLabel.text = NSLocalizedString("Tid", comment: "From Time Label")
         fromTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         fromTimeLabel.textColor = .label
         fromTimePicker.datePickerMode = .time
@@ -416,7 +553,7 @@ class MealInsightsViewController: UIViewController {
         fromTimeLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Configure "Till tid" label and picker
-        toTimeLabel.text = NSLocalizedString("Till tid", comment: "To Time Label")
+        toTimeLabel.text = NSLocalizedString("→", comment: "To Time Label")
         toTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         toTimeLabel.textColor = .label
         toTimePicker.datePickerMode = .time
@@ -438,8 +575,8 @@ class MealInsightsViewController: UIViewController {
 
         // Combine both time pickers into one stack
         let timePickersStackView = UIStackView(arrangedSubviews: [fromTimeStackView, toTimeStackView])
-        timePickersStackView.axis = .vertical
-        timePickersStackView.spacing = 12
+        timePickersStackView.axis = .horizontal
+        timePickersStackView.spacing = 16
         timePickersStackView.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(timePickersStackView)
@@ -468,6 +605,7 @@ class MealInsightsViewController: UIViewController {
             searchBar.isHidden = true
             searchBar.resignFirstResponder()
             statsTableView.isHidden = true
+            lineChartView.isHidden = false
             fromTimePicker.isHidden = false
             toTimePicker.isHidden = false
             fromTimeLabel.isHidden = false
@@ -489,6 +627,7 @@ class MealInsightsViewController: UIViewController {
             toTimePicker.isHidden = true
             fromTimeLabel.isHidden = true
             toTimeLabel.isHidden = true
+            lineChartView.isHidden = true
             mealTimesSegmentedControl.isHidden = true
 
             if isComingFromFoodItemRow || isComingFromDetailView {
@@ -506,11 +645,11 @@ class MealInsightsViewController: UIViewController {
                 statsViewBottomConstraint.constant = -16
                 filterFoodEntries()
 
-                if let selectedEntry = selectedEntryName {
-                    updateStats(for: selectedEntry)
-                } else {
-                    updateStats(for: "")
-                }
+                if let selectedEntryId = selectedEntryId {
+                                updateStats(for: selectedEntryId) // Use the UUID for stats update
+                            } else {
+                                updateStats(for: nil) // Pass nil if there's no selected entry
+                            }
                 combinedStackView.spacing = 16
             }
             updateStatsTableConstraints()
@@ -582,23 +721,33 @@ class MealInsightsViewController: UIViewController {
                 let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
                 return trimmedEntryName == trimmedSearchText
             }) {
-                print("match found \(matchingEntry.entryName ?? "")")
-                self.selectedEntryName = matchingEntry.entryName // Ensure the selectedEntryName is updated
-                updateStats(for: matchingEntry.entryName ?? "")
+                print("Exact match found \(matchingEntry.entryName ?? "")")
+                self.selectedEntryName = matchingEntry.entryName // Store the selected entry name
+                self.selectedEntryId = matchingEntry.entryId // Store the entryId for further filtering
+
+                // Update stats using entryId
+                updateStats(for: matchingEntry.entryId)
             } else {
-                print("no match found \(searchText)")
-                updateStats(for: "")
+                print("No exact match found for \(searchText)")
+                updateStats(for: nil) // Clear stats if no match
             }
         } else {
             // Execute the same search as when the user manually types into the search bar
             self.filterFoodEntries()
+
             if let selectedEntry = selectedEntryName {
-                updateStats(for: selectedEntry)
+                // Use the stored entry name to update stats
+                if let matchingEntry = allFilteredFoodEntries.first(where: { $0.entryName?.lowercased() == selectedEntry.lowercased() }) {
+                    self.selectedEntryId = matchingEntry.entryId // Update the selected entryId for the matched name
+                    updateStats(for: matchingEntry.entryId)
+                } else {
+                    updateStats(for: nil) // No match, clear stats
+                }
             } else {
                 if searchBar.text?.isEmpty ?? true {
                     self.selectedEntryName = nil // Reset the selected entry if search is cleared
-                    print("no match found \(searchText)")
-                    updateStats(for: "")
+                    print("Search text is empty, no match found")
+                    updateStats(for: nil) // Clear stats
                 }
             }
         }
@@ -645,6 +794,22 @@ class MealInsightsViewController: UIViewController {
             // Force layout update after changing constraints
             view.layoutIfNeeded()
         }
+    /*
+    private func setupChartView() {
+        chartView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+        chartView.layer.cornerRadius = 10
+        chartView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(chartView)
+
+        NSLayoutConstraint.activate([
+            chartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            chartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            chartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -191),
+            chartView.heightAnchor.constraint(equalToConstant: 180),
+
+        ])
+    }*/
 
     private func setupStatsView() {
         statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
@@ -691,7 +856,7 @@ class MealInsightsViewController: UIViewController {
             actionButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-
+/*
     private func calculateAveragePortion(for entryName: String) -> Double {
         // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -703,13 +868,26 @@ class MealInsightsViewController: UIViewController {
         
         // Calculate the average portion size, ensuring there's no division by zero
         return portions.isEmpty ? 0 : portions.reduce(0, +) / Double(portions.count)
-    }
-    
+    }*/
+    /*
     private func loadDefaultDates() {
         if let earliestMealDate = mealHistories.map({ $0.mealDate ?? Date() }).min() {
             fromDatePicker.date = earliestMealDate
         }
         toDatePicker.date = Date()
+    }*/
+    
+    private func loadDefaultDates() {
+        let now = Date()
+        
+        // Set the default to 30d
+        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now) ?? now
+        
+        fromDatePicker.date = fromDate
+        toDatePicker.date = now
+        
+        // Now, trigger the date change logic
+        datePresetChanged(UISegmentedControl()) // Simulate the preset change to "30d"
     }
 
     private func fetchMealHistories() {
@@ -739,7 +917,7 @@ class MealInsightsViewController: UIViewController {
         if segmentedControl.selectedSegmentIndex == 1 {
             // Case: "Insikt livsmedel"
             filterFoodEntries()
-            updateStats(for: "")
+            updateStats(for: nil)
         } else if segmentedControl.selectedSegmentIndex == 0 {
             // Case: "Insikt måltider"
             calculateMealStats()
@@ -813,6 +991,9 @@ class MealInsightsViewController: UIViewController {
             // Step 3: Return true if the meal is within both date and time range, and it has a valid totalNetCarbs
             return isWithinTimeRange && history.totalNetCarbs > 0
         }
+        
+        // Update the chart with filtered data
+        updateChartWithCarbsData(filteredMeals)
 
         // Extract values for each category (carbohydrates, fat, protein, bolus)
         let carbsValues = filteredMeals.map { $0.totalNetCarbs }.sorted()
@@ -982,13 +1163,20 @@ class MealInsightsViewController: UIViewController {
     }
 
     // Food item calculations (MEDIAN VALUE VERSION)
-    private func updateStats(for entryName: String) {
-        // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
-        let matchingEntries = allFilteredFoodEntries.filter {
-            $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
+    private func updateStats(for entryId: UUID?) {
+        guard let entryId = entryId else {
+            // Reset stats if no entryId
+            statsLabel.text = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+            return
         }
 
-        // Get the emoji from the first matching entry, or default to an empty string if no entries are found
+        // Filter matching entries based on the entryId and entryPortionServed > 0
+        let matchingEntries = allFilteredFoodEntries.filter {
+            $0.entryId == entryId && $0.entryPortionServed > 0
+        }
+
+        // Get the entryName and entryEmoji from the first matching entry, or default to empty string if no entries are found
+        let entryName = matchingEntries.first?.entryName ?? ""
         var entryEmoji = matchingEntries.first?.entryEmoji ?? ""
 
         // Clean up the emoji string by trimming unnecessary whitespace or newlines
@@ -1313,19 +1501,28 @@ class MealInsightsViewController: UIViewController {
         }
 
         func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            let selectedEntry = uniqueFoodEntries[indexPath.row]
+            let selectedEntryName = uniqueFoodEntries[indexPath.row]
             
             // Prevent selection if the placeholder is being shown
-            if selectedEntry == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
+            if selectedEntryName == NSLocalizedString("Inga sökträffar inom valt datumintervall", comment: "No search results found in the selected date range") {
                 return
             }
+            
             searchBar.resignFirstResponder()
             
             // Store the selected entry name
-            selectedEntryName = selectedEntry
+            self.selectedEntryName = selectedEntryName
             
-            // Perform the updateStats and pass the medianPortion value back via the closure
-            updateStats(for: selectedEntry)
+            // Find the corresponding entryId for the selected entry name
+            if let matchingEntry = allFilteredFoodEntries.first(where: {
+                $0.entryName == selectedEntryName
+            }) {
+                // Store the corresponding entryId
+                selectedEntryId = matchingEntry.entryId
+                
+                // Perform the updateStats with the entryId
+                updateStats(for: selectedEntryId)
+            }
         }
     }
 
@@ -1335,7 +1532,7 @@ extension MealInsightsViewController: UISearchBarDelegate {
 
             if searchBar.text?.isEmpty ?? true {
                 selectedEntryName = nil // Reset the selected entry if search is cleared
-                updateStats(for: "")
+                updateStats(for: nil)
             }
         performSearch(with: searchText)
     }
