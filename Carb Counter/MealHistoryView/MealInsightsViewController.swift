@@ -6,6 +6,7 @@
 //
 import UIKit
 import CoreData
+import DGCharts
 
 class MealInsightsViewController: UIViewController {
     
@@ -117,6 +118,97 @@ class MealInsightsViewController: UIViewController {
     private var mealHistories: [MealHistory] = []
     private var uniqueFoodEntries: [String] = []
     private var allFilteredFoodEntries: [FoodItemEntry] = []
+    
+    // Chart setup
+    // Define the LineChartView
+    private var lineChartView: LineChartView!
+
+    // Update your setupChartView function to configure the LineChartView
+    private func setupChartView() {
+        // Initialize the LineChartView
+        lineChartView = LineChartView()
+        lineChartView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+        lineChartView.layer.cornerRadius = 10
+        lineChartView.clipsToBounds = true // Ensure content is clipped to rounded corners
+        lineChartView.translatesAutoresizingMaskIntoConstraints = false
+        lineChartView.isUserInteractionEnabled = true
+        lineChartView.highlightPerTapEnabled = true
+        lineChartView.drawMarkers = true
+        
+        // Set the maxVisibleCount to 15 (or your desired number)
+        lineChartView.maxVisibleCount = 15
+
+        // Add it to your view
+        view.addSubview(lineChartView)
+
+        NSLayoutConstraint.activate([
+            lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            lineChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -191),
+            lineChartView.heightAnchor.constraint(equalToConstant: 180),
+        ])
+    }
+
+    // Call this function after fetching data to populate the chart
+    private func updateChartWithCarbsData(_ filteredMeals: [MealHistory]) {
+        var dataEntries: [ChartDataEntry] = []
+
+        for meal in filteredMeals {
+            if let mealDate = meal.mealDate {
+                let timeIntervalForXAxis = mealDate.timeIntervalSince1970
+                let carbsValue = meal.totalNetCarbs
+
+                let dataEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue)
+                dataEntries.append(dataEntry)
+            }
+        }
+
+        let chartDataSet = LineChartDataSet(entries: dataEntries, label: NSLocalizedString("Kolhydrater", comment: "Carbohydrates"))
+        chartDataSet.colors = [.systemOrange]
+        chartDataSet.circleColors = [.systemOrange]
+        chartDataSet.circleHoleColor = .white
+        chartDataSet.circleRadius = 4.0
+        chartDataSet.lineWidth = 1.0
+        chartDataSet.drawValuesEnabled = true
+
+        let chartData = LineChartData(dataSet: chartDataSet)
+
+        // Set up X and Y axes
+        lineChartView.xAxis.valueFormatter = DateValueFormatter()
+        lineChartView.xAxis.labelPosition = .bottom
+        lineChartView.xAxis.drawGridLinesEnabled = false
+        lineChartView.leftAxis.drawGridLinesEnabled = true
+        lineChartView.leftAxis.axisMinimum = 0
+        lineChartView.rightAxis.enabled = false
+
+        // Enable user interactions
+        lineChartView.isUserInteractionEnabled = false
+        lineChartView.highlightPerTapEnabled = false
+
+        // Assign the data to the chart
+        lineChartView.data = chartData
+
+        // Set the marker
+        let marker = TooltipMarkerView(frame: CGRect(x: 0, y: 0, width: 80, height: 40))
+        marker.chartView = lineChartView
+        lineChartView.marker = marker
+
+        lineChartView.notifyDataSetChanged()
+    }
+
+    // Helper function to convert Date to a readable format for the X-axis
+    class DateValueFormatter: AxisValueFormatter {
+        private let dateFormatter = DateFormatter()
+
+        init() {
+            dateFormatter.dateFormat = "d MMM" // Customize the format
+        }
+
+        func stringForValue(_ value: Double, axis: AxisBase?) -> String {
+            let date = Date(timeIntervalSince1970: value)
+            return dateFormatter.string(from: date)
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -139,6 +231,7 @@ class MealInsightsViewController: UIViewController {
         setupMealTimesSegmentedControl()
         setupSearchBar()
         setupStatsTableView()
+        setupChartView()
         setupStatsView()
         setupActionButton()
         setupTimePickers()
@@ -250,7 +343,7 @@ class MealInsightsViewController: UIViewController {
     
     private func setupSegmentedControlAndDatePickers() {
         // Configure From Date Picker and Label
-        fromDateLabel.text = NSLocalizedString("  Datum:", comment: "From Date Label")
+        fromDateLabel.text = NSLocalizedString("Datum", comment: "From Date Label")
         fromDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         fromDateLabel.textColor = .label
         fromDatePicker.datePickerMode = .date
@@ -263,7 +356,7 @@ class MealInsightsViewController: UIViewController {
         fromDateStackView.translatesAutoresizingMaskIntoConstraints = false
 
         // Configure To Date Picker and Label
-        toDateLabel.text = NSLocalizedString("till  ", comment: "To Date Label")
+        toDateLabel.text = NSLocalizedString("→", comment: "To Date Label")
         toDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         toDateLabel.textColor = .label
         toDatePicker.datePickerMode = .date
@@ -407,7 +500,7 @@ class MealInsightsViewController: UIViewController {
     // Time pickers for "Insikt måltider" mode
     private func setupTimePickers() {
         // Configure "Från tid" label and picker
-        fromTimeLabel.text = NSLocalizedString("Från tid", comment: "From Time Label")
+        fromTimeLabel.text = NSLocalizedString("Tid", comment: "From Time Label")
         fromTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         fromTimeLabel.textColor = .label
         fromTimePicker.datePickerMode = .time
@@ -417,7 +510,7 @@ class MealInsightsViewController: UIViewController {
         fromTimeLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Configure "Till tid" label and picker
-        toTimeLabel.text = NSLocalizedString("Till tid", comment: "To Time Label")
+        toTimeLabel.text = NSLocalizedString("→", comment: "To Time Label")
         toTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         toTimeLabel.textColor = .label
         toTimePicker.datePickerMode = .time
@@ -439,8 +532,8 @@ class MealInsightsViewController: UIViewController {
 
         // Combine both time pickers into one stack
         let timePickersStackView = UIStackView(arrangedSubviews: [fromTimeStackView, toTimeStackView])
-        timePickersStackView.axis = .vertical
-        timePickersStackView.spacing = 12
+        timePickersStackView.axis = .horizontal
+        timePickersStackView.spacing = 16
         timePickersStackView.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(timePickersStackView)
@@ -469,6 +562,7 @@ class MealInsightsViewController: UIViewController {
             searchBar.isHidden = true
             searchBar.resignFirstResponder()
             statsTableView.isHidden = true
+            lineChartView.isHidden = false
             fromTimePicker.isHidden = false
             toTimePicker.isHidden = false
             fromTimeLabel.isHidden = false
@@ -490,6 +584,7 @@ class MealInsightsViewController: UIViewController {
             toTimePicker.isHidden = true
             fromTimeLabel.isHidden = true
             toTimeLabel.isHidden = true
+            lineChartView.isHidden = true
             mealTimesSegmentedControl.isHidden = true
 
             if isComingFromFoodItemRow || isComingFromDetailView {
@@ -656,6 +751,22 @@ class MealInsightsViewController: UIViewController {
             // Force layout update after changing constraints
             view.layoutIfNeeded()
         }
+    /*
+    private func setupChartView() {
+        chartView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
+        chartView.layer.cornerRadius = 10
+        chartView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(chartView)
+
+        NSLayoutConstraint.activate([
+            chartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            chartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            chartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -191),
+            chartView.heightAnchor.constraint(equalToConstant: 180),
+
+        ])
+    }*/
 
     private func setupStatsView() {
         statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
@@ -824,6 +935,9 @@ class MealInsightsViewController: UIViewController {
             // Step 3: Return true if the meal is within both date and time range, and it has a valid totalNetCarbs
             return isWithinTimeRange && history.totalNetCarbs > 0
         }
+        
+        // Update the chart with filtered data
+        updateChartWithCarbsData(filteredMeals)
 
         // Extract values for each category (carbohydrates, fat, protein, bolus)
         let carbsValues = filteredMeals.map { $0.totalNetCarbs }.sorted()

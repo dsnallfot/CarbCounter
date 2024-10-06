@@ -427,7 +427,8 @@
 "Genomsnittlig portion" = "Average serving size";
 "\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nDo you want to use the average serving size from meal history: \n%.0f g for %@?";
 "Sök i historiken" = "Search history";
-"  Datum:" = "  Dates:";
+"Datum" = "Dates";
+"Tid" = "Time";
 "till  " = "to  ";
 "+ Lägg till i måltid" = "+ Add to meal";
 

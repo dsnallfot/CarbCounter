@@ -56,7 +56,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         setupTableView()
         
         // Add an info button in the navigation bar
-                let infoButton = UIBarButtonItem(image: UIImage(systemName: "wand.and.rays"), style: .plain, target: self, action: #selector(navigateToMealInsights))
+                let infoButton = UIBarButtonItem(image: UIImage(systemName: "chart.bar.xaxis.ascending"), style: .plain, target: self, action: #selector(navigateToMealInsights))
                 navigationItem.rightBarButtonItem = infoButton
         
         // Instantiate DataSharingViewController programmatically
