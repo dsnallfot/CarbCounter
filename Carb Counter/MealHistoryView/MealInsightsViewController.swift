@@ -61,9 +61,9 @@ class MealInsightsViewController: UIViewController {
     }()
     
     private let datePresetsSegmentedControl: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["", "3d", "7d", "30d", "90d"]) // Leave the first item empty
+        let control = UISegmentedControl(items: ["3d", "7d", "30d", "90d", ""]) // Leave the first item empty
         if let infinitySymbol = UIImage(systemName: "infinity") {
-            control.setImage(infinitySymbol, forSegmentAt: 0) // Set the infinity SF Symbol for the first segment
+            control.setImage(infinitySymbol, forSegmentAt: 4) // Set the infinity SF Symbol for the last segment
         }
         return control
     }()
@@ -424,7 +424,7 @@ class MealInsightsViewController: UIViewController {
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
         // Date preset segmented control
-        datePresetsSegmentedControl.selectedSegmentIndex = 0 //UISegmentedControl.noSegment
+        datePresetsSegmentedControl.selectedSegmentIndex = 2 //UISegmentedControl.noSegment
         datePresetsSegmentedControl.addTarget(self, action: #selector(datePresetChanged(_:)), for: .valueChanged)
         datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
@@ -454,16 +454,16 @@ class MealInsightsViewController: UIViewController {
         var fromDate: Date?
 
         switch sender.selectedSegmentIndex {
-        case 0: // Allt - Get the earliest available date from mealHistories
-            fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
-        case 1: // 3d
+        case 0: // 3d
             fromDate = Calendar.current.date(byAdding: .day, value: -3, to: now)
-        case 2: // 7d
+        case 1: // 7d
             fromDate = Calendar.current.date(byAdding: .day, value: -7, to: now)
-        case 3: // 30d
+        case 2: // 30d
             fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now)
-        case 4: // 90d
+        case 3: // 90d
             fromDate = Calendar.current.date(byAdding: .day, value: -90, to: now)
+        case 4: // Allt - Get the earliest available date from mealHistories
+            fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
         default:
             break
         }
@@ -519,11 +519,11 @@ class MealInsightsViewController: UIViewController {
         case 1: // Frukost
             setTimePickers(fromHour: 6, fromMinute: 0, toHour: 10, toMinute: 0)
         case 2: // Lunch
-            setTimePickers(fromHour: 10, fromMinute: 0, toHour: 14, toMinute: 0)
+            setTimePickers(fromHour: 10, fromMinute: 0, toHour: 13, toMinute: 0)
         case 3: // Mellis
-            setTimePickers(fromHour: 14, fromMinute: 0, toHour: 17, toMinute: 0)
+            setTimePickers(fromHour: 13, fromMinute: 0, toHour: 16, toMinute: 30)
         case 4: // Middag
-            setTimePickers(fromHour: 17, fromMinute: 0, toHour: 20, toMinute: 0)
+            setTimePickers(fromHour: 16, fromMinute: 30, toHour: 20, toMinute: 0)
         default:
             break
         }
@@ -870,12 +870,25 @@ class MealInsightsViewController: UIViewController {
         // Calculate the average portion size, ensuring there's no division by zero
         return portions.isEmpty ? 0 : portions.reduce(0, +) / Double(portions.count)
     }*/
-    
+    /*
     private func loadDefaultDates() {
         if let earliestMealDate = mealHistories.map({ $0.mealDate ?? Date() }).min() {
             fromDatePicker.date = earliestMealDate
         }
         toDatePicker.date = Date()
+    }*/
+    
+    private func loadDefaultDates() {
+        let now = Date()
+        
+        // Set the default to 30d
+        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now) ?? now
+        
+        fromDatePicker.date = fromDate
+        toDatePicker.date = now
+        
+        // Now, trigger the date change logic
+        datePresetChanged(UISegmentedControl()) // Simulate the preset change to "30d"
     }
 
     private func fetchMealHistories() {
