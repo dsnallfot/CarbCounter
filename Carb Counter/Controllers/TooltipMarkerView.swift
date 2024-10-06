@@ -2,58 +2,110 @@ import UIKit
 import DGCharts
 
 class TooltipMarkerView: MarkerView {
-
-    private var text: String = ""
-
-    private let label: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = .white
-        label.textAlignment = .center
-        label.backgroundColor = UIColor.darkGray.withAlphaComponent(0.7)
-        label.layer.cornerRadius = 6
-        label.clipsToBounds = true
-        return label
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        addSubview(label)
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-
-    // Called when the marker is drawn. Use this to update the position.
+    private var text: String?
+    private let padding: UIEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+    
     override func refreshContent(entry: ChartDataEntry, highlight: Highlight) {
-        // Customize the text to be displayed in the tooltip
-        text = String(format: "%.0f g", entry.y) // For example, show the carbs value
-        label.text = text
-        label.sizeToFit()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMM"
+        let date = Date(timeIntervalSince1970: entry.x)
+        let dateString = dateFormatter.string(from: date)
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let time = Date(timeIntervalSince1970: entry.x)
+        let timeString = timeFormatter.string(from: time)
+        
+        text = String(format: "%@ %@\n%.0f g", dateString, timeString, entry.y)
+    }
+    
+    override func draw(context: CGContext, point: CGPoint) {
+        guard let chartView = self.chartView, let text = self.text else { return }
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 12),
+            .foregroundColor: UIColor.label,
+            .paragraphStyle: paragraphStyle
+        ]
+
+        let textSize = text.size(withAttributes: attributes)
+
+        let size = CGSize(
+            width: textSize.width + padding.left + padding.right,
+            height: textSize.height + padding.top + padding.bottom
+        )
+
+        let offset = self.offsetForDrawing(atPoint: point)
+
+        let rect = CGRect(
+            x: point.x + offset.x,
+            y: point.y + offset.y,
+            width: size.width,
+            height: size.height
+        )
+
+        // Create rounded rectangle path
+        let cornerRadius: CGFloat = 8.0
+        let path = UIBezierPath(roundedRect: rect, cornerRadius: cornerRadius)
+
+        // Draw background (fill)
+        context.saveGState()
+        context.setFillColor(UIColor.systemGray4.withAlphaComponent(0.8).cgColor)
+        context.addPath(path.cgPath)
+        context.fillPath()
+        context.restoreGState()
+
+        // Draw border (stroke)
+        context.saveGState()
+        context.setStrokeColor(UIColor.gray.cgColor)
+        context.setLineWidth(1.0) // Thin white border
+        context.addPath(path.cgPath)
+        context.strokePath()
+        context.restoreGState()
+
+        // Draw text
+        let textRect = CGRect(
+            x: rect.origin.x + padding.left,
+            y: rect.origin.y + padding.top,
+            width: textSize.width,
+            height: textSize.height
+        )
+
+        NSString(string: text).draw(in: textRect, withAttributes: attributes)
     }
 
     override func offsetForDrawing(atPoint point: CGPoint) -> CGPoint {
-        // Position the tooltip directly above the tapped point and center horizontally
-        let xOffset = -label.frame.size.width / 2
-        let yOffset = -label.frame.size.height - 10
+        guard let chartView = self.chartView else { return .zero }
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 12),
+        ]
+
+        let textSize = text?.size(withAttributes: attributes) ?? CGSize.zero
+
+        let size = CGSize(
+            width: textSize.width + padding.left + padding.right,
+            height: textSize.height + padding.top + padding.bottom
+        )
+        var xOffset: CGFloat = 0
+        var yOffset: CGFloat = 0
+
+        // Determine x position
+        if point.x + size.width > chartView.bounds.width {
+            xOffset = -(size.width + 5) // 5 pixels padding
+        } else {
+            xOffset = 5 // 5 pixels padding
+        }
+
+        // Determine y position
+        if point.y - size.height - 5 < 0 {
+            yOffset = 5 // 5 pixels below the point
+        } else {
+            yOffset = -(size.height + 5) // 5 pixels above the point
+        }
+
         return CGPoint(x: xOffset, y: yOffset)
-    }
-
-    override func draw(context: CGContext, point: CGPoint) {
-        // Ensure the tooltip stays within bounds of the chart
-        let labelWidth = label.frame.size.width + 10
-        let labelHeight = label.frame.size.height + 6
-        let x = point.x - labelWidth / 2
-        let y = point.y - labelHeight - 10
-
-        // Clamp the position to keep the tooltip from going off the screen
-        let clampedX = max(10, min(x, self.bounds.size.width - labelWidth - 10))
-        let clampedY = max(10, y)
-
-        // Update the label's frame
-        label.frame = CGRect(x: clampedX, y: clampedY, width: labelWidth, height: labelHeight)
-
-        super.draw(context: context, point: point)
     }
 }

@@ -425,6 +425,7 @@
 "det valda livsmedlet" = "the selected food item";
 "Inga sökträffar inom valt datumintervall" = "No matches in selected date range";
 "Genomsnittlig portion" = "Average serving size";
+"Använd genomsnittlig portion" = "Use average serving size";
 "\nVill du använda den genomsnittliga portionsstorleken från måltidshistoriken %.0f g för %@?" = "\nDo you want to use the average serving size from meal history: \n%.0f g for %@?";
 "Sök i historiken" = "Search history";
 "Datum" = "Dates";

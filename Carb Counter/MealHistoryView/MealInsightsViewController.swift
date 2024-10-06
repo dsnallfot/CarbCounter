@@ -131,9 +131,7 @@ class MealInsightsViewController: UIViewController {
         lineChartView.layer.cornerRadius = 10
         lineChartView.clipsToBounds = true // Ensure content is clipped to rounded corners
         lineChartView.translatesAutoresizingMaskIntoConstraints = false
-        lineChartView.isUserInteractionEnabled = true
-        lineChartView.highlightPerTapEnabled = true
-        lineChartView.drawMarkers = true
+
         
         // Set the maxVisibleCount to 15 (or your desired number)
         lineChartView.maxVisibleCount = 15
@@ -152,92 +150,92 @@ class MealInsightsViewController: UIViewController {
     // Call this function after fetching data to populate the chart
     private func updateChartWithCarbsData(_ filteredMeals: [MealHistory]) {
         var carbsEntries: [ChartDataEntry] = []
-        //var bolusEntries: [ChartDataEntry] = []
         
         var minDate: TimeInterval = .greatestFiniteMagnitude
         var maxDate: TimeInterval = 0
         
-        for meal in filteredMeals {
+        // Sort meals by date
+        let sortedMeals = filteredMeals.sorted { $0.mealDate ?? Date() < $1.mealDate ?? Date() }
+        
+        for meal in sortedMeals {
             if let mealDate = meal.mealDate {
                 let timeIntervalForXAxis = mealDate.timeIntervalSince1970
                 let carbsValue = meal.totalNetCarbs
-                //let bolusValue = meal.totalNetBolus
                 
-                // Track the min and max date for setting axis bounds
                 minDate = min(minDate, timeIntervalForXAxis)
                 maxDate = max(maxDate, timeIntervalForXAxis)
 
-                // Create data entries for carbs and bolus
                 let carbsEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue)
-                //let bolusEntry = ChartDataEntry(x: timeIntervalForXAxis, y: bolusValue)
-                
                 carbsEntries.append(carbsEntry)
-                //bolusEntries.append(bolusEntry)
             }
         }
 
-        // Carbs data set (orange line)
         let carbsDataSet = LineChartDataSet(entries: carbsEntries, label: NSLocalizedString("Kolhydrater", comment: "Carbohydrates"))
         carbsDataSet.colors = [.systemOrange]
         carbsDataSet.circleColors = [.systemOrange]
         carbsDataSet.circleHoleColor = .white
         carbsDataSet.circleRadius = 4.0
         carbsDataSet.lineWidth = 1
-        carbsDataSet.axisDependency = .left // Bind carbs to left Y-axis
+        carbsDataSet.axisDependency = .left
         carbsDataSet.drawValuesEnabled = false
-/*
-        // Bolus data set (blue line)
-        let bolusDataSet = LineChartDataSet(entries: bolusEntries, label: NSLocalizedString("Bolus", comment: "Bolus"))
-        bolusDataSet.colors = [.systemBlue]
-        bolusDataSet.circleColors = [.systemBlue]
-        bolusDataSet.circleHoleColor = .white
-        bolusDataSet.circleRadius = 4.0
-        bolusDataSet.lineWidth = 0
-        bolusDataSet.axisDependency = .right // Bind bolus to right Y-axis
-        bolusDataSet.drawValuesEnabled = false
-*/
-        // Combine both datasets into chart data
-        //let chartData = LineChartData(dataSets: [bolusDataSet, carbsDataSet])
+        
+        // Enable highlighting for the dataset
+        carbsDataSet.highlightEnabled = true
+        carbsDataSet.highlightColor = .label
+
         let chartData = LineChartData(dataSets: [carbsDataSet])
 
-        // Set up X and Y axes
         let xAxis = lineChartView.xAxis
         xAxis.valueFormatter = DateValueFormatter()
         xAxis.labelPosition = .bottom
         xAxis.drawGridLinesEnabled = false
         
-        // Set the x-axis range based on the min and max dates
+        let labelCount = calculateLabelCount(minDate: minDate, maxDate: maxDate)
+        xAxis.setLabelCount(labelCount, force: true)
+
+        // Re-enable granularity
+        xAxis.granularity = 1  // 1 second
+        xAxis.granularityEnabled = true
+        
         xAxis.axisMinimum = minDate
         xAxis.axisMaximum = maxDate
-        
-        // Calculate number of days between minDate and maxDate
-        let numberOfDays = Calendar.current.dateComponents([.day], from: Date(timeIntervalSince1970: minDate), to: Date(timeIntervalSince1970: maxDate)).day ?? 0
-        
-        // Set a label count corresponding to the number of days
-        xAxis.setLabelCount(7, force: true)
 
-        // Left Y-axis for carbs
         lineChartView.leftAxis.drawGridLinesEnabled = true
         lineChartView.leftAxis.axisMinimum = 0
 
-        // Right Y-axis for bolus
         lineChartView.rightAxis.enabled = false
         lineChartView.rightAxis.drawGridLinesEnabled = false
-        lineChartView.rightAxis.axisMinimum = 0
 
-        // Enable user interactions
-        lineChartView.isUserInteractionEnabled = false
-        lineChartView.highlightPerTapEnabled = false
+        lineChartView.isUserInteractionEnabled = true
+        lineChartView.dragEnabled = true
+        lineChartView.setScaleEnabled(true)
+        lineChartView.pinchZoomEnabled = true
+        lineChartView.highlightPerDragEnabled = true
+        lineChartView.highlightPerTapEnabled = true
 
-        // Assign the data to the chart
         lineChartView.data = chartData
 
-        // Set the marker
-        let marker = TooltipMarkerView(frame: CGRect(x: 0, y: 0, width: 80, height: 40))
+        let marker = TooltipMarkerView()
         marker.chartView = lineChartView
         lineChartView.marker = marker
 
         lineChartView.notifyDataSetChanged()
+    }
+
+    private func calculateLabelCount(minDate: TimeInterval, maxDate: TimeInterval) -> Int {
+        let totalSeconds = maxDate - minDate
+        let days = totalSeconds / (24 * 60 * 60)
+        
+        // Choose a sensible label count based on the range (e.g., 7 labels per week)
+        if days < 1 {
+            return 7
+        } else if days <= 7 {
+            return 7
+        } else if days <= 30 {
+            return 7
+        } else {
+            return 7
+        }
     }
 
     // Helper function to convert Date to a readable format for the X-axis
