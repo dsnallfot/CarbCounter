@@ -151,35 +151,79 @@ class MealInsightsViewController: UIViewController {
 
     // Call this function after fetching data to populate the chart
     private func updateChartWithCarbsData(_ filteredMeals: [MealHistory]) {
-        var dataEntries: [ChartDataEntry] = []
-
+        var carbsEntries: [ChartDataEntry] = []
+        //var bolusEntries: [ChartDataEntry] = []
+        
+        var minDate: TimeInterval = .greatestFiniteMagnitude
+        var maxDate: TimeInterval = 0
+        
         for meal in filteredMeals {
             if let mealDate = meal.mealDate {
                 let timeIntervalForXAxis = mealDate.timeIntervalSince1970
                 let carbsValue = meal.totalNetCarbs
+                //let bolusValue = meal.totalNetBolus
+                
+                // Track the min and max date for setting axis bounds
+                minDate = min(minDate, timeIntervalForXAxis)
+                maxDate = max(maxDate, timeIntervalForXAxis)
 
-                let dataEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue)
-                dataEntries.append(dataEntry)
+                // Create data entries for carbs and bolus
+                let carbsEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue)
+                //let bolusEntry = ChartDataEntry(x: timeIntervalForXAxis, y: bolusValue)
+                
+                carbsEntries.append(carbsEntry)
+                //bolusEntries.append(bolusEntry)
             }
         }
 
-        let chartDataSet = LineChartDataSet(entries: dataEntries, label: NSLocalizedString("Kolhydrater", comment: "Carbohydrates"))
-        chartDataSet.colors = [.systemOrange]
-        chartDataSet.circleColors = [.systemOrange]
-        chartDataSet.circleHoleColor = .white
-        chartDataSet.circleRadius = 4.0
-        chartDataSet.lineWidth = 1.0
-        chartDataSet.drawValuesEnabled = true
-
-        let chartData = LineChartData(dataSet: chartDataSet)
+        // Carbs data set (orange line)
+        let carbsDataSet = LineChartDataSet(entries: carbsEntries, label: NSLocalizedString("Kolhydrater", comment: "Carbohydrates"))
+        carbsDataSet.colors = [.systemOrange]
+        carbsDataSet.circleColors = [.systemOrange]
+        carbsDataSet.circleHoleColor = .white
+        carbsDataSet.circleRadius = 4.0
+        carbsDataSet.lineWidth = 1
+        carbsDataSet.axisDependency = .left // Bind carbs to left Y-axis
+        carbsDataSet.drawValuesEnabled = false
+/*
+        // Bolus data set (blue line)
+        let bolusDataSet = LineChartDataSet(entries: bolusEntries, label: NSLocalizedString("Bolus", comment: "Bolus"))
+        bolusDataSet.colors = [.systemBlue]
+        bolusDataSet.circleColors = [.systemBlue]
+        bolusDataSet.circleHoleColor = .white
+        bolusDataSet.circleRadius = 4.0
+        bolusDataSet.lineWidth = 0
+        bolusDataSet.axisDependency = .right // Bind bolus to right Y-axis
+        bolusDataSet.drawValuesEnabled = false
+*/
+        // Combine both datasets into chart data
+        //let chartData = LineChartData(dataSets: [bolusDataSet, carbsDataSet])
+        let chartData = LineChartData(dataSets: [carbsDataSet])
 
         // Set up X and Y axes
-        lineChartView.xAxis.valueFormatter = DateValueFormatter()
-        lineChartView.xAxis.labelPosition = .bottom
-        lineChartView.xAxis.drawGridLinesEnabled = false
+        let xAxis = lineChartView.xAxis
+        xAxis.valueFormatter = DateValueFormatter()
+        xAxis.labelPosition = .bottom
+        xAxis.drawGridLinesEnabled = false
+        
+        // Set the x-axis range based on the min and max dates
+        xAxis.axisMinimum = minDate
+        xAxis.axisMaximum = maxDate
+        
+        // Calculate number of days between minDate and maxDate
+        let numberOfDays = Calendar.current.dateComponents([.day], from: Date(timeIntervalSince1970: minDate), to: Date(timeIntervalSince1970: maxDate)).day ?? 0
+        
+        // Set a label count corresponding to the number of days
+        xAxis.setLabelCount(7, force: true)
+
+        // Left Y-axis for carbs
         lineChartView.leftAxis.drawGridLinesEnabled = true
         lineChartView.leftAxis.axisMinimum = 0
+
+        // Right Y-axis for bolus
         lineChartView.rightAxis.enabled = false
+        lineChartView.rightAxis.drawGridLinesEnabled = false
+        lineChartView.rightAxis.axisMinimum = 0
 
         // Enable user interactions
         lineChartView.isUserInteractionEnabled = false
