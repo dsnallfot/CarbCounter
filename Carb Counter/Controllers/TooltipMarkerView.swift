@@ -6,16 +6,30 @@ class TooltipMarkerView: MarkerView {
     private let padding: UIEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
     
     override func refreshContent(entry: ChartDataEntry, highlight: Highlight) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "d MMM"
-        let date = Date(timeIntervalSince1970: entry.x)
-        let dateString = dateFormatter.string(from: date)
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
-        let time = Date(timeIntervalSince1970: entry.x)
-        let timeString = timeFormatter.string(from: time)
-        
-        text = String(format: "%@ %@\n%.0f g", dateString, timeString, entry.y)
+        // Safely unwrap the MealHistory object
+        if let meal = entry.data as? MealHistory {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "d MMM"
+            let date = Date(timeIntervalSince1970: entry.x)
+            let dateString = dateFormatter.string(from: date)
+            
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "HH:mm"
+            let time = Date(timeIntervalSince1970: entry.x)
+            let timeString = timeFormatter.string(from: time)
+            
+            // Construct the tooltip text with additional information
+            text = String(format: NSLocalizedString("%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E", comment: "tooltip string"),
+                          dateString,
+                          timeString,
+                          entry.y, // Carbs value from entry.y
+                          meal.totalNetFat,
+                          meal.totalNetProtein,
+                          meal.totalNetBolus)
+        } else {
+            // Handle the case where data is not available
+            text = "Data not available"
+        }
     }
     
     override func draw(context: CGContext, point: CGPoint) {
@@ -60,7 +74,7 @@ class TooltipMarkerView: MarkerView {
         // Draw border (stroke)
         context.saveGState()
         context.setStrokeColor(UIColor.gray.cgColor)
-        context.setLineWidth(1.0) // Thin white border
+        context.setLineWidth(1.0) // Thin border
         context.addPath(path.cgPath)
         context.strokePath()
         context.restoreGState()

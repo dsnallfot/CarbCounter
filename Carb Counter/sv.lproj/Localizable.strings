@@ -433,6 +433,7 @@
 "Tid" = "Tid";
 "till  " = "till  ";
 "+ Lägg till i måltid" = "+ Lägg till i måltid";
+"%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E" = "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E";
 
 /* Settings */
 "Inställningar" = "Inställningar";

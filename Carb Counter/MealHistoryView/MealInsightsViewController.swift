@@ -165,7 +165,8 @@ class MealInsightsViewController: UIViewController {
                 minDate = min(minDate, timeIntervalForXAxis)
                 maxDate = max(maxDate, timeIntervalForXAxis)
 
-                let carbsEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue)
+                // Attach the MealHistory object to the ChartDataEntry
+                let carbsEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue, data: meal)
                 carbsEntries.append(carbsEntry)
             }
         }
