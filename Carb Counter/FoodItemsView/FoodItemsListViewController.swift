@@ -665,7 +665,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         var message = ""
 
         if let notes = foodItem.notes, !notes.isEmpty {
-            message += "\n\(NSLocalizedString("Not:", comment: "Label for notes")) \(notes)\n"
+            message += "\n\(NSLocalizedString("ⓘ", comment: "Label for notes")) \(notes)\n"
         }
 
         if foodItem.perPiece {

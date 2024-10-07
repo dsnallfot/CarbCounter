@@ -152,7 +152,7 @@
 /* Food Item Row View */
 "Klar" = "Done";
 "Nästa" = "Next";
-"Not: %@" = "Note: %@";
+"Not: %@" = "ⓘ %@";
 "Kolhydrater: %.1f g / st" = "Carbs: %.1f g/serv";
 "Fett:%.1f g / st" = "Fat: %.1f g/serv";
 "Protein: %.1f g / st" = "Protein: %.1f g/serv";
@@ -279,7 +279,7 @@
 "+ Lägg till i måltid" = "+ Add to meal";
 "Nollställ räknare" = "Reset counter";
 "Produkt" = "Product";
-"Not:" = "Note:";
+"Not:" = "ⓘ";
 "Kolhydrater:" = "Carbohydrates:";
 "g / st" = "g/serving ";
 "g / 100 g" = "g/100 g ";

@@ -311,7 +311,7 @@ class OngoingMealViewController: UIViewController {
         var message = ""
         
         if let notes = selectedFoodItem.notes, !notes.isEmpty {
-            message += "\nNot: \(notes)\n"
+            message += "\nⓘ \(notes)\n"
         }
         
         if selectedFoodItem.perPiece {
