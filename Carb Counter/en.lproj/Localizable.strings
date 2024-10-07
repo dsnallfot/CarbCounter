@@ -153,28 +153,28 @@
 "Klar" = "Done";
 "Nästa" = "Next";
 "Not: %@" = "Note: %@";
-"Kolhydrater: %.1f g / st" = "Carbs: %.1f g / pc";
-"Fett:%.1f g / st" = "Fat: %.1f g / pc";
-"Protein: %.1f g / st" = "Protein: %.1f g / pc";
-"Kolhydrater: %.1f g / 100 g " = "Carbs: %.1f g / 100 g";
-"Fett: %.1f g / 100 g " = "Fat: %.1f g / 100 g";
-"Protein: %.1f g / 100 g " = "Protein: %.1f g / 100 g";
+"Kolhydrater: %.1f g / st" = "Carbs: %.1f g/serv";
+"Fett:%.1f g / st" = "Fat: %.1f g/serv";
+"Protein: %.1f g / st" = "Protein: %.1f g/serv";
+"Kolhydrater: %.1f g / 100 g " = "Carbs: %.1f g/100 g";
+"Fett: %.1f g / 100 g " = "Fat: %.1f g/100 g";
+"Protein: %.1f g / 100 g " = "Protein: %.1f g/100 g";
 "Ingen näringsinformation tillgänglig." = "No nutritional information available.";
 "OK" = "OK";
-"st" = "pc";
+"st" = "serv";
 "g" = "g";
 
 /* Searchable dropdown View Controller*/
 "Sök & välj ett eller flera livsmedel" = "Search & select food items";
 "Namn A-Ö" = "Name A-Z";
 "Skolmat" = "School";
-"Styck" = "Pieces";
+"Styck" = "Servings";
 "Populära" = "Popular";
 "Välj livsmedel" = "Select Food Items";
 "Klar" = "Done";
-"Kh %.0fg/st" = "Carbs %.0fg/pc";
-"Fett %.0fg/st" = "Fat %.0fg/pc";
-"Protein %.0fg/st" = "Protein %.0fg/pc";
+"Kh %.0fg/st" = "Carbs %.0fg/serv";
+"Fett %.0fg/st" = "Fat %.0fg/serv";
+"Protein %.0fg/st" = "Protein %.0fg/serv";
 "Kh %.0fg/100g" = "Carbs %.0fg/100g";
 "Fett %.0fg/100g" = "Fat %.0fg/100g";
 "Protein %.0fg/100g" = "Protein %.0fg/100g";
@@ -257,7 +257,7 @@
 "Sök online" = "Search online";
 "Sök bland %.0f sparade livsmedel" = "Search among %.0f saved food items";
 "Sök efter nya livsmedel online" = "Search for new food items online";
-"Ange vikt per styck i gram (valfritt)" = "Enter weight per piece in grams (optional)";
+"Ange vikt per styck i gram (valfritt)" = "Enter grams per serving (optional)";
 "Avbryt" = "Cancel";
 "Lägg till" = "Add";
 "Befintlig data" = "Existing data";
@@ -281,8 +281,8 @@
 "Produkt" = "Product";
 "Not:" = "Note:";
 "Kolhydrater:" = "Carbohydrates:";
-"g / st" = "g / piece";
-"g / 100 g" = "g / 100 g";
+"g / st" = "g/serving ";
+"g / 100 g" = "g/100 g ";
 "Serverats:" = "Served:";
 "ggr" = "times";
 "Klar" = "Done";
@@ -300,15 +300,29 @@
 "Källa: Dabas" = "Source: Dabas";
 "Dabas API fel: Kunde inte tolka svar från servern" = "Dabas API error: Could not interpret server response";
 "Ett fel uppstod vid hämtning av livsmedelsdata." = "En error occured while fetching food item data.";
+"Kolhydrater: %@ g / 100 g\nFett: %@ g / 100 g\nProtein: %@ g / 100 g\n\n[Källa: OpenFoodFacts]" = "Carbohydrates: %@ g / 100 g\nFat: %@ g / 100 g\nProtein: %@ g / 100 g\n\n[Source: OpenFoodFacts]";
+"Fel: %@" = "Error: %@";
+"Ingen data levererades" = "No data was delivered";
+"Kolhydrater: %.1f g / 100 g\nFett: %.1f g / 100 g\nProtein: %.1f g / 100 g\n\n[Källa: Openfoodfacts]" = "Carbohydrates: %.1f g / 100 g\nFat: %.1f g / 100 g\nProtein: %.1f g / 100 g\n\n[Source: Openfoodfacts]";
+"Kunde inte hitta information om livsmedlet" = "Could not find information about the food item";
+"Kunde inte tolka svar från servern" = "Could not interpret response from the server";
+"Fel vid tolkning JSON: %@" = "Error interpreting JSON: %@";
+"Openfoodfacts produktmatchning OK" = "Openfoodfacts product match OK";
+"\nKolhydrater: %.1f g / st" = "\nCarbohydrates: %.1f g/serving ";
+"\nFett: %.1f g / st" = "\nFat: %.1f g/serving ";
+"\nProtein: %.1f g / st" = "\nProtein: %.1f g/serving ";
+"\nKolhydrater: %.1f g / 100 g" = "\nCarbohydrates: %.1f g/100 g ";
+"\nFett: %.1f g / 100 g" = "\nFat: %.1f g/100 g ";
+"\nProtein: %.1f g / 100 g" = "\nProtein: %.1f g/100 g ";
 
 /* Add Food Items VC */
 "Nästa" = "Next";
 "Klar" = "Done";
 "Per 100g" = "Per 100g";
-"Per Styck" = "Per Piece";
+"Per Styck" = "Per Servinf";
 "  Ändra till per 100g   ←" = "  Change to per 100g   ←";
-"→   Ändra till per st  " = "→   Change to per Piece  ";
-"g/st" = "g/pc";
+"→   Ändra till per st  " = "→   Change to per serving  ";
+"g/st" = "g/serv";
 "g/100g" = "g/100g";
 "Spara ändringar" = "Save changes";
 "Inga ändringar" = "No changes";
@@ -338,7 +352,7 @@
 "Kunde inte hitta information om livsmedlet" = "Could not find information about the food item";
 "Kunde inte tolka svar från servern" = "Could not interpret the response from the server";
 "Fel vid tolkning JSON: %@" = "Error interpreting JSON: %@";
-"Ange vikt per styck i gram (valfritt)" = "Enter weight per piece in grams (optional)";
+"Ange vikt per styck i gram (valfritt)" = "Enter grams per serving (optional)";
 "Avbryt" = "Cancel";
 "Lägg till" = "Add";
 "Befintlig data    ->    Ny data" = "Existing data    ->    New data";
@@ -365,7 +379,7 @@
 "Klar" = "Done";
 "Ändra mängd" = "Edit amount";
 "Ange en ny mängd för %@:" = "Enter a new amount for %@:";
-"Mängd: %@ st" = "Amount: %@ pcs";
+"Mängd: %@ st" = "Amount: %@ serving";
 "Mängd: %@ g" = "Amount: %@ grams";
 "Avbryt" = "Cancel";
 "Är du säker på att du vill radera alla favoriter?" = "Are you sure you want to delete all favorite meals?";
@@ -389,9 +403,9 @@
 "Fett %@ g" = "Fat %@g";
 "Protein %@ g" = "Protein %@g";
 "Bolus %@ E" = "Bolus %@U";
-"Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Ate %@ pcs  [Served %@ pcs - Left %@ pcs]";
+"Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Ate %@ serv  [Served %@ serv - Left %@ serv]";
 "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Ate %@ g  [Served %@ g - Left %@ g]";
-"Åt upp %@ st" = "Ate %@ pcs";
+"Åt upp %@ st" = "Ate %@ serv";
 "Åt upp %@ g" = "Ate %@ g";
 
 /* Meal insights VC*/
@@ -410,7 +424,7 @@
 "Genomsnittlig portion" = "Average portion";
 "Största portion" = "Largest portion";
 "Minsta portion" = "Smallest portion";
-"%.1f st" = "%.1f pcs";
+"%.1f st" = "%.1f serv";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Meal average values";
 "Medianvärden måltider (Datum och tid)" = "Meal median values";

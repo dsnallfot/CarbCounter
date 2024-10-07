@@ -690,8 +690,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
 
-        message += "\n\n\(NSLocalizedString("Serverats:", comment: "Label for number of times the food item has been served")) \(foodItem.count) \(NSLocalizedString("ggr", comment: "Abbreviation for times served"))"
-
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button"), style: .default, handler: { _ in

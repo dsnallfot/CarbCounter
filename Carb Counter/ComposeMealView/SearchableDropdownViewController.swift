@@ -48,7 +48,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }()
     
     let segmentedControl: UISegmentedControl = {
-        let items = [NSLocalizedString("Namn A-Ö", comment: "Namn A-Ö"), NSLocalizedString("Skolmat", comment: "Skolmat"), NSLocalizedString("Styck", comment: "Styck"), NSLocalizedString("Populära", comment: "Populära")]
+        let items = [NSLocalizedString("Namn A-Ö", comment: "Namn A-Ö"), NSLocalizedString("Skolmat", comment: "Skolmat"), NSLocalizedString("Styck", comment: "Styck")]
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
@@ -245,8 +245,8 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
             filteredFoodItems.sort { ($0.name?.hasPrefix("Ⓢ") ?? false) && !($1.name?.hasPrefix("Ⓢ") ?? false) }
         case 2:
             filteredFoodItems.sort { ($0.name?.hasSuffix("①") ?? false) && !($1.name?.hasSuffix("①") ?? false) }
-        case 3:
-            filteredFoodItems.sort { $0.count > $1.count }
+        //case 3:
+            //filteredFoodItems.sort { $0.count > $1.count }
         default:
             break
         }

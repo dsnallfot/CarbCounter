@@ -512,10 +512,29 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         }
     }
 
+    // Helper function to append or remove " ①" based on isPerPiece
+    private func adjustFoodItemName(_ name: String, isPerPiece: Bool) -> String {
+        var adjustedName = name
+        
+        if isPerPiece {
+            // Append " ①" if not already present
+            if !adjustedName.hasSuffix(" ①") {
+                adjustedName += " ①"
+            }
+        } else {
+            // Remove " ①" if present
+            if adjustedName.hasSuffix(" ①") {
+                adjustedName = String(adjustedName.dropLast(2)) // Removes the last two characters (" ①")
+            }
+        }
+        
+        return adjustedName
+    }
+
     // Helper function to update food item properties
     private func updateFoodItem(_ foodItem: FoodItem) {
-        // Update basic properties
-        foodItem.name = (nameTextField.text ?? "")
+        // Sanitize and replace prefixes in the name
+        let sanitizedBaseName = (nameTextField.text ?? "")
             .replacingOccurrences(of: NSLocalizedString("S: ", comment: "Prefix for school meals"), with: "Ⓢ ")
             .replacingOccurrences(of: NSLocalizedString("Skolmat: ", comment: "Prefix for school meals"), with: "Ⓢ ")
             .replacingOccurrences(of: NSLocalizedString("Skola: ", comment: "Prefix for school"), with: "Ⓢ ")
@@ -525,6 +544,12 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             .replacingOccurrences(of: NSLocalizedString("skola: ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
             .replacingOccurrences(of: NSLocalizedString("skola ", comment: "Lowercase prefix for school"), with: "Ⓢ ")
             .replacingOccurrences(of: NSLocalizedString("skolmat ", comment: "Lowercase prefix for school meals"), with: "Ⓢ ")
+        
+        // Adjust the name based on isPerPiece
+        let adjustedName = adjustFoodItemName(sanitizedBaseName, isPerPiece: isPerPiece)
+        foodItem.name = adjustedName
+        
+        // Assign other properties
         foodItem.notes = notesTextField.text ?? ""
         foodItem.emoji = emojiTextField.text ?? ""
         
