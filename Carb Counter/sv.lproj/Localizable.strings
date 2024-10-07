@@ -301,6 +301,20 @@
 "Källa: Dabas" = "Källa: Dabas";
 "Dabas API fel: Kunde inte tolka svar från servern" = "Dabas API fel: Kunde inte tolka svar från servern";
 "Ett fel uppstod vid hämtning av livsmedelsdata." = "Ett fel uppstod vid hämtning av livsmedelsdata.";
+"Kolhydrater: %@ g / 100 g\nFett: %@ g / 100 g\nProtein: %@ g / 100 g\n\n[Källa: OpenFoodFacts]" = "Kolhydrater: %@ g / 100 g\nFett: %@ g / 100 g\nProtein: %@ g / 100 g\n\n[Källa: OpenFoodFacts]";
+"Fel: %@" = "Fel: %@";
+"Ingen data levererades" = "Ingen data levererades";
+"Kolhydrater: %.1f g / 100 g\nFett: %.1f g / 100 g\nProtein: %.1f g / 100 g\n\n[Källa: Openfoodfacts]" = "Kolhydrater: %.1f g / 100 g\nFett: %.1f g / 100 g\nProtein: %.1f g / 100 g\n\n[Källa: Openfoodfacts]";
+"Kunde inte hitta information om livsmedlet" = "Kunde inte hitta information om livsmedlet";
+"Kunde inte tolka svar från servern" = "Kunde inte tolka svar från servern";
+"Fel vid tolkning JSON: %@" = "Fel vid tolkning JSON: %@";
+"Openfoodfacts produktmatchning OK" = "Openfoodfacts produktmatchning OK";
+"\nKolhydrater: %.1f g / st" = "\nKolhydrater: %.1f g / st ";
+"\nFett: %.1f g / st" = "\nFett: %.1f g / st ";
+"\nProtein: %.1f g / st" = "\nProtein: %.1f g / st ";
+"\nKolhydrater: %.1f g / 100 g" = "\nKolhydrater: %.1f g / 100 g ";
+"\nFett: %.1f g / 100 g" = "\nFett: %.1f g / 100 g ";
+"\nProtein: %.1f g / 100 g" = "\nProtein: %.1f g / 100 g ";
 
 /* Add Food Items VC */
 "Nästa" = "Nästa";
