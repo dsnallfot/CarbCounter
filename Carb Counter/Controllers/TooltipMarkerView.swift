@@ -6,8 +6,8 @@ class TooltipMarkerView: MarkerView {
     private let padding: UIEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
     
     override func refreshContent(entry: ChartDataEntry, highlight: Highlight) {
-        // Safely unwrap the MealHistory object
         if let meal = entry.data as? MealHistory {
+            // Existing code for MealHistory
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "d MMM"
             let date = Date(timeIntervalSince1970: entry.x)
@@ -15,8 +15,7 @@ class TooltipMarkerView: MarkerView {
             
             let timeFormatter = DateFormatter()
             timeFormatter.dateFormat = "HH:mm"
-            let time = Date(timeIntervalSince1970: entry.x)
-            let timeString = timeFormatter.string(from: time)
+            let timeString = timeFormatter.string(from: date)
             
             // Construct the tooltip text with additional information
             text = String(format: NSLocalizedString("%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E", comment: "tooltip string"),
@@ -26,9 +25,29 @@ class TooltipMarkerView: MarkerView {
                           meal.totalNetFat,
                           meal.totalNetProtein,
                           meal.totalNetBolus)
+        } else if let foodEntry = entry.data as? FoodItemEntry {
+            // New code for FoodItemEntry
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "d MMM"
+            let date = Date(timeIntervalSince1970: entry.x)
+            let dateString = dateFormatter.string(from: date)
+            
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "HH:mm"
+            let timeString = timeFormatter.string(from: date)
+            
+            let portionValue = foodEntry.entryPortionServed - foodEntry.entryNotEaten
+            let portionFormat = foodEntry.entryPerPiece ? NSLocalizedString("%.1f st", comment: "Per piece portion format") : NSLocalizedString("%.0f g", comment: "Grams portion format")
+            let formattedPortion = String(format: portionFormat, portionValue)
+            
+            // Construct the tooltip text
+            text = String(format: NSLocalizedString("%@ %@\nPortion: %@", comment: "tooltip string"),
+                          dateString,
+                          timeString,
+                          formattedPortion)
         } else {
             // Handle the case where data is not available
-            text = "Data not available"
+            text = NSLocalizedString("Data not available", comment: "Fallback tooltip text when data is missing")
         }
     }
     
