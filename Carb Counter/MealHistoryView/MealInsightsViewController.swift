@@ -128,28 +128,37 @@ class MealInsightsViewController: UIViewController {
 
         title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
-    
+
         // Set the flag based on whether the view controller is presented modally
-            isComingFromModal = isModalPresentation
+        isComingFromModal = isModalPresentation
         
+        // Check if the Nightscout button should be added
         if !isComingFromDetailView && !isComingFromFoodItemRow {
-            // Load the custom image and resize it to the appropriate navigation bar icon size
-            if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
-                let nightscoutButton = UIBarButtonItem(
-                    image: nightscoutImage,
-                    style: .plain,
-                    target: self,
-                    action: #selector(openNightscoutFromChart)
-                )
-                navigationItem.rightBarButtonItem = nightscoutButton
+            if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+               let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+                // Load the custom image and resize it to the appropriate navigation bar icon size
+                if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                    let nightscoutButton = UIBarButtonItem(
+                        image: nightscoutImage,
+                        style: .plain,
+                        target: self,
+                        action: #selector(openNightscoutFromChart)
+                    )
+                    navigationItem.rightBarButtonItem = nightscoutButton
+                }
+            } else {
+                // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
+                print("Nightscout URL or token is missing")
             }
         }
+
         if isModalPresentation {
             addCloseButton()
         } else {
             updateStats(for: nil)
         }
         
+        // Continue setting up the rest of the views
         setupGradientView()
         setupSegmentedControlAndDatePickers()
         setupMealTimesSegmentedControl()
@@ -163,22 +172,22 @@ class MealInsightsViewController: UIViewController {
         loadDefaultDates()
         setDefaultTimePickers()
         fetchMealHistories()
-        
+
         statsTableView.separatorStyle = .singleLine
         statsTableView.separatorColor = UIColor.systemGray3.withAlphaComponent(1)
 
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
-        
+
         // Delay performing the search until the data is fully loaded
-                DispatchQueue.main.async {
-                    if let searchText = self.prepopulatedSearchText {
-                        self.searchBar.text = searchText
-                        self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
-                        print("searchtext: \(searchText)")  // Now log it before performing the search
-                        self.performSearch(with: searchText)
-                    }
-                }
+        DispatchQueue.main.async {
+            if let searchText = self.prepopulatedSearchText {
+                self.searchBar.text = searchText
+                self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
+                print("searchtext: \(searchText)")  // Now log it before performing the search
+                self.performSearch(with: searchText)
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {

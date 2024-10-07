@@ -53,8 +53,26 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
+        // Check if the Nightscout URL and token are available
+        if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+           let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+            // Load the custom image and resize it to the appropriate navigation bar icon size
+            if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                let nightscoutButton = UIBarButtonItem(
+                    image: nightscoutImage,
+                    style: .plain,
+                    target: self,
+                    action: #selector(openNightscout)
+                )
+                navigationItem.rightBarButtonItem = nightscoutButton
+            }
+        } else {
+            // If URL or token is missing, log or handle the scenario without blocking view loading
+            print("Nightscout URL or token is missing.")
+        }
+        
         setupSummaryView()
-        setupNightscoutButton()
+        //setupNightscoutButton()
         setupActionButton()
         setupTableView()
     }
@@ -278,7 +296,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
         present(navController, animated: true, completion: nil)
     }
-
+/*
     private func setupNightscoutButton() {
         guard
             let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
@@ -308,7 +326,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             nightscoutButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),
             nightscoutButton.heightAnchor.constraint(equalToConstant: 50)
         ])
-    }
+    }*/
     
     // MARK: - Open Nightscout Action
     
