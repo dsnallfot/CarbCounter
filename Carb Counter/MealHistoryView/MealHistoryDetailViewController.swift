@@ -19,6 +19,10 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     // TableView for food entries
     var tableView: UITableView!
     
+    // Buttons
+    private var actionButton: UIButton!
+    private var nightscoutButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -49,9 +53,28 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
+        // Check if the Nightscout URL and token are available
+        if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+           let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+            // Load the custom image and resize it to the appropriate navigation bar icon size
+            if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                let nightscoutButton = UIBarButtonItem(
+                    image: nightscoutImage,
+                    style: .plain,
+                    target: self,
+                    action: #selector(openNightscout)
+                )
+                navigationItem.rightBarButtonItem = nightscoutButton
+            }
+        } else {
+            // If URL or token is missing, log or handle the scenario without blocking view loading
+            print("Nightscout URL or token is missing.")
+        }
+        
         setupSummaryView()
-        setupTableView()
+        //setupNightscoutButton()
         setupActionButton()
+        setupTableView()
     }
     
     private func setupSummaryView() {
@@ -173,7 +196,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80)
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -146)
         ])
     }
 
@@ -273,7 +296,81 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
         present(navController, animated: true, completion: nil)
     }
-
+/*
+    private func setupNightscoutButton() {
+        guard
+            let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+            let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty
+        else {
+            // If the nightscoutURL or nightscoutToken is empty or nil, do not show the button
+            return
+        }
+        
+        nightscoutButton = UIButton(type: .system)
+        nightscoutButton.setTitle(NSLocalizedString("Visa i Nightscout", comment: "Show in Nightscout"), for: .normal)
+        
+        // Use the custom light blue color from the color picker
+        let lightBlueColor = UIColor(red: 209/255, green: 230/255, blue: 255/255, alpha: 1.0) // RGB(209, 230, 255)
+        nightscoutButton.backgroundColor = lightBlueColor
+        nightscoutButton.setTitleColor(UIColor.systemBlue, for: .normal)  // System blue text color
+        nightscoutButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        nightscoutButton.layer.cornerRadius = 10
+        nightscoutButton.translatesAutoresizingMaskIntoConstraints = false
+        nightscoutButton.addTarget(self, action: #selector(openNightscout), for: .touchUpInside)
+        
+        view.addSubview(nightscoutButton)
+        
+        NSLayoutConstraint.activate([
+            nightscoutButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            nightscoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            nightscoutButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),
+            nightscoutButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }*/
+    
+    // MARK: - Open Nightscout Action
+    
+    @objc private func openNightscout() {
+        guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
+              let nightscoutToken = UserDefaultsRepository.nightscoutToken,
+              let mealDate = mealHistory?.mealDate else {
+            // Handle error: show an alert that Nightscout URL or token is not set
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"), message: NSLocalizedString("Nightscout-URL eller token är inte angiven. Gå till inställningar för att ange dem.", comment: "Nightscout URL or token not set. Please set them in settings."), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        // Construct the URL
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: mealDate)
+        
+        // Ensure the base URL ends with '/'
+        var baseURL = nightscoutBaseURL
+        if !baseURL.hasSuffix("/") {
+            baseURL += "/"
+        }
+        
+        // Construct the URL components safely
+        var urlComponents = URLComponents(string: baseURL + "report/")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "token", value: nightscoutToken),
+            URLQueryItem(name: "report", value: "daytoday"),
+            URLQueryItem(name: "startDate", value: dateString),
+            URLQueryItem(name: "endDate", value: dateString),
+            URLQueryItem(name: "autoShow", value: "true")
+        ]
+        
+        if let url = urlComponents?.url {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        } else {
+            // Handle error: invalid URL
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"), message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+    }
 
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)

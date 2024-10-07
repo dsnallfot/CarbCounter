@@ -128,17 +128,37 @@ class MealInsightsViewController: UIViewController {
 
         title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
-    
+
         // Set the flag based on whether the view controller is presented modally
-            isComingFromModal = isModalPresentation
+        isComingFromModal = isModalPresentation
         
-        // Add the close button when the view is presented modally
+        // Check if the Nightscout button should be added
+        if !isComingFromDetailView && !isComingFromFoodItemRow {
+            if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+               let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+                // Load the custom image and resize it to the appropriate navigation bar icon size
+                if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                    let nightscoutButton = UIBarButtonItem(
+                        image: nightscoutImage,
+                        style: .plain,
+                        target: self,
+                        action: #selector(openNightscoutFromChart)
+                    )
+                    navigationItem.rightBarButtonItem = nightscoutButton
+                }
+            } else {
+                // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
+                print("Nightscout URL or token is missing")
+            }
+        }
+
         if isModalPresentation {
             addCloseButton()
         } else {
             updateStats(for: nil)
         }
         
+        // Continue setting up the rest of the views
         setupGradientView()
         setupSegmentedControlAndDatePickers()
         setupMealTimesSegmentedControl()
@@ -152,22 +172,22 @@ class MealInsightsViewController: UIViewController {
         loadDefaultDates()
         setDefaultTimePickers()
         fetchMealHistories()
-        
+
         statsTableView.separatorStyle = .singleLine
         statsTableView.separatorColor = UIColor.systemGray3.withAlphaComponent(1)
 
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
-        
+
         // Delay performing the search until the data is fully loaded
-                DispatchQueue.main.async {
-                    if let searchText = self.prepopulatedSearchText {
-                        self.searchBar.text = searchText
-                        self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
-                        print("searchtext: \(searchText)")  // Now log it before performing the search
-                        self.performSearch(with: searchText)
-                    }
-                }
+        DispatchQueue.main.async {
+            if let searchText = self.prepopulatedSearchText {
+                self.searchBar.text = searchText
+                self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
+                print("searchtext: \(searchText)")  // Now log it before performing the search
+                self.performSearch(with: searchText)
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -445,6 +465,90 @@ class MealInsightsViewController: UIViewController {
         func stringForValue(_ value: Double, axis: AxisBase?) -> String {
             let date = Date(timeIntervalSince1970: value)
             return dateFormatter.string(from: date)
+        }
+    }
+    
+    @objc private func openNightscoutFromChart() {
+        // Ensure there is a highlighted entry
+        guard let highlight = lineChartView.highlighted.first else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen data är vald.", comment: "No data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Retrieve the corresponding ChartDataEntry from the highlighted entry
+        guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
+              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        var mealDate: Date?
+
+        // Handle both MealHistory and FoodItemEntry types
+        if let mealHistory = entry.data as? MealHistory {
+            mealDate = mealHistory.mealDate
+        } else if let foodEntry = entry.data as? FoodItemEntry {
+            mealDate = foodEntry.mealHistory?.mealDate
+        }
+
+        // Ensure we have a valid date
+        guard let date = mealDate else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Continue with Nightscout URL construction
+        guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
+              let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Nightscout-URL eller token saknas.", comment: "Nightscout URL or token is missing."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Format the date for the Nightscout URL
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+
+        // Ensure the base URL ends with '/'
+        var baseURL = nightscoutBaseURL
+        if !baseURL.hasSuffix("/") {
+            baseURL += "/"
+        }
+
+        // Construct the URL with the token, report type, startDate, and endDate
+        var urlComponents = URLComponents(string: baseURL + "report/")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "token", value: nightscoutToken),
+            URLQueryItem(name: "report", value: "daytoday"),
+            URLQueryItem(name: "startDate", value: dateString),
+            URLQueryItem(name: "endDate", value: dateString),
+            URLQueryItem(name: "autoShow", value: "true")
+        ]
+
+        if let url = urlComponents?.url {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        } else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
     }
     
@@ -1431,4 +1535,15 @@ struct FoodEntryInfo {
     let entryName: String
     let entryId: UUID?
     let isPlaceholder: Bool
+}
+
+// Helper function to resize the image
+extension UIImage {
+    func resized(to size: CGSize) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        self.draw(in: CGRect(origin: .zero, size: size))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return resizedImage
+    }
 }

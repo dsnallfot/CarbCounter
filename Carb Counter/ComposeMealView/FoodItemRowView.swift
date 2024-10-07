@@ -247,7 +247,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         var message = ""
 
         if let notes = selectedFoodItem.notes, !notes.isEmpty {
-            message += String(format: NSLocalizedString("\nNot: %@\n", comment: "\nNot: %@\n"), notes)
+            message += String(format: NSLocalizedString("\nⓘ %@\n", comment: "\nNot: %@\n"), notes)
         }
 
         if selectedFoodItem.perPiece {
