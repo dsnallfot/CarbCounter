@@ -2221,8 +2221,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 // Link the food entry to the meal history
                 mealHistory.addToFoodEntries(foodEntry)
 
-                // Increment the count for how often the food item has been used
-                foodItem.count += 1
             }
         }
         
@@ -2236,9 +2234,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             Task {
                 print("Meal history export triggered")
                 await dataSharingVC.exportMealHistoryToCSV()
-                
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
             }
             
         } catch {
