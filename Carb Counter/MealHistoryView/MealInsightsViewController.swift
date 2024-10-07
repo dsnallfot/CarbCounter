@@ -132,7 +132,18 @@ class MealInsightsViewController: UIViewController {
         // Set the flag based on whether the view controller is presented modally
             isComingFromModal = isModalPresentation
         
-        // Add the close button when the view is presented modally
+        if !isComingFromDetailView && !isComingFromFoodItemRow {
+            // Load the custom image and resize it to the appropriate navigation bar icon size
+            if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                let nightscoutButton = UIBarButtonItem(
+                    image: nightscoutImage,
+                    style: .plain,
+                    target: self,
+                    action: #selector(openNightscoutFromChart)
+                )
+                navigationItem.rightBarButtonItem = nightscoutButton
+            }
+        }
         if isModalPresentation {
             addCloseButton()
         } else {
@@ -445,6 +456,74 @@ class MealInsightsViewController: UIViewController {
         func stringForValue(_ value: Double, axis: AxisBase?) -> String {
             let date = Date(timeIntervalSince1970: value)
             return dateFormatter.string(from: date)
+        }
+    }
+    
+    @objc private func openNightscoutFromChart() {
+        // Ensure there is a highlighted entry
+        guard let highlight = lineChartView.highlighted.first else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen data är vald.", comment: "No data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Retrieve the corresponding ChartDataEntry from the highlighted entry
+        guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
+              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry,
+              let mealHistory = entry.data as? MealHistory, // Use the attached data
+              let mealDate = mealHistory.mealDate else {
+            // Handle error if data is not found
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Continue with Nightscout URL construction
+        guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
+              let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Nightscout-URL eller token saknas.", comment: "Nightscout URL or token is missing."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Format the date for the Nightscout URL
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: mealDate)
+
+        // Ensure the base URL ends with '/'
+        var baseURL = nightscoutBaseURL
+        if !baseURL.hasSuffix("/") {
+            baseURL += "/"
+        }
+
+        // Construct the URL with the token, report type, startDate, and endDate
+        var urlComponents = URLComponents(string: baseURL + "report/")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "token", value: nightscoutToken),
+            URLQueryItem(name: "report", value: "daytoday"),
+            URLQueryItem(name: "startDate", value: dateString),
+            URLQueryItem(name: "endDate", value: dateString),
+            URLQueryItem(name: "autoShow", value: "true")
+        ]
+
+        if let url = urlComponents?.url {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        } else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
     }
     
@@ -1431,4 +1510,15 @@ struct FoodEntryInfo {
     let entryName: String
     let entryId: UUID?
     let isPlaceholder: Bool
+}
+
+// Helper function to resize the image
+extension UIImage {
+    func resized(to size: CGSize) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        self.draw(in: CGRect(origin: .zero, size: size))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return resizedImage
+    }
 }

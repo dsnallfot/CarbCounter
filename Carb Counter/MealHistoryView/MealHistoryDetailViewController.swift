@@ -280,8 +280,11 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     }
 
     private func setupNightscoutButton() {
-        guard let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty else {
-            // If the nightscoutURL is empty or nil, do not show the button
+        guard
+            let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+            let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty
+        else {
+            // If the nightscoutURL or nightscoutToken is empty or nil, do not show the button
             return
         }
         
