@@ -472,10 +472,26 @@ class MealInsightsViewController: UIViewController {
 
         // Retrieve the corresponding ChartDataEntry from the highlighted entry
         guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
-              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry,
-              let mealHistory = entry.data as? MealHistory, // Use the attached data
-              let mealDate = mealHistory.mealDate else {
-            // Handle error if data is not found
+              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        var mealDate: Date?
+
+        // Handle both MealHistory and FoodItemEntry types
+        if let mealHistory = entry.data as? MealHistory {
+            mealDate = mealHistory.mealDate
+        } else if let foodEntry = entry.data as? FoodItemEntry {
+            mealDate = foodEntry.mealHistory?.mealDate
+        }
+
+        // Ensure we have a valid date
+        guard let date = mealDate else {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
                                           message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
                                           preferredStyle: .alert)
@@ -498,7 +514,7 @@ class MealInsightsViewController: UIViewController {
         // Format the date for the Nightscout URL
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: mealDate)
+        let dateString = dateFormatter.string(from: date)
 
         // Ensure the base URL ends with '/'
         var baseURL = nightscoutBaseURL
