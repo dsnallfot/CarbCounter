@@ -389,6 +389,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let mealHistory = filteredMealHistories[indexPath.row]
         let detailVC = MealHistoryDetailViewController()
         detailVC.mealHistory = mealHistory
+        searchBar.resignFirstResponder()
         navigationController?.pushViewController(detailVC, animated: true)
     }
     private func filterMealHistories(searchText: String? = nil, by date: Date? = nil) {
