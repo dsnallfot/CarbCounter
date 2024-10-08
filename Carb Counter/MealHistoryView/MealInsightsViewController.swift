@@ -1089,7 +1089,7 @@ class MealInsightsViewController: UIViewController {
 
             // Create constraints but don't activate them yet
             statsTableTopConstraint = statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor)
-            statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -215)
+            statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -226)
 
             // Other necessary constraints
             NSLayoutConstraint.activate([
@@ -1494,6 +1494,7 @@ class MealInsightsViewController: UIViewController {
             \(NSLocalizedString("Största portion", comment: "Largest portion label")):\t\(formattedLargestPortion)
             \(NSLocalizedString("Minsta portion", comment: "Smallest portion label")):\t\(formattedSmallestPortion)
             \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)
+             
             """
             let regularAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: regularFontSize),
