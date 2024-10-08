@@ -14,10 +14,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         return true
     }
-    
+    /*
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if let rootViewController = window?.rootViewController as? UINavigationController {
+            if rootViewController.topViewController is NightscoutWebViewController {
+                return .landscape
+            }
+        }
         return .portrait
-    }
+    }*/
+
 
     // MARK: - Background Task Handling
     
@@ -67,4 +73,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Save changes in the application's managed object context when the application terminates.
         CoreDataStack.shared.saveContext()
     }
+    
+    struct AppUtility {
+            static func lockOrientation(_ orientation: UIInterfaceOrientationMask) {
+                if let delegate = UIApplication.shared.delegate as? AppDelegate {
+                    delegate.orientationLock = orientation
+                }
+            }
+        }
+
+        var orientationLock = UIInterfaceOrientationMask.portrait
+
+        func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+            return orientationLock
+        }
 }

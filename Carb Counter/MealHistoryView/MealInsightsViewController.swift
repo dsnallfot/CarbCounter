@@ -538,6 +538,97 @@ class MealInsightsViewController: UIViewController {
             URLQueryItem(name: "report", value: "daytoday"),
             URLQueryItem(name: "startDate", value: dateString),
             URLQueryItem(name: "endDate", value: dateString),
+            URLQueryItem(name: "autoShow", value: "true"),
+            URLQueryItem(name: "hideMenu", value: "true"),
+        ]
+
+        if let url = urlComponents?.url {
+            let nightscoutVC = NightscoutWebViewController()
+            nightscoutVC.nightscoutURL = url
+            
+            // Push the view controller onto the existing navigation stack
+            navigationController?.pushViewController(nightscoutVC, animated: true)
+        } else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+    }
+
+    
+    /*
+    @objc private func openNightscoutFromChart() {
+        // Ensure there is a highlighted entry
+        guard let highlight = lineChartView.highlighted.first else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen data är vald.", comment: "No data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Retrieve the corresponding ChartDataEntry from the highlighted entry
+        guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
+              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        var mealDate: Date?
+
+        // Handle both MealHistory and FoodItemEntry types
+        if let mealHistory = entry.data as? MealHistory {
+            mealDate = mealHistory.mealDate
+        } else if let foodEntry = entry.data as? FoodItemEntry {
+            mealDate = foodEntry.mealHistory?.mealDate
+        }
+
+        // Ensure we have a valid date
+        guard let date = mealDate else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Continue with Nightscout URL construction
+        guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
+              let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Nightscout-URL eller token saknas.", comment: "Nightscout URL or token is missing."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Format the date for the Nightscout URL
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+
+        // Ensure the base URL ends with '/'
+        var baseURL = nightscoutBaseURL
+        if !baseURL.hasSuffix("/") {
+            baseURL += "/"
+        }
+
+        // Construct the URL with the token, report type, startDate, and endDate
+        var urlComponents = URLComponents(string: baseURL + "report/")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "token", value: nightscoutToken),
+            URLQueryItem(name: "report", value: "daytoday"),
+            URLQueryItem(name: "startDate", value: dateString),
+            URLQueryItem(name: "endDate", value: dateString),
             URLQueryItem(name: "autoShow", value: "true")
         ]
 
@@ -551,6 +642,7 @@ class MealInsightsViewController: UIViewController {
             present(alert, animated: true, completion: nil)
         }
     }
+    */
     
     private func setupSegmentedControlAndDatePickers() {
         // Configure From Date Picker and Label
