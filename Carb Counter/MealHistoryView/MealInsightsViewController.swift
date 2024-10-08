@@ -592,10 +592,16 @@ class MealInsightsViewController: UIViewController {
             let nightscoutVC = NightscoutWebViewController()
             nightscoutVC.nightscoutURL = url
             nightscoutVC.mealDate = date
-            nightscoutVC.hidesBottomBarWhenPushed = true
-            
-            // Push the view controller onto the existing navigation stack
-            navigationController?.pushViewController(nightscoutVC, animated: true)
+
+            // Use the modal presentation check
+            if isModalPresentation {
+                // If the MealInsightsViewController is presented modally, present NightscoutWebViewController in its own navigation controller
+                let navigationController = UINavigationController(rootViewController: nightscoutVC)
+                present(navigationController, animated: true, completion: nil)
+            } else {
+                // If it's not modal, push the NightscoutWebViewController onto the current navigation stack
+                navigationController?.pushViewController(nightscoutVC, animated: true)
+            }
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
                                           message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
