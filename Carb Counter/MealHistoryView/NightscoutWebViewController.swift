@@ -17,7 +17,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "d MMM HH:mm"
             let formattedDate = dateFormatter.string(from: date)
-            self.title = "Nightscout • Måltid \(formattedDate)"
+            self.title = String(format: NSLocalizedString("Nightscout • Måltid %@", comment: "Nightscout • Måltid %@"), formattedDate)
         } else {
             self.title = "Nightscout"
         }
@@ -85,7 +85,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
+        return .allButUpsideDown
     }
 
     override var shouldAutorotate: Bool {
@@ -94,7 +94,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        AppDelegate.AppUtility.lockOrientation(.landscape)
+        AppDelegate.AppUtility.lockOrientation(.allButUpsideDown)
     }
 
     override func viewWillDisappear(_ animated: Bool) {

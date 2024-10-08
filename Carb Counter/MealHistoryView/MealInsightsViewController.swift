@@ -122,6 +122,16 @@ class MealInsightsViewController: UIViewController {
     
     // Define the LineChartView
     private var lineChartView: LineChartView!
+    
+    // Declare chartLabel here
+        private let chartLabel: UILabel = {
+            let label = UILabel()
+            label.font = UIFont.boldSystemFont(ofSize: 14)
+            label.textColor = .label
+            label.textAlignment = .center
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -178,12 +188,29 @@ class MealInsightsViewController: UIViewController {
 
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
+        
+        // Add the chartLabel to the view
+        self.view.addSubview(chartLabel)
+        
+        // Set up the constraints for the chartLabel
+                NSLayoutConstraint.activate([
+                    chartLabel.topAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 8),
+                    chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
+                ])
+                
 
         // Delay performing the search until the data is fully loaded
         DispatchQueue.main.async {
             if let searchText = self.prepopulatedSearchText {
                 self.searchBar.text = searchText
-                self.selectedEntryName = searchText // Sync prepopulatedSearchText with selectedEntryName
+                self.selectedEntryName = searchText
+                // Initialize with default text based on selectedEntryName
+                if let entryName = self.selectedEntryName, !entryName.isEmpty {
+                    self.chartLabel.text = entryName  // Use the selectedEntryName if it's not empty
+                    } else {
+                        self.chartLabel.text = NSLocalizedString("", comment: "")
+                    }
+                // Sync prepopulatedSearchText with selectedEntryName
                 print("searchtext: \(searchText)")  // Now log it before performing the search
                 self.performSearch(with: searchText)
             }
@@ -250,21 +277,40 @@ class MealInsightsViewController: UIViewController {
         lineChartView.clipsToBounds = true // Ensure content is clipped to rounded corners
         lineChartView.translatesAutoresizingMaskIntoConstraints = false
 
+
         
         // Set the maxVisibleCount to 15 (or your desired number)
         lineChartView.maxVisibleCount = 15
-
+        lineChartView.extraTopOffset = 30
+        
         // Add it to your view
         view.addSubview(lineChartView)
         
         // Create constraints but don't activate them yet
-        chartViewBottomConstraint = lineChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -182)
+        chartViewBottomConstraint = lineChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -162)
 
         NSLayoutConstraint.activate([
             lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            lineChartView.heightAnchor.constraint(equalToConstant: 180),
+            lineChartView.heightAnchor.constraint(equalToConstant: 205),
         ])
+        /*
+        // Create the label
+        let chartLabel = UILabel()
+        chartLabel.text = NSLocalizedString("Registrerade måltider", comment: "Registered meals")
+        chartLabel.font = UIFont.boldSystemFont(ofSize: 14)
+        chartLabel.textColor = .label
+        chartLabel.textAlignment = .center
+
+        // Add it to the view (assuming `self.view` contains your chart)
+        self.view.addSubview(chartLabel)
+
+        // Set up constraints or frame to center it above the chart
+        chartLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            chartLabel.bottomAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 26),
+            chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
+        ])*/
     }
 
     // Call this function after fetching data to populate the chart
@@ -291,7 +337,7 @@ class MealInsightsViewController: UIViewController {
             }
         }
 
-        let carbsDataSet = LineChartDataSet(entries: carbsEntries, label: NSLocalizedString("Kolhydrater", comment: "Carbohydrates"))
+        let carbsDataSet = LineChartDataSet(entries: carbsEntries, label: NSLocalizedString("Kolhydrater (g)", comment: "Carbohydrates"))
         carbsDataSet.colors = [.systemOrange]
         carbsDataSet.circleColors = [.systemOrange]
         carbsDataSet.circleHoleColor = .white
@@ -382,7 +428,7 @@ class MealInsightsViewController: UIViewController {
             return
         }
         
-        let portionDataSet = LineChartDataSet(entries: portionEntries, label: NSLocalizedString("Portion", comment: "Portions"))
+        let portionDataSet = LineChartDataSet(entries: portionEntries, label: NSLocalizedString("Portion uppäten", comment: "Portions"))
         portionDataSet.colors = [.systemBlue]
         portionDataSet.circleColors = [.systemBlue]
         portionDataSet.circleHoleColor = .white
@@ -471,8 +517,8 @@ class MealInsightsViewController: UIViewController {
     @objc private func openNightscoutFromChart() {
         // Ensure there is a highlighted entry
         guard let highlight = lineChartView.highlighted.first else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Ingen data är vald.", comment: "No data selected."),
+            let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
+                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du öppnar Nightscout", comment: "No data selected."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
@@ -482,8 +528,8 @@ class MealInsightsViewController: UIViewController {
         // Retrieve the corresponding ChartDataEntry from the highlighted entry
         guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
               let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+            let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
+                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du öppnar Nightscout", comment: "No valid data selected."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
@@ -876,9 +922,13 @@ class MealInsightsViewController: UIViewController {
             actionButton.isHidden = true
             segmentedControl.isHidden = false
             statsViewBottomConstraint.constant = -10
+            chartLabel.isHidden = false
 
             // Modify spacing to 16 when in "Insikt måltider" mode
             combinedStackView.spacing = 10
+            
+            // Set the chartLabel text to "Registrerade måltider"
+            chartLabel.text = NSLocalizedString("Registrerade måltider", comment: "Registered meals")
 
             calculateMealStats()
         } else {
@@ -898,6 +948,7 @@ class MealInsightsViewController: UIViewController {
                 lineChartView.isHidden = true
                 statsViewBottomConstraint.constant = -72
                 combinedStackView.spacing = 10
+                chartLabel.isHidden = true
             } else {
                 actionButton.isHidden = true
                 segmentedControl.isHidden = false
@@ -906,9 +957,20 @@ class MealInsightsViewController: UIViewController {
                 lineChartView.isHidden = false
                 statsViewBottomConstraint.constant = -10
                 filterFoodEntries()
+                chartLabel.isHidden = false
 
                 if let selectedEntryId = selectedEntryId {
-                                updateStats(for: selectedEntryId) // Use the UUID for stats update
+                                // Update the stats and change chartLabel to entryEmoji and entryName
+                                updateStats(for: selectedEntryId)
+                                if let entry = allFilteredFoodEntries.first(where: { $0.entryId == selectedEntryId }) {
+                                    let entryName = entry.entryName ?? ""
+                                    var entryEmoji = entry.entryEmoji ?? ""
+                                    entryEmoji = entryEmoji.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    entryEmoji = entryEmoji.precomposedStringWithCanonicalMapping
+                                    
+                                    // Set the chartLabel text to "\(entryEmoji) \(entryName)"
+                                    chartLabel.text = "\(entryEmoji) \(entryName)"
+                                }
                             } else {
                                 updateStats(for: nil) // Pass nil if there's no selected entry
                             }
@@ -1027,7 +1089,7 @@ class MealInsightsViewController: UIViewController {
 
             // Create constraints but don't activate them yet
             statsTableTopConstraint = statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor)
-            statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -190)
+            statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -215)
 
             // Other necessary constraints
             NSLayoutConstraint.activate([
@@ -1076,12 +1138,12 @@ class MealInsightsViewController: UIViewController {
             statsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             statsViewBottomConstraint, // Activate the initial bottom constraint
-            statsView.heightAnchor.constraint(equalToConstant: 160),
+            statsView.heightAnchor.constraint(equalToConstant: 135),
 
-            statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 6),
+            statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 4),
             statsLabel.leadingAnchor.constraint(equalTo: statsView.leadingAnchor, constant: 16),
             statsLabel.trailingAnchor.constraint(equalTo: statsView.trailingAnchor, constant: -16),
-            statsLabel.bottomAnchor.constraint(equalTo: statsView.bottomAnchor, constant: -8)
+            statsLabel.bottomAnchor.constraint(equalTo: statsView.bottomAnchor, constant: -4)
         ])
     }
     
@@ -1260,10 +1322,14 @@ class MealInsightsViewController: UIViewController {
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
 
+        // Define 14-point font sizes
+        let headlineFontSize: CGFloat = 14
+        let regularFontSize: CGFloat = 14
+
         // Bold the first line ("Medianvärden i måltider"), center-aligned
         let boldText = "\(NSLocalizedString("Medianvärden måltider (Datum och tid)", comment: "Medians"))\n\n"
         let boldAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize),
+            .font: UIFont.boldSystemFont(ofSize: headlineFontSize),
             .paragraphStyle: centeredParagraphStyle()
         ]
         statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
@@ -1290,7 +1356,7 @@ class MealInsightsViewController: UIViewController {
         \(NSLocalizedString("Verklig insulinkvot", comment: "Actual Insulin Ratio")):\t\(formattedInsulinRatio)
         """
         let regularAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
+            .font: UIFont.systemFont(ofSize: regularFontSize),
             .paragraphStyle: paragraphStyle
         ]
         statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
@@ -1316,19 +1382,20 @@ class MealInsightsViewController: UIViewController {
     // Food item calculations (MEDIAN VALUE VERSION)
     private func updateStats(for entryId: UUID?) {
         guard let entryId = entryId else {
-                // Reset stats if no entryId
-                statsLabel.text = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
-                
-                // Safely unwrap lineChartView
-                if let chartView = lineChartView {
-                    // Clear the chart
-                    chartView.data = nil
-                    chartView.notifyDataSetChanged()
-                } else {
-                    print("lineChartView is nil")
-                }
-                return
+            // Reset stats if no entryId
+            statsLabel.text = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+            self.chartLabel.text = NSLocalizedString("Välj datum och ett livsmedel", comment: "Placeholder text for no selection")
+            
+            // Safely unwrap lineChartView
+            if let chartView = lineChartView {
+                // Clear the chart
+                chartView.data = nil
+                chartView.notifyDataSetChanged()
+            } else {
+                print("lineChartView is nil")
             }
+            return
+        }
 
         // Filter matching entries based on the entryId and entryPortionServed > 0
         let matchingEntries = allFilteredFoodEntries.filter {
@@ -1377,6 +1444,10 @@ class MealInsightsViewController: UIViewController {
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
 
+        // Define 14-point font sizes
+        let headlineFontSize: CGFloat = 14
+        let regularFontSize: CGFloat = 14
+
         // Check if entryName and entryEmoji are empty, then use placeholder text
         let boldText: String
         if entryName.isEmpty && entryEmoji.isEmpty {
@@ -1385,16 +1456,21 @@ class MealInsightsViewController: UIViewController {
                 boldText = String(format: NSLocalizedString("Ingen måltidshistorik tillgänglig för\n\"%@\"", comment: "Placeholder text for no selection"), searchText)
                 actionButton.isEnabled = false
                 actionButton.backgroundColor = .systemGray
+                if !isComingFromDetailView && !isComingFromFoodItemRow {
+                    self.chartLabel.text = NSLocalizedString("Välj datum och ett livsmedel", comment: "Placeholder text for no selection")
+                }
             } else {
                 boldText = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
+                self.chartLabel.text = NSLocalizedString("Välj datum och ett livsmedel", comment: "Placeholder text for no selection")
             }
         } else {
             boldText = "\(entryEmoji) \(entryName)\n\n"
+            self.chartLabel.text = "\(entryEmoji) \(entryName)"
         }
 
         // Bold the first line (either entryName and entryEmoji or placeholder), center-aligned
         let boldAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: statsLabel.font.pointSize),
+            .font: UIFont.boldSystemFont(ofSize: headlineFontSize),
             .paragraphStyle: centeredParagraphStyle()
         ]
         statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
@@ -1420,7 +1496,7 @@ class MealInsightsViewController: UIViewController {
             \(NSLocalizedString("Serverats antal gånger", comment: "Times served label")):\t\(timesServed)
             """
             let regularAttributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: statsLabel.font.pointSize),
+                .font: UIFont.systemFont(ofSize: regularFontSize),
                 .paragraphStyle: paragraphStyle
             ]
             statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
