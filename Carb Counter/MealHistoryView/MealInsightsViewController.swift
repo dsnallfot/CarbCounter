@@ -126,7 +126,7 @@ class MealInsightsViewController: UIViewController {
     // Declare chartLabel here
         private let chartLabel: UILabel = {
             let label = UILabel()
-            label.font = UIFont.boldSystemFont(ofSize: 14)
+            label.font = UIFont.boldSystemFont(ofSize: 15)
             label.textColor = .label
             label.textAlignment = .center
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -1322,8 +1322,8 @@ class MealInsightsViewController: UIViewController {
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
 
-        // Define 14-point font sizes
-        let headlineFontSize: CGFloat = 14
+        // Define font sizes
+        let headlineFontSize: CGFloat = 15
         let regularFontSize: CGFloat = 14
 
         // Bold the first line ("Medianvärden i måltider"), center-aligned
@@ -1444,8 +1444,8 @@ class MealInsightsViewController: UIViewController {
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
 
-        // Define 14-point font sizes
-        let headlineFontSize: CGFloat = 14
+        // Define font sizes
+        let headlineFontSize: CGFloat = 15
         let regularFontSize: CGFloat = 14
 
         // Check if entryName and entryEmoji are empty, then use placeholder text
