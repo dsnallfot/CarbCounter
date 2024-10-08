@@ -133,7 +133,7 @@ class TooltipMarkerView: MarkerView {
         }
 
         // Determine y position
-        if point.y - size.height - 5 < 0 {
+        if point.y - size.height - 5 < 30 {
             yOffset = 5 // 5 pixels below the point
         } else {
             yOffset = -(size.height + 5) // 5 pixels above the point

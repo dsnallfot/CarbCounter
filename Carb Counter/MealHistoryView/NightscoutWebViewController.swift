@@ -21,6 +21,12 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         } else {
             self.title = "Nightscout"
         }
+        
+        // If the view controller is presented modally, add a close button
+        if isModalPresentation() {
+            let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeModal))
+            navigationItem.leftBarButtonItem = closeButton
+        }
 
         // Create and configure the web view
         let configuration = WKWebViewConfiguration()
@@ -62,6 +68,15 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
             self?.fadeOutOverlay()
         }
     }
+    
+    @objc private func closeModal() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    // Helper function to check if the view controller is presented modally
+    private func isModalPresentation() -> Bool {
+        return presentingViewController != nil || navigationController?.presentingViewController?.presentedViewController == navigationController || tabBarController?.presentingViewController is UITabBarController
+    }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         fadeOutOverlay()
@@ -94,11 +109,25 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        // Ensure the navigation bar has a background color
+        navigationController?.navigationBar.isTranslucent = false
+        navigationController?.navigationBar.barTintColor = .systemBackground // Or any desired color
+        navigationController?.navigationBar.backgroundColor = .systemBackground // Or any desired color
+        //navigationController?.navigationBar.tintColor = .label // Set this if you need proper contrast
+        
+        
         AppDelegate.AppUtility.lockOrientation(.allButUpsideDown)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
+        // If you need to reset the navigation bar appearance when leaving this screen
+        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.barTintColor = nil
+        navigationController?.navigationBar.backgroundColor = nil
+
         webView.stopLoading()
         AppDelegate.AppUtility.lockOrientation(.portrait)
     }
