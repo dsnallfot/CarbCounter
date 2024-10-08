@@ -427,7 +427,7 @@
 "%.1f st" = "%.1f serv";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Meal average values";
-"Medianvärden måltider (Datum och tid)" = "Meal median values";
+"Medianvärden måltider (Datum och tid)" = "Meal median values (For selected dates)";
 "Verklig insulinkvot" = "Actual Carb Ratio";
 "%.0f g" = "%.0f g";
 "%.2f E" = "%.2f U";
@@ -448,6 +448,13 @@
 "+ Lägg till i måltid" = "+ Add to meal";
 "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E" = "%@ %@\nCarbs: %.0f g\nFat: %.0f g\nProtein: %.0f g\nBolus: %.2f U";
 "Visa i Nightscout" = "Show in Nightscout";
+"Ingen data" = "No data selected";
+"Välj en datapunkt i grafen nedan innan du öppnar Nightscout" = "Select a data point in the chart below before navigating to Nightscout";
+"Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen." = "Could not load Nightscout. Check your internet connection and try again.";
+"Nightscout • Måltid %@" = "Nightscout • Meal %@";
+"Välj datum och ett livsmedel" = "Select a date and a food item";
+"Portion uppäten" = "Serving size (g)";
+"Kolhydrater (g)" = "Carbohydrates (g)";
 
 /* Settings */
 "Inställningar" = "Settings";

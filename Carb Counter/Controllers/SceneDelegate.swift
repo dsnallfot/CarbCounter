@@ -36,6 +36,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         handleShortcutItem(shortcutItem)
         completionHandler(true)
     }
+    /*
+    func windowScene(_ windowScene: UIWindowScene, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if let rootViewController = window?.rootViewController as? UINavigationController {
+            if rootViewController.topViewController is NightscoutWebViewController {
+                return .landscape
+            }
+        }
+        return .portrait
+    }*/
+    func windowScene(_ windowScene: UIWindowScene,
+                         supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+            if let navigationController = window?.rootViewController as? UINavigationController,
+               navigationController.visibleViewController is NightscoutWebViewController {
+                return .landscape
+            }
+            return .portrait
+        }
+
 
     private func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
         if shortcutItem.type == "com.dsnallfot.CarbsCounter.scanBarcode" {
