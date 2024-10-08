@@ -592,6 +592,7 @@ class MealInsightsViewController: UIViewController {
             let nightscoutVC = NightscoutWebViewController()
             nightscoutVC.nightscoutURL = url
             nightscoutVC.mealDate = date
+            nightscoutVC.hidesBottomBarWhenPushed = true
 
             // Use the modal presentation check
             if isModalPresentation {
