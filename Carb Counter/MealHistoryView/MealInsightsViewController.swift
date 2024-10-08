@@ -545,6 +545,8 @@ class MealInsightsViewController: UIViewController {
         if let url = urlComponents?.url {
             let nightscoutVC = NightscoutWebViewController()
             nightscoutVC.nightscoutURL = url
+            nightscoutVC.mealDate = date
+            nightscoutVC.hidesBottomBarWhenPushed = true
             
             // Push the view controller onto the existing navigation stack
             navigationController?.pushViewController(nightscoutVC, animated: true)

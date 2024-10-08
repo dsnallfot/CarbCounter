@@ -11,6 +11,7 @@ import WebKit
 class NightscoutWebViewController: UIViewController {
 
     var nightscoutURL: URL?
+    var mealDate: Date?
 
     private var webView: WKWebView!
 
@@ -18,7 +19,16 @@ class NightscoutWebViewController: UIViewController {
         super.viewDidLoad()
 
         // Set up the navigation bar title
-        self.title = "Nightscout"
+        // Set up the navigation bar title
+        if let date = mealDate {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "d MMM yyyy"
+            dateFormatter.locale = Locale(identifier: "sv_SE") // Swedish locale
+            let formattedDate = dateFormatter.string(from: date)
+            self.title = "Nightscout • \(formattedDate)"
+        } else {
+            self.title = "Nightscout"
+        }
 
         // Create the web view and add it to the view
         webView = WKWebView(frame: .zero)

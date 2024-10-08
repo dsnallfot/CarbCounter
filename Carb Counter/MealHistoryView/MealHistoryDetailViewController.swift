@@ -334,14 +334,15 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
               let nightscoutToken = UserDefaultsRepository.nightscoutToken,
               let mealDate = mealHistory?.mealDate else {
-            // Handle error: show an alert that Nightscout URL or token is not set
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"), message: NSLocalizedString("Nightscout-URL eller token är inte angiven. Gå till inställningar för att ange dem.", comment: "Nightscout URL or token not set. Please set them in settings."), preferredStyle: .alert)
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Nightscout-URL eller token är inte angiven. Gå till inställningar för att ange dem.", comment: "Nightscout URL or token not set. Please set them in settings."),
+                                          preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
             return
         }
         
-        // Construct the URL
+        // Format the date for the Nightscout URL
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: mealDate)
@@ -352,21 +353,29 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             baseURL += "/"
         }
         
-        // Construct the URL components safely
+        // Construct the URL with the token, report type, startDate, and endDate
         var urlComponents = URLComponents(string: baseURL + "report/")
         urlComponents?.queryItems = [
             URLQueryItem(name: "token", value: nightscoutToken),
             URLQueryItem(name: "report", value: "daytoday"),
             URLQueryItem(name: "startDate", value: dateString),
             URLQueryItem(name: "endDate", value: dateString),
-            URLQueryItem(name: "autoShow", value: "true")
+            URLQueryItem(name: "autoShow", value: "true"),
+            URLQueryItem(name: "hideMenu", value: "true"),
         ]
         
         if let url = urlComponents?.url {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            let nightscoutVC = NightscoutWebViewController()
+            nightscoutVC.nightscoutURL = url
+            nightscoutVC.mealDate = mealDate
+            nightscoutVC.hidesBottomBarWhenPushed = true
+            
+            // Push the view controller onto the existing navigation stack
+            navigationController?.pushViewController(nightscoutVC, animated: true)
         } else {
-            // Handle error: invalid URL
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"), message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."), preferredStyle: .alert)
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+                                          preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
         }
