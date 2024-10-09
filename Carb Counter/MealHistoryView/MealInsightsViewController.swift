@@ -142,25 +142,37 @@ class MealInsightsViewController: UIViewController {
         // Set the flag based on whether the view controller is presented modally
         isComingFromModal = isModalPresentation
         
-        // Check if the Nightscout button should be added
-        if !isComingFromDetailView && !isComingFromFoodItemRow {
-            if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
-               let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
-                // Load the custom image and resize it to the appropriate navigation bar icon size
-                if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
-                    let nightscoutButton = UIBarButtonItem(
-                        image: nightscoutImage,
-                        style: .plain,
-                        target: self,
-                        action: #selector(openNightscoutFromChart)
-                    )
-                    navigationItem.rightBarButtonItem = nightscoutButton
+        // Create the "scope" button
+            let scopeButton = UIBarButtonItem(
+                image: UIImage(systemName: "scope"),
+                style: .plain,
+                target: self,
+                action: #selector(scopeButtonTapped)
+            )
+
+        // Create the Nightscout button if the conditions are met
+            if !isComingFromDetailView && !isComingFromFoodItemRow {
+                if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+                   let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+                    // Load the custom image and resize it to the appropriate navigation bar icon size
+                    if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                        let nightscoutButton = UIBarButtonItem(
+                            image: nightscoutImage,
+                            style: .plain,
+                            target: self,
+                            action: #selector(openNightscoutFromChart)
+                        )
+                        // Set the right bar buttons with the desired order: Scope button, then Nightscout button
+                        navigationItem.rightBarButtonItems = [nightscoutButton, scopeButton]
+                    }
+                } else {
+                    // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
+                    print("Nightscout URL or token is missing")
                 }
             } else {
-                // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
-                print("Nightscout URL or token is missing")
+                // If no Nightscout button is added, set only the scope button
+                navigationItem.rightBarButtonItems = [scopeButton]
             }
-        }
 
         if isModalPresentation {
             addCloseButton()
@@ -606,6 +618,84 @@ class MealInsightsViewController: UIViewController {
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
                                           message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    @objc private func scopeButtonTapped() {
+        // Ensure there is a highlighted entry
+        guard let highlight = lineChartView.highlighted.first else {
+            let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
+                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du fortsätter", comment: "No data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Retrieve the corresponding ChartDataEntry from the highlighted entry
+        guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
+              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
+            let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
+                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du fortsätter", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        var mealDate: Date?
+
+        // Extract the mealDate from either MealHistory or FoodItemEntry
+        if let mealHistory = entry.data as? MealHistory {
+            mealDate = mealHistory.mealDate
+        } else if let foodEntry = entry.data as? FoodItemEntry {
+            mealDate = foodEntry.mealHistory?.mealDate
+        }
+
+        // Ensure we have a valid date
+        guard let date = mealDate else {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Call a method to navigate to MealHistoryDetailViewController with the selected date
+        navigateToMealHistoryDetail(with: date)
+    }
+    
+    private func navigateToMealHistoryDetail(with mealDate: Date) {
+        // Fetch the MealHistory entity that matches the mealDate
+        let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "mealDate == %@", mealDate as NSDate)
+        fetchRequest.fetchLimit = 1
+
+        do {
+            let mealHistories = try CoreDataStack.shared.context.fetch(fetchRequest)
+            guard let mealHistory = mealHistories.first else {
+                let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                              message: NSLocalizedString("Ingen måltid hittades för det valda datumet.", comment: "No meal found for the selected date."),
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+                present(alert, animated: true, completion: nil)
+                return
+            }
+
+            // Initialize and present the MealHistoryDetailViewController
+            let detailVC = MealHistoryDetailViewController()
+            detailVC.mealHistory = mealHistory
+            detailVC.hidesBottomBarWhenPushed = true
+
+            navigationController?.pushViewController(detailVC, animated: true)
+
+        } catch {
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Ett fel inträffade vid hämtning av måltid.", comment: "An error occurred while fetching the meal."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
