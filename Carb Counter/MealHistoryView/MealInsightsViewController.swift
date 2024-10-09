@@ -25,8 +25,8 @@ class MealInsightsViewController: UIViewController {
     private var chartViewBottomConstraint: NSLayoutConstraint?
     private let combinedStackView = UIStackView()
     public var selectedFoodEntry: FoodItemEntry?
-
-
+    
+    
     // UI Elements
     private let fromDateLabel = UILabel()
     private let toDateLabel = UILabel()
@@ -110,11 +110,11 @@ class MealInsightsViewController: UIViewController {
         }
         return searchBar
     }()
-
+    
     // Stats View
     private let statsView = UIView()
     private let statsLabel = UILabel()
-
+    
     // Data
     private var mealHistories: [MealHistory] = []
     var uniqueFoodEntries = [FoodEntryInfo]()
@@ -124,56 +124,56 @@ class MealInsightsViewController: UIViewController {
     private var lineChartView: LineChartView!
     
     // Declare chartLabel here
-        private let chartLabel: UILabel = {
-            let label = UILabel()
-            label.font = UIFont.boldSystemFont(ofSize: 15)
-            label.textColor = .label
-            label.textAlignment = .center
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
-
+    private let chartLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.boldSystemFont(ofSize: 15)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
-
+        
         // Set the flag based on whether the view controller is presented modally
         isComingFromModal = isModalPresentation
-
+        
         // Create the Nightscout button if the conditions are met
-            if !isComingFromDetailView && !isComingFromFoodItemRow {
-                
-                // Create the "scope" button
-                    let scopeButton = UIBarButtonItem(
-                        image: UIImage(systemName: "scope"),
+        if !isComingFromDetailView && !isComingFromFoodItemRow {
+            
+            // Create the "scope" button
+            let scopeButton = UIBarButtonItem(
+                image: UIImage(systemName: "scope"),
+                style: .plain,
+                target: self,
+                action: #selector(scopeButtonTapped)
+            )
+            
+            if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+               let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+                // Load the custom image and resize it to the appropriate navigation bar icon size
+                if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
+                    let nightscoutButton = UIBarButtonItem(
+                        image: nightscoutImage,
                         style: .plain,
                         target: self,
-                        action: #selector(scopeButtonTapped)
+                        action: #selector(openNightscoutFromChart)
                     )
-                
-                if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
-                   let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
-                    // Load the custom image and resize it to the appropriate navigation bar icon size
-                    if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
-                        let nightscoutButton = UIBarButtonItem(
-                            image: nightscoutImage,
-                            style: .plain,
-                            target: self,
-                            action: #selector(openNightscoutFromChart)
-                        )
-                        // Set the right bar buttons with the desired order: Scope button, then Nightscout button
-                        navigationItem.rightBarButtonItems = [nightscoutButton, scopeButton]
-                    }
-                } else {
-                    // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
-                    print("Nightscout URL or token is missing")
+                    // Set the right bar buttons with the desired order: Scope button, then Nightscout button
+                    navigationItem.rightBarButtonItems = [nightscoutButton, scopeButton]
                 }
             } else {
-                print("No navigationsbuttons added - Coming from mini modals")
+                // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
+                print("Nightscout URL or token is missing")
             }
-
+        } else {
+            print("No navigationsbuttons added - Coming from mini modals")
+        }
+        
         if isModalPresentation {
             addCloseButton()
         } else {
@@ -190,14 +190,14 @@ class MealInsightsViewController: UIViewController {
         setupStatsView()
         setupActionButton()
         setupTimePickers()
-
+        
         loadDefaultDates()
         setDefaultTimePickers()
         fetchMealHistories()
-
+        
         statsTableView.separatorStyle = .singleLine
         statsTableView.separatorColor = UIColor.systemGray3.withAlphaComponent(1)
-
+        
         // Set default mode to "Insikt livsmedel"
         switchMode(segmentedControl)
         
@@ -205,12 +205,12 @@ class MealInsightsViewController: UIViewController {
         self.view.addSubview(chartLabel)
         
         // Set up the constraints for the chartLabel
-                NSLayoutConstraint.activate([
-                    chartLabel.topAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 8),
-                    chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
-                ])
-                
-
+        NSLayoutConstraint.activate([
+            chartLabel.topAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 8),
+            chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
+        ])
+        
+        
         // Delay performing the search until the data is fully loaded
         DispatchQueue.main.async {
             if let searchText = self.prepopulatedSearchText {
@@ -219,9 +219,9 @@ class MealInsightsViewController: UIViewController {
                 // Initialize with default text based on selectedEntryName
                 if let entryName = self.selectedEntryName, !entryName.isEmpty {
                     self.chartLabel.text = entryName  // Use the selectedEntryName if it's not empty
-                    } else {
-                        self.chartLabel.text = NSLocalizedString("", comment: "")
-                    }
+                } else {
+                    self.chartLabel.text = NSLocalizedString("", comment: "")
+                }
                 // Sync prepopulatedSearchText with selectedEntryName
                 print("searchtext: \(searchText)")  // Now log it before performing the search
                 self.performSearch(with: searchText)
@@ -242,18 +242,18 @@ class MealInsightsViewController: UIViewController {
             actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
         }
     }
-
+    
     // Function to check if the view controller is presented modally
     private var isModalPresentation: Bool {
         return presentingViewController != nil || navigationController?.presentingViewController?.presentedViewController == navigationController || tabBarController?.presentingViewController is UITabBarController
     }
-
+    
     // Add a close button to the navigation bar
     private func addCloseButton() {
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(dismissModal))
         navigationItem.leftBarButtonItem = closeButton
     }
-
+    
     // Action to dismiss the view controller
     @objc private func dismissModal() {
         dismiss(animated: true, completion: nil)
@@ -288,8 +288,8 @@ class MealInsightsViewController: UIViewController {
         lineChartView.layer.cornerRadius = 10
         lineChartView.clipsToBounds = true // Ensure content is clipped to rounded corners
         lineChartView.translatesAutoresizingMaskIntoConstraints = false
-
-
+        
+        
         
         // Set the maxVisibleCount to 15 (or your desired number)
         lineChartView.maxVisibleCount = 15
@@ -300,31 +300,31 @@ class MealInsightsViewController: UIViewController {
         
         // Create constraints but don't activate them yet
         chartViewBottomConstraint = lineChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -162)
-
+        
         NSLayoutConstraint.activate([
             lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             lineChartView.heightAnchor.constraint(equalToConstant: 205),
         ])
         /*
-        // Create the label
-        let chartLabel = UILabel()
-        chartLabel.text = NSLocalizedString("Registrerade måltider", comment: "Registered meals")
-        chartLabel.font = UIFont.boldSystemFont(ofSize: 14)
-        chartLabel.textColor = .label
-        chartLabel.textAlignment = .center
-
-        // Add it to the view (assuming `self.view` contains your chart)
-        self.view.addSubview(chartLabel)
-
-        // Set up constraints or frame to center it above the chart
-        chartLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            chartLabel.bottomAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 26),
-            chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
-        ])*/
+         // Create the label
+         let chartLabel = UILabel()
+         chartLabel.text = NSLocalizedString("Registrerade måltider", comment: "Registered meals")
+         chartLabel.font = UIFont.boldSystemFont(ofSize: 14)
+         chartLabel.textColor = .label
+         chartLabel.textAlignment = .center
+         
+         // Add it to the view (assuming `self.view` contains your chart)
+         self.view.addSubview(chartLabel)
+         
+         // Set up constraints or frame to center it above the chart
+         chartLabel.translatesAutoresizingMaskIntoConstraints = false
+         NSLayoutConstraint.activate([
+         chartLabel.bottomAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 26),
+         chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
+         ])*/
     }
-
+    
     // Call this function after fetching data to populate the chart
     private func updateChartWithCarbsData(_ filteredMeals: [MealHistory]) {
         var carbsEntries: [ChartDataEntry] = []
@@ -342,13 +342,13 @@ class MealInsightsViewController: UIViewController {
                 
                 minDate = min(minDate, timeIntervalForXAxis)
                 maxDate = max(maxDate, timeIntervalForXAxis)
-
+                
                 // Attach the MealHistory object to the ChartDataEntry
                 let carbsEntry = ChartDataEntry(x: timeIntervalForXAxis, y: carbsValue, data: meal)
                 carbsEntries.append(carbsEntry)
             }
         }
-
+        
         let carbsDataSet = LineChartDataSet(entries: carbsEntries, label: NSLocalizedString("Kolhydrater (g)", comment: "Carbohydrates"))
         carbsDataSet.colors = [.systemOrange]
         carbsDataSet.circleColors = [.systemOrange]
@@ -361,9 +361,9 @@ class MealInsightsViewController: UIViewController {
         // Enable highlighting for the dataset
         carbsDataSet.highlightEnabled = true
         carbsDataSet.highlightColor = .label
-
+        
         let chartData = LineChartData(dataSets: [carbsDataSet])
-
+        
         let xAxis = lineChartView.xAxis
         xAxis.valueFormatter = DateValueFormatter()
         xAxis.labelPosition = .bottom
@@ -371,33 +371,33 @@ class MealInsightsViewController: UIViewController {
         
         let labelCount = calculateLabelCount(minDate: minDate, maxDate: maxDate)
         xAxis.setLabelCount(labelCount, force: true)
-
+        
         // Re-enable granularity
         xAxis.granularity = 1  // 1 second
         xAxis.granularityEnabled = true
         
         xAxis.axisMinimum = minDate
         xAxis.axisMaximum = maxDate
-
+        
         lineChartView.leftAxis.drawGridLinesEnabled = true
         lineChartView.leftAxis.axisMinimum = 0
-
+        
         lineChartView.rightAxis.enabled = false
         lineChartView.rightAxis.drawGridLinesEnabled = false
-
+        
         lineChartView.isUserInteractionEnabled = true
         lineChartView.dragEnabled = true
         lineChartView.setScaleEnabled(true)
         lineChartView.pinchZoomEnabled = true
         lineChartView.highlightPerDragEnabled = true
         lineChartView.highlightPerTapEnabled = true
-
+        
         lineChartView.data = chartData
-
+        
         let marker = TooltipMarkerView()
         marker.chartView = lineChartView
         lineChartView.marker = marker
-
+        
         lineChartView.notifyDataSetChanged()
     }
     
@@ -495,7 +495,7 @@ class MealInsightsViewController: UIViewController {
         // Refresh the chart
         lineChartView.notifyDataSetChanged()
     }
-
+    
     private func calculateLabelCount(minDate: TimeInterval, maxDate: TimeInterval) -> Int {
         let totalSeconds = maxDate - minDate
         let days = totalSeconds / (24 * 60 * 60)
@@ -511,15 +511,15 @@ class MealInsightsViewController: UIViewController {
             return 7
         }
     }
-
+    
     // Helper function to convert Date to a readable format for the X-axis
     class DateValueFormatter: AxisValueFormatter {
         private let dateFormatter = DateFormatter()
-
+        
         init() {
             dateFormatter.dateFormat = "d MMM" // Customize the format
         }
-
+        
         func stringForValue(_ value: Double, axis: AxisBase?) -> String {
             let date = Date(timeIntervalSince1970: value)
             return dateFormatter.string(from: date)
@@ -530,33 +530,33 @@ class MealInsightsViewController: UIViewController {
         // Ensure there is a highlighted entry
         guard let highlight = lineChartView.highlighted.first else {
             let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
-                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du öppnar Nightscout", comment: "No data selected."),
+                                          message: NSLocalizedString("\nVälj en datapunkt i grafen nedan innan du öppnar Nightscout", comment: "No data selected."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         // Retrieve the corresponding ChartDataEntry from the highlighted entry
         guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
               let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
             let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
-                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du öppnar Nightscout", comment: "No valid data selected."),
+                                          message: NSLocalizedString("\nVälj en datapunkt i grafen nedan innan du öppnar Nightscout", comment: "No valid data selected."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         var mealDate: Date?
-
+        
         // Handle both MealHistory and FoodItemEntry types
         if let mealHistory = entry.data as? MealHistory {
             mealDate = mealHistory.mealDate
         } else if let foodEntry = entry.data as? FoodItemEntry {
             mealDate = foodEntry.mealHistory?.mealDate
         }
-
+        
         // Ensure we have a valid date
         guard let date = mealDate else {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
@@ -566,7 +566,7 @@ class MealInsightsViewController: UIViewController {
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         // Continue with Nightscout URL construction
         guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
               let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
@@ -577,18 +577,18 @@ class MealInsightsViewController: UIViewController {
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         // Format the date for the Nightscout URL
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)
-
+        
         // Ensure the base URL ends with '/'
         var baseURL = nightscoutBaseURL
         if !baseURL.hasSuffix("/") {
             baseURL += "/"
         }
-
+        
         // Construct the URL with the token, report type, startDate, and endDate
         var urlComponents = URLComponents(string: baseURL + "report/")
         urlComponents?.queryItems = [
@@ -599,13 +599,13 @@ class MealInsightsViewController: UIViewController {
             URLQueryItem(name: "autoShow", value: "true"),
             URLQueryItem(name: "hideMenu", value: "true"),
         ]
-
+        
         if let url = urlComponents?.url {
             let nightscoutVC = NightscoutWebViewController()
             nightscoutVC.nightscoutURL = url
             nightscoutVC.mealDate = date
             nightscoutVC.hidesBottomBarWhenPushed = true
-
+            
             // Use the modal presentation check
             if isModalPresentation {
                 // If the MealInsightsViewController is presented modally, present NightscoutWebViewController in its own navigation controller
@@ -628,33 +628,33 @@ class MealInsightsViewController: UIViewController {
         // Ensure there is a highlighted entry
         guard let highlight = lineChartView.highlighted.first else {
             let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
-                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du fortsätter", comment: "No data selected."),
+                                          message: NSLocalizedString("\nVälj en datapunkt i grafen nedan innan du fortsätter", comment: "No data selected."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         // Retrieve the corresponding ChartDataEntry from the highlighted entry
         guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
               let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
             let alert = UIAlertController(title: NSLocalizedString("Ingen data", comment: "Error"),
-                                          message: NSLocalizedString("Välj en datapunkt i grafen nedan innan du fortsätter", comment: "No valid data selected."),
+                                          message: NSLocalizedString("\nVälj en datapunkt i grafen nedan innan du fortsätter", comment: "No valid data selected."),
                                           preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         var mealDate: Date?
-
+        
         // Extract the mealDate from either MealHistory or FoodItemEntry
         if let mealHistory = entry.data as? MealHistory {
             mealDate = mealHistory.mealDate
         } else if let foodEntry = entry.data as? FoodItemEntry {
             mealDate = foodEntry.mealHistory?.mealDate
         }
-
+        
         // Ensure we have a valid date
         guard let date = mealDate else {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
@@ -664,7 +664,7 @@ class MealInsightsViewController: UIViewController {
             present(alert, animated: true, completion: nil)
             return
         }
-
+        
         // Call a method to navigate to MealHistoryDetailViewController with the selected date
         navigateToMealHistoryDetail(with: date)
     }
@@ -674,7 +674,7 @@ class MealInsightsViewController: UIViewController {
         let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "mealDate == %@", mealDate as NSDate)
         fetchRequest.fetchLimit = 1
-
+        
         do {
             let mealHistories = try CoreDataStack.shared.context.fetch(fetchRequest)
             guard let mealHistory = mealHistories.first else {
@@ -685,14 +685,22 @@ class MealInsightsViewController: UIViewController {
                 present(alert, animated: true, completion: nil)
                 return
             }
-
+            
             // Initialize and present the MealHistoryDetailViewController
             let detailVC = MealHistoryDetailViewController()
             detailVC.mealHistory = mealHistory
             detailVC.hidesBottomBarWhenPushed = true
-
-            navigationController?.pushViewController(detailVC, animated: true)
-
+            
+            // Use the modal presentation check
+            if isModalPresentation {
+                // If the MealInsightsViewController is presented modally, present MealHistoryDetailViewController in its own navigation controller
+                let navigationController = UINavigationController(rootViewController: detailVC)
+                present(navigationController, animated: true, completion: nil)
+            } else {
+                // If it's not modal, push the MealHistoryDetailViewController onto the current navigation stack
+                navigationController?.pushViewController(detailVC, animated: true)
+            }
+            
         } catch {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
                                           message: NSLocalizedString("Ett fel inträffade vid hämtning av måltid.", comment: "An error occurred while fetching the meal."),
@@ -701,93 +709,93 @@ class MealInsightsViewController: UIViewController {
             present(alert, animated: true, completion: nil)
         }
     }
-
+    
     
     /*
-    @objc private func openNightscoutFromChart() {
-        // Ensure there is a highlighted entry
-        guard let highlight = lineChartView.highlighted.first else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Ingen data är vald.", comment: "No data selected."),
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        // Retrieve the corresponding ChartDataEntry from the highlighted entry
-        guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
-              let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        var mealDate: Date?
-
-        // Handle both MealHistory and FoodItemEntry types
-        if let mealHistory = entry.data as? MealHistory {
-            mealDate = mealHistory.mealDate
-        } else if let foodEntry = entry.data as? FoodItemEntry {
-            mealDate = foodEntry.mealHistory?.mealDate
-        }
-
-        // Ensure we have a valid date
-        guard let date = mealDate else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        // Continue with Nightscout URL construction
-        guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
-              let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Nightscout-URL eller token saknas.", comment: "Nightscout URL or token is missing."),
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        // Format the date for the Nightscout URL
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
-
-        // Ensure the base URL ends with '/'
-        var baseURL = nightscoutBaseURL
-        if !baseURL.hasSuffix("/") {
-            baseURL += "/"
-        }
-
-        // Construct the URL with the token, report type, startDate, and endDate
-        var urlComponents = URLComponents(string: baseURL + "report/")
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "token", value: nightscoutToken),
-            URLQueryItem(name: "report", value: "daytoday"),
-            URLQueryItem(name: "startDate", value: dateString),
-            URLQueryItem(name: "endDate", value: dateString),
-            URLQueryItem(name: "autoShow", value: "true")
-        ]
-
-        if let url = urlComponents?.url {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        } else {
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-        }
-    }
-    */
+     @objc private func openNightscoutFromChart() {
+     // Ensure there is a highlighted entry
+     guard let highlight = lineChartView.highlighted.first else {
+     let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+     message: NSLocalizedString("Ingen data är vald.", comment: "No data selected."),
+     preferredStyle: .alert)
+     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+     present(alert, animated: true, completion: nil)
+     return
+     }
+     
+     // Retrieve the corresponding ChartDataEntry from the highlighted entry
+     guard let dataSet = lineChartView.data?.dataSets[highlight.dataSetIndex],
+     let entry = dataSet.entryForXValue(highlight.x, closestToY: highlight.y) as? ChartDataEntry else {
+     let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+     message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+     preferredStyle: .alert)
+     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+     present(alert, animated: true, completion: nil)
+     return
+     }
+     
+     var mealDate: Date?
+     
+     // Handle both MealHistory and FoodItemEntry types
+     if let mealHistory = entry.data as? MealHistory {
+     mealDate = mealHistory.mealDate
+     } else if let foodEntry = entry.data as? FoodItemEntry {
+     mealDate = foodEntry.mealHistory?.mealDate
+     }
+     
+     // Ensure we have a valid date
+     guard let date = mealDate else {
+     let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+     message: NSLocalizedString("Ingen giltig data är vald.", comment: "No valid data selected."),
+     preferredStyle: .alert)
+     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+     present(alert, animated: true, completion: nil)
+     return
+     }
+     
+     // Continue with Nightscout URL construction
+     guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
+     let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
+     let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+     message: NSLocalizedString("Nightscout-URL eller token saknas.", comment: "Nightscout URL or token is missing."),
+     preferredStyle: .alert)
+     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+     present(alert, animated: true, completion: nil)
+     return
+     }
+     
+     // Format the date for the Nightscout URL
+     let dateFormatter = DateFormatter()
+     dateFormatter.dateFormat = "yyyy-MM-dd"
+     let dateString = dateFormatter.string(from: date)
+     
+     // Ensure the base URL ends with '/'
+     var baseURL = nightscoutBaseURL
+     if !baseURL.hasSuffix("/") {
+     baseURL += "/"
+     }
+     
+     // Construct the URL with the token, report type, startDate, and endDate
+     var urlComponents = URLComponents(string: baseURL + "report/")
+     urlComponents?.queryItems = [
+     URLQueryItem(name: "token", value: nightscoutToken),
+     URLQueryItem(name: "report", value: "daytoday"),
+     URLQueryItem(name: "startDate", value: dateString),
+     URLQueryItem(name: "endDate", value: dateString),
+     URLQueryItem(name: "autoShow", value: "true")
+     ]
+     
+     if let url = urlComponents?.url {
+     UIApplication.shared.open(url, options: [:], completionHandler: nil)
+     } else {
+     let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+     message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+     preferredStyle: .alert)
+     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+     present(alert, animated: true, completion: nil)
+     }
+     }
+     */
     
     private func setupSegmentedControlAndDatePickers() {
         // Configure From Date Picker and Label
@@ -797,12 +805,12 @@ class MealInsightsViewController: UIViewController {
         fromDatePicker.datePickerMode = .date
         fromDatePicker.preferredDatePickerStyle = .compact
         fromDatePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-
+        
         let fromDateStackView = UIStackView(arrangedSubviews: [fromDateLabel, fromDatePicker])
         fromDateStackView.axis = .horizontal
         fromDateStackView.spacing = 8
         fromDateStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Configure To Date Picker and Label
         toDateLabel.text = NSLocalizedString("→", comment: "To Date Label")
         toDateLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -810,28 +818,28 @@ class MealInsightsViewController: UIViewController {
         toDatePicker.datePickerMode = .date
         toDatePicker.preferredDatePickerStyle = .compact
         toDatePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-
+        
         let toDateStackView = UIStackView(arrangedSubviews: [toDateLabel, toDatePicker])
         toDateStackView.axis = .horizontal
         toDateStackView.spacing = 8
         toDateStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Date pickers stack view
         let datePickersStackView = UIStackView(arrangedSubviews: [fromDateStackView, toDateStackView])
         datePickersStackView.axis = .horizontal
         datePickersStackView.spacing = 8
         datePickersStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Main segmented control
         segmentedControl.selectedSegmentIndex = 1
         segmentedControl.addTarget(self, action: #selector(switchMode(_:)), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Date preset segmented control
         datePresetsSegmentedControl.selectedSegmentIndex = 2 //UISegmentedControl.noSegment
         datePresetsSegmentedControl.addTarget(self, action: #selector(datePresetChanged(_:)), for: .valueChanged)
         datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Combine the controls and stack views
         combinedStackView.axis = .vertical
         combinedStackView.spacing = isComingFromFoodItemRow || isComingFromDetailView ? 10 : 10  // Set initial spacing here
@@ -839,10 +847,10 @@ class MealInsightsViewController: UIViewController {
         combinedStackView.addArrangedSubview(segmentedControl)
         combinedStackView.addArrangedSubview(datePresetsSegmentedControl)
         combinedStackView.addArrangedSubview(datePickersStackView)
-
+        
         // Add the combined stack view to the main view
         view.addSubview(combinedStackView)
-
+        
         // Set constraints for the combined stack view
         NSLayoutConstraint.activate([
             combinedStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
@@ -850,13 +858,13 @@ class MealInsightsViewController: UIViewController {
             combinedStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
     }
-
-
+    
+    
     // Action for date presets
     @objc private func datePresetChanged(_ sender: UISegmentedControl) {
         let now = Date()
         var fromDate: Date?
-
+        
         switch sender.selectedSegmentIndex {
         case 0: // 3d
             fromDate = Calendar.current.date(byAdding: .day, value: -3, to: now)
@@ -871,11 +879,11 @@ class MealInsightsViewController: UIViewController {
         default:
             break
         }
-
+        
         if let fromDate = fromDate {
             fromDatePicker.date = fromDate
             toDatePicker.date = now
-
+            
             // Check if the selected case in segmentedControl is "Insikt livsmedel" or "Insikt måltider"
             if segmentedControl.selectedSegmentIndex == 1 {
                 // Case: "Insikt livsmedel"
@@ -900,14 +908,14 @@ class MealInsightsViewController: UIViewController {
             toTimePicker.date = toTime
         }
     }
-
+    
     private func setupMealTimesSegmentedControl() {
         mealTimesSegmentedControl.selectedSegmentIndex = 0
         mealTimesSegmentedControl.addTarget(self, action: #selector(mealTimesSegmentChanged(_:)), for: .valueChanged)
         mealTimesSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(mealTimesSegmentedControl)
-
+        
         NSLayoutConstraint.activate([
             mealTimesSegmentedControl.topAnchor.constraint(equalTo: toDateLabel.bottomAnchor, constant: 10),
             mealTimesSegmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -956,7 +964,7 @@ class MealInsightsViewController: UIViewController {
         fromTimePicker.addTarget(self, action: #selector(timeChanged), for: .valueChanged)
         fromTimePicker.translatesAutoresizingMaskIntoConstraints = false
         fromTimeLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Configure "Till tid" label and picker
         toTimeLabel.text = NSLocalizedString("→", comment: "To Time Label")
         toTimeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -966,32 +974,32 @@ class MealInsightsViewController: UIViewController {
         toTimePicker.addTarget(self, action: #selector(timeChanged), for: .valueChanged)
         toTimePicker.translatesAutoresizingMaskIntoConstraints = false
         toTimeLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Stack views for time pickers with labels
         let fromTimeStackView = UIStackView(arrangedSubviews: [fromTimeLabel, fromTimePicker])
         fromTimeStackView.axis = .horizontal
         fromTimeStackView.spacing = 8
         fromTimeStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let toTimeStackView = UIStackView(arrangedSubviews: [toTimeLabel, toTimePicker])
         toTimeStackView.axis = .horizontal
         toTimeStackView.spacing = 8
         toTimeStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Combine both time pickers into one stack
         let timePickersStackView = UIStackView(arrangedSubviews: [fromTimeStackView, toTimeStackView])
         timePickersStackView.axis = .horizontal
         timePickersStackView.spacing = 8
         timePickersStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(timePickersStackView)
-
+        
         // Ensure proper constraints
         NSLayoutConstraint.activate([
             timePickersStackView.topAnchor.constraint(equalTo: mealTimesSegmentedControl.bottomAnchor, constant: 10),
             timePickersStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             timePickersStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-
+            
             // Set the height of the time pickers to be similar to the date pickers
             fromTimePicker.heightAnchor.constraint(equalToConstant: 40),
             toTimePicker.heightAnchor.constraint(equalToConstant: 40)
@@ -1002,7 +1010,7 @@ class MealInsightsViewController: UIViewController {
     @objc private func timeChanged() {
         calculateMealStats()
     }
-
+    
     @objc private func switchMode(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
             // "Insikt måltider" mode
@@ -1020,13 +1028,13 @@ class MealInsightsViewController: UIViewController {
             segmentedControl.isHidden = false
             statsViewBottomConstraint.constant = -10
             chartLabel.isHidden = false
-
+            
             // Modify spacing to 16 when in "Insikt måltider" mode
             combinedStackView.spacing = 10
             
             // Set the chartLabel text to "Registrerade måltider"
             chartLabel.text = NSLocalizedString("Registrerade måltider", comment: "Registered meals")
-
+            
             calculateMealStats()
         } else {
             // "Insikt livsmedel" mode
@@ -1036,7 +1044,7 @@ class MealInsightsViewController: UIViewController {
             fromTimeLabel.isHidden = true
             toTimeLabel.isHidden = true
             mealTimesSegmentedControl.isHidden = true
-
+            
             if isComingFromFoodItemRow || isComingFromDetailView {
                 actionButton.isHidden = false
                 segmentedControl.isHidden = true
@@ -1055,28 +1063,28 @@ class MealInsightsViewController: UIViewController {
                 statsViewBottomConstraint.constant = -10
                 filterFoodEntries()
                 chartLabel.isHidden = false
-
+                
                 if let selectedEntryId = selectedEntryId {
-                                // Update the stats and change chartLabel to entryEmoji and entryName
-                                updateStats(for: selectedEntryId)
-                                if let entry = allFilteredFoodEntries.first(where: { $0.entryId == selectedEntryId }) {
-                                    let entryName = entry.entryName ?? ""
-                                    var entryEmoji = entry.entryEmoji ?? ""
-                                    entryEmoji = entryEmoji.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    entryEmoji = entryEmoji.precomposedStringWithCanonicalMapping
-                                    
-                                    // Set the chartLabel text to "\(entryEmoji) \(entryName)"
-                                    chartLabel.text = "\(entryEmoji) \(entryName)"
-                                }
-                            } else {
-                                updateStats(for: nil) // Pass nil if there's no selected entry
-                            }
+                    // Update the stats and change chartLabel to entryEmoji and entryName
+                    updateStats(for: selectedEntryId)
+                    if let entry = allFilteredFoodEntries.first(where: { $0.entryId == selectedEntryId }) {
+                        let entryName = entry.entryName ?? ""
+                        var entryEmoji = entry.entryEmoji ?? ""
+                        entryEmoji = entryEmoji.trimmingCharacters(in: .whitespacesAndNewlines)
+                        entryEmoji = entryEmoji.precomposedStringWithCanonicalMapping
+                        
+                        // Set the chartLabel text to "\(entryEmoji) \(entryName)"
+                        chartLabel.text = "\(entryEmoji) \(entryName)"
+                    }
+                } else {
+                    updateStats(for: nil) // Pass nil if there's no selected entry
+                }
                 combinedStackView.spacing = 10
             }
             updateStatsTableConstraints()
         }
     }
-
+    
     private func setupSearchBar() {
         // Add the already initialized searchBar to the view
         view.addSubview(searchBar)
@@ -1092,23 +1100,23 @@ class MealInsightsViewController: UIViewController {
         // Set the search bar delegate
         searchBar.delegate = self
     }
-
+    
     @objc private func cancelButtonTapped() {
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
     }
-
+    
     @objc private func doneButtonTapped() {
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
-
+        
         // Set the search text as selectedEntryName
         if let searchText = searchBar.text, !searchText.isEmpty {
             selectedEntryName = searchText
         } else {
             selectedEntryName = nil // Reset if the search text is empty
         }
-
+        
         // Perform the search with the current search text
         performSearch(with: searchBar.text ?? "")
     }
@@ -1117,7 +1125,7 @@ class MealInsightsViewController: UIViewController {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<FoodItem>(entityName: "FoodItem")
         fetchRequest.predicate = NSPredicate(format: "id == %@", entryId as CVarArg)
-
+        
         do {
             let foodItems = try context.fetch(fetchRequest)
             return foodItems.first
@@ -1143,7 +1151,7 @@ class MealInsightsViewController: UIViewController {
                 print("Exact match found \(matchingEntry.entryName ?? "")")
                 self.selectedEntryName = matchingEntry.entryName // Store the selected entry name
                 self.selectedEntryId = matchingEntry.entryId // Store the entryId for further filtering
-
+                
                 // Update stats using entryId
                 updateStats(for: matchingEntry.entryId)
             } else {
@@ -1153,7 +1161,7 @@ class MealInsightsViewController: UIViewController {
         } else {
             // Execute the same search as when the user manually types into the search bar
             self.filterFoodEntries()
-
+            
             if let selectedEntry = selectedEntryName {
                 // Use the stored entry name to update stats
                 if let matchingEntry = allFilteredFoodEntries.first(where: { $0.entryName?.lowercased() == selectedEntry.lowercased() }) {
@@ -1173,61 +1181,61 @@ class MealInsightsViewController: UIViewController {
     }
     
     private func setupStatsTableView() {
-            statsTableView.dataSource = self
-            statsTableView.delegate = self
-            statsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StatsCell")
-            statsTableView.translatesAutoresizingMaskIntoConstraints = false
-            statsTableView.separatorStyle = .none
-            statsTableView.backgroundColor = .clear
-
-            // Add both statsTableView and statsView to the hierarchy first
-            view.addSubview(statsTableView)
-            view.addSubview(statsView)
-
-            // Create constraints but don't activate them yet
-            statsTableTopConstraint = statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor)
-            statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -226)
-
-            // Other necessary constraints
-            NSLayoutConstraint.activate([
-                statsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                statsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-            ])
-
-            // Optionally, activate the constraints based on isComingFromFoodItemRow
-            updateStatsTableConstraints()
+        statsTableView.dataSource = self
+        statsTableView.delegate = self
+        statsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StatsCell")
+        statsTableView.translatesAutoresizingMaskIntoConstraints = false
+        statsTableView.separatorStyle = .none
+        statsTableView.backgroundColor = .clear
+        
+        // Add both statsTableView and statsView to the hierarchy first
+        view.addSubview(statsTableView)
+        view.addSubview(statsView)
+        
+        // Create constraints but don't activate them yet
+        statsTableTopConstraint = statsTableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor)
+        statsTableBottomConstraint = statsTableView.bottomAnchor.constraint(equalTo: statsView.topAnchor, constant: -226)
+        
+        // Other necessary constraints
+        NSLayoutConstraint.activate([
+            statsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            statsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        // Optionally, activate the constraints based on isComingFromFoodItemRow
+        updateStatsTableConstraints()
+    }
+    
+    // Method to enable or disable the constraints dynamically
+    private func updateStatsTableConstraints() {
+        if isComingFromFoodItemRow || isComingFromDetailView {
+            // Disable top and bottom constraints to make space in the smaller modal
+            statsTableTopConstraint?.isActive = false
+            statsTableBottomConstraint?.isActive = false
+            chartViewBottomConstraint?.isActive = false
+        } else {
+            // Enable the top and bottom constraints for the full view
+            statsTableTopConstraint?.isActive = true
+            statsTableBottomConstraint?.isActive = true
+            chartViewBottomConstraint?.isActive = true
         }
-
-        // Method to enable or disable the constraints dynamically
-        private func updateStatsTableConstraints() {
-            if isComingFromFoodItemRow || isComingFromDetailView {
-                // Disable top and bottom constraints to make space in the smaller modal
-                statsTableTopConstraint?.isActive = false
-                statsTableBottomConstraint?.isActive = false
-                chartViewBottomConstraint?.isActive = false
-            } else {
-                // Enable the top and bottom constraints for the full view
-                statsTableTopConstraint?.isActive = true
-                statsTableBottomConstraint?.isActive = true
-                chartViewBottomConstraint?.isActive = true
-            }
-
-            // Force layout update after changing constraints
-            view.layoutIfNeeded()
-        }
-
+        
+        // Force layout update after changing constraints
+        view.layoutIfNeeded()
+    }
+    
     private func setupStatsView() {
         statsView.backgroundColor = UIColor.systemGray2.withAlphaComponent(0.2)
         statsView.layer.cornerRadius = 10
         statsView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         statsLabel.numberOfLines = 0
         statsLabel.textAlignment = .center
         statsView.addSubview(statsLabel)
         statsLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(statsView)
-
+        
         // Set the initial constraint for statsView
         statsViewBottomConstraint = statsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -76)
         
@@ -1236,7 +1244,7 @@ class MealInsightsViewController: UIViewController {
             statsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             statsViewBottomConstraint, // Activate the initial bottom constraint
             statsView.heightAnchor.constraint(equalToConstant: 135),
-
+            
             statsLabel.topAnchor.constraint(equalTo: statsView.topAnchor, constant: 4),
             statsLabel.leadingAnchor.constraint(equalTo: statsView.leadingAnchor, constant: 16),
             statsLabel.trailingAnchor.constraint(equalTo: statsView.trailingAnchor, constant: -16),
@@ -1252,7 +1260,7 @@ class MealInsightsViewController: UIViewController {
         actionButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
         // Add the button to the view
         view.addSubview(actionButton)
-
+        
         // Set the constraints
         NSLayoutConstraint.activate([
             actionButton.leadingAnchor.constraint(equalTo: statsView.leadingAnchor), // Match statsView's leading
@@ -1274,7 +1282,7 @@ class MealInsightsViewController: UIViewController {
         // Now, trigger the date change logic
         datePresetChanged(UISegmentedControl()) // Simulate the preset change to "30d"
     }
-
+    
     private func fetchMealHistories() {
         let context = CoreDataStack.shared.context
         let fetchRequest = NSFetchRequest<MealHistory>(entityName: "MealHistory")
@@ -1313,17 +1321,17 @@ class MealInsightsViewController: UIViewController {
         let fromDate = fromDatePicker.date
         let toDate = toDatePicker.date
         let searchText = searchBar.text?.lowercased() ?? ""
-
+        
         let filteredHistories = mealHistories.filter {
             guard let mealDate = $0.mealDate else { return false }
             return mealDate >= fromDate && mealDate <= toDate
         }
-
+        
         // Collect all entries for calculation (including duplicates) and exclude those with entryPortionServed == 0
         allFilteredFoodEntries = filteredHistories.flatMap { history in
             (history.foodEntries?.allObjects as? [FoodItemEntry] ?? []).filter { $0.entryPortionServed > 0 }
         }
-
+        
         // Use a set to filter unique food item IDs for display
         var uniqueFoodIdsSet = Set<UUID>()
         uniqueFoodEntries = allFilteredFoodEntries.filter { entry in
@@ -1339,7 +1347,7 @@ class MealInsightsViewController: UIViewController {
             let entryId = entry.entryId
             return FoodEntryInfo(entryName: entryName, entryId: entryId, isPlaceholder: false)
         }
-
+        
         // If no food items are found, insert a placeholder
         if uniqueFoodEntries.isEmpty {
             uniqueFoodEntries.append(FoodEntryInfo(
@@ -1348,7 +1356,7 @@ class MealInsightsViewController: UIViewController {
                 isPlaceholder: true
             ))
         }
-
+        
         statsTableView.reloadData()
     }
     
@@ -1357,22 +1365,22 @@ class MealInsightsViewController: UIViewController {
         let fromDate = fromDatePicker.date
         let toDate = toDatePicker.date
         let calendar = Calendar.current
-
+        
         // Extract the time components from the time pickers
         let fromTimeComponents = calendar.dateComponents([.hour, .minute], from: fromTimePicker.date)
         let toTimeComponents = calendar.dateComponents([.hour, .minute], from: toTimePicker.date)
-
+        
         let filteredMeals = mealHistories.filter { history in
             guard let mealDate = history.mealDate else { return false }
-
+            
             // Step 1: Filter based on the date range
             if mealDate < fromDate || mealDate > toDate {
                 return false
             }
-
+            
             // Step 2: Filter based on the time range (only consider the time part of each meal)
             let mealTimeComponents = calendar.dateComponents([.hour, .minute], from: mealDate)
-
+            
             // Ensure the meal's time is within the selected time range
             let isWithinTimeRange = (
                 mealTimeComponents.hour! > fromTimeComponents.hour! ||
@@ -1381,20 +1389,20 @@ class MealInsightsViewController: UIViewController {
                 mealTimeComponents.hour! < toTimeComponents.hour! ||
                 (mealTimeComponents.hour == toTimeComponents.hour && mealTimeComponents.minute! <= toTimeComponents.minute!)
             )
-
+            
             // Step 3: Return true if the meal is within both date and time range, and it has a valid totalNetCarbs
             return isWithinTimeRange && history.totalNetCarbs > 0
         }
         
         // Update the chart with filtered data
         updateChartWithCarbsData(filteredMeals)
-
+        
         // Extract values for each category (carbohydrates, fat, protein, bolus)
         let carbsValues = filteredMeals.map { $0.totalNetCarbs }.sorted()
         let fatValues = filteredMeals.map { $0.totalNetFat }.sorted()
         let proteinValues = filteredMeals.map { $0.totalNetProtein }.sorted()
         let bolusValues = filteredMeals.map { $0.totalNetBolus }.sorted()
-
+        
         // Helper function to calculate the median of an array
         func median(of values: [Double]) -> Double {
             guard !values.isEmpty else { return 0 }
@@ -1408,21 +1416,21 @@ class MealInsightsViewController: UIViewController {
                 return sortedValues[count / 2]
             }
         }
-
+        
         // Calculate medians
         let medianCarbs = median(of: carbsValues)
         let medianFat = median(of: fatValues)
         let medianProtein = median(of: proteinValues)
         let medianBolus = median(of: bolusValues)
         let insulinRatio = medianCarbs / medianBolus
-
+        
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
-
+        
         // Define font sizes
         let headlineFontSize: CGFloat = 15
         let regularFontSize: CGFloat = 14
-
+        
         // Bold the first line ("Medianvärden i måltider"), center-aligned
         let boldText = "\(NSLocalizedString("Medianvärden måltider (Datum och tid)", comment: "Medians"))\n\n"
         let boldAttributes: [NSAttributedString.Key: Any] = [
@@ -1430,20 +1438,20 @@ class MealInsightsViewController: UIViewController {
             .paragraphStyle: centeredParagraphStyle()
         ]
         statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
-
+        
         // Create a tab stop for aligning text
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 300)]
         paragraphStyle.defaultTabInterval = 300
         paragraphStyle.alignment = .center
-
+        
         // Use the helper function to format stats values, replacing Inf or 0 with empty string
         let formattedMedianCarbs = formatStatValue(medianCarbs, format: "%.0f g")
         let formattedMedianFat = formatStatValue(medianFat, format: "%.0f g")
         let formattedMedianProtein = formatStatValue(medianProtein, format: "%.0f g")
         let formattedMedianBolus = formatStatValue(medianBolus, format: "%.2f E")
         let formattedInsulinRatio = formatStatValue(insulinRatio, format: "%.0f g/E")
-
+        
         // Regular text for the stats, left-aligned labels and right-aligned values
         let regularText = """
         \(NSLocalizedString("Kolhydrater", comment: "Median Carbs")):\t\(formattedMedianCarbs)
@@ -1457,11 +1465,11 @@ class MealInsightsViewController: UIViewController {
             .paragraphStyle: paragraphStyle
         ]
         statsText.append(NSAttributedString(string: regularText, attributes: regularAttributes))
-
+        
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
     }
-
+    
     // Helper function to center-align text for the title
     private func centeredParagraphStyle() -> NSMutableParagraphStyle {
         let paragraphStyle = NSMutableParagraphStyle()
@@ -1475,7 +1483,7 @@ class MealInsightsViewController: UIViewController {
         }
         return String(format: format, value)
     }
-
+    
     // Food item calculations (MEDIAN VALUE VERSION)
     private func updateStats(for entryId: UUID?) {
         guard let entryId = entryId else {
@@ -1493,28 +1501,28 @@ class MealInsightsViewController: UIViewController {
             }
             return
         }
-
+        
         // Filter matching entries based on the entryId and entryPortionServed > 0
         let matchingEntries = allFilteredFoodEntries.filter {
             $0.entryId == entryId && $0.entryPortionServed > 0
         }
-
+        
         // Get the entryName and entryEmoji from the first matching entry, or default to empty string if no entries are found
         let entryName = matchingEntries.first?.entryName ?? ""
         var entryEmoji = matchingEntries.first?.entryEmoji ?? ""
-
+        
         // Clean up the emoji string by trimming unnecessary whitespace or newlines
         entryEmoji = entryEmoji.trimmingCharacters(in: .whitespacesAndNewlines)
-
+        
         // Normalize the emoji string to avoid formatting issues
         entryEmoji = entryEmoji.precomposedStringWithCanonicalMapping
-
+        
         // Determine if the portions are measured in pieces or grams
         let isPerPiece = matchingEntries.first?.entryPerPiece ?? false
-
+        
         let timesServed = matchingEntries.count
         let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
-
+        
         // Calculate the median portion safely, handling cases with 0 or 1 portion
         let medianPortion: Double
         if portions.isEmpty {
@@ -1531,20 +1539,20 @@ class MealInsightsViewController: UIViewController {
                 medianPortion = sortedPortions[sortedPortions.count / 2]
             }
         }
-
+        
         let largestPortion = portions.max() ?? 0.0
         let smallestPortion = portions.min() ?? 0.0
-
+        
         // Format based on whether it's measured in pieces or grams
         let portionFormat = isPerPiece ? NSLocalizedString("%.1f st", comment: "Per piece portion format") : NSLocalizedString("%.0f g", comment: "Grams portion format")
-
+        
         // Create an attributed string to apply different styles
         let statsText = NSMutableAttributedString()
-
+        
         // Define font sizes
         let headlineFontSize: CGFloat = 15
         let regularFontSize: CGFloat = 14
-
+        
         // Check if entryName and entryEmoji are empty, then use placeholder text
         let boldText: String
         if entryName.isEmpty && entryEmoji.isEmpty {
@@ -1564,14 +1572,14 @@ class MealInsightsViewController: UIViewController {
             boldText = "\(entryEmoji) \(entryName)\n\n"
             self.chartLabel.text = "\(entryEmoji) \(entryName)"
         }
-
+        
         // Bold the first line (either entryName and entryEmoji or placeholder), center-aligned
         let boldAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: headlineFontSize),
             .paragraphStyle: centeredParagraphStyle()
         ]
         statsText.append(NSAttributedString(string: boldText, attributes: boldAttributes))
-
+        
         // If the boldText is not the placeholder, add the detailed stats
         if !(entryName.isEmpty && entryEmoji.isEmpty) {
             // Create a tab stop for aligning text
@@ -1579,12 +1587,12 @@ class MealInsightsViewController: UIViewController {
             paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 300)]
             paragraphStyle.defaultTabInterval = 300
             paragraphStyle.alignment = .center
-
+            
             // Use the helper function to format stats values, replacing 0 or NaN with empty string
             let formattedMedianPortion = formatStatValue(medianPortion, format: portionFormat)
             let formattedLargestPortion = formatStatValue(largestPortion, format: portionFormat)
             let formattedSmallestPortion = formatStatValue(smallestPortion, format: portionFormat)
-
+            
             // Regular text for the stats
             let regularText = """
             \(NSLocalizedString("Genomsnittlig portion", comment: "Median portion label")):\t\(formattedMedianPortion)
@@ -1602,22 +1610,22 @@ class MealInsightsViewController: UIViewController {
         
         // After calculating stats, update the chart
         updateChartWithPortionsData(entryId: entryId)
-
+        
         // Assign the attributed text to the label
         statsLabel.attributedText = statsText
     }
-
+    
     
     @objc private func actionButtonTapped() {
         guard let entryName = searchBar.text, !entryName.isEmpty else {
             return
         }
-
+        
         if isComingFromDetailView {
             // Attempt to find the corresponding FoodItem by entryId and save it as a FoodItemTemporary
             if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
                 saveFoodItemTemporary(entryId: entryId)
-
+                
                 // Dismiss the modal and show the success view after dismissal
                 self.dismiss(animated: true) {
                     let successView = SuccessView()
@@ -1627,19 +1635,19 @@ class MealInsightsViewController: UIViewController {
                         successView.showInView(keyWindow)
                     }
                 }
-
+                
                 self.isComingFromDetailView = false
             } else {
                 // No match found, show an alert
                 showFoodItemNotAvailableAlert()
             }
-
+            
             return
         }
-
+        
         // Original logic for handling the action button, if applicable
         let medianPortion = calculateMedianPortion(for: entryName)
-
+        
         if let onAveragePortionSelected = self.onAveragePortionSelected {
             onAveragePortionSelected(medianPortion)
         }
@@ -1647,13 +1655,13 @@ class MealInsightsViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
     }
-
+    
     // Helper function to save the FoodItemTemporary entry with only entryId
     private func saveFoodItemTemporary(entryId: UUID) {
         let context = CoreDataStack.shared.context
         let newFoodItemTemporary = FoodItemTemporary(context: context)
         newFoodItemTemporary.entryId = entryId
-
+        
         do {
             try context.save()
             print("FoodItemTemporary entry saved successfully for entryId: \(entryId)")
@@ -1661,7 +1669,7 @@ class MealInsightsViewController: UIViewController {
             print("Failed to save FoodItemTemporary entry: \(error)")
         }
     }
-
+    
     // Helper function to show the "missing food item" alert
     private func showFoodItemNotAvailableAlert() {
         let alert = UIAlertController(
@@ -1674,51 +1682,51 @@ class MealInsightsViewController: UIViewController {
     }
     /*
      @objc private func actionButtonTapped() {
-         guard let entryName = searchBar.text, !entryName.isEmpty else {
-             return
-         }
-
-         if isComingFromDetailView {
-             // Attempt to find the corresponding FoodItem by entryId
-             if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
-                 if let matchedFoodItem = findFoodItemById(entryId: entryId) {
-                     // FoodItem found, call delegate method to add it to ComposeMealViewController
-                     delegate?.didAddFoodItem(matchedFoodItem)
-
-                     // Dismiss the modal and show the success view after dismissal
-                     self.dismiss(animated: true) {
-                         let successView = SuccessView()
-                         
-                         // Use the key window for showing the success view
-                         if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-                             successView.showInView(keyWindow) // Use the key window
-                         }
-                     }
-
-                     self.isComingFromDetailView = false
-                 } else {
-                     // No match found, show an alert
-                     let alert = UIAlertController(
-                         title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
-                         message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
-                         preferredStyle: .alert
-                     )
-                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-                     present(alert, animated: true, completion: nil)
-                 }
-             }
-             return
-         }
-
-         // Original logic for handling the action button
-         let medianPortion = calculateMedianPortion(for: entryName)
-
-         if let onAveragePortionSelected = self.onAveragePortionSelected {
-             onAveragePortionSelected(medianPortion)
-         }
-         
-         self.dismiss(animated: true, completion: nil)
-         self.isComingFromFoodItemRow = false
+     guard let entryName = searchBar.text, !entryName.isEmpty else {
+     return
+     }
+     
+     if isComingFromDetailView {
+     // Attempt to find the corresponding FoodItem by entryId
+     if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
+     if let matchedFoodItem = findFoodItemById(entryId: entryId) {
+     // FoodItem found, call delegate method to add it to ComposeMealViewController
+     delegate?.didAddFoodItem(matchedFoodItem)
+     
+     // Dismiss the modal and show the success view after dismissal
+     self.dismiss(animated: true) {
+     let successView = SuccessView()
+     
+     // Use the key window for showing the success view
+     if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+     successView.showInView(keyWindow) // Use the key window
+     }
+     }
+     
+     self.isComingFromDetailView = false
+     } else {
+     // No match found, show an alert
+     let alert = UIAlertController(
+     title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
+     message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
+     preferredStyle: .alert
+     )
+     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+     present(alert, animated: true, completion: nil)
+     }
+     }
+     return
+     }
+     
+     // Original logic for handling the action button
+     let medianPortion = calculateMedianPortion(for: entryName)
+     
+     if let onAveragePortionSelected = self.onAveragePortionSelected {
+     onAveragePortionSelected(medianPortion)
+     }
+     
+     self.dismiss(animated: true, completion: nil)
+     self.isComingFromFoodItemRow = false
      }
      */
     
@@ -1746,20 +1754,20 @@ class MealInsightsViewController: UIViewController {
         let matchingEntries = allFilteredFoodEntries.filter {
             $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
         }
-
+        
         // Map the portion sizes (served - not eaten) for the matching entries
         let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
-
+        
         // Handle cases where no portions are available
         guard !portions.isEmpty else {
             return 0 // No entries, return 0 or any suitable default value
         }
-
+        
         // If only one portion is available, return it as the median
         if portions.count == 1 {
             return portions.first!
         }
-
+        
         // Calculate the median portion
         let sortedPortions = portions.sorted()
         let medianPortion: Double
@@ -1770,30 +1778,30 @@ class MealInsightsViewController: UIViewController {
             // If odd, take the middle value
             medianPortion = sortedPortions[sortedPortions.count / 2]
         }
-
+        
         return medianPortion
     }
     
 }
 extension MealInsightsViewController: UITableViewDataSource, UITableViewDelegate {
-
+    
     // MARK: - UITableViewDataSource Methods
-
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return uniqueFoodEntries.count
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "StatsCell", for: indexPath)
         let foodEntryInfo = uniqueFoodEntries[indexPath.row]
         let foodEntryName = foodEntryInfo.entryName
-
+        
         // Custom selection color
         let customSelectionColor = UIView()
         customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
         cell.selectedBackgroundView = customSelectionColor
-
+        
         // If it's the placeholder row, customize it
         if foodEntryInfo.isPlaceholder {
             cell.textLabel?.textColor = .systemGray
@@ -1805,30 +1813,30 @@ extension MealInsightsViewController: UITableViewDataSource, UITableViewDelegate
             cell.textLabel?.font = UIFont.systemFont(ofSize: 16)
             cell.selectionStyle = .default
         }
-
+        
         cell.textLabel?.text = foodEntryName
         cell.backgroundColor = .clear
         return cell
     }
-
+    
     // MARK: - UITableViewDelegate Methods
-
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedFoodEntry = uniqueFoodEntries[indexPath.row]
-
+        
         // Prevent selection if the placeholder is being shown
         if selectedFoodEntry.isPlaceholder {
             return
         }
-
+        
         searchBar.resignFirstResponder()
-
+        
         // Store the selected entry name
         self.selectedEntryName = selectedFoodEntry.entryName
-
+        
         // Store the corresponding entryId
         selectedEntryId = selectedFoodEntry.entryId
-
+        
         // Perform the updateStats with the entryId
         updateStats(for: selectedEntryId)
     }
@@ -1837,25 +1845,25 @@ extension MealInsightsViewController: UITableViewDataSource, UITableViewDelegate
 extension MealInsightsViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         filterFoodEntries()
-
+        
         if searchBar.text?.isEmpty ?? true {
             selectedEntryName = nil // Reset the selected entry if search is cleared
             updateStats(for: nil)
         }
         performSearch(with: searchText)
     }
-
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // Dismiss the keyboard when the search button is clicked
         searchBar.resignFirstResponder()
-
+        
         // Set the search text as selectedEntryName
         if let searchText = searchBar.text, !searchText.isEmpty {
             selectedEntryName = searchText
         } else {
             selectedEntryName = nil // Reset if the search text is empty
         }
-
+        
         // Perform the search with the current search text
         performSearch(with: searchBar.text ?? "")
     }

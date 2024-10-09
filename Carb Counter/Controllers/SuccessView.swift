@@ -26,7 +26,7 @@ class SuccessView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = NSLocalizedString("Lyckades", comment: "Success label text")
-        label.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         label.textColor = .label
         label.textAlignment = .center
         return label
@@ -43,8 +43,8 @@ class SuccessView: UIView {
     }
 
     private func setupView() {
-        self.backgroundColor = .systemGray2.withAlphaComponent(0.8)
-        self.layer.cornerRadius = 20
+        self.backgroundColor = .systemGray4.withAlphaComponent(1)
+        self.layer.cornerRadius = 10
         self.layer.shadowColor = UIColor.black.cgColor
         self.layer.shadowOpacity = 0.2
         self.layer.shadowOffset = CGSize(width: 0, height: 2)

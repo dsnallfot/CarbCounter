@@ -452,7 +452,7 @@
 "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E" = "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E";
 "Visa i Nightscout" = "Visa i Nightscout";
 "Ingen data" = "Ingen data";
-"Välj en datapunkt i grafen nedan innan du öppnar Nightscout" = "Välj en datapunkt i grafen nedan innan du navigerar till Nightscout";
+"\nVälj en datapunkt i grafen nedan innan du öppnar Nightscout" = "\nVälj en datapunkt i grafen nedan innan du navigerar till Nightscout";
 "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen." = "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen.";
 "Nightscout • Måltid %@" = "Nightscout • Måltid %@";
 "Välj datum och ett livsmedel" = "Välj datum och ett livsmedel";
