@@ -7,6 +7,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var tableViewBottomConstraint: NSLayoutConstraint!
     var mealHistories: [MealHistory] = []
     var filteredMealHistories: [MealHistory] = []
+    var initialSearchText: String?
     private var searchBar: UISearchBar = {
             let searchBar = UISearchBar()
             searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
@@ -65,8 +66,15 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let searchText = UserDefaultsRepository.savedHistorySearchText
-        searchBar.text = searchText
+        
+        // If initialSearchText is not nil, save it to UserDefaults
+            if let initialSearchText = initialSearchText {
+                UserDefaultsRepository.savedHistorySearchText = initialSearchText
+            }
+            
+            // Set the searchBar text to the savedHistorySearchText (which could have been updated)
+            searchBar.text = UserDefaultsRepository.savedHistorySearchText
+        
         fetchMealHistories()
         
         // Set the back button title for the next view controller
@@ -247,9 +255,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             DispatchQueue.main.async {
                 self.mealHistories = mealHistories // Update the mealHistories array
                 
-                // Apply filtering based on both search text and date
-                let savedSearchText = UserDefaultsRepository.savedHistorySearchText
-                self.filterMealHistories(searchText: savedSearchText, by: self.datePicker.date)
+                // Use initialSearchText if available, otherwise fallback to savedSearchText
+                let searchText = self.initialSearchText ?? UserDefaultsRepository.savedHistorySearchText
+                self.filterMealHistories(searchText: searchText, by: self.datePicker.date)
             }
         } catch {
             DispatchQueue.main.async {

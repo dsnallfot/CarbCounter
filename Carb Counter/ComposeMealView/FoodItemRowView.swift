@@ -293,8 +293,11 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
 
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa genomsnittsportion", comment: "Serving size button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: selectedFoodItem)
+        }))
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa historik", comment: "Show history"), style: .default, handler: { _ in
+            self.presentMealHistoryViewController(with: selectedFoodItem) // Add funcs to open MealHistoryViewController and populate the searchtext with selectedFoodItem
         }))
         alertController.addAction(okAction)
 
@@ -338,6 +341,19 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         if let topVC = getTopViewController() {
             topVC.present(navController, animated: true, completion: nil)
         }
+    }
+    
+    private func presentMealHistoryViewController(with selectedFoodItem: FoodItem) {
+        guard let viewController = self.getViewController() else { return }
+        
+        // Create an instance of MealHistoryViewController
+        let mealHistoryVC = MealHistoryViewController()
+        
+        // Set the selectedFoodItem name as the initial search text
+        mealHistoryVC.initialSearchText = selectedFoodItem.name
+        
+        // Present the MealHistoryViewController
+        viewController.navigationController?.pushViewController(mealHistoryVC, animated: true)
     }
 
     

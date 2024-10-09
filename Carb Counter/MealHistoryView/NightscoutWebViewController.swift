@@ -100,7 +100,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .allButUpsideDown
+        return .landscape //.allButUpsideDown
     }
 
     override var shouldAutorotate: Bool {
@@ -117,7 +117,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         //navigationController?.navigationBar.tintColor = .label // Set this if you need proper contrast
         
         
-        AppDelegate.AppUtility.lockOrientation(.allButUpsideDown)
+        AppDelegate.AppUtility.lockOrientation(.landscape) //(.allButUpsideDown)
     }
 
     override func viewWillDisappear(_ animated: Bool) {

@@ -86,11 +86,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         setupActionButton()
         setupNightscoutChartView()
         setupTableView()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
+        
         // Check if Nightscout URL and token are available
         if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
            let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
@@ -98,7 +94,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
             // Update the tableView's bottom constraint
             tableViewBottomConstraint.isActive = false
-            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -258)
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -250)
             tableViewBottomConstraint.isActive = true
 
             view.layoutIfNeeded()
@@ -230,7 +226,8 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         // Initialize the web view
         webView = WKWebView()
         webView.translatesAutoresizingMaskIntoConstraints = false
-        webView.navigationDelegate = self  // Set the navigation delegate
+        webView.navigationDelegate = self
+        webView.isUserInteractionEnabled = false
         nightscoutChartView.addSubview(webView)
 
         NSLayoutConstraint.activate([
@@ -276,6 +273,10 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             nightscoutChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -82),
             nightscoutChartView.heightAnchor.constraint(equalToConstant: 160)
         ])
+        
+        // Add a tap gesture recognizer to the nightscoutChartView
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openNightscout))
+            nightscoutChartView.addGestureRecognizer(tapGesture)
     }
 
 
