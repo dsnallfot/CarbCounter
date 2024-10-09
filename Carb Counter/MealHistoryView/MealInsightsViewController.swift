@@ -141,17 +141,18 @@ class MealInsightsViewController: UIViewController {
 
         // Set the flag based on whether the view controller is presented modally
         isComingFromModal = isModalPresentation
-        
-        // Create the "scope" button
-            let scopeButton = UIBarButtonItem(
-                image: UIImage(systemName: "scope"),
-                style: .plain,
-                target: self,
-                action: #selector(scopeButtonTapped)
-            )
 
         // Create the Nightscout button if the conditions are met
             if !isComingFromDetailView && !isComingFromFoodItemRow {
+                
+                // Create the "scope" button
+                    let scopeButton = UIBarButtonItem(
+                        image: UIImage(systemName: "scope"),
+                        style: .plain,
+                        target: self,
+                        action: #selector(scopeButtonTapped)
+                    )
+                
                 if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
                    let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
                     // Load the custom image and resize it to the appropriate navigation bar icon size
@@ -170,8 +171,7 @@ class MealInsightsViewController: UIViewController {
                     print("Nightscout URL or token is missing")
                 }
             } else {
-                // If no Nightscout button is added, set only the scope button
-                navigationItem.rightBarButtonItems = [scopeButton]
+                print("No navigationsbuttons added - Coming from mini modals")
             }
 
         if isModalPresentation {

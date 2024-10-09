@@ -44,6 +44,16 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         title = String(format: NSLocalizedString("Måltid %@", comment: "Meal time format"), mealTimeStr)
         
         view.backgroundColor = .systemBackground
+        
+        // Check if the view controller is presented modally and add a close button
+        if isModalPresentation {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(
+                barButtonSystemItem: .close,
+                target: self,
+                action: #selector(closeButtonTapped)
+            )
+        }
+        
         // Create the gradient view
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -111,6 +121,16 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
             view.layoutIfNeeded()
         }
+    }
+    
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+
+    private var isModalPresentation: Bool {
+        return presentingViewController != nil ||
+               navigationController?.presentingViewController?.presentedViewController == navigationController ||
+               tabBarController?.presentingViewController is UITabBarController
     }
     
     private func setupSummaryView() {
