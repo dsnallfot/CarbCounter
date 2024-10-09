@@ -574,23 +574,66 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             return
         }
 
-        // Find an existing instance of ComposeMealViewController in the navigation stack
-        if let navigationController = navigationController,
-           let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+        // Check if presented modally
+        if isModalPresentation {
+            // Save food items to Core Data as FoodItemTemporary entities when presented modally
+            saveFoodItemsTemporary(from: mealHistory)
             
-            composeMealVC.checkAndHandleExistingMeal(replacementAction: {
-                composeMealVC.addMealHistory(mealHistory)
-            }, additionAction: {
-                composeMealVC.addMealHistory(mealHistory)
-            }, completion: {
-                navigationController.popToViewController(composeMealVC, animated: true)
-            })
+            // Show the success view after saving the food items
+            let successView = SuccessView()
+            
+            // Use the key window for showing the success view
+            if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                successView.showInView(keyWindow)
+            }
+            
+            // Dismiss the view after showing the success view
+            dismiss(animated: true, completion: nil)
             
         } else {
-            // If no existing instance found, instantiate a new one
-            let composeMealVC = ComposeMealViewController()
-            composeMealVC.addMealHistory(mealHistory)
-            navigationController?.pushViewController(composeMealVC, animated: true)
+            // Handle the flow when not presented modally
+            if let navigationController = navigationController,
+               let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+                
+                composeMealVC.checkAndHandleExistingMeal(
+                    replacementAction: {
+                        composeMealVC.addMealHistory(mealHistory)
+                    },
+                    additionAction: {
+                        composeMealVC.addMealHistory(mealHistory)
+                    },
+                    completion: {
+                        navigationController.popToViewController(composeMealVC, animated: true)
+                    }
+                )
+            } else {
+                // If no existing instance found, instantiate a new one
+                let composeMealVC = ComposeMealViewController()
+                composeMealVC.addMealHistory(mealHistory)
+                navigationController?.pushViewController(composeMealVC, animated: true)
+            }
+        }
+    }
+    
+    private func saveFoodItemsTemporary(from mealHistory: MealHistory) {
+        // Get the context from your Core Data stack
+        let context = CoreDataStack.shared.context
+
+        for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
+            // Create a new FoodItemTemporary entity for each food item
+            let newFoodItemTemporary = FoodItemTemporary(context: context)
+            newFoodItemTemporary.entryId = foodEntry.entryId
+            newFoodItemTemporary.entryPortionServed = foodEntry.entryPortionServed
+
+            // Add any other properties that are relevant to the FoodItemRow entity
+        }
+
+        // Save the context
+        do {
+            try context.save()
+            print("FoodItemTemporary entries saved successfully")
+        } catch {
+            print("Failed to save FoodItemRow entries: \(error)")
         }
     }
     

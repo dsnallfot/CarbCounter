@@ -1614,38 +1614,30 @@ class MealInsightsViewController: UIViewController {
         }
 
         if isComingFromDetailView {
-            // Attempt to find the corresponding FoodItem by entryId
+            // Attempt to find the corresponding FoodItem by entryId and save it as a FoodItemTemporary
             if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
-                if let matchedFoodItem = findFoodItemById(entryId: entryId) {
-                    // FoodItem found, call delegate method to add it to ComposeMealViewController
-                    delegate?.didAddFoodItem(matchedFoodItem)
+                saveFoodItemTemporary(entryId: entryId)
 
-                    // Dismiss the modal and show the success view after dismissal
-                    self.dismiss(animated: true) {
-                        let successView = SuccessView()
-                        
-                        // Use the key window for showing the success view
-                        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-                            successView.showInView(keyWindow) // Use the key window
-                        }
+                // Dismiss the modal and show the success view after dismissal
+                self.dismiss(animated: true) {
+                    let successView = SuccessView()
+                    
+                    // Use the key window for showing the success view
+                    if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                        successView.showInView(keyWindow)
                     }
-
-                    self.isComingFromDetailView = false
-                } else {
-                    // No match found, show an alert
-                    let alert = UIAlertController(
-                        title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
-                        message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
-                    present(alert, animated: true, completion: nil)
                 }
+
+                self.isComingFromDetailView = false
+            } else {
+                // No match found, show an alert
+                showFoodItemNotAvailableAlert()
             }
+
             return
         }
 
-        // Original logic for handling the action button
+        // Original logic for handling the action button, if applicable
         let medianPortion = calculateMedianPortion(for: entryName)
 
         if let onAveragePortionSelected = self.onAveragePortionSelected {
@@ -1655,6 +1647,80 @@ class MealInsightsViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
         self.isComingFromFoodItemRow = false
     }
+
+    // Helper function to save the FoodItemTemporary entry with only entryId
+    private func saveFoodItemTemporary(entryId: UUID) {
+        let context = CoreDataStack.shared.context
+        let newFoodItemTemporary = FoodItemTemporary(context: context)
+        newFoodItemTemporary.entryId = entryId
+
+        do {
+            try context.save()
+            print("FoodItemTemporary entry saved successfully for entryId: \(entryId)")
+        } catch {
+            print("Failed to save FoodItemTemporary entry: \(error)")
+        }
+    }
+
+    // Helper function to show the "missing food item" alert
+    private func showFoodItemNotAvailableAlert() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
+            message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    /*
+     @objc private func actionButtonTapped() {
+         guard let entryName = searchBar.text, !entryName.isEmpty else {
+             return
+         }
+
+         if isComingFromDetailView {
+             // Attempt to find the corresponding FoodItem by entryId
+             if let foodEntry = selectedFoodEntry, let entryId = foodEntry.entryId {
+                 if let matchedFoodItem = findFoodItemById(entryId: entryId) {
+                     // FoodItem found, call delegate method to add it to ComposeMealViewController
+                     delegate?.didAddFoodItem(matchedFoodItem)
+
+                     // Dismiss the modal and show the success view after dismissal
+                     self.dismiss(animated: true) {
+                         let successView = SuccessView()
+                         
+                         // Use the key window for showing the success view
+                         if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                             successView.showInView(keyWindow) // Use the key window
+                         }
+                     }
+
+                     self.isComingFromDetailView = false
+                 } else {
+                     // No match found, show an alert
+                     let alert = UIAlertController(
+                         title: NSLocalizedString("Saknas i databas", comment: "Missing in database"),
+                         message: NSLocalizedString("Livsmedlet du försöker lägga till från historiken finns inte längre tillgänglig i databasen", comment: "Food item no longer available"),
+                         preferredStyle: .alert
+                     )
+                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+                     present(alert, animated: true, completion: nil)
+                 }
+             }
+             return
+         }
+
+         // Original logic for handling the action button
+         let medianPortion = calculateMedianPortion(for: entryName)
+
+         if let onAveragePortionSelected = self.onAveragePortionSelected {
+             onAveragePortionSelected(medianPortion)
+         }
+         
+         self.dismiss(animated: true, completion: nil)
+         self.isComingFromFoodItemRow = false
+     }
+     */
     
     private func addToComposeMealViewController(foodItem: FoodItem) {
         guard let tabBarController = tabBarController else {

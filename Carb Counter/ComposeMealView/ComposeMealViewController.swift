@@ -265,6 +265,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         view.endEditing(true)
+        loadTemporaryFoodItemsFromCoreData()
         
         updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
         startHourChangeTimer() // Start timer while in this view to check if its a new hour and update CR/Startdoses if they are changed from the last hour to the new hour
@@ -2121,6 +2122,70 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             updateStartAmountLabel()
         } catch {
             print("Debug - Failed to fetch FoodItemRows: \(error)")
+        }
+    }
+    
+    private func loadTemporaryFoodItemsFromCoreData() {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
+        
+        do {
+            let savedTemporaryFoodItems = try context.fetch(fetchRequest)
+            
+            // Iterate through the fetched temporary food items
+            for temporaryFoodItem in savedTemporaryFoodItems {
+                // Ensure the temporary entry has an ID and find a matching food item
+                if let foodItemID = temporaryFoodItem.entryId,
+                   let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
+                    
+                    // Create a new row view and set its properties
+                    let rowView = FoodItemRowView()
+                    rowView.foodItems = foodItems
+                    rowView.delegate = self
+                    rowView.translatesAutoresizingMaskIntoConstraints = false
+                    
+                    // Set the food item in the row view
+                    rowView.setSelectedFoodItem(foodItem)
+                    
+                    // Set the portion served from the temporary entry
+                    let portionServedValue = formatNumber(temporaryFoodItem.entryPortionServed)
+                    rowView.portionServedTextField.text = portionServedValue == "0" ? nil : portionServedValue
+                    
+                    // Add the row view to the stack view
+                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
+                    foodItemRows.append(rowView)
+                    
+                    // Set up the row view's event handlers
+                    rowView.onDelete = { [weak self] in
+                        self?.removeFoodItemRow(rowView)
+                    }
+                    rowView.onValueChange = { [weak self] in
+                        self?.updateTotalNutrients()
+                    }
+                    
+                    // Calculate the nutrients for the row view
+                    rowView.calculateNutrients()
+                }
+            }
+            
+            // Delete all the temporary food items after loading them
+            for item in savedTemporaryFoodItems {
+                context.delete(item)
+            }
+            
+            // Save the context to ensure the deletions are persisted
+            try context.save()
+            print("Temporary FoodItem entries loaded and cleared successfully")
+
+            // Update the UI with the loaded values
+            loadValuesFromUserDefaults()
+            updateTotalNutrients()
+            updateClearAllButtonState()
+            updateSaveFavoriteButtonState()
+            updateHeadlineVisibility()
+            updateStartAmountLabel()
+        } catch {
+            print("Debug - Failed to fetch or delete FoodItemTemporary entries: \(error)")
         }
     }
     
