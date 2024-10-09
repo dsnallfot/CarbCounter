@@ -1,6 +1,7 @@
 import UIKit
+import WebKit
 
-class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, WKNavigationDelegate {
     
     var mealHistory: MealHistory?
     
@@ -22,6 +23,16 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     // Buttons
     private var actionButton: UIButton!
     private var nightscoutButton: UIButton!
+    
+    // Nightscout
+    private var nightscoutChartView: UIView!
+    private var webView: WKWebView!
+    private var tableViewBottomConstraint: NSLayoutConstraint!
+    private var summaryContainer: UIView!
+    
+    // Overlay and Activity Indicator
+    private var overlayView: UIView!
+    private var activityIndicator: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,13 +83,41 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         }
         
         setupSummaryView()
-        //setupNightscoutButton()
         setupActionButton()
+        setupNightscoutChartView()
         setupTableView()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Check if Nightscout URL and token are available
+        if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
+           let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
+            nightscoutChartView.isHidden = false
+
+            // Update the tableView's bottom constraint
+            tableViewBottomConstraint.isActive = false
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -258)
+            tableViewBottomConstraint.isActive = true
+
+            view.layoutIfNeeded()
+
+            loadNightscoutChart()
+        } else {
+            nightscoutChartView.isHidden = true
+
+            // Update the tableView's bottom constraint
+            tableViewBottomConstraint.isActive = false
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -82)
+            tableViewBottomConstraint.isActive = true
+
+            view.layoutIfNeeded()
+        }
+    }
+    
     private func setupSummaryView() {
-        let summaryContainer = UIView()
+        summaryContainer = UIView()
         summaryContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(summaryContainer)
         
@@ -181,6 +220,66 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
+    private func setupNightscoutChartView() {
+        nightscoutChartView = UIView()
+        nightscoutChartView.translatesAutoresizingMaskIntoConstraints = false
+        nightscoutChartView.layer.cornerRadius = 10
+        nightscoutChartView.clipsToBounds = true
+        nightscoutChartView.isHidden = true  // Initially hidden
+
+        // Initialize the web view
+        webView = WKWebView()
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.navigationDelegate = self  // Set the navigation delegate
+        nightscoutChartView.addSubview(webView)
+
+        NSLayoutConstraint.activate([
+            webView.leadingAnchor.constraint(equalTo: nightscoutChartView.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: nightscoutChartView.trailingAnchor),
+            webView.topAnchor.constraint(equalTo: nightscoutChartView.topAnchor),
+            webView.bottomAnchor.constraint(equalTo: nightscoutChartView.bottomAnchor)
+        ])
+
+        // Initialize and add the overlay view
+        overlayView = UIView()
+        overlayView.translatesAutoresizingMaskIntoConstraints = false
+        overlayView.backgroundColor = .systemBackground
+        overlayView.layer.cornerRadius = 10
+        overlayView.clipsToBounds = true
+        nightscoutChartView.addSubview(overlayView)
+
+        NSLayoutConstraint.activate([
+            overlayView.leadingAnchor.constraint(equalTo: nightscoutChartView.leadingAnchor),
+            overlayView.trailingAnchor.constraint(equalTo: nightscoutChartView.trailingAnchor),
+            overlayView.topAnchor.constraint(equalTo: nightscoutChartView.topAnchor),
+            overlayView.bottomAnchor.constraint(equalTo: nightscoutChartView.bottomAnchor)
+        ])
+
+        // Initialize and add the activity indicator
+        activityIndicator = UIActivityIndicatorView(style: .medium)
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.startAnimating()
+        overlayView.addSubview(activityIndicator)
+
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: overlayView.centerYAnchor)
+        ])
+
+        // Add the nightscoutChartView to the view hierarchy
+        view.addSubview(nightscoutChartView)
+
+        // Set up constraints
+        NSLayoutConstraint.activate([
+            nightscoutChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            nightscoutChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            nightscoutChartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -82),
+            nightscoutChartView.heightAnchor.constraint(equalToConstant: 160)
+        ])
+    }
+
+
+    
     private func setupTableView() {
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -193,12 +292,16 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
+            tableView.topAnchor.constraint(equalTo: summaryContainer.bottomAnchor, constant: 8),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -146)
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+
+        // Set the initial bottom constraint
+        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -82)
+        tableViewBottomConstraint.isActive = true
     }
+
 
     // MARK: - UITableView DataSource and Delegate
 
@@ -296,37 +399,6 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
         present(navController, animated: true, completion: nil)
     }
-/*
-    private func setupNightscoutButton() {
-        guard
-            let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
-            let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty
-        else {
-            // If the nightscoutURL or nightscoutToken is empty or nil, do not show the button
-            return
-        }
-        
-        nightscoutButton = UIButton(type: .system)
-        nightscoutButton.setTitle(NSLocalizedString("Visa i Nightscout", comment: "Show in Nightscout"), for: .normal)
-        
-        // Use the custom light blue color from the color picker
-        let lightBlueColor = UIColor(red: 209/255, green: 230/255, blue: 255/255, alpha: 1.0) // RGB(209, 230, 255)
-        nightscoutButton.backgroundColor = lightBlueColor
-        nightscoutButton.setTitleColor(UIColor.systemBlue, for: .normal)  // System blue text color
-        nightscoutButton.titleLabel?.font = UIFont.systemFont(ofSize: 19, weight: .semibold)
-        nightscoutButton.layer.cornerRadius = 10
-        nightscoutButton.translatesAutoresizingMaskIntoConstraints = false
-        nightscoutButton.addTarget(self, action: #selector(openNightscout), for: .touchUpInside)
-        
-        view.addSubview(nightscoutButton)
-        
-        NSLayoutConstraint.activate([
-            nightscoutButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            nightscoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            nightscoutButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),
-            nightscoutButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
-    }*/
     
     // MARK: - Open Nightscout Action
     
@@ -380,6 +452,48 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             present(alert, animated: true, completion: nil)
         }
     }
+    
+    private func loadNightscoutChart() {
+        guard let nightscoutBaseURL = UserDefaultsRepository.nightscoutURL,
+              let nightscoutToken = UserDefaultsRepository.nightscoutToken,
+              let mealDate = mealHistory?.mealDate else {
+            print("Nightscout URL, token, or meal date is missing.")
+            return
+        }
+
+        // Format the date for the Nightscout URL
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: mealDate)
+
+        // Ensure the base URL ends with '/'
+        var baseURL = nightscoutBaseURL
+        if !baseURL.hasSuffix("/") {
+            baseURL += "/"
+        }
+
+        // Construct the URL with the token, report type, startDate, and endDate
+        var urlComponents = URLComponents(string: baseURL + "report/")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "token", value: nightscoutToken),
+            URLQueryItem(name: "report", value: "daytoday"),
+            URLQueryItem(name: "startDate", value: dateString),
+            URLQueryItem(name: "endDate", value: dateString),
+            URLQueryItem(name: "autoShow", value: "true"),
+            URLQueryItem(name: "hideMenu", value: "true"),
+            URLQueryItem(name: "hideStats", value: "true"),
+        ]
+
+        if let url = urlComponents?.url {
+            // Load the URL in the webView
+            let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 30)
+            webView.load(request)
+        } else {
+            print("Could not create Nightscout URL.")
+        }
+    }
+
+
 
     private func setupActionButton() {
         let actionButton = UIButton(type: .system)
@@ -456,6 +570,33 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
                 return String(format: NSLocalizedString("Åt upp %@ st", comment: "Ate up format (pieces)"), portionServedFormattedPP)
             } else {
                 return String(format: NSLocalizedString("Åt upp %@ g", comment: "Ate up format (grams)"), portionServedFormatted)
+            }
+        }
+    }
+    
+    // MARK: - WKNavigationDelegate
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // Hide the overlay when content has loaded
+        fadeOutOverlay()
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        // Hide the overlay if there's an error
+        fadeOutOverlay()
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        // Hide the overlay if there's an error
+        fadeOutOverlay()
+    }
+    
+    private func fadeOutOverlay() {
+        DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.3, animations: {
+                self.overlayView.alpha = 0
+            }) { _ in
+                self.overlayView.removeFromSuperview()
             }
         }
     }
