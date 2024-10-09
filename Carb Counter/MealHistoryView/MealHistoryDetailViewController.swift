@@ -44,6 +44,16 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         title = String(format: NSLocalizedString("Måltid %@", comment: "Meal time format"), mealTimeStr)
         
         view.backgroundColor = .systemBackground
+        
+        // Check if the view controller is presented modally and add a close button
+        if isModalPresentation {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(
+                barButtonSystemItem: .close,
+                target: self,
+                action: #selector(closeButtonTapped)
+            )
+        }
+        
         // Create the gradient view
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -111,6 +121,16 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
             view.layoutIfNeeded()
         }
+    }
+    
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+
+    private var isModalPresentation: Bool {
+        return presentingViewController != nil ||
+               navigationController?.presentingViewController?.presentedViewController == navigationController ||
+               tabBarController?.presentingViewController is UITabBarController
     }
     
     private func setupSummaryView() {
@@ -241,7 +261,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         // Initialize and add the overlay view
         overlayView = UIView()
         overlayView.translatesAutoresizingMaskIntoConstraints = false
-        overlayView.backgroundColor = .systemBackground
+        overlayView.backgroundColor = .white
         overlayView.layer.cornerRadius = 10
         overlayView.clipsToBounds = true
         nightscoutChartView.addSubview(overlayView)
@@ -257,22 +277,30 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         let imageView = UIImageView(image: UIImage(named: "nightscout")?.withRenderingMode(.alwaysTemplate))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .secondaryLabel
+        imageView.tintColor = .systemGray
         overlayView.addSubview(imageView)
 
         // Initialize and add the activity indicator
         activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.color = .systemGray
         activityIndicator.startAnimating()
         overlayView.addSubview(activityIndicator)
 
-        // Initialize and add the label
         let fetchingLabel = UILabel()
         fetchingLabel.translatesAutoresizingMaskIntoConstraints = false
         fetchingLabel.text = NSLocalizedString("Hämtar rapport", comment: "Fetching report text")
         fetchingLabel.textAlignment = .center
-        fetchingLabel.textColor = .secondaryLabel
-        fetchingLabel.font = UIFont.systemFont(ofSize: 14)
+        fetchingLabel.textColor = .systemGray
+
+        // Use a rounded font if available
+        let systemFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            fetchingLabel.font = UIFont(descriptor: roundedDescriptor, size: 14)
+        } else {
+            fetchingLabel.font = systemFont
+        }
+
         overlayView.addSubview(fetchingLabel)
 
         // Add constraints for image, activity indicator, and label
@@ -389,7 +417,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     // Present MealInsightsViewController
     private func presentMealInsightsViewController(with foodEntry: FoodItemEntry) {
         let mealInsightsVC = MealInsightsViewController()
-
+/*
         // Attempt to find ComposeMealViewController from the tab bar controller
         if let tabBarController = self.tabBarController {
             for viewController in tabBarController.viewControllers ?? [] {
@@ -405,7 +433,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         } else {
             // If tabBarController is nil, use another way to find ComposeMealViewController, maybe via a delegate or navigation stack
             print("Tab bar controller not found")
-        }
+        }*/
 
         // Pass the foodEntry to MealInsightsViewController
         mealInsightsVC.prepopulatedSearchText = foodEntry.entryName ?? ""
@@ -468,8 +496,19 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             nightscoutVC.mealDate = mealDate
             nightscoutVC.hidesBottomBarWhenPushed = true
             
-            // Push the view controller onto the existing navigation stack
-            navigationController?.pushViewController(nightscoutVC, animated: true)
+            // Use the modal presentation check
+            if isModalPresentation {
+                // If the MealInsightsViewController is presented modally, present NightscoutWebViewController in its own navigation controller
+                let navigationController = UINavigationController(rootViewController: nightscoutVC)
+                present(navigationController, animated: true, completion: nil)
+            } else {
+                // If it's not modal, push the NightscoutWebViewController onto the current navigation stack
+                navigationController?.pushViewController(nightscoutVC, animated: true)
+            }
+            
+            
+            
+            
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
                                           message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
@@ -554,23 +593,66 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             return
         }
 
-        // Find an existing instance of ComposeMealViewController in the navigation stack
-        if let navigationController = navigationController,
-           let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+        // Check if presented modally
+        if isModalPresentation {
+            // Save food items to Core Data as FoodItemTemporary entities when presented modally
+            saveFoodItemsTemporary(from: mealHistory)
             
-            composeMealVC.checkAndHandleExistingMeal(replacementAction: {
-                composeMealVC.addMealHistory(mealHistory)
-            }, additionAction: {
-                composeMealVC.addMealHistory(mealHistory)
-            }, completion: {
-                navigationController.popToViewController(composeMealVC, animated: true)
-            })
+            // Show the success view after saving the food items
+            let successView = SuccessView()
+            
+            // Use the key window for showing the success view
+            if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                successView.showInView(keyWindow)
+            }
+            
+            // Dismiss the view after showing the success view
+            dismiss(animated: true, completion: nil)
             
         } else {
-            // If no existing instance found, instantiate a new one
-            let composeMealVC = ComposeMealViewController()
-            composeMealVC.addMealHistory(mealHistory)
-            navigationController?.pushViewController(composeMealVC, animated: true)
+            // Handle the flow when not presented modally
+            if let navigationController = navigationController,
+               let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+                
+                composeMealVC.checkAndHandleExistingMeal(
+                    replacementAction: {
+                        composeMealVC.addMealHistory(mealHistory)
+                    },
+                    additionAction: {
+                        composeMealVC.addMealHistory(mealHistory)
+                    },
+                    completion: {
+                        navigationController.popToViewController(composeMealVC, animated: true)
+                    }
+                )
+            } else {
+                // If no existing instance found, instantiate a new one
+                let composeMealVC = ComposeMealViewController()
+                composeMealVC.addMealHistory(mealHistory)
+                navigationController?.pushViewController(composeMealVC, animated: true)
+            }
+        }
+    }
+    
+    private func saveFoodItemsTemporary(from mealHistory: MealHistory) {
+        // Get the context from your Core Data stack
+        let context = CoreDataStack.shared.context
+
+        for foodEntry in mealHistory.foodEntries?.allObjects as? [FoodItemEntry] ?? [] {
+            // Create a new FoodItemTemporary entity for each food item
+            let newFoodItemTemporary = FoodItemTemporary(context: context)
+            newFoodItemTemporary.entryId = foodEntry.entryId
+            newFoodItemTemporary.entryPortionServed = foodEntry.entryPortionServed
+
+            // Add any other properties that are relevant to the FoodItemRow entity
+        }
+
+        // Save the context
+        do {
+            try context.save()
+            print("FoodItemTemporary entries saved successfully")
+        } catch {
+            print("Failed to save FoodItemRow entries: \(error)")
         }
     }
     

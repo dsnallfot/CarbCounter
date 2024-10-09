@@ -47,7 +47,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
         // Create and add the overlay view
         overlayView = UIView(frame: view.bounds)
-        overlayView.backgroundColor = .systemBackground
+        overlayView.backgroundColor = .white
         overlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(overlayView)
 
@@ -55,12 +55,13 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         let imageView = UIImageView(image: UIImage(named: "nightscout")?.withRenderingMode(.alwaysTemplate))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .secondaryLabel
+        imageView.tintColor = .systemGray
         overlayView.addSubview(imageView)
 
         // Initialize and add the activity indicator
         let activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.color = .systemGray
         activityIndicator.startAnimating()
         overlayView.addSubview(activityIndicator)
 
@@ -69,7 +70,16 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         fetchingLabel.translatesAutoresizingMaskIntoConstraints = false
         fetchingLabel.text = NSLocalizedString("Hämtar rapport", comment: "Fetching report text")
         fetchingLabel.textAlignment = .center
-        fetchingLabel.textColor = .secondaryLabel
+        fetchingLabel.textColor = .systemGray
+
+        // Use a rounded font if available
+        let systemFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            fetchingLabel.font = UIFont(descriptor: roundedDescriptor, size: 14)
+        } else {
+            fetchingLabel.font = systemFont
+        }
+
         overlayView.addSubview(fetchingLabel)
 
         // Add constraints for image, activity indicator, and label
