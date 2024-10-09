@@ -434,8 +434,8 @@
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
 "Mer insikter" = "Show insights";
-"Visa genomsnittsportion" = "Show average serving";
-"Visa historik" = "Show history";
+"Förslag portionsstorlek" = "Suggested serving size";
+"Visa historik" = "Show item history";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "No meal history found for\n\"%@\"";
 "det valda livsmedlet" = "the selected food item";
@@ -457,6 +457,7 @@
 "Välj datum och ett livsmedel" = "Select a date and a food item";
 "Portion uppäten" = "Serving size (g)";
 "Kolhydrater (g)" = "Carbohydrates (g)";
+"Hämtar rapport" = "Fetching report";
 
 /* Settings */
 "Inställningar" = "Settings";

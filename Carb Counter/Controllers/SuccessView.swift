@@ -74,8 +74,8 @@ class SuccessView: UIView {
         NSLayoutConstraint.activate([
             self.centerXAnchor.constraint(equalTo: parentView.centerXAnchor),
             self.centerYAnchor.constraint(equalTo: parentView.centerYAnchor),
-            self.widthAnchor.constraint(equalToConstant: 200),
-            self.heightAnchor.constraint(equalToConstant: 200)
+            self.widthAnchor.constraint(equalToConstant: 160),
+            self.heightAnchor.constraint(equalToConstant: 160)
         ])
 
         self.alpha = 0

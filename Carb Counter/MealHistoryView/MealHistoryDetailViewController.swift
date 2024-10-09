@@ -22,7 +22,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     
     // Buttons
     private var actionButton: UIButton!
-    private var nightscoutButton: UIButton!
+    //private var nightscoutButton: UIButton!
     
     // Nightscout
     private var nightscoutChartView: UIView!
@@ -64,6 +64,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
+        /*
         // Check if the Nightscout URL and token are available
         if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
            let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
@@ -80,7 +81,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         } else {
             // If URL or token is missing, log or handle the scenario without blocking view loading
             print("Nightscout URL or token is missing.")
-        }
+        }*/
         
         setupSummaryView()
         setupActionButton()
@@ -252,21 +253,45 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             overlayView.bottomAnchor.constraint(equalTo: nightscoutChartView.bottomAnchor)
         ])
 
+        // Initialize and add the nightscout image view
+        let imageView = UIImageView(image: UIImage(named: "nightscout")?.withRenderingMode(.alwaysTemplate))
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .secondaryLabel
+        overlayView.addSubview(imageView)
+
         // Initialize and add the activity indicator
         activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.startAnimating()
         overlayView.addSubview(activityIndicator)
 
+        // Initialize and add the label
+        let fetchingLabel = UILabel()
+        fetchingLabel.translatesAutoresizingMaskIntoConstraints = false
+        fetchingLabel.text = NSLocalizedString("Hämtar rapport", comment: "Fetching report text")
+        fetchingLabel.textAlignment = .center
+        fetchingLabel.textColor = .secondaryLabel
+        fetchingLabel.font = UIFont.systemFont(ofSize: 14)
+        overlayView.addSubview(fetchingLabel)
+
+        // Add constraints for image, activity indicator, and label
         NSLayoutConstraint.activate([
+            imageView.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
+            imageView.bottomAnchor.constraint(equalTo: activityIndicator.topAnchor, constant: -12),
+            imageView.heightAnchor.constraint(equalToConstant: 45), // Adjust size as needed
+            
             activityIndicator.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: overlayView.centerYAnchor)
+            activityIndicator.centerYAnchor.constraint(equalTo: overlayView.centerYAnchor, constant: 20),
+            
+            fetchingLabel.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
+            fetchingLabel.topAnchor.constraint(equalTo: activityIndicator.bottomAnchor, constant: 8)
         ])
 
         // Add the nightscoutChartView to the view hierarchy
         view.addSubview(nightscoutChartView)
 
-        // Set up constraints
+        // Set up constraints for the nightscoutChartView
         NSLayoutConstraint.activate([
             nightscoutChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             nightscoutChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -275,8 +300,8 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         ])
         
         // Add a tap gesture recognizer to the nightscoutChartView
-            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openNightscout))
-            nightscoutChartView.addGestureRecognizer(tapGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openNightscout))
+        nightscoutChartView.addGestureRecognizer(tapGesture)
     }
 
 
@@ -594,7 +619,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     
     private func fadeOutOverlay() {
         DispatchQueue.main.async {
-            UIView.animate(withDuration: 0.3, animations: {
+            UIView.animate(withDuration: 0.5, animations: {
                 self.overlayView.alpha = 0
             }) { _ in
                 self.overlayView.removeFromSuperview()

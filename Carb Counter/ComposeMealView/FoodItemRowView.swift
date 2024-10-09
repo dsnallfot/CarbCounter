@@ -292,14 +292,14 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         }
 
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa genomsnittsportion", comment: "Serving size button"), style: .default, handler: { _ in
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Förslag portionsstorlek", comment: "Serving size button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: selectedFoodItem)
         }))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa historik", comment: "Show history"), style: .default, handler: { _ in
             self.presentMealHistoryViewController(with: selectedFoodItem) // Add funcs to open MealHistoryViewController and populate the searchtext with selectedFoodItem
         }))
-        alertController.addAction(okAction)
+        alertController.addAction(cancelAction)
 
         if let viewController = self.getViewController() {
             viewController.present(alertController, animated: true, completion: nil)
