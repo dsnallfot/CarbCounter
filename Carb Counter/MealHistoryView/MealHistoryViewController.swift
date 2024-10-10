@@ -60,7 +60,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         // Create the buttons
         let bestMatchButton = UIBarButtonItem(
-            image: UIImage(systemName: "equal.circle"),
+            image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             style: .plain,
             target: self,
             action: #selector(filterBestMatches)
@@ -566,19 +566,17 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         updateBestMatchButtonAppearance()
     }
 
-
-
-    
     private func updateBestMatchButtonAppearance() {
         if isBestMatchFilterActive {
             // Change the button appearance to indicate the filter is active
             navigationItem.rightBarButtonItems?.last?.tintColor = .systemBlue
+            bestMatchButton.image = UIImage(systemName: "line.3.horizontal.decrease.circle.fill")
         } else {
             // Reset the button appearance to its default state
             navigationItem.rightBarButtonItems?.last?.tintColor = .label
+            bestMatchButton.image = UIImage(systemName: "line.3.horizontal.decrease.circle")
         }
     }
-
 
     private func fetchCurrentFoodItemIDs() -> [UUID] {
         let context = CoreDataStack.shared.context
