@@ -407,6 +407,8 @@
 "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Ate %@ g  [Served %@ g - Left %@ g]";
 "Åt upp %@ st" = "Ate %@ serv";
 "Åt upp %@ g" = "Ate %@ g";
+"Filter: Liknande" = "Filter: Similar";
+
 
 /* Meal insights VC*/
 "Måltider" = "Meals";
@@ -434,7 +436,9 @@
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
 "Mer insikter" = "Show insights";
-"Förslag portionsstorlek" = "Suggested serving size";
+"Visa portionsförslag" = "Suggested serving size";
+"Visa livsmedelhistorik" = "Show food item history";
+"Hitta liknande måltider" = "Find similar meals";
 "Visa historik" = "Show item history";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "No meal history found for\n\"%@\"";
