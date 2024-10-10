@@ -147,7 +147,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 bestMatchButton.tintColor = .label
             } else {
                 bestMatchButton.isEnabled = false
-                bestMatchButton.tintColor = .systemGray
+                bestMatchButton.tintColor = .gray
             }
         }
         
