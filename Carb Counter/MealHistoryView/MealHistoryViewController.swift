@@ -9,6 +9,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var filteredMealHistories: [MealHistory] = []
     var isComingFromBestMatches = false
     var initialSearchText: String?
+    var bestMatchButton: UIBarButtonItem!
+    
     private var isBestMatchFilterActive = false
     private var searchBar: UISearchBar = {
             let searchBar = UISearchBar()
@@ -64,6 +66,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             action: #selector(filterBestMatches)
         )
         
+        self.bestMatchButton = bestMatchButton
+        
         let infoButton = UIBarButtonItem(
             image: UIImage(systemName: "chart.bar.xaxis.ascending"),
             style: .plain,
@@ -115,6 +119,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         
+        // Check if there are any FoodItemRow entries and update the button state
+        updateBestMatchButtonState()
+        
         // If coming from best matches, apply the filter after a slight delay
         if isComingFromBestMatches {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -129,9 +136,34 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Remove the observers when the view disappears
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-
+        
         // Dismiss the keyboard when navigating away from the view controller
-        searchBar.resignFirstResponder()}
+        searchBar.resignFirstResponder()
+    }
+    
+    private func updateBestMatchButtonState() {
+            if hasFoodItemRows() {
+                bestMatchButton.isEnabled = true
+                bestMatchButton.tintColor = .label
+            } else {
+                bestMatchButton.isEnabled = false
+                bestMatchButton.tintColor = .systemGray
+            }
+        }
+        
+        private func hasFoodItemRows() -> Bool {
+            let context = CoreDataStack.shared.context
+            let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+            fetchRequest.fetchLimit = 1
+            
+            do {
+                let count = try context.count(for: fetchRequest)
+                return count > 0
+            } catch {
+                print("Failed to fetch FoodItemRow count: \(error)")
+                return false
+            }
+        }
     
     private func setupSearchBarAndDatePicker() {
         // Create a container UIStackView to hold the search bar, date picker, and reset button
