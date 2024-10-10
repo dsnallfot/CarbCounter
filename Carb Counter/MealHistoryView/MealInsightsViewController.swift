@@ -8,7 +8,7 @@ import UIKit
 import CoreData
 import DGCharts
 
-class MealInsightsViewController: UIViewController {
+class MealInsightsViewController: UIViewController, ChartViewDelegate {
     
     weak var delegate: MealInsightsDelegate?
     
@@ -26,12 +26,21 @@ class MealInsightsViewController: UIViewController {
     private let combinedStackView = UIStackView()
     public var selectedFoodEntry: FoodItemEntry?
     
+    // Bool to track chart data selection state
+        private var chartDataSelected = false {
+            didSet {
+                updateButtonStates()
+            }
+        }
+    
     
     // UI Elements
     private let fromDateLabel = UILabel()
     private let toDateLabel = UILabel()
     private let fromDatePicker = UIDatePicker()
     private let toDatePicker = UIDatePicker()
+    private var nightscoutButton: UIBarButtonItem?
+    private var scopeButton: UIBarButtonItem?
     private let segmentedControl = UISegmentedControl(items: [
         NSLocalizedString("Måltider", comment: "Meal insights segment title"),
         NSLocalizedString("Livsmedel", comment: "Food insights segment title")
@@ -146,7 +155,7 @@ class MealInsightsViewController: UIViewController {
         if !isComingFromDetailView && !isComingFromFoodItemRow {
             
             // Create the "scope" button
-            let scopeButton = UIBarButtonItem(
+            scopeButton = UIBarButtonItem(
                 image: UIImage(systemName: "scope"),
                 style: .plain,
                 target: self,
@@ -157,14 +166,16 @@ class MealInsightsViewController: UIViewController {
                let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
                 // Load the custom image and resize it to the appropriate navigation bar icon size
                 if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
-                    let nightscoutButton = UIBarButtonItem(
+                    nightscoutButton = UIBarButtonItem(
                         image: nightscoutImage,
                         style: .plain,
                         target: self,
                         action: #selector(openNightscoutFromChart)
                     )
                     // Set the right bar buttons with the desired order: Scope button, then Nightscout button
-                    navigationItem.rightBarButtonItems = [nightscoutButton, scopeButton]
+                    if let nightscoutButton = nightscoutButton, let scopeButton = scopeButton {
+                        navigationItem.rightBarButtonItems = [nightscoutButton, scopeButton]
+                                }
                 }
             } else {
                 // Optionally, handle missing Nightscout URL or token here (e.g., show an alert)
@@ -227,6 +238,7 @@ class MealInsightsViewController: UIViewController {
                 self.performSearch(with: searchText)
             }
         }
+        updateButtonStates() // Initialize buttons' state
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -288,6 +300,7 @@ class MealInsightsViewController: UIViewController {
         lineChartView.layer.cornerRadius = 10
         lineChartView.clipsToBounds = true // Ensure content is clipped to rounded corners
         lineChartView.translatesAutoresizingMaskIntoConstraints = false
+        lineChartView.delegate = self
         
         
         
@@ -306,23 +319,9 @@ class MealInsightsViewController: UIViewController {
             lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             lineChartView.heightAnchor.constraint(equalToConstant: 205),
         ])
-        /*
-         // Create the label
-         let chartLabel = UILabel()
-         chartLabel.text = NSLocalizedString("Registrerade måltider", comment: "Registered meals")
-         chartLabel.font = UIFont.boldSystemFont(ofSize: 14)
-         chartLabel.textColor = .label
-         chartLabel.textAlignment = .center
-         
-         // Add it to the view (assuming `self.view` contains your chart)
-         self.view.addSubview(chartLabel)
-         
-         // Set up constraints or frame to center it above the chart
-         chartLabel.translatesAutoresizingMaskIntoConstraints = false
-         NSLayoutConstraint.activate([
-         chartLabel.bottomAnchor.constraint(equalTo: lineChartView.topAnchor, constant: 26),
-         chartLabel.centerXAnchor.constraint(equalTo: lineChartView.centerXAnchor)
-         ])*/
+        
+        // Set the chart view delegate to self
+        lineChartView.delegate = self
     }
     
     // Call this function after fetching data to populate the chart
@@ -400,6 +399,28 @@ class MealInsightsViewController: UIViewController {
         
         lineChartView.notifyDataSetChanged()
     }
+    
+    func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
+        chartDataSelected = true // Set to true when a data point is selected
+    }
+
+    func chartValueNothingSelected(_ chartView: ChartViewBase) {
+        chartDataSelected = false // Set to false when no data point is selected
+    }
+    
+    private func updateButtonStates() {
+           if chartDataSelected {
+               //nightscoutButton?.isEnabled = true
+               nightscoutButton?.tintColor = .label
+               //scopeButton?.isEnabled = true
+               scopeButton?.tintColor = .label
+           } else {
+               //nightscoutButton?.isEnabled = false
+               nightscoutButton?.tintColor = .systemGray
+               //scopeButton?.isEnabled = false
+               scopeButton?.tintColor = .systemGray
+           }
+       }
     
     private func updateChartWithPortionsData(entryId: UUID) {
         var portionEntries: [ChartDataEntry] = []
