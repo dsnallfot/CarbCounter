@@ -293,8 +293,11 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
 
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Förslag portionsstorlek", comment: "Serving size button"), style: .default, handler: { _ in
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa portionsförslag", comment: "Serving size button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: selectedFoodItem)
+        }))
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Hitta liknande måltider", comment: "Show similar meals"), style: .default, handler: { _ in
+            self.presentMealHistoryViewControllerAndRunBestMatches()
         }))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa historik", comment: "Show history"), style: .default, handler: { _ in
             self.presentMealHistoryViewController(with: selectedFoodItem) // Add funcs to open MealHistoryViewController and populate the searchtext with selectedFoodItem
@@ -355,7 +358,19 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         // Present the MealHistoryViewController
         viewController.navigationController?.pushViewController(mealHistoryVC, animated: true)
     }
-
+    
+    private func presentMealHistoryViewControllerAndRunBestMatches() {
+        guard let viewController = self.getViewController() else { return }
+        
+        // Create an instance of MealHistoryViewController
+        let mealHistoryVC = MealHistoryViewController()
+        
+        // Set the flag to indicate that we are coming from the best matches view
+        mealHistoryVC.isComingFromBestMatches = true
+        
+        // Push the MealHistoryViewController to the navigation stack
+        viewController.navigationController?.pushViewController(mealHistoryVC, animated: true)
+    }
     
     func getTopViewController() -> UIViewController? {
         guard let windowScene = UIApplication.shared.connectedScenes

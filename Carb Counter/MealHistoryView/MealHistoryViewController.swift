@@ -7,7 +7,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var tableViewBottomConstraint: NSLayoutConstraint!
     var mealHistories: [MealHistory] = []
     var filteredMealHistories: [MealHistory] = []
+    var isComingFromBestMatches = false
     var initialSearchText: String?
+    private var isBestMatchFilterActive = false
     private var searchBar: UISearchBar = {
             let searchBar = UISearchBar()
             searchBar.placeholder = NSLocalizedString("Sök livsmedel", comment: "Search Food Item placeholder")
@@ -53,28 +55,55 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             gradientView.topAnchor.constraint(equalTo: view.topAnchor),
             gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        // Create the buttons
+        let bestMatchButton = UIBarButtonItem(
+            image: UIImage(systemName: "equal.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(filterBestMatches)
+        )
+        
+        let infoButton = UIBarButtonItem(
+            image: UIImage(systemName: "chart.bar.xaxis.ascending"),
+            style: .plain,
+            target: self,
+            action: #selector(navigateToMealInsights)
+        )
+        
+        // Add the buttons to the navigation bar, with the desired order
+        navigationItem.rightBarButtonItems = [infoButton, bestMatchButton]
+        
         setupSearchBarAndDatePicker()
         setupTableView()
-        
-        // Add an info button in the navigation bar
-                let infoButton = UIBarButtonItem(image: UIImage(systemName: "chart.bar.xaxis.ascending"), style: .plain, target: self, action: #selector(navigateToMealInsights))
-                navigationItem.rightBarButtonItem = infoButton
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
+
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // If initialSearchText is not nil, save it to UserDefaults
+        // Update the search bar placeholder based on the flag
+        if isComingFromBestMatches {
+            searchBar.placeholder = NSLocalizedString("Filter: Liknande", comment: "Showing similar meals")
+        } else {
+            searchBar.placeholder = NSLocalizedString("Sök i historiken", comment: "Search in history")
+        }
+        
+        // Only reset the search bar text if we are not coming from the best matches functionality
+        if !isComingFromBestMatches {
+            // If initialSearchText is not nil, save it to UserDefaults
             if let initialSearchText = initialSearchText {
                 UserDefaultsRepository.savedHistorySearchText = initialSearchText
             }
             
             // Set the searchBar text to the savedHistorySearchText (which could have been updated)
             searchBar.text = UserDefaultsRepository.savedHistorySearchText
+        }
         
+        // Fetch the meal histories and optionally apply any filtering
         fetchMealHistories()
         
         // Set the back button title for the next view controller
@@ -85,8 +114,15 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Re-add the observers every time the view appears
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-
+        
+        // If coming from best matches, apply the filter after a slight delay
+        if isComingFromBestMatches {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.filterBestMatches()
+            }
+        }
     }
+
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -401,19 +437,23 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         navigationController?.pushViewController(detailVC, animated: true)
     }
     private func filterMealHistories(searchText: String? = nil, by date: Date? = nil) {
-        let lowercasedSearchText = searchText?.lowercased() ?? ""
+        let searchTerms = searchText?.lowercased().split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ?? []
         
         // Check if the date picker is altered or if it's still at its default state (today's date)
         let isDatePickerUnaltered = Calendar.current.isDateInToday(date ?? Date())
         
         filteredMealHistories = mealHistories.filter { mealHistory in
-            // First, filter by search text (if provided)
-            if !lowercasedSearchText.isEmpty {
+            // First, filter by search terms (if provided)
+            if !searchTerms.isEmpty {
                 let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
-                let matchesSearch = foodItemNames.contains { $0.contains(lowercasedSearchText) }
+                
+                // Check if any of the search terms match the food item names
+                let matchesSearch = searchTerms.allSatisfy { term in
+                    foodItemNames.contains { $0.contains(term) }
+                }
                 
                 if !matchesSearch {
-                    return false // Exclude this item if search text doesn't match
+                    return false // Exclude this item if it doesn't match all search terms
                 }
             }
             
@@ -432,6 +472,83 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         tableView.reloadData()
     }
+
+    @objc private func filterBestMatches() {
+        if isBestMatchFilterActive {
+            // Clear the filter and reset the search bar
+            isBestMatchFilterActive = false
+            isComingFromBestMatches = false // Reset the flag
+            searchBar.text = ""
+            searchBar.placeholder = NSLocalizedString("Sök i historiken", comment: "Search in history")
+            filterMealHistories() // Reset to show all entries
+        } else {
+            // Apply the best match filter
+            isBestMatchFilterActive = true
+            isComingFromBestMatches = true // Set the flag
+            searchBar.placeholder = NSLocalizedString("Filter: Liknande", comment: "Showing similar meals")
+            
+            // Fetch the current FoodItemRow IDs (UUIDs of the ongoing meal)
+            let currentFoodItemIDs: [UUID] = fetchCurrentFoodItemIDs()
+            
+            // Create a dictionary to hold MealHistory and the count of matched entries
+            var mealHistoryMatches: [(mealHistory: MealHistory, matchCount: Int)] = []
+            
+            // Iterate through all MealHistory entries and calculate the match count
+            for mealHistory in mealHistories {
+                let foodEntries = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry]) ?? []
+                let matchedEntryIDs = foodEntries.compactMap { $0.entryId }.filter { currentFoodItemIDs.contains($0) }
+                let matchCount = matchedEntryIDs.count
+                
+                // Add the meal history and its match count to the list
+                if matchCount > 0 {
+                    mealHistoryMatches.append((mealHistory, matchCount))
+                }
+            }
+            
+            // Sort the meal histories based on match count (highest match count first)
+            mealHistoryMatches.sort { $0.matchCount > $1.matchCount }
+            
+            // Update the filtered meal histories with the sorted results
+            filteredMealHistories = mealHistoryMatches.map { $0.mealHistory }
+        }
+        
+        // Reload the table to reflect the changes
+        tableView.reloadData()
+        
+        // Optionally, update the button appearance or other UI elements here
+        updateBestMatchButtonAppearance()
+    }
+
+    
+    private func updateBestMatchButtonAppearance() {
+        if isBestMatchFilterActive {
+            // Change the button appearance to indicate the filter is active
+            navigationItem.rightBarButtonItems?.last?.tintColor = .systemBlue
+        } else {
+            // Reset the button appearance to its default state
+            navigationItem.rightBarButtonItems?.last?.tintColor = .label
+        }
+    }
+
+
+    private func fetchCurrentFoodItemIDs() -> [UUID] {
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemRow> = FoodItemRow.fetchRequest()
+        
+        do {
+            // Fetch all FoodItemRow objects from Core Data
+            let foodItemRows = try context.fetch(fetchRequest)
+            
+            // Extract the foodItemID values from each row
+            let foodItemIDs = foodItemRows.compactMap { $0.foodItemID }
+            
+            return foodItemIDs
+        } catch {
+            print("Failed to fetch FoodItemRow IDs: \(error)")
+            return []
+        }
+    }
+
    
     @objc private func navigateToMealInsights() {
         // Dismiss the keyboard before navigating to the next view

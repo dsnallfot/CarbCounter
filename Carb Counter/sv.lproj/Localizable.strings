@@ -408,6 +408,8 @@
 "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]";
 "Åt upp %@ st" = "Åt upp %@ st";
 "Åt upp %@ g" = "Åt upp %@ g";
+"Filter: Liknande" = "Filter: Liknande";
+
 
 /* Meal insights VC*/
 "Måltider" = "Måltider";
@@ -435,7 +437,9 @@
 "%.0f g/E" = "%.0f g/E";
 "Insikter" = "Insikter";
 "Mer insikter" = "Visa insikter";
-"Förslag portionsstorlek" = "Förslag portionsstorlek";
+"Visa portionsförslag" = "Visa portionsförslag";
+"Visa livsmedelhistorik" = "Visa livsmedelhistorik";
+"Hitta liknande måltider" = "Hitta liknande måltider";
 "Visa historik" = "Visa historik";
 "Välj datum och ett livsmedel för att visa mer information" = "Välj datumintervall och ett livsmedel för att visa mer information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "Ingen måltidshistorik tillgänglig för\n\"%@\"";
