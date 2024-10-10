@@ -435,6 +435,8 @@
 "%.0f g/E" = "%.0f g/E";
 "Insikter" = "Insikter";
 "Mer insikter" = "Visa insikter";
+"Förslag portionsstorlek" = "Förslag portionsstorlek";
+"Visa historik" = "Visa historik";
 "Välj datum och ett livsmedel för att visa mer information" = "Välj datumintervall och ett livsmedel för att visa mer information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "Ingen måltidshistorik tillgänglig för\n\"%@\"";
 "det valda livsmedlet" = "det valda livsmedlet";
@@ -450,12 +452,13 @@
 "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E" = "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E";
 "Visa i Nightscout" = "Visa i Nightscout";
 "Ingen data" = "Ingen data";
-"Välj en datapunkt i grafen nedan innan du öppnar Nightscout" = "Välj en datapunkt i grafen nedan innan du navigerar till Nightscout";
+"\nVälj en datapunkt i grafen nedan innan du öppnar Nightscout" = "\nVälj en datapunkt i grafen nedan innan du navigerar till Nightscout";
 "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen." = "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen.";
 "Nightscout • Måltid %@" = "Nightscout • Måltid %@";
 "Välj datum och ett livsmedel" = "Välj datum och ett livsmedel";
 "Portion uppäten" = "Uppäten portion (g)";
 "Kolhydrater (g)" = "Kolhydrater (g)";
+"Hämtar rapport" = "Hämtar rapport";
 
 /* Settings */
 "Inställningar" = "Inställningar";

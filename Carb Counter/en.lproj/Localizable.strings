@@ -434,6 +434,8 @@
 "%.0f g/E" = "%.0f g/U";
 "Insikter" = "Insights";
 "Mer insikter" = "Show insights";
+"Förslag portionsstorlek" = "Suggested serving size";
+"Visa historik" = "Show item history";
 "Välj datum och ett livsmedel för att visa mer information" = "Select a date interval and a food item to show more information";
 "Ingen måltidshistorik tillgänglig för\n\"%@\"" = "No meal history found for\n\"%@\"";
 "det valda livsmedlet" = "the selected food item";
@@ -449,12 +451,14 @@
 "%@ %@\nKh: %.0f g\nFett: %.0f g\nProtein: %.0f g\nBolus: %.2f E" = "%@ %@\nCarbs: %.0f g\nFat: %.0f g\nProtein: %.0f g\nBolus: %.2f U";
 "Visa i Nightscout" = "Show in Nightscout";
 "Ingen data" = "No data selected";
-"Välj en datapunkt i grafen nedan innan du öppnar Nightscout" = "Select a data point in the chart below before navigating to Nightscout";
+"\nVälj en datapunkt i grafen nedan innan du öppnar Nightscout." = "\nSelect a data point in the chart below before navigating to Nightscout";
+"\nVälj en datapunkt i grafen nedan innan du fortsätter till den detaljerade måltidsvyn." = "\nSelect a data point in the chart below before navigation to meal details view";
 "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen." = "Could not load Nightscout. Check your internet connection and try again.";
 "Nightscout • Måltid %@" = "Nightscout • Meal %@";
 "Välj datum och ett livsmedel" = "Select a date and a food item";
 "Portion uppäten" = "Serving size (g)";
 "Kolhydrater (g)" = "Carbohydrates (g)";
+"Hämtar rapport" = "Fetching report";
 
 /* Settings */
 "Inställningar" = "Settings";
