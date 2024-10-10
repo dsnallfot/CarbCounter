@@ -488,25 +488,40 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             searchBar.placeholder = NSLocalizedString("Filter: Liknande", comment: "Showing similar meals")
             
             // Fetch the current FoodItemRow IDs (UUIDs of the ongoing meal)
-            let currentFoodItemIDs: [UUID] = fetchCurrentFoodItemIDs()
+            let currentFoodItemIDs: Set<UUID> = Set(fetchCurrentFoodItemIDs())
             
-            // Create a dictionary to hold MealHistory and the count of matched entries
-            var mealHistoryMatches: [(mealHistory: MealHistory, matchCount: Int)] = []
+            // Create a list to hold MealHistory and the count of matched entries
+            var mealHistoryMatches: [(mealHistory: MealHistory, matchCount: Int, isExactMatch: Bool)] = []
             
             // Iterate through all MealHistory entries and calculate the match count
             for mealHistory in mealHistories {
                 let foodEntries = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry]) ?? []
-                let matchedEntryIDs = foodEntries.compactMap { $0.entryId }.filter { currentFoodItemIDs.contains($0) }
+                let entryIDs = Set(foodEntries.compactMap { $0.entryId })
+                let matchedEntryIDs = entryIDs.intersection(currentFoodItemIDs)
                 let matchCount = matchedEntryIDs.count
                 
-                // Add the meal history and its match count to the list
+                // Determine if this is an exact match (no additional items in the meal history)
+                let isExactMatch = entryIDs == currentFoodItemIDs
+                
+                // Add the meal history and its match details to the list if there is at least one match
                 if matchCount > 0 {
-                    mealHistoryMatches.append((mealHistory, matchCount))
+                    mealHistoryMatches.append((mealHistory, matchCount, isExactMatch))
                 }
             }
             
-            // Sort the meal histories based on match count (highest match count first)
-            mealHistoryMatches.sort { $0.matchCount > $1.matchCount }
+            // Sort the meal histories with the following priorities:
+            // 1. Exact matches first (isExactMatch == true).
+            // 2. By match count (higher counts first).
+            // 3. By date (newest first) if match counts are equal.
+            mealHistoryMatches.sort {
+                if $0.isExactMatch != $1.isExactMatch {
+                    return $0.isExactMatch && !$1.isExactMatch
+                } else if $0.matchCount != $1.matchCount {
+                    return $0.matchCount > $1.matchCount
+                } else {
+                    return ($0.mealHistory.mealDate ?? Date()) > ($1.mealHistory.mealDate ?? Date())
+                }
+            }
             
             // Update the filtered meal histories with the sorted results
             filteredMealHistories = mealHistoryMatches.map { $0.mealHistory }
@@ -518,6 +533,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Optionally, update the button appearance or other UI elements here
         updateBestMatchButtonAppearance()
     }
+
+
 
     
     private func updateBestMatchButtonAppearance() {
