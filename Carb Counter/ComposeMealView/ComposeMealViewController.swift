@@ -886,6 +886,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.turnOffLateBreakfastSwitch()
             self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
             self.startAmountContainer.backgroundColor = .systemBlue
+            UserDefaultsRepository.savedHistorySearchText = ""
         }
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
