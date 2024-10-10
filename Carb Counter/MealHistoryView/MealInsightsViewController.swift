@@ -410,15 +410,15 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
     
     private func updateButtonStates() {
            if chartDataSelected {
-               //nightscoutButton?.isEnabled = true
+               nightscoutButton?.isEnabled = true
                nightscoutButton?.tintColor = .label
-               //scopeButton?.isEnabled = true
+               scopeButton?.isEnabled = true
                scopeButton?.tintColor = .label
            } else {
-               //nightscoutButton?.isEnabled = false
-               nightscoutButton?.tintColor = .systemGray
-               //scopeButton?.isEnabled = false
-               scopeButton?.tintColor = .systemGray
+               nightscoutButton?.isEnabled = false
+               nightscoutButton?.tintColor = .gray
+               scopeButton?.isEnabled = false
+               scopeButton?.tintColor = .gray
            }
        }
     
