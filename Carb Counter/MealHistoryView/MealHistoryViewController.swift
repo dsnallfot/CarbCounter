@@ -10,6 +10,8 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var isComingFromBestMatches = false
     var initialSearchText: String?
     var bestMatchButton: UIBarButtonItem!
+    var infoButton: UIBarButtonItem!
+    var clearButton: UIBarButtonItem!
     
     private var isBestMatchFilterActive = false
     private var searchBar: UISearchBar = {
@@ -75,8 +77,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             action: #selector(navigateToMealInsights)
         )
         
-        // Add the buttons to the navigation bar, with the desired order
-        navigationItem.rightBarButtonItems = [infoButton, bestMatchButton]
+        self.infoButton = infoButton
+        
+        // Setup Clear button
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton.tintColor = .red
         
         setupSearchBarAndDatePicker()
         setupTableView()
@@ -118,6 +123,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         // Re-add the observers every time the view appears
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
         
         // Check if there are any FoodItemRow entries and update the button state
         updateBestMatchButtonState()
@@ -128,18 +134,25 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 self.filterBestMatches()
             }
         }
+        updateButtonVisibility()
     }
 
-    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // Remove the observers when the view disappears
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-        
+        NotificationCenter.default.removeObserver(self)
+    
         // Dismiss the keyboard when navigating away from the view controller
         searchBar.resignFirstResponder()
     }
+    
+    @objc private func updateButtonVisibility() {
+        if UserDefaultsRepository.allowDataClearing {
+            navigationItem.rightBarButtonItems = [clearButton]
+        } else {
+            navigationItem.rightBarButtonItems = [infoButton, bestMatchButton]
+        }
+    }
+
     
     private func updateBestMatchButtonState() {
             if hasFoodItemRows() {
@@ -680,6 +693,41 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         dismiss(animated: true) {
             self.tableView.reloadRows(at: [indexPath], with: .automatic)
         }
+    }
+    
+    @objc private func clearButtonTapped() {
+        let alertController = UIAlertController(
+            title: NSLocalizedString("Rensa", comment: "Rensa"),
+            message: NSLocalizedString("Är du säker på att du vill radera all måltidshistorik?", comment: "Är du säker på att du vill radera alla favoriter?"),
+            preferredStyle: .actionSheet
+        )
+
+        let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Clear all meal history
+            CoreDataHelper.shared.clearAllMealHistory()
+            
+            // Clear local data and refresh the table view
+            self.mealHistories.removeAll()
+            self.filteredMealHistories.removeAll()
+            self.tableView.reloadData()
+
+            // Export meal history to CSV
+            guard let dataSharingVC = self.dataSharingVC else { return }
+            print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
+            
+            Task {
+                await dataSharingVC.exportMealHistoryToCSV()
+            }
+        }
+
+        let noAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
+
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+
+        present(alertController, animated: true, completion: nil)
     }
 }
 
