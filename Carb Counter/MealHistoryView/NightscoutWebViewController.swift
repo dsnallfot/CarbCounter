@@ -5,29 +5,47 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
     var nightscoutURL: URL?
     var mealDate: Date?
-
+    private var currentReportType = "daytoday"
     private var webView: WKWebView!
     private var overlayView: UIView!
+
+    // Add a reference to the toggleReportButton
+    private var toggleReportButton: UIBarButtonItem!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Set up the navigation bar title
+        setupNavigationBar()
+        setupWebView()
+        setupOverlayView()
+
+        // Load the Nightscout URL
+        reloadNightscoutPage()
+    }
+
+    private func setupNavigationBar() {
         if let date = mealDate {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "d MMM HH:mm"
             let formattedDate = dateFormatter.string(from: date)
-            self.title = String(format: NSLocalizedString("Nightscout • Måltid %@", comment: "Nightscout • Måltid %@"), formattedDate)
+            self.title = String(format: NSLocalizedString("Måltid %@", comment: "Måltid %@"), formattedDate)
         } else {
             self.title = "Nightscout"
         }
-        
-        // If the view controller is presented modally, add a close button
+
         if isModalPresentation() {
             let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeModal))
             navigationItem.leftBarButtonItem = closeButton
         }
 
+        let previousDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(loadPreviousDay))
+        let nextDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(loadNextDay))
+        toggleReportButton = UIBarButtonItem(image: UIImage(systemName: "chart.pie"), style: .plain, target: self, action: #selector(toggleReportType))
+
+        navigationItem.rightBarButtonItems = [toggleReportButton, nextDayButton, previousDayButton]
+    }
+
+    private func setupWebView() {
         // Create and configure the web view
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = WKWebsiteDataStore.nonPersistent()
@@ -44,7 +62,9 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+    }
 
+    private func setupOverlayView() {
         // Create and add the overlay view
         overlayView = UIView(frame: view.bounds)
         overlayView.backgroundColor = .white
@@ -87,32 +107,101 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
             imageView.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
             imageView.bottomAnchor.constraint(equalTo: activityIndicator.topAnchor, constant: -12),
             imageView.heightAnchor.constraint(equalToConstant: 80),
-            
+
             activityIndicator.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: overlayView.centerYAnchor),
-            
+
             fetchingLabel.centerXAnchor.constraint(equalTo: overlayView.centerXAnchor),
             fetchingLabel.topAnchor.constraint(equalTo: activityIndicator.bottomAnchor, constant: 12)
         ])
-
-        // Load the Nightscout URL
-        if let url = nightscoutURL {
-            let request = URLRequest(url: url)
-            webView.load(request)
-        }
     }
-    
+
     @objc private func closeModal() {
         dismiss(animated: true, completion: nil)
     }
-    
+
+    @objc private func loadPreviousDay() {
+        adjustDate(by: -1)
+    }
+
+    @objc private func loadNextDay() {
+        adjustDate(by: 1)
+    }
+
+    @objc private func toggleReportType() {
+        currentReportType = (currentReportType == "daytoday") ? "dailystats" : "daytoday"
+        reloadNightscoutPage()
+    }
+
+    private func adjustDate(by days: Int) {
+        guard let currentDate = mealDate else { return }
+        mealDate = Calendar.current.date(byAdding: .day, value: days, to: currentDate)
+        reloadNightscoutPage()
+    }
+
+    private func reloadNightscoutPage() {
+        guard var baseURL = UserDefaultsRepository.nightscoutURL,
+              let token = UserDefaultsRepository.nightscoutToken,
+              let date = mealDate else { return }
+
+        // Ensure the base URL ends with '/'
+        if !baseURL.hasSuffix("/") {
+            baseURL += "/"
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+
+        var urlComponents = URLComponents(string: baseURL + "report/")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "token", value: token),
+            URLQueryItem(name: "report", value: currentReportType),
+            URLQueryItem(name: "startDate", value: dateString),
+            URLQueryItem(name: "endDate", value: dateString),
+            URLQueryItem(name: "autoShow", value: "true"),
+            URLQueryItem(name: "hideMenu", value: "true"),
+        ]
+
+        if let url = urlComponents?.url {
+            print("Constructed URL: \(url.absoluteString)")
+            // Show the overlay view again
+            overlayView.alpha = 1
+            overlayView.isHidden = false
+            view.bringSubviewToFront(overlayView)
+
+            // Update the toggleReportButton icon
+            updateToggleReportButtonIcon()
+
+            loadNightscoutPage(with: url)
+        } else {
+            print("Failed to construct URL")
+            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
+                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+    }
+
+    private func updateToggleReportButtonIcon() {
+        let iconName = (currentReportType == "daytoday") ? "chart.pie" : "chart.dots.scatter"
+        toggleReportButton.image = UIImage(systemName: iconName)
+    }
+
+    private func loadNightscoutPage(with url: URL) {
+        webView.load(URLRequest(url: url))
+    }
+
     // Helper function to check if the view controller is presented modally
     private func isModalPresentation() -> Bool {
-        return presentingViewController != nil || navigationController?.presentingViewController?.presentedViewController == navigationController || tabBarController?.presentingViewController is UITabBarController
+        return presentingViewController != nil ||
+               navigationController?.presentingViewController?.presentedViewController == navigationController ||
+               tabBarController?.presentingViewController is UITabBarController
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape //.allButUpsideDown
+        return .landscape
     }
 
     override var shouldAutorotate: Bool {
@@ -121,21 +210,19 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         // Ensure the navigation bar has a background color
         navigationController?.navigationBar.isTranslucent = false
-        navigationController?.navigationBar.barTintColor = .systemBackground // Or any desired color
-        navigationController?.navigationBar.backgroundColor = .systemBackground // Or any desired color
-        //navigationController?.navigationBar.tintColor = .label // Set this if you need proper contrast
-        
-        
-        AppDelegate.AppUtility.lockOrientation(.landscape) //(.allButUpsideDown)
+        navigationController?.navigationBar.barTintColor = .systemBackground
+        navigationController?.navigationBar.backgroundColor = .systemBackground
+
+        AppDelegate.AppUtility.lockOrientation(.landscape)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
-        // If you need to reset the navigation bar appearance when leaving this screen
+
+        // Reset the navigation bar appearance when leaving this screen
         navigationController?.navigationBar.isTranslucent = true
         navigationController?.navigationBar.barTintColor = nil
         navigationController?.navigationBar.backgroundColor = nil
@@ -143,7 +230,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         webView.stopLoading()
         AppDelegate.AppUtility.lockOrientation(.portrait)
     }
-    
+
     // MARK: - WKNavigationDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -170,7 +257,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
             UIView.animate(withDuration: 0.5, animations: {
                 self.overlayView.alpha = 0
             }) { _ in
-                self.overlayView.removeFromSuperview()
+                self.overlayView.isHidden = true
             }
         }
     }
