@@ -123,31 +123,43 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        // Fetch the food items from Core Data
         self.fetchFoodItems()
+        
+        // Update the clear button visibility
         updateClearButtonVisibility()
         
-        // Ensure dataSharingVC is instantiated
+        // Ensure dataSharingVC is instantiated and trigger data import
         guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-
         Task {
             print("Data import triggered")
             await dataSharingVC.importAllCSVFiles()
         }
         
-        // Load saved search text
+        // Load saved search text and apply filter
         if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
             searchBar.text = savedSearchText
-            if searchMode == .local {
-                filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-            } else {
-                fetchOnlineArticles(for: savedSearchText)
-            }
+            applySearchFilter(with: savedSearchText)
         } else {
             // If no search text is saved, show the full list
             filteredFoodItems = foodItems
+            //tableView.reloadData()
         }
+    }
+
+    // Helper method to apply the search filter
+    private func applySearchFilter(with searchText: String) {
+        if searchMode == .local {
+            // Filter local food items by the search text
+            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+
+        } else {
+            // Fetch online articles if in online search mode
+            fetchOnlineArticles(for: searchText)
+        }
+        
+        // Sort and reload table view
         sortFoodItems()
         tableView.reloadData()
     }
@@ -832,11 +844,23 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 // Step 4: Update the table view without deleting the Core Data entry
                 filteredFoodItems.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                // Step 5: Refresh the table view
+                fetchFoodItems()
+                if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+                    searchBar.text = savedSearchText
+                    applySearchFilter(with: savedSearchText)
+                } else {
+                    // If no search text is saved, show the full list
+                    filteredFoodItems = foodItems
+                    
+                }
                 updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
             }
         } catch {
             print("Failed to update delete flag: \(error)")
         }
+        
     }
     
     private func editFoodItem(at indexPath: IndexPath) {
@@ -1129,14 +1153,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     // AddFoodItemDelegate conformance
     func didAddFoodItem() {
-        // Fetch updated list of food items
-        fetchFoodItems()
-        
-        // Update the filtered list and reload the table view
-        filteredFoodItems = foodItems // Ensure filtered list is updated
-        sortFoodItems()
-        tableView.reloadData()
-    }
+            // Fetch updated list of food items
+            fetchFoodItems()
+
+            // Re-apply the search filter
+            if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+                searchBar.text = savedSearchText
+                applySearchFilter(with: savedSearchText)
+            } else {
+                // If no search text is saved, show the full list
+                filteredFoodItems = foodItems
+                tableView.reloadData()
+            }
+        }
 }
 
 struct OpenFoodFactsResponse: Codable {
