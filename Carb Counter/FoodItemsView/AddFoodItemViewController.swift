@@ -46,11 +46,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     var initialFat: String?
     var initialProtein: String?
     
-    var prePopulatedData: (name: String, carbohydrates: Double, fat: Double, protein: Double)?
+    var prePopulatedData: (name: String, carbohydrates: Double, fat: Double, protein: Double, emoji: String, notes: String, isPerPiece: Bool, carbsPP: Double, fatPP: Double, proteinPP: Double)?
     var isUpdateMode: Bool = false // Add this flag to indicate update mode
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        title = NSLocalizedString("Lägg till livsmedel", comment: "Add food item screen title")
         
         // Create keyboard settings with default initialization
             let keyboardSettings = KeyboardSettings(bottomType: .categories)
@@ -177,14 +179,29 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         if let data = prePopulatedData {
             nameTextField.text = data.name
-            carbsTextField.text = formattedValue(data.carbohydrates)
-            fatTextField.text = formattedValue(data.fat)
-            proteinTextField.text = formattedValue(data.protein)
+            emojiTextField.text = data.emoji
+            notesTextField.text = data.notes
             
-            // Enable buttons if prePopulatedData is not nil
-            saveButton.isEnabled = true
-            saveAndAddButton.isEnabled = true
+            if data.isPerPiece {
+                carbsTextField.text = formattedValue(data.carbsPP)
+                fatTextField.text = formattedValue(data.fatPP)
+                proteinTextField.text = formattedValue(data.proteinPP)
+                segmentedControl.selectedSegmentIndex = 1 // Set to "Per Piece"
+            } else {
+                carbsTextField.text = formattedValue(data.carbohydrates)
+                fatTextField.text = formattedValue(data.fat)
+                proteinTextField.text = formattedValue(data.protein)
+                segmentedControl.selectedSegmentIndex = 0 // Set to "Per 100g"
+            }
+            if isUpdateMode {
+                saveButton.isEnabled = false
+                saveAndAddButton.isEnabled = false
+            } else {
+                saveButton.isEnabled = true
+                saveAndAddButton.isEnabled = true
+            }
             updateSaveButtonTitle()
+            setupUI()
         }
         
         if isPerPiece {
@@ -410,6 +427,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             nameTextField.text = foodItem.name
             notesTextField.text = foodItem.notes
             emojiTextField.text = foodItem.emoji
+            
+            // Handle per piece vs per 100g
             if foodItem.perPiece {
                 isPerPiece = true
                 segmentedControl.selectedSegmentIndex = 1
@@ -423,17 +442,30 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 fatTextField.text = formattedValue(foodItem.fat)
                 proteinTextField.text = formattedValue(foodItem.protein)
             }
-        } else {
-            title = NSLocalizedString("Lägg till nytt livsmedel", comment: "Add new food item screen title")
-            if isUpdateMode, let data = prePopulatedData {
-                nameTextField.text = data.name
+        } else if let data = prePopulatedData {
+            title = NSLocalizedString("Lägg till livsmedel", comment: "Add food item screen title")
+            // Handle prepopulated data case
+            nameTextField.text = data.name
+            emojiTextField.text = data.emoji
+            notesTextField.text = data.notes
+            
+            if data.isPerPiece {
+                isPerPiece = true
+                segmentedControl.selectedSegmentIndex = 1
+                carbsTextField.text = formattedValue(data.carbsPP)
+                fatTextField.text = formattedValue(data.fatPP)
+                proteinTextField.text = formattedValue(data.proteinPP)
+            } else {
+                isPerPiece = false
+                segmentedControl.selectedSegmentIndex = 0
                 carbsTextField.text = formattedValue(data.carbohydrates)
                 fatTextField.text = formattedValue(data.fat)
                 proteinTextField.text = formattedValue(data.protein)
             }
         }
-        updateUnitsLabels() // Ensure labels are set correctly when the view is loaded
-        updateSegmentedControlLabels() // Update segmented control labels
+
+        updateUnitsLabels()  // Ensure units are correctly set based on the segment
+        updateSegmentedControlLabels() // Update segment labels based on the selected item
     }
     
     @IBAction func saveButtonTap(_ sender: UIButton) {

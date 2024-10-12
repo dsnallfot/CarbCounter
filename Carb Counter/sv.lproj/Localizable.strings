@@ -317,6 +317,7 @@
 "\nProtein: %.1f g / 100 g" = "\nProtein: %.1f g / 100 g ";
 
 /* Add Food Items VC */
+"Lägg till livsmedel" = "Lägg till livsmedel";
 "Nästa" = "Nästa";
 "Klar" = "Klar";
 "Per 100g" = "Per 100g";
