@@ -1700,6 +1700,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         UserDefaults.standard.set(registeredProteinSoFar, forKey: "registeredProteinSoFar")
         UserDefaults.standard.set(registeredBolusSoFar, forKey: "registeredBolusSoFar")
         UserDefaults.standard.set(registeredCarbsSoFar, forKey: "registeredCarbsSoFar")
+        
+        if let mealDate = mealDate {
+            UserDefaults.standard.set(mealDate, forKey: "mealDate") // Save Date if available
+        } else {
+            UserDefaults.standard.removeObject(forKey: "mealDate") // Remove if nil
+        }
+        
         UserDefaults.standard.synchronize() // Ensure the values are written to disk immediately
     }
     
@@ -1708,6 +1715,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredProteinSoFar = UserDefaults.standard.double(forKey: "registeredProteinSoFar")
         registeredBolusSoFar = UserDefaults.standard.double(forKey: "registeredBolusSoFar")
         registeredCarbsSoFar = UserDefaults.standard.double(forKey: "registeredCarbsSoFar")
+        
+        // Load mealDate, if exists
+        if let savedMealDate = UserDefaults.standard.object(forKey: "mealDate") as? Date {
+            mealDate = savedMealDate
+        } else {
+            mealDate = nil // Reset if not found
+        }
     }
     
     private func resetVariablesToDefault() {
@@ -1715,9 +1729,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredProteinSoFar = 0.0
         registeredBolusSoFar = 0.0
         registeredCarbsSoFar = 0.0
+        mealDate = nil // Reset mealDate to nil
 
-        saveValuesToUserDefaults()
-        print("Variables reset to 0.0 and saved to UserDefaults")
+        saveValuesToUserDefaults() // Save the reset values to UserDefaults
+        print("Variables reset to 0.0 and mealDate reset to nil, saved to UserDefaults")
     }
     
     private func startLateBreakfastTimer() {

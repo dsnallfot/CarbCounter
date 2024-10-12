@@ -1510,7 +1510,8 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
         guard let entryId = entryId else {
             // Reset stats if no entryId
             statsLabel.text = NSLocalizedString("Välj datum och ett livsmedel för att visa mer information", comment: "Placeholder text for no selection")
-            self.chartLabel.text = NSLocalizedString("Välj datum och ett livsmedel", comment: "Placeholder text for no selection")
+            //self.chartLabel.text = NSLocalizedString("Välj datum och ett livsmedel", comment: "Placeholder text for no selection")
+            self.chartLabel.text = NSLocalizedString(" ", comment: "Placeholder text for no selection")
             
             // Safely unwrap lineChartView
             if let chartView = lineChartView {
