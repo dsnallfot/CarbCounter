@@ -186,4 +186,16 @@ class CoreDataHelper {
             print("Failed to clear favorites: \(error)")
         }
     }
+    
+    // Clear all Meal History entries
+    func clearAllMealHistory() {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = MealHistory.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("Failed to clear meal history: \(error)")
+        }
+    }
 }

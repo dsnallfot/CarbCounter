@@ -123,31 +123,43 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        // Fetch the food items from Core Data
         self.fetchFoodItems()
+        
+        // Update the clear button visibility
         updateClearButtonVisibility()
         
-        // Ensure dataSharingVC is instantiated
+        // Ensure dataSharingVC is instantiated and trigger data import
         guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-
         Task {
             print("Data import triggered")
             await dataSharingVC.importAllCSVFiles()
         }
         
-        // Load saved search text
+        // Load saved search text and apply filter
         if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
             searchBar.text = savedSearchText
-            if searchMode == .local {
-                filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-            } else {
-                fetchOnlineArticles(for: savedSearchText)
-            }
+            applySearchFilter(with: savedSearchText)
         } else {
             // If no search text is saved, show the full list
             filteredFoodItems = foodItems
+            //tableView.reloadData()
         }
+    }
+
+    // Helper method to apply the search filter
+    private func applySearchFilter(with searchText: String) {
+        if searchMode == .local {
+            // Filter local food items by the search text
+            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+
+        } else {
+            // Fetch online articles if in online search mode
+            fetchOnlineArticles(for: searchText)
+        }
+        
+        // Sort and reload table view
         sortFoodItems()
         tableView.reloadData()
     }
@@ -542,6 +554,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // Only enable swipe actions when the segmented control is at index 0
+            guard segmentedControl.selectedSegmentIndex == 0 else {
+                return nil // Disable swipe actions when the selected segment is not index 0
+            }
+        
         // "Mer" action
         let moreAction = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
             let foodItem = self.filteredFoodItems[indexPath.row]
@@ -558,6 +575,15 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
         editAction.backgroundColor = .systemBlue
         editAction.image = UIImage(systemName: "square.and.pencil")
+        
+        // "Duplicera" action
+        let duplicateAction = UIContextualAction(style: .normal, title: NSLocalizedString("Duplicera", comment: "Duplicera")) { (_, _, completionHandler) in
+            let foodItem = self.filteredFoodItems[indexPath.row]
+            self.duplicateFoodItem(foodItem)
+            completionHandler(true)
+        }
+        duplicateAction.backgroundColor = .systemOrange
+        duplicateAction.image = UIImage(systemName: "doc.on.doc.fill")
 
         // "Radera" action
         let deleteAction = UIContextualAction(style: .destructive, title: nil) { (_, _, completionHandler) in
@@ -571,7 +597,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         deleteAction.image = UIImage(systemName: "trash.fill")
 
         // Add both actions to the configuration
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction, moreAction])
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction, duplicateAction, moreAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
         return configuration
     }
@@ -818,11 +844,23 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 // Step 4: Update the table view without deleting the Core Data entry
                 filteredFoodItems.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                // Step 5: Refresh the table view
+                fetchFoodItems()
+                if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+                    searchBar.text = savedSearchText
+                    applySearchFilter(with: savedSearchText)
+                } else {
+                    // If no search text is saved, show the full list
+                    filteredFoodItems = foodItems
+                    
+                }
                 updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
             }
         } catch {
             print("Failed to update delete flag: \(error)")
         }
+        
     }
     
     private func editFoodItem(at indexPath: IndexPath) {
@@ -833,6 +871,33 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let navController = UINavigationController(rootViewController: addFoodItemVC)
             navController.modalPresentationStyle = .pageSheet
             
+            present(navController, animated: true, completion: nil)
+        }
+    }
+    
+    private func duplicateFoodItem(_ foodItem: FoodItem) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self
+
+            // Prepopulate the fields with the selected food item's data
+            addFoodItemVC.prePopulatedData = (
+                name: foodItem.name ?? "",
+                carbohydrates: foodItem.carbohydrates,
+                fat: foodItem.fat,
+                protein: foodItem.protein,
+                emoji: foodItem.emoji ?? "",
+                notes: foodItem.notes ?? "",
+                isPerPiece: foodItem.perPiece,
+                carbsPP: foodItem.carbsPP,
+                fatPP: foodItem.fatPP,
+                proteinPP: foodItem.proteinPP
+            )
+
+            addFoodItemVC.isUpdateMode = true
+
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
             present(navController, animated: true, completion: nil)
         }
     }
@@ -970,12 +1035,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             alert.addAction(UIAlertAction(title: NSLocalizedString("Lägg till", comment: "Add button"), style: .default, handler: { _ in
                 let adjustedProductName = productName
                 if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
+                    // Calculate per piece values based on weight
                     let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
                     let adjustedFat = (fat * weight / 100).roundToDecimal(1)
                     let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
                     isPerPiece = true // Update the flag
-                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
+                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece, weightPerPiece: weight)
                 } else {
+                    // Navigate without per piece
                     self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
                 }
             }))
@@ -1046,15 +1113,15 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
 
-    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool) {
+    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool, weightPerPiece: Double = 0.0) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
-            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            // Adjust prePopulatedData to include the weight per piece if provided
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", "", isPerPiece, isPerPiece ? carbohydrates : 0.0, isPerPiece ? fat : 0.0, isPerPiece ? proteins : 0.0)
             addFoodItemVC.isPerPiece = isPerPiece
             let navController = UINavigationController(rootViewController: addFoodItemVC)
             navController.modalPresentationStyle = .pageSheet
-            
             present(navController, animated: true, completion: nil)
         }
     }
@@ -1064,25 +1131,41 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
             addFoodItemVC.foodItem = existingItem
-            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            // Prepopulate all necessary data, including per-piece fields if applicable
+            addFoodItemVC.prePopulatedData = (
+                productName,
+                carbohydrates,
+                fat,
+                proteins,
+                existingItem.emoji ?? "",
+                existingItem.notes ?? "",
+                existingItem.perPiece,
+                existingItem.perPiece ? existingItem.carbsPP : carbohydrates,
+                existingItem.perPiece ? existingItem.fatPP : fat,
+                existingItem.perPiece ? existingItem.proteinPP : proteins
+            )
             addFoodItemVC.isUpdateMode = true
             let navController = UINavigationController(rootViewController: addFoodItemVC)
             navController.modalPresentationStyle = .pageSheet
-            
             present(navController, animated: true, completion: nil)
         }
     }
     
     // AddFoodItemDelegate conformance
     func didAddFoodItem() {
-        // Fetch updated list of food items
-        fetchFoodItems()
-        
-        // Update the filtered list and reload the table view
-        filteredFoodItems = foodItems // Ensure filtered list is updated
-        sortFoodItems()
-        tableView.reloadData()
-    }
+            // Fetch updated list of food items
+            fetchFoodItems()
+
+            // Re-apply the search filter
+            if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+                searchBar.text = savedSearchText
+                applySearchFilter(with: savedSearchText)
+            } else {
+                // If no search text is saved, show the full list
+                filteredFoodItems = foodItems
+                tableView.reloadData()
+            }
+        }
 }
 
 struct OpenFoodFactsResponse: Codable {

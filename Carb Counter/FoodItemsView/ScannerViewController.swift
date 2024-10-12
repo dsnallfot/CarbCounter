@@ -438,8 +438,8 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
-            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
-            addFoodItemVC.isPerPiece = isPerPiece // Pass the flag
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", "", isPerPiece, 0.0, 0.0, 0.0)
+            addFoodItemVC.isPerPiece = isPerPiece
             presentAddFoodItemViewController(addFoodItemVC)
         }
     }
@@ -449,7 +449,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
             addFoodItemVC.foodItem = existingItem
-            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins)
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", "", existingItem.perPiece, existingItem.carbsPP, existingItem.fatPP, existingItem.proteinPP)
             addFoodItemVC.isUpdateMode = true
             presentAddFoodItemViewController(addFoodItemVC)
         }
