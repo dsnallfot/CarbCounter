@@ -68,29 +68,24 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
 
         // Load saved search text
-                if let savedSearchText = UserDefaultsRepository.dropdownSearchText {
-                    searchBar.text = savedSearchText
-                    filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-                    sortFoodItems()
-                    tableView.reloadData()
-                } else {
-                    filteredFoodItems = foodItems
-                    sortFoodItems()
-                    tableView.reloadData()
-                }
+            if let savedSearchText = UserDefaultsRepository.dropdownSearchText {
+                searchBar.text = savedSearchText
+                filterFoodItems(with: savedSearchText)
+            } else {
+                filterFoodItems(with: "")
+            }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Restore the saved search text, but only if it's not empty
-        if let savedSearchText = UserDefaultsRepository.dropdownSearchText, !savedSearchText.isEmpty {
-            searchBar.text = savedSearchText
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(savedSearchText.lowercased()) ?? false }
-        } else {
-            // If no saved search text or the text is empty, show all food items
-            filteredFoodItems = foodItems
-        }
+        // Restore the saved search text
+            if let savedSearchText = UserDefaultsRepository.dropdownSearchText {
+                searchBar.text = savedSearchText
+                filterFoodItems(with: savedSearchText)
+            } else {
+                filterFoodItems(with: "")
+            }
         
         sortFoodItems()
         tableView.reloadData()
@@ -345,21 +340,6 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         }
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
-/*
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        UserDefaultsRepository.dropdownSearchText = searchText
-        if searchText.isEmpty {
-            filteredFoodItems = foodItems
-        } else {
-            filteredFoodItems = foodItems.filter { foodItem in
-                let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
-                let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
-                return nameMatches || emojiMatches
-            }
-        }
-        sortFoodItems()
-        tableView.reloadData()
-    }*/
     
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -381,6 +361,34 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     func didAddFoodItem() {
             fetchFoodItems()
         }
+    
+    private func filterFoodItems(with searchText: String) {
+        if searchText.isEmpty {
+            // If search text is empty, show all items
+            filteredFoodItems = foodItems
+        } else {
+            // Split the search text by "." and trim whitespace
+            let searchTerms = searchText.lowercased()
+                .split(separator: ".")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty } // Ensure no empty terms
+            
+            // Filter the food items based on the search terms
+            filteredFoodItems = foodItems.filter { foodItem in
+                // Combine the name and emoji into one string
+                let combinedText = "\(foodItem.name ?? "") \(foodItem.emoji ?? "")".lowercased()
+                
+                // Check if **any** search term is contained **somewhere** in the combinedText
+                return searchTerms.contains(where: { term in
+                    combinedText.contains(term)
+                })
+            }
+        }
+        
+        // Sort and reload the table
+        sortFoodItems()
+        tableView.reloadData()
+    }
 }
 
 extension Notification.Name {
@@ -395,26 +403,10 @@ extension SearchableDropdownViewController: UISearchBarDelegate {
         searchBar.resignFirstResponder()
     }
     
-    // The existing textDidChange method
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         // Save the current search text in UserDefaults
         UserDefaultsRepository.dropdownSearchText = searchText
-        
-        if searchText.isEmpty {
-            // If search text is empty, show all items
-            filteredFoodItems = foodItems
-        } else {
-            // Otherwise, filter based on the search text
-            filteredFoodItems = foodItems.filter { foodItem in
-                let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
-                let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
-                return nameMatches || emojiMatches
-            }
-        }
-        
-        // Sort and reload the table
-        sortFoodItems()
-        tableView.reloadData()
+        filterFoodItems(with: searchText)
     }
 }
 
