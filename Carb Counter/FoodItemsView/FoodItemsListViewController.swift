@@ -151,11 +151,24 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     // Helper method to apply the search filter
     private func applySearchFilter(with searchText: String) {
         if searchMode == .local {
-            // Filter local food items by the search text
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
+            // Split the search text by "." and trim whitespace
+            let searchTerms = searchText.lowercased()
+                .split(separator: ".")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty } // Ensure no empty terms
 
+            // Filter local food items using the search terms
+            filteredFoodItems = foodItems.filter { foodItem in
+                let combinedText = "\(foodItem.name ?? "") \(foodItem.emoji ?? "")".lowercased()
+
+                // Check if **any** search term is contained **somewhere** in the combinedText
+                return searchTerms.contains(where: { term in
+                    combinedText.contains(term)
+                })
+            }
+            
         } else {
-            // Fetch online articles if in online search mode
+            // Online search logic remains unchanged
             fetchOnlineArticles(for: searchText)
         }
         
@@ -335,31 +348,44 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             tableView.reloadData()
             return
         }
+        
         UserDefaultsRepository.savedSearchText = searchText // Save search text
+        
         if searchMode == .local {
-            filteredFoodItems = foodItems.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
-            sortFoodItems()
+            applySearchFilter(with: searchText) // Use the new local filter logic
         } else {
-            fetchOnlineArticles(for: searchText)
+            fetchOnlineArticles(for: searchText) // Online search
         }
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         UserDefaultsRepository.savedSearchText = searchText // Save search text
+
         if searchMode == .local {
             if searchText.isEmpty {
+                // Show all items when the search text is empty
                 filteredFoodItems = foodItems
-                sortFoodItems()
-                tableView.reloadData()
             } else {
+                // Split the search text by "." and trim whitespace
+                let searchTerms = searchText.lowercased()
+                    .split(separator: ".")
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty } // Ensure no empty terms
+                
+                // Filter food items based on the search terms
                 filteredFoodItems = foodItems.filter { foodItem in
-                    let nameMatches = foodItem.name?.lowercased().contains(searchText.lowercased()) ?? false
-                    let emojiMatches = foodItem.emoji?.lowercased().contains(searchText.lowercased()) ?? false
-                    return nameMatches || emojiMatches
+                    let combinedText = "\(foodItem.name ?? "") \(foodItem.emoji ?? "")".lowercased()
+
+                    // Check if **any** search term matches
+                    return searchTerms.contains(where: { term in
+                        combinedText.contains(term)
+                    })
                 }
-                sortFoodItems()
             }
+            sortFoodItems()
+            tableView.reloadData()
         } else {
+            // Online search mode
             if searchText.isEmpty {
                 articles = []
                 tableView.reloadData()

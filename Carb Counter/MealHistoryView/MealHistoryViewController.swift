@@ -482,7 +482,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         navigationController?.pushViewController(detailVC, animated: true)
     }
     private func filterMealHistories(searchText: String? = nil, by date: Date? = nil) {
-        let searchTerms = searchText?.lowercased().split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ?? []
+        let searchTerms = searchText?.lowercased().split(separator: ".").map { $0.trimmingCharacters(in: .whitespaces) } ?? []
         
         // Check if the date picker is altered or if it's still at its default state (today's date)
         let isDatePickerUnaltered = Calendar.current.isDateInToday(date ?? Date())
