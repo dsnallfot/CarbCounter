@@ -281,11 +281,11 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func addRefreshControl() {
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar favoritlistan...", comment: "Message shown while updating favorites"))
-        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshFavorites), for: .valueChanged)
         tableView.refreshControl = refreshControl
     }
 
-    @objc private func refreshMealHistory() {
+    @objc private func refreshFavorites() {
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else {
             tableView.refreshControl?.endRefreshing()

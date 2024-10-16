@@ -183,11 +183,11 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     private func addRefreshControl() {
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar insulinkvoter...", comment: "Message shown while updating carb ratios"))
-        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshCarbRatios), for: .valueChanged)
         tableView.refreshControl = refreshControl
     }
 
-    @objc private func refreshMealHistory() {
+    @objc private func refreshCarbRatios() {
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else {
             tableView.refreshControl?.endRefreshing()

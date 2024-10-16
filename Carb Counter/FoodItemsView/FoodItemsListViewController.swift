@@ -48,6 +48,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.fetchFoodItems()
+        
         // Create the gradient view
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
@@ -74,7 +76,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.register(FoodItemTableViewCell.self, forCellReuseIdentifier: "FoodItemCell")
         tableView.register(ArticleTableViewCell.self, forCellReuseIdentifier: "ArticleCell")
         tableView.backgroundColor = .clear
-        self.fetchFoodItems()
+        //self.fetchFoodItems()
         setupNavigationBarButtons()
         setupNavigationBarTitle()
         setupSegmentedControl()
@@ -132,13 +134,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Update the clear button visibility
         updateClearButtonVisibility()
         
-        // Ensure dataSharingVC is instantiated and trigger data import
-        guard let dataSharingVC = dataSharingVC else { return }
-        Task {
-            print("Data import triggered")
-            await dataSharingVC.importCSVFiles()
-        }
-        
         // Load saved search text and apply filter
         if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
             searchBar.text = savedSearchText
@@ -146,7 +141,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         } else {
             // If no search text is saved, show the full list
             filteredFoodItems = foodItems
-            //tableView.reloadData()
         }
     }
 
@@ -639,11 +633,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func addRefreshControl() {
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar livsmedelslistan...", comment: "Message shown while updating food items"))
-        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshFoodItems), for: .valueChanged)
         tableView.refreshControl = refreshControl
     }
 
-    @objc private func refreshMealHistory() {
+    @objc private func refreshFoodItems() {
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else {
             tableView.refreshControl?.endRefreshing()

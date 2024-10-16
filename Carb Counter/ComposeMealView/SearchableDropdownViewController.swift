@@ -164,11 +164,11 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     private func addRefreshControl() {
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar livsmedelslistan...", comment: "Message shown while updating food items"))
-        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshFoodItems), for: .valueChanged)
         tableView.refreshControl = refreshControl
     }
 
-    @objc private func refreshMealHistory() {
+    @objc private func refreshFoodItems() {
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else {
             tableView.refreshControl?.endRefreshing()

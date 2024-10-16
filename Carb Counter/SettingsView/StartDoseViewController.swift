@@ -146,11 +146,11 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     private func addRefreshControl() {
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar startdoser...", comment: "Message shown while updating start doses"))
-        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshStartDoses), for: .valueChanged)
         tableView.refreshControl = refreshControl
     }
 
-    @objc private func refreshMealHistory() {
+    @objc private func refreshStartDoses() {
         // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = dataSharingVC else {
             tableView.refreshControl?.endRefreshing()
