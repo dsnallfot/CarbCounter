@@ -365,6 +365,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             if searchText.isEmpty {
                 // Show all items when the search text is empty
                 filteredFoodItems = foodItems
+            } else if searchText.lowercased() == "emoji" {
+                // Secret search: Filter out items where FoodItem.emoji is nil or empty
+                filteredFoodItems = foodItems.filter { $0.emoji == nil || $0.emoji!.isEmpty }
+            } else if searchText.lowercased() == "notes" {
+                // Secret search: Filter items where FoodItem.notes is not nil
+                filteredFoodItems = foodItems.filter { $0.notes != nil && !$0.notes!.isEmpty }
             } else {
                 // Split the search text by "." and trim whitespace
                 let searchTerms = searchText.lowercased()
