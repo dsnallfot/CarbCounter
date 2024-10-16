@@ -68,6 +68,8 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
+        
+        addRefreshControl()
     }
     
     deinit {
@@ -139,6 +141,33 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         cell.configure(hour: hour, dose: formattedDose, delegate: self)
         cell.backgroundColor = .clear
         return cell
+    }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar startdoser...", comment: "Message shown while updating start doses"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "StartDoseSchedule.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                loadStartDoses()
+            }
+        }
     }
     
     // MARK: - UITextFieldDelegate

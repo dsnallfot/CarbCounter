@@ -57,7 +57,7 @@ class HomeViewController: UIViewController {
         // Call the desired function
         print("Data import triggered")
         Task {
-            await dataSharingVC.importAllCSVFiles()
+            await dataSharingVC.importCSVFiles()
         }
         
         // Observe changes to allowViewingOngoingMeals

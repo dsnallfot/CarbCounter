@@ -72,6 +72,8 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
+        
+        addRefreshControl()
     }
 
     deinit {
@@ -176,6 +178,33 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         cell.configure(hour: hour, ratio: formattedRatio, delegate: self)
         cell.backgroundColor = .clear
         return cell
+    }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar insulinkvoter...", comment: "Message shown while updating carb ratios"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "CarbRatioSchedule.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                loadCarbRatios()
+            }
+        }
     }
 
     // MARK: - UITextFieldDelegate

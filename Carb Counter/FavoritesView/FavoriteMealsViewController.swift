@@ -54,6 +54,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         setupSearchBar()
         setupTableView()
+        addRefreshControl()
         setupNavigationBar()
         fetchFavoriteMeals()
         
@@ -274,6 +275,33 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
             })
         } else {
             print(NSLocalizedString("ComposeMealViewController not found in navigation stack.", comment: "Error message when ComposeMealViewController is not found"))
+        }
+    }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar favoritlistan...", comment: "Message shown while updating favorites"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                fetchFavoriteMeals()
+            }
         }
     }
     

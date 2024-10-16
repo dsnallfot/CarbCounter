@@ -7,6 +7,11 @@
 /* Loading and home screen */
 "Räkna Kolhydrater" = "Räkna Kolhydrater";
 "Uppdaterar data" = "Uppdaterar data";
+"Uppdaterar måltidshistoriken..." = "Uppdaterar måltidshistoriken...";
+"Uppdaterar favoritlistan..." = "Uppdaterar favoritlistan...";
+"Uppdaterar livsmedelslistan..." = "Uppdaterar livsmedelslistan...";
+"Uppdaterar startdoser..." = "Uppdaterar startdoser...";
+"Uppdaterar insulinkvoter..." = "Uppdaterar insulinkvoter...";
 
 /* Ongoing Meal Viewcontroller */
 "Ta över registrering" = "Ta över registrering";

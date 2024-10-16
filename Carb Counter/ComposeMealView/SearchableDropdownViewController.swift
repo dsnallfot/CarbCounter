@@ -10,6 +10,8 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     var selectedFoodItems: [FoodItem] = []
     private var tableViewBottomConstraint: NSLayoutConstraint!
     
+    var dataSharingVC: DataSharingViewController?
+    
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = NSLocalizedString("Sök & välj ett eller flera livsmedel", comment: "Sök & välj ett eller flera livsmedel")
@@ -74,6 +76,10 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
             } else {
                 filterFoodItems(with: "")
             }
+        // Instantiate DataSharingViewController programmatically
+        dataSharingVC = DataSharingViewController()
+        
+        addRefreshControl()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -153,6 +159,33 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         
         tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         tableViewBottomConstraint.isActive = true
+    }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar livsmedelslistan...", comment: "Message shown while updating food items"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "FoodItems.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                fetchFoodItems()
+            }
+        }
     }
     
     @objc private func closeButtonTapped() {

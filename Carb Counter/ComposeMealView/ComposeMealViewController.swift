@@ -300,7 +300,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         Task {
             print("Data import triggered")
             await
-            dataSharingVC.importAllCSVFiles()
+            dataSharingVC.importCSVFiles()
         }
         fetchFoodItems()
         checkIfEditing()

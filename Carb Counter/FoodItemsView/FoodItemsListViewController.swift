@@ -119,6 +119,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
+        addRefreshControl()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -134,7 +136,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         guard let dataSharingVC = dataSharingVC else { return }
         Task {
             print("Data import triggered")
-            await dataSharingVC.importAllCSVFiles()
+            await dataSharingVC.importCSVFiles()
         }
         
         // Load saved search text and apply filter
@@ -632,6 +634,33 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction, duplicateAction, moreAction])
         configuration.performsFirstActionWithFullSwipe = false // Disable full swipe to avoid accidental deletions
         return configuration
+    }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar livsmedelslistan...", comment: "Message shown while updating food items"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "FoodItems.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                fetchFoodItems()
+            }
+        }
     }
 
     

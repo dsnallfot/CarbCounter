@@ -85,6 +85,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         setupSearchBarAndDatePicker()
         setupTableView()
+        addRefreshControl()
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
@@ -307,6 +308,33 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 tableViewBottomConstraint
             ])
         }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar måltidshistoriken...", comment: "Message shown while updating meal history"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                fetchMealHistories() // Reload meal histories after the import
+            }
+        }
+    }
     
     @objc func keyboardWillShow(notification: NSNotification) {
             if let userInfo = notification.userInfo {
