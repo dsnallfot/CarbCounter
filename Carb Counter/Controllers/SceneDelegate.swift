@@ -27,9 +27,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         // Simulate some delay to show the loading screen
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-            self?.showMainViewController()
-        }
+        // DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+        //    self?.showMainViewController()
+        //}
     }
 
     func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {

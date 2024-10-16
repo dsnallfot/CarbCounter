@@ -8,6 +8,7 @@ import UIKit
 class LoadingViewController: UIViewController {
     
     var dataSharingVC: DataSharingViewController?
+    var minimumDisplayTime: TimeInterval = 2.5
 
     override func viewDidLoad() {
             super.viewDidLoad()
@@ -46,47 +47,72 @@ class LoadingViewController: UIViewController {
             super.viewWillAppear(animated)
             print("LoadingViewController appeared")
             
+            // Start the minimum display timer
+            let minimumDisplayTime = self.minimumDisplayTime
+            let startTime = Date()
+            
+            // Create a DispatchGroup to synchronize tasks
+            let dispatchGroup = DispatchGroup()
+            
             // Ensure dataSharingVC is instantiated
             guard let dataSharingVC = dataSharingVC else {
                 print("dataSharingVC is nil")
                 return
             }
             
-            // Perform data import and then fetch food items
+            dispatchGroup.enter()
+            // Perform data import
             print("Data import triggered")
             Task {
                 await dataSharingVC.importCSVFiles()
                 print("Data import completed")
+                dispatchGroup.leave()
+            }
+            
+            // Wait for both tasks to complete
+            dispatchGroup.notify(queue: .main) {
+                let elapsedTime = Date().timeIntervalSince(startTime)
+                let remainingTime = minimumDisplayTime - elapsedTime
                 
-                // Now instantiate the main view controller
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                guard let mainVC = storyboard.instantiateInitialViewController() else {
-                    print("Failed to instantiate main view controller")
-                    return
-                }
-                
-                // Access the ComposeMealViewController from the mainVC
-                if let tabBarController = mainVC as? UITabBarController {
-                    if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
-                       let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
-                        
-                        // Call fetchFoodItems on composeMealVC
-                        composeMealVC.fetchFoodItems()
-                        print("fetchFoodItems completed")
+                if remainingTime > 0 {
+                    // Wait for the remaining time before transitioning
+                    DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) {
+                        self.transitionToMainViewController()
                     }
-                }
-                
-                // Now transition to the main view controller
-                await MainActor.run {
-                    // Add a transition animation
-                    let transition = CATransition()
-                    transition.type = .fade
-                    transition.duration = 0.5
-                    self.view.window?.layer.add(transition, forKey: kCATransition)
-                    
-                    self.view.window?.rootViewController = mainVC
+                } else {
+                    // Minimum display time already passed, transition immediately
+                    self.transitionToMainViewController()
                 }
             }
+        }
+        
+        private func transitionToMainViewController() {
+            // Instantiate the main view controller
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            guard let mainVC = storyboard.instantiateInitialViewController() else {
+                print("Failed to instantiate main view controller")
+                return
+            }
+            
+            // Access the ComposeMealViewController from the mainVC
+            if let tabBarController = mainVC as? UITabBarController {
+                if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
+                   let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
+                    
+                    // Call fetchFoodItems on composeMealVC
+                    composeMealVC.fetchFoodItems()
+                    print("fetchFoodItems completed")
+                }
+            }
+            
+            // Transition to the main view controller
+            // Add a transition animation
+            let transition = CATransition()
+            transition.type = .fade
+            transition.duration = 0.5
+            self.view.window?.layer.add(transition, forKey: kCATransition)
+            
+            self.view.window?.rootViewController = mainVC
         }
 
 
