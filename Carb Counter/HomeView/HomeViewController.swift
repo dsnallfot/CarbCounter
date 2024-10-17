@@ -2,8 +2,6 @@ import UIKit
 
 class HomeViewController: UIViewController {
     
-    var dataSharingVC: DataSharingViewController?
-    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
@@ -39,26 +37,6 @@ class HomeViewController: UIViewController {
         ])
         
         setupUI()
-        
-        // Get a reference to the ComposeMealViewController
-        if let tabBarController = self.tabBarController,
-           let viewControllers = tabBarController.viewControllers {
-            for viewController in viewControllers {
-                if let navController = viewController as? UINavigationController,
-                   let composeMealVC = navController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                    composeMealVC.fetchFoodItems()
-                }
-            }
-        }
-        
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-        print("Data import triggered")
-        Task {
-            await dataSharingVC.importAllCSVFiles()
-        }
         
         // Observe changes to allowViewingOngoingMeals
         NotificationCenter.default.addObserver(self, selector: #selector(updateNavigationBarButtons), name: .allowViewingOngoingMealsChanged, object: nil)

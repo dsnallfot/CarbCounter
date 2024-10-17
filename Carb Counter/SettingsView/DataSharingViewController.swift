@@ -99,7 +99,7 @@ class DataSharingViewController: UIViewController {
         
         // Automatic import for all CSV files
         alert.addAction(UIAlertAction(title: NSLocalizedString("Importera hela databasen", comment: "Importera hela databasen"), style: .default, handler: { _ in
-            Task { await self.importAllCSVFiles() }
+            Task { await self.importCSVFiles() }
         }))
         
         // Present document picker for specific CSV imports
@@ -145,29 +145,31 @@ class DataSharingViewController: UIViewController {
     }
     
     ///Manual and automatic importing
-    @objc public func importAllCSVFiles() async {
-        await self.performImportAllCSVFiles()
+    @objc public func importCSVFiles(specificFileName: String? = nil) async {
+        await self.performImportCSVFiles(specificFileName: specificFileName)
     }
-    
-    private func performImportAllCSVFiles() async {
-        // Check if the function was called less than 15 seconds ago
-        if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 15 {
-            print("Import blocked to prevent running more often than every 15 seconds")
-            return
+
+    private func performImportCSVFiles(specificFileName: String? = nil) async {
+        // Apply the 300-second block only if no specific file is provided (i.e., all files are imported)
+        if specificFileName == nil {
+            if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 300 {
+                print("Import blocked to prevent running more often than every 5 minutes")
+                return
+            }
+            
+            // Update the last import time when importing all files
+            lastImportTime = Date()
         }
-        
-        // Update the last import time
-        lastImportTime = Date()
-        
+
         let fileManager = FileManager.default
         guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
             print("Import Failed: iCloud Drive URL is nil.")
             return
         }
-        
+
         do {
             let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-            
+
             let entityFileMapping: [String: String] = [
                 "FoodItems.csv": "Food Items",
                 "FavoriteMeals.csv": "Favorite Meals",
@@ -176,15 +178,21 @@ class DataSharingViewController: UIViewController {
                 "StartDoseSchedule.csv": "Start Dose Schedule"
             ]
             
+            // If specificFileName is provided, filter the mapping to import just that file
+            let filesToImport = specificFileName != nil ?
+                entityFileMapping.filter { $0.key == specificFileName } :
+                entityFileMapping
             
-            for (fileName, entityName) in entityFileMapping {
+            for (fileName, entityName) in filesToImport {
                 if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
                     await parseCSV(at: fileURL, for: entityName)
-                    
+                } else if specificFileName != nil {
+                    print("File \(specificFileName!) not found.")
                 }
             }
+
             print("Data import done!")
-            
+
         } catch {
             print("Failed to list directory: \(error)")
         }

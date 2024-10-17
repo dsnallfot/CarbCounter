@@ -6,36 +6,115 @@
 import UIKit
 
 class LoadingViewController: UIViewController {
+    
+    var dataSharingVC: DataSharingViewController?
+    var minimumDisplayTime: TimeInterval = 2.5
 
     override func viewDidLoad() {
-        super.viewDidLoad()
+            super.viewDidLoad()
+            
+            view.backgroundColor = .systemBackground
+            
+            // Create the gradient view
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+            
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+            
+            // Ensure dataSharingVC is instantiated
+            dataSharingVC = DataSharingViewController()
+            
+            // Setup UI components
+            setupUI()
+        }
+    
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            print("LoadingViewController appeared")
+            
+            // Start the minimum display timer
+            let minimumDisplayTime = self.minimumDisplayTime
+            let startTime = Date()
+            
+            // Create a DispatchGroup to synchronize tasks
+            let dispatchGroup = DispatchGroup()
+            
+            // Ensure dataSharingVC is instantiated
+            guard let dataSharingVC = dataSharingVC else {
+                print("dataSharingVC is nil")
+                return
+            }
+            
+            dispatchGroup.enter()
+            // Perform data import
+            print("Data import triggered")
+            Task {
+                await dataSharingVC.importCSVFiles()
+                print("Data import completed")
+                dispatchGroup.leave()
+            }
+            
+            // Wait for both tasks to complete
+            dispatchGroup.notify(queue: .main) {
+                let elapsedTime = Date().timeIntervalSince(startTime)
+                let remainingTime = minimumDisplayTime - elapsedTime
+                
+                if remainingTime > 0 {
+                    // Wait for the remaining time before transitioning
+                    DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) {
+                        self.transitionToMainViewController()
+                    }
+                } else {
+                    // Minimum display time already passed, transition immediately
+                    self.transitionToMainViewController()
+                }
+            }
+        }
         
-        view.backgroundColor = .systemBackground
-        
-        // Create the gradient view
-        let colors: [CGColor] = [
-            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-        ]
-        let gradientView = GradientView(colors: colors)
-        gradientView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Add the gradient view to the main view
-        view.addSubview(gradientView)
-        view.sendSubviewToBack(gradientView)
-        
-        // Set up constraints for the gradient view
-        NSLayoutConstraint.activate([
-            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
-        // Setup UI components
-        setupUI()
-    }
+        private func transitionToMainViewController() {
+            // Instantiate the main view controller
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            guard let mainVC = storyboard.instantiateInitialViewController() else {
+                print("Failed to instantiate main view controller")
+                return
+            }
+            
+            // Access the ComposeMealViewController from the mainVC
+            if let tabBarController = mainVC as? UITabBarController {
+                if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
+                   let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
+                    
+                    // Call fetchFoodItems on composeMealVC
+                    composeMealVC.fetchFoodItems()
+                    print("fetchFoodItems completed")
+                }
+            }
+            
+            // Transition to the main view controller
+            // Add a transition animation
+            let transition = CATransition()
+            transition.type = .fade
+            transition.duration = 0.5
+            self.view.window?.layer.add(transition, forKey: kCATransition)
+            
+            self.view.window?.rootViewController = mainVC
+        }
+
 
     private func setupUI() {
         // Create and setup the title label

@@ -7,6 +7,11 @@
 /* Loading and home screen */
 "Räkna Kolhydrater" = "Carb Counter";
 "Uppdaterar data" = "Loading data";
+"Uppdaterar måltidshistoriken..." = "Updating meal history...";
+"Uppdaterar favoritlistan..." = "Updating favorite meals...";
+"Uppdaterar livsmedelslistan..." = "Updating food items...";
+"Uppdaterar startdoser..." = "Updating start doses...";
+"Uppdaterar insulinkvoter..." = "Updating carb ratios...";
 
 /* Ongoing Meal Viewcontroller */
 "Ta över registrering" = "Take over registration";
@@ -506,8 +511,8 @@
 "Ange din Nightscout Token:" = "Enter your Nightscout Token (If applicable):";
 "Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online" = "If you want to use the Swedish food database Dabas, enter your API Secret.\n\nIf you do not enter an API secret, OpenFoodFacts is used by default for EAN scanning and online food searches";
 "Ange URL till Skolmaten.se RSS-flöde som du vill använda:" = "Enter the URL to your schools rss-feed from the swedish 'skolmaten.se' Rplatform.\n\nWhen you enter and URL a new button will show up on the 'Meal' screen where you can select from the skolmaten.se menu:";
-"För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken" = "To improve matching between skolmaten.se lunch menus, and the local food item database, you may choose to exclude some search terms. Separate the temrs with commas.";
-"Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med kommatecken" = "Add foods that are often used to top up with carbohydrates when fewer carbohydrates have been consumed than insulin has been dosed for. Separate the foods with commas.";
+"För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med punkt eller komma" = "To improve matching between skolmaten.se lunch menus, and the local food item database, you may choose to exclude some search terms. Separate the terms with periods or commas.";
+"Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med punkt eller kommatecken" = "Add foods that are often used to top up with carbohydrates when fewer carbohydrates have been consumed than insulin has been dosed for. Separate the entries with periods or commas.";
 "Spara" = "Save";
 "Avbryt" = "Cancel";
 
