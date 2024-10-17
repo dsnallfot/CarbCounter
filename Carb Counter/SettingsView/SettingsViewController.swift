@@ -324,7 +324,7 @@ class SettingsViewController: UITableViewController {
                 return
             case 13:
                 title = NSLocalizedString("Exkludera sökord", comment: "Exkludera sökord")
-                message = NSLocalizedString("För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med kommatecken", comment: "Exkludera sökord-text")
+                message = NSLocalizedString("För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med punkt eller komma", comment: "Exkludera sökord-text")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.excludeWords ?? "") { newValue in
                     UserDefaultsRepository.excludeWords = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
@@ -332,7 +332,7 @@ class SettingsViewController: UITableViewController {
                 return
             case 14:
                 title = NSLocalizedString("Lägg till top-ups", comment: "Lägg till top-ups")
-                message = NSLocalizedString("Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med kommatecken", comment: "Lägg till top-ups-text")
+                message = NSLocalizedString("Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med punkt eller kommatecken", comment: "Lägg till top-ups-text")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.topUps ?? "") { newValue in
                     UserDefaultsRepository.topUps = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)

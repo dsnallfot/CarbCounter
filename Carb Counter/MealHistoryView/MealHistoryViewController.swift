@@ -417,10 +417,12 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName } ?? []
         let foodItemNamesStr = foodItemNames.joined(separator: " | ")
 
-        // Fetch user-defined special items from UserDefaults
-        let userTopUps = UserDefaults.standard.string(forKey: "topUps") ?? ""
-        let specialItems = userTopUps.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        // Define a character set containing both comma and period as separators
+        let separators = CharacterSet(charactersIn: ",.")
 
+        // Fetch user-defined special items from UserDefaults, allowing both "," and "." as separators
+        let userTopUps = UserDefaults.standard.string(forKey: "topUps") ?? ""
+        let specialItems = userTopUps.components(separatedBy: separators).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         // Check if any of the food items contain a carbs top-up item
         let containsSpecialItem = foodItemNames.contains { item in
             specialItems.contains { specialItem in

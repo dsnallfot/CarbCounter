@@ -144,8 +144,11 @@ class RSSFeedViewController: UIViewController {
         }
     }
     private var excludedWords: [String] {
-        // Fetch user-defined excluded words from UserDefaults
-        let userDefinedWords = UserDefaultsRepository.excludeWords?.components(separatedBy: ",").map {
+        // Define a character set containing both comma and period as separators
+        let separators = CharacterSet(charactersIn: ",.")
+
+        // Fetch user-defined excluded words from UserDefaults, allowing both "," and "." as separators
+        let userDefinedWords = UserDefaultsRepository.excludeWords?.components(separatedBy: separators).map {
             $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         } ?? []
 
