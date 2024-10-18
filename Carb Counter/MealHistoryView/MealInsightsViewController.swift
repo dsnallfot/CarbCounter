@@ -145,7 +145,7 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
+        //title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
         view.backgroundColor = .systemBackground
         
         // Set the flag based on whether the view controller is presented modally
@@ -246,11 +246,14 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
         
         // Check the variables and update the button title accordingly
         if isComingFromFoodItemRow {
+            title = NSLocalizedString("Portionshistorik", comment: "Title for MealInsights screen when coming from fooditemrow")
             actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
         } else if isComingFromDetailView {
+            title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
             actionButton.setTitle(NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button label"), for: .normal)
         } else {
             // Fallback or default title, if neither condition is met
+            title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
             actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
         }
     }

@@ -98,7 +98,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         set {
             _registeredCarbsSoFar = newValue
             isPopoverChange = true
-            totalRegisteredCarbsLabel?.text = String(format: "%.0f g", newValue)
+            // Check if newValue is 0, if so, set label to "--", otherwise display the value.
+            if newValue == 0 {
+                totalRegisteredCarbsLabel?.text = "--"
+            } else {
+                totalRegisteredCarbsLabel?.text = String(format: "%.0f g", newValue)
+            }
         }
     }
     ///Meal monitoring
@@ -258,7 +263,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
         
-        totalRegisteredCarbsLabel.text = String(format: "%.0f g", registeredCarbsSoFar)
+        if registeredCarbsSoFar == 0 {
+            totalRegisteredCarbsLabel?.text = "--"
+        } else {
+            totalRegisteredCarbsLabel?.text = String(format: "%.0f g", registeredCarbsSoFar)
+        }
         
     }
     // MARK: View Will Appear
@@ -578,7 +587,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         summaryView.addSubview(bolusContainer)
         
         let bolusLabel = createLabel(text: NSLocalizedString("BOLUS", comment: "BOLUS"), fontSize: 9, weight: .bold, color: .white)
-        totalBolusAmountLabel = createLabel(text: NSLocalizedString("0 E", comment: "0 E"), fontSize: 18, weight: .bold, color: .white)
+        totalBolusAmountLabel = createLabel(text: NSLocalizedString("--", comment: "--"), fontSize: 18, weight: .bold, color: .white)
         let bolusStack = UIStackView(arrangedSubviews: [bolusLabel, totalBolusAmountLabel])
         let bolusPadding = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
         setupStackView(bolusStack, in: bolusContainer, padding: bolusPadding)
@@ -737,7 +746,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredContainer.addGestureRecognizer(tapGesture)
         registeredContainer.isUserInteractionEnabled = true
         let registeredLabel = createLabel(text: NSLocalizedString("REGGADE KH", comment: "REGGADE KH"), fontSize: 9, weight: .bold, color: .white)
-        totalRegisteredCarbsLabel = createLabel(text: NSLocalizedString("0 g", comment: "0 g"), fontSize: 18, weight: .bold, color: .white)
+        totalRegisteredCarbsLabel = createLabel(text: NSLocalizedString("--", comment: "--"), fontSize: 18, weight: .bold, color: .white)
         
         let registeredStack = UIStackView(arrangedSubviews: [registeredLabel, totalRegisteredCarbsLabel])
         registeredStack.axis = .vertical
@@ -908,14 +917,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateRemainsBolus()
         
         // Reset the totalNetCarbsLabel and other total labels
-        totalNetCarbsLabel.text = NSLocalizedString("0 g", comment: "0 g")
-        totalNetFatLabel.text = NSLocalizedString("0 g", comment: "0 g")
-        totalNetProteinLabel.text = NSLocalizedString("0 g", comment: "0 g")
-        totalBolusAmountLabel.text = NSLocalizedString("0 E", comment: "0 E")
+        totalNetCarbsLabel.text = NSLocalizedString("--", comment: "--")
+        totalNetFatLabel.text = NSLocalizedString("--", comment: "--")
+        totalNetProteinLabel.text = NSLocalizedString("--", comment: "--")
+        totalBolusAmountLabel.text = NSLocalizedString("--", comment: "--")
         totalStartAmountLabel.text = NSLocalizedString("0 g", comment: "0 g")
         totalRemainsLabel.text = NSLocalizedString("0 g", comment: "0 g")
         totalRemainsBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
-        totalRegisteredCarbsLabel.text = NSLocalizedString("0 g", comment: "0 g")
+        totalRegisteredCarbsLabel.text = NSLocalizedString("--", comment: "--")
         
         // Reset the startBolus amount
         startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
@@ -1096,7 +1105,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     addFoodItemRow(with: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
                 }
             }
-            totalRegisteredCarbsLabel.text = String(format: "%.0f g", maxregisteredCarbsSoFar)
+            
+            if maxregisteredCarbsSoFar == 0 {
+                totalRegisteredCarbsLabel?.text = "--"
+            } else {
+                totalRegisteredCarbsLabel?.text = String(format: "%.0f g", maxregisteredCarbsSoFar)
+            }
             registeredFatSoFar = maxRegisteredFatSoFar
             registeredProteinSoFar = maxRegisteredProteinSoFar
             registeredBolusSoFar = maxRegisteredBolusSoFar
@@ -1132,7 +1146,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
         print("updateRegisteredAmount function ran")
         self.startDoseGiven = startDose
-        let currentRegisteredValue = Double(totalRegisteredCarbsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
+        let currentRegisteredValue = Double(totalRegisteredCarbsLabel.text?.replacingOccurrences(of: "--", with: "0").replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsValue = Double(khValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let newRegisteredValue = currentRegisteredValue + remainsValue
         let fatDoubleValue = Double(fatValue.replacingOccurrences(of: ",", with: ".")) ?? 0.0
@@ -1144,7 +1158,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         registeredProteinSoFar += proteinDoubleValue
         registeredBolusSoFar += bolusDoubleValue
         registeredCarbsSoFar += carbsDoubleValue
-        totalRegisteredCarbsLabel.text = String(format: "%.0f g", registeredCarbsSoFar).replacingOccurrences(of: ",", with: ".")
+        totalRegisteredCarbsLabel.text = String(format: "%.0f g", registeredCarbsSoFar).replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: "--", with: "0")
 
         print("Accumulated Fat So Far: \(registeredFatSoFar)g")
         print("Accumulated Protein So Far: \(registeredProteinSoFar)g")
@@ -1157,7 +1171,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         clearAllButton.isEnabled = true
         
         // Check if any of the values (carbs, fat, protein, bolus) are greater than 0
-        if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
+        if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0"),
            let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")),
            numberValue > 0 || registeredFatSoFar > 0.0 || registeredProteinSoFar > 0.0 || registeredBolusSoFar > 0.0 {
             
@@ -1181,19 +1195,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return
         }
         
-        totalNetCarbsLabel.text = String(format: "%.0f g", totalNetCarbs)
+        // Replace 0 with "--" for totalNetCarbsLabel
+        totalNetCarbsLabel.text = totalNetCarbs == 0 ? "--" : String(format: "%.0f g", totalNetCarbs)
         
         let totalNetFat = foodItemRows.reduce(0.0) { $0 + $1.netFat }
-        totalNetFatLabel.text = String(format: "%.0f g", totalNetFat)
+        // Replace 0 with "--" for totalNetFatLabel
+        totalNetFatLabel.text = totalNetFat == 0 ? "--" : String(format: "%.0f g", totalNetFat)
         
         let totalNetProtein = foodItemRows.reduce(0.0) { $0 + $1.netProtein }
-        totalNetProteinLabel.text = String(format: "%.0f g", totalNetProtein)
+        // Replace 0 with "--" for totalNetProteinLabel
+        totalNetProteinLabel.text = totalNetProtein == 0 ? "--" : String(format: "%.0f g", totalNetProtein)
         
         let totalBolus = totalNetCarbs / scheduledCarbRatio
         let roundedBolus = roundDownToNearest05(totalBolus)
-        totalBolusAmountLabel.text = formatNumber(roundedBolus) + NSLocalizedString(" E", comment: " E")
+        // Replace 0 with "--" for totalBolusAmountLabel
+        totalBolusAmountLabel.text = roundedBolus == 0 ? "--" : formatNumber(roundedBolus) + NSLocalizedString(" E", comment: " E")
         
-        if  UserDefaultsRepository.useStartDosePercentage {
+        if UserDefaultsRepository.useStartDosePercentage {
             let startDoseFactor = UserDefaultsRepository.startDoseFactor
             let totalStartAmount = totalNetCarbs * startDoseFactor
             totalStartAmountLabel.text = String(format: "%.0fg", totalStartAmount)
@@ -1213,6 +1231,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 totalStartBolusLabel.text = formatNumber(roundedStartBolus) + NSLocalizedString("E", comment: "E")
             }
         }
+        
         updateRemainsBolus()
         updateSaveFavoriteButtonState()
         updatePercentages()
@@ -1244,7 +1263,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
         let fatRemaining = fatTotalValue - registeredFatSoFar
         
-        if let registeredText = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
+        if let registeredText = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0"),
            let registeredValue = Double(registeredText) {
             let remainsValue = totalCarbsValue - registeredValue
             totalRemainsLabel.text = String(format: "%.0fg", remainsValue)
@@ -1314,7 +1333,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         && fatRemaining >= -0.5 && fatRemaining <= 0.5 {
                 remainsContainer?.backgroundColor = .systemGreen
                 registeredContainer.backgroundColor = .systemGreen
-                startAmountContainer.backgroundColor = .systemGray2
+                startAmountContainer.backgroundColor = .systemGreen //systemGray2
                 remainsLabel.text = NSLocalizedString("KVAR ATT GE", comment: "KVAR ATT GE")
                 updateTotalRemainsLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalRemainsBolusLabel.text = ""
@@ -1334,7 +1353,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 remainsContainer?.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
-                startAmountContainer.backgroundColor = .systemGray2
+                startAmountContainer.backgroundColor = .systemGreen //systemGray2
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
                 updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalStartBolusLabel.text = ""
@@ -1345,7 +1364,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         if registeredCarbsSoFar > 0 && totalNetCarbs > 0 && remainsValue <= scheduledStartDose {
             startAmountLabel.text = NSLocalizedString("DOS", comment: "DOS")
-            startAmountContainer.backgroundColor = .systemGray2
+            startAmountContainer.backgroundColor = .systemGreen //systemGray2
             updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
             totalStartBolusLabel.text = ""
             if remainsValue > 0.4 {
@@ -1487,7 +1506,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         guard let clearAllButton = clearAllButton else {
             return
         }
-        let carbsText = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let carbsText = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
         let carbsValue = Double(carbsText.replacingOccurrences(of: ",", with: "")) ?? 0.0
 
         clearAllButton.isEnabled = !foodItemRows.isEmpty || registeredCarbsSoFar > 0 || registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0
@@ -1761,7 +1780,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             textField.text = text.replacingOccurrences(of: ",", with: ".")
         }
         // Check if carbs, fat, protein, and bolus are all 0
-        if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: ""),
+        if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0"),
            Double(text) == 0,
            registeredFatSoFar == 0.0,
            registeredProteinSoFar == 0.0,
@@ -1775,7 +1794,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // If any are non-zero, proceed with saving
             saveMealToHistory = true
             print("save meal to history true")
-            if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: ""),
+            if let text = totalRegisteredCarbsLabel?.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0"),
                let carbsValue = Double(text) {
                 registeredCarbsSoFar = carbsValue
             } else {
@@ -2122,7 +2141,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             totalRegisteredCarbsLabel.text = registeredCarbsSoFar == 0 ? nil : formattedLastValue
             
             // Check if any of the values (carbs, fat, protein, bolus) are greater than 0
-            if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: ""),
+            if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0"),
                let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")),
                numberValue > 0 || registeredFatSoFar > 0.0 || registeredProteinSoFar > 0.0 || registeredBolusSoFar > 0.0 {
                 
@@ -2573,11 +2592,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         hideAllDeleteButtons()
         createEmojiString()
-        
-        let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
+
+        // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
+        let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
         let fatValue = "0"
         let proteinValue = "0"
-        let bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "") ?? "0")
+        let bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
+        
         let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis()
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
@@ -2586,13 +2607,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             method = "SMS API"
         }
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "") ?? "0"
+        
+        // Replace "--" with "0" in totalBolusAmountLabel
+        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+        
         let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
-        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        // Replace "--" with "0" in totalNetCarbsLabel
+        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+        
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        // Replace "--" with "0" in totalNetFatLabel
+        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+        
         let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
-        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        // Replace "--" with "0" in totalNetProteinLabel
+        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
         
         let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"
         
@@ -2626,6 +2655,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 })
             }
         }
+        
         // Fetch device status from Nightscout after all UI actions
         NightscoutManager.shared.fetchDeviceStatus {
             DispatchQueue.main.async {
@@ -2640,17 +2670,35 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         hideAllDeleteButtons()
         createEmojiString()
-        
-        let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        let bolusRemainsValue = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
-        
+
+        // Replace "--" with "0" in totalRemainsLabel and totalRemainsBolusLabel
+        let remainsValue = Double(totalRemainsLabel.text?
+            .replacingOccurrences(of: "g", with: "")
+            .replacingOccurrences(of: ",", with: ".")
+            .replacingOccurrences(of: "--", with: "0") ?? "0") ?? 0.0
+
+        let bolusRemainsValue = Double(totalRemainsBolusLabel.text?
+            .replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "")
+            .replacingOccurrences(of: ",", with: ".")
+            .replacingOccurrences(of: "--", with: "0") ?? "0") ?? 0.0
+
         if bolusRemainsValue < 0 {
-            let bolusText = totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let crText = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
+            let bolusText = totalRemainsBolusLabel.text?
+                .replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "")
+                .replacingOccurrences(of: "-", with: "")
+                .replacingOccurrences(of: ",", with: ".") ?? "0"
+            let crText = nowCRLabel.text?
+                .replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "")
+                .replacingOccurrences(of: ",", with: ".") ?? "0"
+
             if let bolusValue = Double(bolusText), let crValue = Double(crText) {
                 let khValue = bolusValue * crValue
                 let formattedKhValue = formatValue(String(format: "%.0f", khValue))
-                let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: String(format: NSLocalizedString("\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!"), formattedKhValue), preferredStyle: .alert)
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Varning", comment: "Varning"),
+                    message: String(format: NSLocalizedString("\nDu har registrerat mer insulin än det beräknade behovet! \n\nSe till att komplettera med %@ g kolhydrater för att undvika ett lågt blodsocker!", comment: "Insulin exceeds carbs warning"), formattedKhValue),
+                    preferredStyle: .alert
+                )
                 let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
                 alert.addAction(okAction)
                 present(alert, animated: true, completion: nil)
@@ -2659,25 +2707,33 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Invalid input for calculation")
             }
         } else if remainsValue < 0 {
-            let khValue = totalRemainsLabel.text?.replacingOccurrences(of: "g", with: " g").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ",", with: ".") ?? "0"
-            let alert = UIAlertController(title: NSLocalizedString("Varning", comment: "Varning"), message: String(format: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!", comment: "\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!"), khValue), preferredStyle: .alert)
+            let khValue = totalRemainsLabel.text?
+                .replacingOccurrences(of: "g", with: " g")
+                .replacingOccurrences(of: "-", with: "")
+                .replacingOccurrences(of: ",", with: ".") ?? "0"
+            let alert = UIAlertController(
+                title: NSLocalizedString("Varning", comment: "Varning"),
+                message: String(format: NSLocalizedString("\nDu har registrerat mer kolhydrater än vad som har ätits! \n\nSe till att komplettera med %@ kolhydrater för att undvika ett lågt blodsocker!", comment: "Carb registration exceeds intake warning"), khValue),
+                preferredStyle: .alert
+            )
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
             return
         }
-        
-        let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0")
-        let totalFatValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+
+        // Replace "--" with "0" in totalNetFatLabel, totalNetProteinLabel, totalRemainsBolusLabel
+        let khValue = formatValue(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
+        let totalFatValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0") ?? 0.0
         let fatValue = formatValue("\(totalFatValue - registeredFatSoFar)")
-        let totalProteinValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let totalProteinValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0") ?? 0.0
         let proteinValue = formatValue("\(totalProteinValue - registeredProteinSoFar)")
-        let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "") ?? "0")
-        
+        let bolusValue = formatValue(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
+
         var adjustedKhValue = khValue
         var adjustedBolusValue = self.zeroBolus ? "0.0" : bolusValue
         var showAlert = false
-        
+
         if let maxCarbs = UserDefaultsRepository.maxCarbs as Double?,
            let khValueDouble = Double(khValue),
            khValueDouble > maxCarbs {
@@ -2696,7 +2752,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             showAlert = true
         }
         if showAlert {
-            let maxCarbsAlert = UIAlertController(title: NSLocalizedString("Maxgräns överskriden", comment: "Maxgräns överskriden"), message: String(format: NSLocalizedString("\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg...", comment: "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg..."), khValue, bolusValue, adjustedKhValue, adjustedBolusValue), preferredStyle: .alert)
+            let maxCarbsAlert = UIAlertController(
+                title: NSLocalizedString("Maxgräns överskriden", comment: "Max limit exceeded"),
+                message: String(format: NSLocalizedString("\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg...", comment: "Meal registration exceeds limits warning"), khValue, bolusValue, adjustedKhValue, adjustedBolusValue),
+                preferredStyle: .alert
+            )
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 self.proceedWithRemainingAmount(khValue: adjustedKhValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: adjustedBolusValue)
             }
@@ -2708,47 +2768,53 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func proceedWithRemainingAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue
+        // Replace "--" with "0" in the provided bolusValue
+        let finalBolusValue = self.zeroBolus ? "0.0" : bolusValue.replacingOccurrences(of: "--", with: "0")
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             method = "iOS Shortcuts"
         } else {
             method = "SMS API"
         }
-        
+
         let emojis: String
         if self.startDoseGiven == true {
             emojis = "🍽️"
         } else {
             emojis = "\(self.getMealEmojis())🍽️"
         }
-        
+
+        // Replace "--" with "0" in the labels
         let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "") ?? "0"
+        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
         let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
-        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
         let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
+        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
         let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
-        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0"
-        let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"
+        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+        let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
         let startDose = true
         let remainDose = true
-        
+
         if !allowShortcuts {
-            var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater"), khValue)
+            var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegister the unregistered carbs in iAPS/Trio and give a bolus as summarized:\n\n• %@ g carbs"), khValue)
             
             if let fat = Double(fatValue), fat > 0 {
-                alertMessage += String(format:NSLocalizedString("\n• %@ g fett", comment: "\n• %@ g fett"),fatValue)
+                alertMessage += String(format: NSLocalizedString("\n• %@ g fett", comment: "\n• %@ g fat"), fatValue)
             }
             if let protein = Double(proteinValue), protein > 0 {
-                alertMessage += String(format:NSLocalizedString("\n• %@ g protein", comment: "\n• %@ g protein"), proteinValue)
+                alertMessage += String(format: NSLocalizedString("\n• %@ g protein", comment: "\n• %@ g protein"), proteinValue)
             }
-            
-            alertMessage += String(format:NSLocalizedString("\n• %@ E insulin", comment: "\n• %@ E insulin"), finalBolusValue)
-            
-            let alertController = UIAlertController(title: NSLocalizedString("Manuell registrering", comment: "Manuell registrering"), message: alertMessage, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+
+            alertMessage += String(format: NSLocalizedString("\n• %@ E insulin", comment: "\n• %@ E insulin"), finalBolusValue)
+
+            let alertController = UIAlertController(
+                title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
+                message: alertMessage,
+                preferredStyle: .alert
+            )
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                 self.updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: finalBolusValue, startDose: false)
                 self.remainingDoseGiven = true
@@ -2756,19 +2822,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(cancelAction)
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
-            
+
         } else {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
                 mealVC.delegate = self
                 let navigationController = UINavigationController(rootViewController: mealVC)
                 navigationController.modalPresentationStyle = .pageSheet
-                
+
                 present(navigationController, animated: true, completion: {
                     mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr)
                 })
             }
         }
+
         // Fetch device status from Nightscout after all UI actions
         NightscoutManager.shared.fetchDeviceStatus {
             DispatchQueue.main.async {

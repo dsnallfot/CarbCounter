@@ -433,6 +433,7 @@
 "Genomsnittlig portion" = "Genomsnittlig portion";
 "Största portion" = "Största portion";
 "Minsta portion" = "Minsta portion";
+"Portionshistorik" = "Portionshistorik";
 "%.1f st" = "%.1f st";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Medelvärden måltider";
@@ -466,7 +467,7 @@
 "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen." = "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen.";
 "Nightscout • Måltid %@" = "Nightscout • Måltid %@";
 "Välj datum och ett livsmedel" = "Välj datum och ett livsmedel";
-"Portion uppäten" = "Uppäten portion (g)";
+"Portion uppäten" = "Uppäten portion";
 "Kolhydrater (g)" = "Kolhydrater (g)";
 "Hämtar rapport" = "Hämtar rapport";
 
