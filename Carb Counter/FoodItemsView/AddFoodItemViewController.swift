@@ -360,96 +360,101 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
-            // Store the current segment index before any changes
-            let currentIndex = sender.selectedSegmentIndex
+        // Store the current segment index before any changes
+        let currentIndex = sender.selectedSegmentIndex
 
-            // Show alert with text field when foodItem is not nil
-            let alert = UIAlertController(title: NSLocalizedString("Omvandla näringsvärden", comment: "Enter weight per piece"), message: "", preferredStyle: .alert)
-            alert.addTextField { (textField) in
-                textField.keyboardType = .decimalPad
-                textField.placeholder = NSLocalizedString("Ange vikt/styck (g)", comment: "Weight placeholder")
-            }
+        // Check if all the text fields are empty or contain a value of 0
+        let areAllFieldsEmptyOrZero = (self.carbsTextField.text?.isEmpty ?? true || self.carbsTextField.text == "0" || self.carbsTextField.text == "0.0") &&
+                                      (self.fatTextField.text?.isEmpty ?? true || self.fatTextField.text == "0" || self.fatTextField.text == "0.0") &&
+                                      (self.proteinTextField.text?.isEmpty ?? true || self.proteinTextField.text == "0" || self.proteinTextField.text == "0.0")
 
-            // Cancel action that restores the previous segment index
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: { _ in
-                // Restore the previous segment index when cancelled
-                sender.selectedSegmentIndex = self.previousSegmentIndex
-            }))
+        // If all fields are empty or zero, skip showing the alert
+        if areAllFieldsEmptyOrZero {
+            // Simply update the segmented control without showing the alert
+            self.isPerPiece = sender.selectedSegmentIndex == 1
+            self.updateUnitsLabels()
+            self.checkForChanges()
+            self.updateSegmentedControlLabels()
+            return
+        }
 
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK button"), style: .default, handler: { _ in
-                if let textField = alert.textFields?.first, let weightText = textField.text?.replacingOccurrences(of: ",", with: "."), let weight = Double(weightText), weight > 0 {
+        // Show alert with text field if any nutritional value is present
+        let alert = UIAlertController(title: NSLocalizedString("Omvandla näringsvärden", comment: "Enter weight per piece"), message: "", preferredStyle: .alert)
+        alert.addTextField { (textField) in
+            textField.keyboardType = .decimalPad
+            textField.placeholder = NSLocalizedString("Ange vikt/styck (g)", comment: "Weight placeholder")
+        }
 
-                    if self.isPerPiece {
-                        // Convert current values to per 100g
-                        if let carbsText = self.carbsTextField.text?.replacingOccurrences(of: ",", with: "."), let carbsValue = Double(carbsText) {
-                            self.carbsTextField.text = String(format: "%.1f", carbsValue * 100 / weight)
-                        }
-                        if let fatText = self.fatTextField.text?.replacingOccurrences(of: ",", with: "."), let fatValue = Double(fatText) {
-                            self.fatTextField.text = String(format: "%.1f", fatValue * 100 / weight)
-                        }
-                        if let proteinText = self.proteinTextField.text?.replacingOccurrences(of: ",", with: "."), let proteinValue = Double(proteinText) {
-                            self.proteinTextField.text = String(format: "%.1f", proteinValue * 100 / weight)
-                        }
-                    } else {
-                        // Convert values back to per piece
-                        if let carbsText = self.carbsTextField.text?.replacingOccurrences(of: ",", with: "."), let carbsValue = Double(carbsText) {
-                            self.carbsTextField.text = String(format: "%.1f", carbsValue / 100 * weight)
-                        }
-                        if let fatText = self.fatTextField.text?.replacingOccurrences(of: ",", with: "."), let fatValue = Double(fatText) {
-                            self.fatTextField.text = String(format: "%.1f", fatValue / 100 * weight)
-                        }
-                        if let proteinText = self.proteinTextField.text?.replacingOccurrences(of: ",", with: "."), let proteinValue = Double(proteinText) {
-                            self.proteinTextField.text = String(format: "%.1f", proteinValue / 100 * weight)
-                        }
+        // Cancel action that restores the previous segment index
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: { _ in
+            // Restore the previous segment index when cancelled
+            sender.selectedSegmentIndex = self.previousSegmentIndex
+        }))
 
-                        // Add weightString to notesTextField
-                        if self.notesTextField.text?.isEmpty ?? true {
-                            let weightString: String
-                            if weight.truncatingRemainder(dividingBy: 1) == 0 {
-                                weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight))
-                            } else {
-                                weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
-                            }
-                            self.notesTextField.text = weightString
-                        } else {
-                            let currentText = self.notesTextField.text ?? ""
-                            let weightRegexPattern = "Vikt per styck: (\\d+\\.?\\d*) g"
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK button"), style: .default, handler: { _ in
+            if let textField = alert.textFields?.first, let weightText = textField.text?.replacingOccurrences(of: ",", with: "."), let weight = Double(weightText), weight > 0 {
 
-                            if let _ = currentText.range(of: weightRegexPattern, options: .regularExpression) {
-                                let weightString: String
-                                if weight.truncatingRemainder(dividingBy: 1) == 0 {
-                                    weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight))
-                                } else {
-                                    weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
-                                }
-                                let updatedText = currentText.replacingOccurrences(of: weightRegexPattern, with: weightString, options: .regularExpression)
-                                self.notesTextField.text = updatedText
-                            } else {
-                                let weightString: String
-                                if weight.truncatingRemainder(dividingBy: 1) == 0 {
-                                    weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight))
-                                } else {
-                                    weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
-                                }
-                                self.notesTextField.text = currentText + " • " + weightString
-                            }
-                        }
+                // Function to remove unnecessary .0
+                func formatValue(_ value: Double) -> String {
+                    return value.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", value) : String(format: "%.1f", value)
+                }
+
+                if self.isPerPiece {
+                    // Convert current values to per 100g
+                    if let carbsText = self.carbsTextField.text?.replacingOccurrences(of: ",", with: "."), let carbsValue = Double(carbsText) {
+                        self.carbsTextField.text = carbsValue == 0 ? "" : formatValue(carbsValue * 100 / weight)
+                    }
+                    if let fatText = self.fatTextField.text?.replacingOccurrences(of: ",", with: "."), let fatValue = Double(fatText) {
+                        self.fatTextField.text = fatValue == 0 ? "" : formatValue(fatValue * 100 / weight)
+                    }
+                    if let proteinText = self.proteinTextField.text?.replacingOccurrences(of: ",", with: "."), let proteinValue = Double(proteinText) {
+                        self.proteinTextField.text = proteinValue == 0 ? "" : formatValue(proteinValue * 100 / weight)
+                    }
+                } else {
+                    // Convert values back to per piece
+                    if let carbsText = self.carbsTextField.text?.replacingOccurrences(of: ",", with: "."), let carbsValue = Double(carbsText) {
+                        self.carbsTextField.text = carbsValue == 0 ? "" : formatValue(carbsValue / 100 * weight)
+                    }
+                    if let fatText = self.fatTextField.text?.replacingOccurrences(of: ",", with: "."), let fatValue = Double(fatText) {
+                        self.fatTextField.text = fatValue == 0 ? "" : formatValue(fatValue / 100 * weight)
+                    }
+                    if let proteinText = self.proteinTextField.text?.replacingOccurrences(of: ",", with: "."), let proteinValue = Double(proteinText) {
+                        self.proteinTextField.text = proteinValue == 0 ? "" : formatValue(proteinValue / 100 * weight)
                     }
 
-                    // Update UI labels after calculation
-                    self.isPerPiece = sender.selectedSegmentIndex == 1
-                    self.updateUnitsLabels()
-                    self.checkForChanges()
-                    self.updateSegmentedControlLabels()
+                    // Add weightString to notesTextField
+                    if self.notesTextField.text?.isEmpty ?? true {
+                        let weightString = weight.truncatingRemainder(dividingBy: 1) == 0 ? String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight)) : String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
+                        self.notesTextField.text = weightString
+                    } else {
+                        let currentText = self.notesTextField.text ?? ""
+                        let weightRegexPattern = "Vikt per styck: (\\d+\\.?\\d*) g"
 
-                    // Store the current segment index as the new "previous" index
-                    self.previousSegmentIndex = currentIndex
+                        if let _ = currentText.range(of: weightRegexPattern, options: .regularExpression) {
+                            let weightString = weight.truncatingRemainder(dividingBy: 1) == 0 ? String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight)) : String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
+                            let updatedText = currentText.replacingOccurrences(of: weightRegexPattern, with: weightString, options: .regularExpression)
+                            self.notesTextField.text = updatedText
+                        } else {
+                            let weightString = weight.truncatingRemainder(dividingBy: 1) == 0 ? String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight)) : String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
+                            self.notesTextField.text = currentText + " • " + weightString
+                        }
+                    }
                 }
-            }))
 
-            // Show the alert
-            present(alert, animated: true, completion: nil)
-        }
+                // Update UI labels after calculation
+                self.isPerPiece = sender.selectedSegmentIndex == 1
+                self.updateUnitsLabels()
+                self.checkForChanges()
+                self.updateSegmentedControlLabels()
+
+                // Store the current segment index as the new "previous" index
+                self.previousSegmentIndex = currentIndex
+            }
+        }))
+
+        // Show the alert
+        present(alert, animated: true, completion: nil)
+    }
     
     private func updateUnitsLabels() {
         if isPerPiece {
@@ -508,15 +513,21 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             if foodItem.perPiece {
                 isPerPiece = true
                 segmentedControl.selectedSegmentIndex = 1
-                carbsTextField.text = formattedValue(foodItem.carbsPP)
-                fatTextField.text = formattedValue(foodItem.fatPP)
-                proteinTextField.text = formattedValue(foodItem.proteinPP)
+                //carbsTextField.text = formattedValue(foodItem.carbsPP)
+                carbsTextField.text = foodItem.carbsPP == 0 ? "" : formattedValue(foodItem.carbsPP)
+                //fatTextField.text = formattedValue(foodItem.fatPP)
+                fatTextField.text = foodItem.fatPP == 0 ? "" : formattedValue(foodItem.fatPP)
+                //proteinTextField.text = formattedValue(foodItem.proteinPP)
+                proteinTextField.text = foodItem.proteinPP == 0 ? "" : formattedValue(foodItem.proteinPP)
             } else {
                 isPerPiece = false
                 segmentedControl.selectedSegmentIndex = 0
-                carbsTextField.text = formattedValue(foodItem.carbohydrates)
-                fatTextField.text = formattedValue(foodItem.fat)
-                proteinTextField.text = formattedValue(foodItem.protein)
+                //carbsTextField.text = formattedValue(foodItem.carbohydrates)
+                carbsTextField.text = foodItem.carbohydrates == 0 ? "" : formattedValue(foodItem.carbohydrates)
+                //fatTextField.text = formattedValue(foodItem.fat)
+                fatTextField.text = foodItem.fat == 0 ? "" : formattedValue(foodItem.fat)
+                //proteinTextField.text = formattedValue(foodItem.protein)
+                proteinTextField.text = foodItem.protein == 0 ? "" : formattedValue(foodItem.protein)
             }
         } else if let data = prePopulatedData {
             title = NSLocalizedString("Lägg till livsmedel", comment: "Add food item screen title")
@@ -528,15 +539,21 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             if data.isPerPiece {
                 isPerPiece = true
                 segmentedControl.selectedSegmentIndex = 1
-                carbsTextField.text = formattedValue(data.carbsPP)
-                fatTextField.text = formattedValue(data.fatPP)
-                proteinTextField.text = formattedValue(data.proteinPP)
+                //carbsTextField.text = formattedValue(data.carbsPP)
+                carbsTextField.text = data.carbsPP == 0 ? "" : formattedValue(data.carbsPP)
+                //fatTextField.text = formattedValue(data.fatPP)
+                fatTextField.text = data.fatPP == 0 ? "" : formattedValue(data.fatPP)
+                //proteinTextField.text = formattedValue(data.proteinPP)
+                proteinTextField.text = data.proteinPP == 0 ? "" : formattedValue(data.proteinPP)
             } else {
                 isPerPiece = false
                 segmentedControl.selectedSegmentIndex = 0
-                carbsTextField.text = formattedValue(data.carbohydrates)
-                fatTextField.text = formattedValue(data.fat)
-                proteinTextField.text = formattedValue(data.protein)
+                //carbsTextField.text = formattedValue(data.carbohydrates)
+                carbsTextField.text = data.carbohydrates == 0 ? "" : formattedValue(data.carbohydrates)
+                //fatTextField.text = formattedValue(data.fat)
+                fatTextField.text = data.fat == 0 ? "" : formattedValue(data.fat)
+                //proteinTextField.text = formattedValue(data.protein)
+                proteinTextField.text = data.protein == 0 ? "" : formattedValue(data.protein)
             }
         }
 
