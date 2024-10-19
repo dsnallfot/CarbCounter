@@ -358,10 +358,63 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
-        isPerPiece = sender.selectedSegmentIndex == 1
-        updateUnitsLabels()
-        checkForChanges()
-        updateSegmentedControlLabels() // Update labels based on the new selection
+        // Check if foodItem exists before proceeding
+        if foodItem != nil {
+            // Show alert with text field when foodItem is not nil
+            let alert = UIAlertController(title: NSLocalizedString("Ange vikt/styck (g)", comment: "Enter weight per piece"), message: "", preferredStyle: .alert)
+            alert.addTextField { (textField) in
+                textField.keyboardType = .decimalPad
+                textField.placeholder = NSLocalizedString("Vikt (g)", comment: "Weight placeholder")
+            }
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK button"), style: .default, handler: { _ in
+                if let textField = alert.textFields?.first, let weightText = textField.text, let weight = Double(weightText), weight > 0 {
+                    // Keep track of isPerPiece based on the segmented control
+                    self.isPerPiece = sender.selectedSegmentIndex == 1
+
+                    // Perform the necessary calculations based on isPerPiece status
+                    if self.isPerPiece {
+                        // Convert current values to per 100g
+                        if let carbsText = self.carbsTextField.text, let carbsValue = Double(carbsText) {
+                            self.carbsTextField.text = String(format: "%.1f", carbsValue * 100 / weight)
+                        }
+                        if let fatText = self.fatTextField.text, let fatValue = Double(fatText) {
+                            self.fatTextField.text = String(format: "%.1f", fatValue * 100 / weight)
+                        }
+                        if let proteinText = self.proteinTextField.text, let proteinValue = Double(proteinText) {
+                            self.proteinTextField.text = String(format: "%.1f", proteinValue * 100 / weight)
+                        }
+                    } else {
+                        // Convert values back to per piece
+                        if let carbsText = self.carbsTextField.text, let carbsValue = Double(carbsText) {
+                            self.carbsTextField.text = String(format: "%.1f", carbsValue / 100 * weight)
+                        }
+                        if let fatText = self.fatTextField.text, let fatValue = Double(fatText) {
+                            self.fatTextField.text = String(format: "%.1f", fatValue / 100 * weight)
+                        }
+                        if let proteinText = self.proteinTextField.text, let proteinValue = Double(proteinText) {
+                            self.proteinTextField.text = String(format: "%.1f", proteinValue / 100 * weight)
+                        }
+                    }
+
+                    // Update UI labels after calculation
+                    self.updateUnitsLabels()
+                    self.checkForChanges()
+                    self.updateSegmentedControlLabels()
+                }
+            }))
+            
+            // Show the alert
+            present(alert, animated: true, completion: nil)
+        } else {
+            // Update the segmented control and UI labels if foodItem is nil (no alert)
+            self.isPerPiece = sender.selectedSegmentIndex == 1
+            self.updateUnitsLabels()
+            self.checkForChanges()
+            self.updateSegmentedControlLabels()
+        }
     }
     
     private func updateUnitsLabels() {
@@ -375,6 +428,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             proteinUnits.text = NSLocalizedString("g/100g", comment: "Grams per 100 grams unit")
         }
     }
+    /*
     private func clearOppositeFields() {
         if isPerPiece {
             carbsTextField.text = ""
@@ -386,6 +440,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             proteinTextField.text = ""
         }
     }
+     */
     
     private func setupSaveButton() {
         saveButton.addTarget(self, action: #selector(saveButtonTap), for: .touchUpInside)

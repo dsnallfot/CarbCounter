@@ -320,6 +320,8 @@
 "\nKolhydrater: %.1f g / 100 g" = "\nKolhydrater: %.1f g / 100 g ";
 "\nFett: %.1f g / 100 g" = "\nFett: %.1f g / 100 g ";
 "\nProtein: %.1f g / 100 g" = "\nProtein: %.1f g / 100 g ";
+"Vikt per portion: %d g" = "Vikt per portion: %d g";
+"Vikt per portion: %.1f g" = "Vikt per portion: %.1f g";
 
 /* Add Food Items VC */
 "Lägg till livsmedel" = "Lägg till livsmedel";
