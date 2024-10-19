@@ -346,6 +346,8 @@
 "skola: " = "school: ";
 "skola " = "school ";
 "skolmat " = "school food ";
+"Ange vikt/styck (g)" = "Enter weight per serving (g)";
+"Omvandla näringsvärden" = "Convert nutritional values";
 
 /* Scanner VC */
 "Scanna streckkod" = "Scan Barcode";

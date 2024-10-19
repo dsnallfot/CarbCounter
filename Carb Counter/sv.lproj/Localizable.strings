@@ -347,6 +347,8 @@
 "skola: " = "skola: ";
 "skola " = "skola ";
 "skolmat " = "skolmat ";
+"Ange vikt/styck (g)" = "Ange vikt/styck (g)";
+"Omvandla näringsvärden" = "Omvandla näringsvärden";
 
 /* Scanner VC */
 "Scanna streckkod" = "Scanna streckkod";
