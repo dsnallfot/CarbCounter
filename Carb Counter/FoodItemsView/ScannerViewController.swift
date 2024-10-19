@@ -441,9 +441,9 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             // Adjust prePopulatedData to include the weight per piece if provided
             let weightString: String
             if weightPerPiece.truncatingRemainder(dividingBy: 1) == 0 {
-                weightString = String(format: NSLocalizedString("Vikt per portion: %d g", comment: "Weight info"), Int(weightPerPiece))
+                weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weightPerPiece))
             } else {
-                weightString = String(format: NSLocalizedString("Vikt per portion: %.1f g", comment: "Weight info"), weightPerPiece)
+                weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weightPerPiece)
             }
             addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", isPerPiece ?  weightString : "", isPerPiece, isPerPiece ? carbohydrates : 0.0, isPerPiece ? fat : 0.0, isPerPiece ? proteins : 0.0)
             addFoodItemVC.isPerPiece = isPerPiece

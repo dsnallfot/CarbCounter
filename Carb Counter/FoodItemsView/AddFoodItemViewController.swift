@@ -371,10 +371,8 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK button"), style: .default, handler: { _ in
                 if let textField = alert.textFields?.first, let weightText = textField.text, let weight = Double(weightText), weight > 0 {
-                    // Keep track of isPerPiece based on the segmented control
-                    self.isPerPiece = sender.selectedSegmentIndex == 1
 
-                    // Perform the necessary calculations based on isPerPiece status
+
                     if self.isPerPiece {
                         // Convert current values to per 100g
                         if let carbsText = self.carbsTextField.text, let carbsValue = Double(carbsText) {
@@ -397,9 +395,52 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                         if let proteinText = self.proteinTextField.text, let proteinValue = Double(proteinText) {
                             self.proteinTextField.text = String(format: "%.1f", proteinValue / 100 * weight)
                         }
+
+                        // Add weightString to notesTextField based on the current text content
+                        if self.notesTextField.text?.isEmpty ?? true {
+                            // If notesTextField is empty, add the weightString
+                            let weightString: String
+                            if weight.truncatingRemainder(dividingBy: 1) == 0 {
+                                weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight))
+                            } else {
+                                weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
+                            }
+                            self.notesTextField.text = weightString
+                        } else {
+                            // If notesTextField is not empty, check if it contains the weight information using regex
+                            let currentText = self.notesTextField.text ?? ""
+                            
+                            // Regular expression to match the weight pattern (handles both %d and %.1f)
+                            let weightRegexPattern = "Vikt per styck: (\\d+\\.?\\d*) g"
+                            
+                            if let _ = currentText.range(of: weightRegexPattern, options: .regularExpression) {
+                                // If it contains the weight info, overwrite it with the new weightString
+                                let weightString: String
+                                if weight.truncatingRemainder(dividingBy: 1) == 0 {
+                                    weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight))
+                                } else {
+                                    weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
+                                }
+                                
+                                // Replace the old weight info with the new weightString
+                                let updatedText = currentText.replacingOccurrences(of: weightRegexPattern, with: weightString, options: .regularExpression)
+                                self.notesTextField.text = updatedText
+                                
+                            } else {
+                                // If it does not contain weight info, append the new weightString
+                                let weightString: String
+                                if weight.truncatingRemainder(dividingBy: 1) == 0 {
+                                    weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weight))
+                                } else {
+                                    weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weight)
+                                }
+                                self.notesTextField.text = currentText + " • " + weightString
+                            }
+                        }
                     }
 
                     // Update UI labels after calculation
+                    self.isPerPiece = sender.selectedSegmentIndex == 1
                     self.updateUnitsLabels()
                     self.checkForChanges()
                     self.updateSegmentedControlLabels()
