@@ -1098,7 +1098,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece, weightPerPiece: weight)
                 } else {
                     // Navigate without per piece
-                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
+                    self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece, weightPerPiece: 0.0)
                 }
             }))
             
@@ -1168,12 +1168,18 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
 
-    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool, weightPerPiece: Double = 0.0) {
+    private func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool, weightPerPiece: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self
+            let weightString: String
+            if weightPerPiece.truncatingRemainder(dividingBy: 1) == 0 {
+                weightString = String(format: NSLocalizedString("Vikt per portion: %d g", comment: "Weight info"), Int(weightPerPiece))
+            } else {
+                weightString = String(format: NSLocalizedString("Vikt per portion: %.1f g", comment: "Weight info"), weightPerPiece)
+            }
             // Adjust prePopulatedData to include the weight per piece if provided
-            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", "", isPerPiece, isPerPiece ? carbohydrates : 0.0, isPerPiece ? fat : 0.0, isPerPiece ? proteins : 0.0)
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", isPerPiece ?  weightString : "", isPerPiece, isPerPiece ? carbohydrates : 0.0, isPerPiece ? fat : 0.0, isPerPiece ? proteins : 0.0)
             addFoodItemVC.isPerPiece = isPerPiece
             let navController = UINavigationController(rootViewController: addFoodItemVC)
             navController.modalPresentationStyle = .pageSheet

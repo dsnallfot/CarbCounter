@@ -19,7 +19,7 @@
 "Pågående måltid" = "Ongoing meal";
 "Ingen näringsinformation tillgänglig." = "No nutritional information available.";
 "LIVSMEDEL" = "FOOD ITEM";
-"PORTION" = "PORTION";
+"PORTION" = "SERVED";
 "LÄMNAT" = "LEFT";
 "KH" = "CARBS";
 "Reg KH" = "Reg Carbs";
@@ -319,6 +319,8 @@
 "\nKolhydrater: %.1f g / 100 g" = "\nCarbohydrates: %.1f g/100 g ";
 "\nFett: %.1f g / 100 g" = "\nFat: %.1f g/100 g ";
 "\nProtein: %.1f g / 100 g" = "\nProtein: %.1f g/100 g ";
+"Vikt per styck: %d g" = "Weight per serving: %d g";
+"Vikt per styck: %.1f g" = "Weight per serving: %.1f g";
 
 /* Add Food Items VC */
 "Lägg till livsmedel" = "Add food item";
@@ -344,6 +346,8 @@
 "skola: " = "school: ";
 "skola " = "school ";
 "skolmat " = "school food ";
+"Ange vikt/styck (g)" = "Enter weight per serving (g)";
+"Omvandla näringsvärden" = "Convert nutritional values";
 
 /* Scanner VC */
 "Scanna streckkod" = "Scan Barcode";
@@ -429,9 +433,10 @@
 "Från datum" = "From Date";
 "Måltidsinsikter" = "Insights";
 "Serverats antal gånger" = "Times served";
-"Genomsnittlig portion" = "Average portion";
-"Största portion" = "Largest portion";
-"Minsta portion" = "Smallest portion";
+"Genomsnittlig portion" = "Average serving";
+"Största portion" = "Largest serving";
+"Minsta portion" = "Smallest serving";
+"Portionshistorik" = "Servings history";
 "%.1f st" = "%.1f serv";
 "%.0f g" = "%.0f g";
 "Medelvärden måltider (Datum och tid)" = "Meal average values";
@@ -466,7 +471,7 @@
 "Kunde inte ladda Nightscout-sidan. Kontrollera din internetanslutning och försök igen." = "Could not load Nightscout. Check your internet connection and try again.";
 "Nightscout • Måltid %@" = "Nightscout • Meal %@";
 "Välj datum och ett livsmedel" = "Select a date and a food item";
-"Portion uppäten" = "Serving size (g)";
+"Portion uppäten" = "Serving size";
 "Kolhydrater (g)" = "Carbohydrates (g)";
 "Hämtar rapport" = "Fetching report";
 

@@ -339,9 +339,9 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                         let adjustedFat = (fat * weight / 100).roundToDecimal(1)
                         let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
                         isPerPiece = true // Update the flag
-                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece)
+                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece, weightPerPiece: weight)
                     } else {
-                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece)
+                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece, weightPerPiece: 0.0)
                     }
                 })
             )
@@ -434,13 +434,24 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         }
     }
 
-    func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool = false) {
+    func navigateToAddFoodItem(productName: String, carbohydrates: Double, fat: Double, proteins: Double, isPerPiece: Bool, weightPerPiece: Double) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
             addFoodItemVC.delegate = self as? AddFoodItemDelegate
-            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", "", isPerPiece, 0.0, 0.0, 0.0)
+            // Adjust prePopulatedData to include the weight per piece if provided
+            let weightString: String
+            if weightPerPiece.truncatingRemainder(dividingBy: 1) == 0 {
+                weightString = String(format: NSLocalizedString("Vikt per styck: %d g", comment: "Weight info"), Int(weightPerPiece))
+            } else {
+                weightString = String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), weightPerPiece)
+            }
+            addFoodItemVC.prePopulatedData = (productName, carbohydrates, fat, proteins, "", isPerPiece ?  weightString : "", isPerPiece, isPerPiece ? carbohydrates : 0.0, isPerPiece ? fat : 0.0, isPerPiece ? proteins : 0.0)
             addFoodItemVC.isPerPiece = isPerPiece
-            presentAddFoodItemViewController(addFoodItemVC)
+            
+            // Wrap in UINavigationController and present
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            present(navController, animated: true, completion: nil)
         }
     }
 
