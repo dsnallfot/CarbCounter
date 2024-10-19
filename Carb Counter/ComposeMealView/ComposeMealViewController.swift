@@ -1094,26 +1094,63 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func didTakeoverRegistration(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             
+            // Print the imported rows for debugging
+            //print("Imported rows: \(importedRows)")
+            
             // Find the maximum registeredCarbsSoFar (and fat, protein & bolus so far) from the imported rows
             let maxregisteredCarbsSoFar = importedRows.map { $0.registeredCarbsSoFar }.max() ?? 0.0
+            //print("Max registered carbs so far: \(maxregisteredCarbsSoFar)")
+
             let maxRegisteredFatSoFar = importedRows.map { $0.registeredFatSoFar }.max() ?? 0.0
+            //print("Max registered fat so far: \(maxRegisteredFatSoFar)")
+
             let maxRegisteredProteinSoFar = importedRows.map { $0.registeredProteinSoFar }.max() ?? 0.0
+            //print("Max registered protein so far: \(maxRegisteredProteinSoFar)")
+
             let maxRegisteredBolusSoFar = importedRows.map { $0.registeredBolusSoFar }.max() ?? 0.0
-            
+            //print("Max registered bolus so far: \(maxRegisteredBolusSoFar)")
+
+            // Determine if start dose should be true based on bolus value
+            let startDose = maxRegisteredBolusSoFar > 0
+            //print("Start dose set to: \(startDose ? "true" : "false")")
+
             for row in importedRows {
+                //print("Processing row with foodItemID: \(row.foodItemID), portionServed: \(row.portionServed), notEaten: \(row.notEaten)")
                 if let foodItem = getFoodItemByID(row.foodItemID) {
+                    //print("Found food item: \(foodItem.name ?? "Unnamed")")
                     addFoodItemRow(with: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
+                } else {
+                    print("Food item not found for ID: \(row.foodItemID)")
                 }
             }
             
+            // Run the update function with max values and the calculated startDose
+            didUpdateMealValues(
+                khValue: String(format: "%.0f", maxregisteredCarbsSoFar),
+                fatValue: String(format: "%.0f", maxRegisteredFatSoFar),
+                proteinValue: String(format: "%.0f", maxRegisteredProteinSoFar),
+                bolusValue: String(format: "%.0f", maxRegisteredBolusSoFar),
+                startDose: startDose
+            )
+
             if maxregisteredCarbsSoFar == 0 {
                 totalRegisteredCarbsLabel?.text = "--"
+                print("Total registered carbs is zero, setting label to --")
             } else {
                 totalRegisteredCarbsLabel?.text = String(format: "%.0f g", maxregisteredCarbsSoFar)
+                print("Total registered carbs label set to: \(totalRegisteredCarbsLabel?.text ?? "nil")")
             }
+
             registeredFatSoFar = maxRegisteredFatSoFar
+            print("Registered fat so far set to: \(registeredFatSoFar)")
+
             registeredProteinSoFar = maxRegisteredProteinSoFar
+            print("Registered protein so far set to: \(registeredProteinSoFar)")
+
             registeredBolusSoFar = maxRegisteredBolusSoFar
+            print("Registered bolus so far set to: \(registeredBolusSoFar)")
+        } else {
+            print("No foodItemRows found in notification")
         }
     }
     
