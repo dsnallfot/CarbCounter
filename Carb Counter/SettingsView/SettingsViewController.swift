@@ -15,9 +15,16 @@ class SettingsViewController: UITableViewController {
     private func setupView() {
         tableView.backgroundColor = .clear
         let solidBackgroundView = UIView()
-        solidBackgroundView.backgroundColor = .systemBackground
         solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         
+        // Set solid background depending on light or dark mode
+        if traitCollection.userInterfaceStyle == .dark {
+            solidBackgroundView.backgroundColor = .systemBackground // This is the solid background in dark mode
+        } else {
+            solidBackgroundView.backgroundColor = .systemBackground // Solid white background in light mode
+        }
+
+        // Create gradient view (used only in dark mode)
         let colors: [CGColor] = [
             UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
             UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
@@ -28,9 +35,14 @@ class SettingsViewController: UITableViewController {
         
         let backgroundContainerView = UIView()
         backgroundContainerView.addSubview(solidBackgroundView)
-        backgroundContainerView.addSubview(gradientView)
-        tableView.backgroundView = backgroundContainerView
         
+        // Only add gradient view in dark mode
+        if traitCollection.userInterfaceStyle == .dark {
+            backgroundContainerView.addSubview(gradientView)
+        }
+        
+        tableView.backgroundView = backgroundContainerView
+
         NSLayoutConstraint.activate([
             solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
             solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
@@ -38,12 +50,14 @@ class SettingsViewController: UITableViewController {
             solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
         ])
         
-        NSLayoutConstraint.activate([
-            gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-            gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-            gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-            gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-        ])
+        if traitCollection.userInterfaceStyle == .dark {
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+            ])
+        }
         
         title = NSLocalizedString("Inställningar", comment: "Title for Settings screen")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")

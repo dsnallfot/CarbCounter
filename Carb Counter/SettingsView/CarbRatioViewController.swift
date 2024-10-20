@@ -10,43 +10,51 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.backgroundColor = .clear // Make sure the table view itself is clear
-                
-                // Create the solid background view
-                let solidBackgroundView = UIView()
-                solidBackgroundView.backgroundColor = .systemBackground
-                solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
-                
-                // Create the gradient view
-                let colors: [CGColor] = [
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-                ]
-                let gradientView = GradientView(colors: colors)
-                gradientView.translatesAutoresizingMaskIntoConstraints = false
-                
-                // Add the solid background view and gradient view as the table view's background view
-                let backgroundContainerView = UIView()
-                backgroundContainerView.addSubview(solidBackgroundView)
+        tableView.backgroundColor = .clear
+            let solidBackgroundView = UIView()
+            solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Set solid background depending on light or dark mode
+            if traitCollection.userInterfaceStyle == .dark {
+                solidBackgroundView.backgroundColor = .systemBackground // This is the solid background in dark mode
+            } else {
+                solidBackgroundView.backgroundColor = .systemBackground // Solid white background in light mode
+            }
+
+            // Create gradient view (used only in dark mode)
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+            
+            let backgroundContainerView = UIView()
+            backgroundContainerView.addSubview(solidBackgroundView)
+            
+            // Only add gradient view in dark mode
+            if traitCollection.userInterfaceStyle == .dark {
                 backgroundContainerView.addSubview(gradientView)
-                tableView.backgroundView = backgroundContainerView
-                
-                // Set up constraints for the solid background view
-                NSLayoutConstraint.activate([
-                    solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                    solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                    solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                    solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-                ])
-                
-                // Set up constraints for the gradient view
-                NSLayoutConstraint.activate([
-                    gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                    gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                    gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                    gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-                ])
+            }
+            
+            tableView.backgroundView = backgroundContainerView
+
+            NSLayoutConstraint.activate([
+                solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+            ])
+            
+        if traitCollection.userInterfaceStyle == .dark {
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+            ])
+        }
         
         title = NSLocalizedString("Carb Ratio", comment: "Carb Ratio")
         tableView.register(CarbRatioCell.self, forCellReuseIdentifier: "CarbRatioCell")

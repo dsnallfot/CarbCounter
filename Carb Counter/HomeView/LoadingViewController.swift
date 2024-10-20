@@ -15,7 +15,9 @@ class LoadingViewController: UIViewController {
             
             view.backgroundColor = .systemBackground
             
-            // Create the gradient view
+        // Check if the app is in dark mode
+        if traitCollection.userInterfaceStyle == .dark {
+            // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
                 UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
@@ -23,11 +25,11 @@ class LoadingViewController: UIViewController {
             ]
             let gradientView = GradientView(colors: colors)
             gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
+
             // Add the gradient view to the main view
             view.addSubview(gradientView)
             view.sendSubviewToBack(gradientView)
-            
+
             // Set up constraints for the gradient view
             NSLayoutConstraint.activate([
                 gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -35,6 +37,10 @@ class LoadingViewController: UIViewController {
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
+        } else {
+            // In light mode, set a solid white background
+            view.backgroundColor = .systemBackground
+        }
             
             // Ensure dataSharingVC is instantiated
             dataSharingVC = DataSharingViewController()

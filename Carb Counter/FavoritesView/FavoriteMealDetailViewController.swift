@@ -18,26 +18,8 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         super.viewDidLoad()
         title = NSLocalizedString("Ändra favoritmåltid", comment: "Edit favorite meal")
         view.backgroundColor = .systemBackground
-        // Create the gradient view
-        let colors: [CGColor] = [
-            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-        ]
-        let gradientView = GradientView(colors: colors)
-        gradientView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Add the gradient view to the main view
-        view.addSubview(gradientView)
-        view.sendSubviewToBack(gradientView)
-        
-        // Set up constraints for the gradient view
-        NSLayoutConstraint.activate([
-            gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-            gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        // Check if the app is in dark mode and set the background accordingly
+        updateBackgroundForCurrentMode()
         
         setupView()
         setupNavigationBar()
@@ -47,6 +29,47 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        // Check if the user interface style (light/dark mode) has changed
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateBackgroundForCurrentMode()
+        }
+    }
+
+    private func updateBackgroundForCurrentMode() {
+        // Remove any existing gradient views before updating
+        view.subviews.filter { $0 is GradientView }.forEach { $0.removeFromSuperview() }
+        
+        // Update the background based on the current interface style
+        if traitCollection.userInterfaceStyle == .dark {
+            // Create the gradient view for dark mode
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
+
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        } else {
+            // In light mode, set a solid white background
+            view.backgroundColor = .systemBackground
+        }
     }
     
     private func setupView() {
