@@ -315,6 +315,11 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         cell.backgroundColor = .clear
         cell.contentView.backgroundColor = .clear
         
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
+        
         return cell
     }
 

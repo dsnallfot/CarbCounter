@@ -436,8 +436,17 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         } else {
             cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
         }
-        cell.detailTextLabel?.textColor = .gray
         cell.textLabel?.text = foodItemNamesStr
+        
+        // Apply custom formatting
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        cell.detailTextLabel?.textColor = .gray
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
 
         return cell
     }

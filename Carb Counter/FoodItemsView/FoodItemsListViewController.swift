@@ -687,6 +687,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 cell.configure(with: foodItem)
             }
             cell.backgroundColor = .clear // Set cell background to clear
+            
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
+            
             return cell
         case .online:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ArticleCell", for: indexPath) as! ArticleTableViewCell
@@ -694,6 +700,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 cell.configure(with: article)
             }
             cell.backgroundColor = .clear // Set cell background to clear
+            
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
+            
             return cell
         }
     }

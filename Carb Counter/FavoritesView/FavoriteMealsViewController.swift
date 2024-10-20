@@ -243,9 +243,17 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         let items = getItems(from: favoriteMeal)
         let itemNames = items.compactMap { $0["name"] as? String }
-        cell.detailTextLabel?.text = itemNames.joined(separator: " • ")
+        cell.detailTextLabel?.text = itemNames.joined(separator: " | ")
+        
+        // Apply custom formatting
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         cell.detailTextLabel?.textColor = .gray
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
         
         return cell
     }

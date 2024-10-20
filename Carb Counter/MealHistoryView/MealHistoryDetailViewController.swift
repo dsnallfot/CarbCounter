@@ -371,7 +371,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             
             // Create food name label
             let foodNameLabel = UILabel()
-            foodNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            foodNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
             foodNameLabel.text = foodEntry.entryName
             
             // Create details label (smaller, gray text)
@@ -379,6 +379,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             foodDetailLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
             foodDetailLabel.textColor = .gray
             foodDetailLabel.text = formatFoodEntry(foodEntry)
+            
             
             // Setup stack view to hold both labels
             let stackView = UIStackView(arrangedSubviews: [foodNameLabel, foodDetailLabel])
@@ -389,6 +390,11 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             // Add stack view to the cell's content view
             cell.contentView.addSubview(stackView)
             cell.backgroundColor = .clear
+            
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
             
             NSLayoutConstraint.activate([
                 stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
