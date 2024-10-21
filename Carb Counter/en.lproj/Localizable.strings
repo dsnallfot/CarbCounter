@@ -413,8 +413,8 @@
 "Fett %@ g" = "Fat %@g";
 "Protein %@ g" = "Protein %@g";
 "Bolus %@ E" = "Bolus %@U";
-"Åt upp %@ st  [Serverades %@ st - Lämnade %@ st]" = "Ate %@ serv  [Served %@ serv - Left %@ serv]";
-"Åt upp %@ g  [Serverades %@ g - Lämnade %@ g]" = "Ate %@ g  [Served %@ g - Left %@ g]";
+"Åt upp %@ st [Serverades %@ st - Lämnade %@ st]" = "Ate %@ serv [Served %@ serv - Left %@ serv]";
+"Åt upp %@ g [Serverades %@ g - Lämnade %@ g]" = "Ate %@ g  [Served %@ g - Left %@ g]";
 "Åt upp %@ st" = "Ate %@ serv";
 "Åt upp %@ g" = "Ate %@ g";
 "Filter: Liknande" = "Filter: Similar";
