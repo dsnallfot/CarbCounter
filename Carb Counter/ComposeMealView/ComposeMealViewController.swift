@@ -875,7 +875,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         notEatenLabel.textColor = .gray
         
         netCarbsLabel = UILabel()
-        netCarbsLabel.text = NSLocalizedString("KOLHYDR.", comment: "KOLHYDR.")
+        netCarbsLabel.text = NSLocalizedString("KOLH", comment: "KOLH")
         netCarbsLabel.textAlignment = .right
         netCarbsLabel.widthAnchor.constraint(equalToConstant: 48).isActive = true
         netCarbsLabel.font = font

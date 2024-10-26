@@ -152,7 +152,7 @@
 "LIVSMEDEL" = "FOOD ITEMS";
 "PORTION" = "SERVED";
 "LÄMNAT" = "LEFT";
-"KOLHYDR." = "CARBS";
+"KOLH." = "CARBS";
 
 /* Food Item Row View */
 "Klar" = "Done";
