@@ -8,7 +8,7 @@ protocol FavoriteMealDetailViewControllerDelegate: AnyObject {
 class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     weak var delegate: FavoriteMealDetailViewControllerDelegate?
     
-    var favoriteMeal: FavoriteMeals!
+    var favoriteMeal: NewFavoriteMeals!
     var tableView: UITableView!
     var nameTextField: UITextField!
     
@@ -18,35 +18,27 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         super.viewDidLoad()
         title = NSLocalizedString("Ändra favoritmåltid", comment: "Edit favorite meal")
         view.backgroundColor = .systemBackground
-        // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
         
         setupView()
         setupNavigationBar()
-        tableView.reloadData()
-        
         setupCloseButton()
         
-        // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
-        // Check if the user interface style (light/dark mode) has changed
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             updateBackgroundForCurrentMode()
         }
     }
 
     private func updateBackgroundForCurrentMode() {
-        // Remove any existing gradient views before updating
         view.subviews.filter { $0 is GradientView }.forEach { $0.removeFromSuperview() }
         
-        // Update the background based on the current interface style
         if traitCollection.userInterfaceStyle == .dark {
-            // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
                 UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
@@ -55,11 +47,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             let gradientView = GradientView(colors: colors)
             gradientView.translatesAutoresizingMaskIntoConstraints = false
 
-            // Add the gradient view to the main view
             view.addSubview(gradientView)
             view.sendSubviewToBack(gradientView)
 
-            // Set up constraints for the gradient view
             NSLayoutConstraint.activate([
                 gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -67,7 +57,6 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         } else {
-            // In light mode, set a solid white background
             view.backgroundColor = .systemBackground
         }
     }
@@ -133,26 +122,20 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     
     @objc private func saveChanges() {
         favoriteMeal.name = nameTextField.text
-        
-        // Set lastEdited to current date when saving changes
         favoriteMeal.lastEdited = Date()
-        
         CoreDataStack.shared.saveContext()
         
-        // Ensure dataSharingVC is instantiated
         guard let dataSharingVC = self.dataSharingVC else {
             dismiss(animated: true, completion: nil)
             return
         }
         
-        // Call the desired function
         Task {
             print("Favorite meals export triggered")
             await dataSharingVC.exportFavoriteMealsToCSV()
         }
         
         delegate?.favoriteMealDetailViewControllerDidSave(self)
-        
         dismiss(animated: true, completion: nil)
     }
     
@@ -161,10 +144,9 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         doneToolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done"), style: .done, target: self, action: #selector(doneButtonAction))
+        let done = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done"), style: .done, target: self, action: #selector(doneButtonAction))
         
-        let items = [flexSpace, done]
-        doneToolbar.items = items
+        doneToolbar.items = [flexSpace, done]
         doneToolbar.barStyle = .default
         
         nameTextField.inputAccessoryView = doneToolbar
@@ -177,47 +159,44 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     // MARK: - UITableViewDataSource
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return getItems().count
+        return favoriteMeal.favoriteEntries?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as UITableViewCell
+        var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         cell.backgroundColor = .clear
         
-        let items = getItems()
-        let item = items[indexPath.row]
-        cell.textLabel?.text = item["name"] as? String
-        
-        if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
+        if let itemsSet = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> {
+            let items = Array(itemsSet).sorted { $0.name ?? "" < $1.name ?? "" }
+            let item = items[indexPath.row]
+            
+            cell.textLabel?.text = item.name
+            
+            let portionServed = item.portionServed
+            let perPiece = item.perPiece
+
             let formattedPortion: String
-            if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
-                formattedPortion = String(format: "%.0f", portionServedDouble)
+            if portionServed.truncatingRemainder(dividingBy: 1) == 0 {
+                formattedPortion = String(format: "%.0f", portionServed)
             } else {
-                formattedPortion = String(format: "%.1f", portionServedDouble)
+                formattedPortion = String(format: "%.1f", portionServed)
             }
             
-            if let perPiece = item["perPiece"] as? Bool, perPiece {
+            if perPiece {
                 cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ st", comment: "Amount: %@ pieces"), formattedPortion)
             } else {
                 cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ g", comment: "Amount: %@ grams"), formattedPortion)
             }
-        } else {
-            if let perPiece = item["perPiece"] as? Bool, perPiece {
-                cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ st", comment: "Amount: %@ pieces"), item["portionServed"] as? String ?? "")
-            } else {
-                cell.detailTextLabel?.text = String(format: NSLocalizedString("Mängd: %@ g", comment: "Amount: %@ grams"), item["portionServed"] as? String ?? "")
-            }
+
+            cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+            cell.detailTextLabel?.textColor = .gray
+
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
         }
-        // Apply custom formatting
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        cell.detailTextLabel?.textColor = .gray
-        
-        // Custom selection color
-        let customSelectionColor = UIView()
-        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
-        cell.selectedBackgroundView = customSelectionColor
         
         return cell
     }
@@ -225,19 +204,17 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        var items = getItems()
+        guard let itemsSet = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> else { return }
+        let items = Array(itemsSet).sorted { $0.name ?? "" < $1.name ?? "" }
         let item = items[indexPath.row]
         
-        let editAlert = UIAlertController(title: NSLocalizedString("Ändra mängd", comment: "Edit amount"), message: String(format: NSLocalizedString("Ange en ny mängd för %@:", comment: "Enter a new amount for %@:"), item["name"] as? String ?? ""), preferredStyle: .alert)
+        let editAlert = UIAlertController(title: NSLocalizedString("Ändra mängd", comment: "Edit amount"), message: String(format: NSLocalizedString("Ange en ny mängd för %@:", comment: "Enter a new amount for %@:"), item.name ?? ""), preferredStyle: .alert)
         editAlert.addTextField { textField in
-            if let portionServed = item["portionServed"] as? String, let portionServedDouble = Double(portionServed) {
-                if portionServedDouble.truncatingRemainder(dividingBy: 1) == 0 {
-                    textField.text = String(format: "%.0f", portionServedDouble)
-                } else {
-                    textField.text = String(format: "%.1f", portionServedDouble)
-                }
+            let portionServed = item.portionServed
+            if portionServed.truncatingRemainder(dividingBy: 1) == 0 {
+                textField.text = String(format: "%.0f", portionServed)
             } else {
-                textField.text = item["portionServed"] as? String
+                textField.text = String(format: "%.1f", portionServed)
             }
             
             textField.autocorrectionType = .no
@@ -245,19 +222,16 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
             self.addDoneButtonOnKeyboard(to: textField)
         }
         let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Save"), style: .default) { [weak self] _ in
-            guard let self = self, let newPortion = editAlert.textFields?.first?.text else { return }
-            items[indexPath.row]["portionServed"] = newPortion
-            self.favoriteMeal.items = self.updateItems(items: items)
+            guard let self = self,
+                  let newPortionText = editAlert.textFields?.first?.text,
+                  let newPortion = Double(newPortionText) else { return }
             
-            // Set lastEdited to current date when modifying item
+            item.portionServed = newPortion
             self.favoriteMeal.lastEdited = Date()
-            
             CoreDataStack.shared.saveContext()
             
-            // Ensure dataSharingVC is instantiated
             guard let dataSharingVC = self.dataSharingVC else { return }
             
-            // Call the desired function
             Task {
                 print("Favorite meals export triggered")
                 await dataSharingVC.exportFavoriteMealsToCSV()
@@ -273,32 +247,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         present(editAlert, animated: true, completion: nil)
     }
     
-    private func getItems() -> [[String: Any]] {
-        if let jsonString = favoriteMeal.items as? String,
-           let jsonData = jsonString.data(using: .utf8),
-           let items = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
-            return items
-        }
-        return []
-    }
-    
-    private func updateItems(items: [[String: Any]]) -> NSObject {
-        if let jsonData = try? JSONSerialization.data(withJSONObject: items, options: []),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            return jsonString as NSObject
-        }
-        return items as NSObject
-    }
-    
     private func addDoneButtonOnKeyboard(to textField: UITextField) {
         let doneToolbar: UIToolbar = UIToolbar()
         doneToolbar.sizeToFit()
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done"), style: .done, target: self, action: #selector(doneEditingTextField))
+        let done = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Done"), style: .done, target: self, action: #selector(doneEditingTextField))
         
-        let items = [flexSpace, done]
-        doneToolbar.items = items
+        doneToolbar.items = [flexSpace, done]
         doneToolbar.barStyle = .default
         textField.inputAccessoryView = doneToolbar
     }

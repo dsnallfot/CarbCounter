@@ -973,13 +973,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveFavoriteButton.tintColor = isEnabled ? .label : .gray
     }
     
-    func populateWithFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
+    func populateWithFavoriteMeal(_ favoriteMeal: NewFavoriteMeals) {
         checkAndHandleExistingMeal(replacementAction: {
             self.addFavoriteMeal(favoriteMeal)
         }, additionAction: {
             self.addFavoriteMeal(favoriteMeal)
-        }, completion: {
-        })
+        }, completion: {})
     }
     
     func populateWithMealHistory(_ mealHistory: MealHistory) {
@@ -1939,65 +1938,46 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         navigationController?.pushViewController(addFoodItemVC, animated: true)
     }
     
-    internal func addFavoriteMeal(_ favoriteMeal: FavoriteMeals) {
-        guard let itemsString = favoriteMeal.items as? String else {
-            print("Error: Unable to cast favoriteMeal.items to String.")
+    internal func addFavoriteMeal(_ favoriteMeal: NewFavoriteMeals) {
+        guard let favoriteEntries = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> else {
+            print("Error: Unable to retrieve favoriteEntries from favoriteMeal.")
             return
         }
         
-        guard let data = itemsString.data(using: .utf8) else {
-            print("Error: Unable to convert itemsString to Data.")
-            return
-        }
+        let sortedEntries = Array(favoriteEntries).sorted { $0.name ?? "" < $1.name ?? "" }
         
-        do {
-            guard let items = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
-                print("Error: Unable to cast deserialized JSON to [[String: Any]].")
-                return
+        for entry in sortedEntries {
+            guard let foodItem = foodItems.first(where: { $0.id == entry.id }) ?? foodItems.first(where: { $0.name == entry.name }) else {
+                print("Warning: Food item with \(entry.id != nil ? "id \(entry.id!)" : "name \(entry.name ?? "unknown")") not found in foodItems.")
+                continue
             }
             
-            for item in items {
-                var foodItem: FoodItem?
-                
-                if let idString = item["id"] as? String, let id = UUID(uuidString: idString) {
-                    // Try to find FoodItem by id
-                    foodItem = foodItems.first(where: { $0.id == id })
-                    if foodItem == nil {
-                        print("Warning: Food item with id \(id) not found in foodItems. Attempting to match by name.")
-                    }
-                }
-                if foodItem == nil, let name = item["name"] as? String {
-                    // Fallback to finding FoodItem by name if id is not available or not found
-                    foodItem = foodItems.first(where: { $0.name == name })
-                }
-                if let foodItem = foodItem, let portionServedString = item["portionServed"] as? String, let portionServed = Double(portionServedString) {
-                    let rowView = FoodItemRowView()
-                    rowView.foodItems = foodItems
-                    rowView.delegate = self
-                    rowView.translatesAutoresizingMaskIntoConstraints = false
-                    stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
-                    foodItemRows.append(rowView)
-                    rowView.setSelectedFoodItem(foodItem)
-                    rowView.portionServedTextField.text = formattedValue(portionServed)
-                    rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-                    rowView.onDelete = { [weak self] in
-                        self?.removeFoodItemRow(rowView)
-                    }
-                    rowView.onValueChange = { [weak self] in
-                        self?.updateTotalNutrients()
-                        self?.updateHeadlineVisibility()
-                    }
-                    rowView.calculateNutrients()
-                } else {
-                    print("Error: Food item with \(item["id"] != nil ? "id \(item["id"]!)" : "name \(item["name"] ?? "unknown")") not found in foodItems, or portion served data is missing.")
-                }
+            let rowView = FoodItemRowView()
+            rowView.foodItems = foodItems
+            rowView.delegate = self
+            rowView.translatesAutoresizingMaskIntoConstraints = false
+            stackView.insertArrangedSubview(rowView, at: stackView.arrangedSubviews.count)
+            foodItemRows.append(rowView)
+            
+            rowView.setSelectedFoodItem(foodItem)
+            rowView.portionServedTextField.text = formattedValue(entry.portionServed)
+            rowView.portionServedTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+            
+            rowView.onDelete = { [weak self] in
+                self?.removeFoodItemRow(rowView)
             }
-        } catch {
-            print("Error deserializing JSON: \(error)")
+            rowView.onValueChange = { [weak self] in
+                self?.updateTotalNutrients()
+                self?.updateHeadlineVisibility()
+            }
+            
+            rowView.calculateNutrients()
         }
+        
         let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
         startAmountLabel.text = startDoseTextString
         startAmountContainer.backgroundColor = .systemBlue
+        
         updateTotalNutrients()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -2410,7 +2390,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         mealDate = nil
     }
     
-    
     @objc private func saveFavoriteMeals() {
         guard saveFavoriteButton != nil else {
             return
@@ -2448,41 +2427,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             guard let self = self else { return }
             let mealName = nameAlert.textFields?.first?.text ?? NSLocalizedString("Min favoritmåltid", comment: "Min favoritmåltid")
             
-            let favoriteMeals = FavoriteMeals(context: CoreDataStack.shared.context)
-            favoriteMeals.name = mealName
-            favoriteMeals.id = UUID()
+            // Create the NewFavoriteMeals entity
+            let favoriteMeal = NewFavoriteMeals(context: CoreDataStack.shared.context)
+            favoriteMeal.name = mealName
+            favoriteMeal.id = UUID()
+            favoriteMeal.delete = false
+            favoriteMeal.lastEdited = Date()
             
-            // Set the delete flag to false by default
-            favoriteMeals.delete = false
-            
-            if let lastEdited = favoriteMeals.lastEdited {
-                let isoFormatter = ISO8601DateFormatter()
-                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                let formattedDate = isoFormatter.string(from: lastEdited)
-                print("Last Edited (CSV Format): \(formattedDate)")
-            } else {
-                print("Last Edited: nil")
-            }
-            
-            var items: [[String: Any]] = []
+            // Populate the relationship with FoodItemFavorite entries
             for row in self.foodItemRows {
                 if let foodItem = row.selectedFoodItem {
-                    let item: [String: Any] = [
-                        "id": foodItem.id?.uuidString ?? "",  // Save the UUID string of the FoodItem
-                        "name": foodItem.name ?? "",
-                        "portionServed": row.portionServedTextField.text ?? "",
-                        "perPiece": foodItem.perPiece
-                    ]
-                    items.append(item)
+                    let foodItemFavorite = FoodItemFavorite(context: CoreDataStack.shared.context)
+                    foodItemFavorite.id = foodItem.id ?? UUID()
+                    foodItemFavorite.name = foodItem.name ?? ""
+                    foodItemFavorite.portionServed = Double(row.portionServedTextField.text ?? "0") ?? 0.0
+                    foodItemFavorite.perPiece = foodItem.perPiece
+                    
+                    // Add FoodItemFavorite to favoriteMeal relationship
+                    favoriteMeal.addToFavoriteEntries(foodItemFavorite)
                 }
-            }
-            // Serialize the items array to JSON
-            do {
-                let jsonData = try JSONSerialization.data(withJSONObject: items, options: [])
-                let jsonString = String(data: jsonData, encoding: .utf8)
-                favoriteMeals.items = jsonString as? NSObject
-            } catch {
-                print("Failed to serialize items to JSON: \(error)")
             }
             
             CoreDataStack.shared.saveContext()

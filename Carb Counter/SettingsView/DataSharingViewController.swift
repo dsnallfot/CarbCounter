@@ -228,7 +228,7 @@ class DataSharingViewController: UIViewController {
     }
     
     @objc public func exportFavoriteMealsToCSV() async {
-        let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
+        let fetchRequest: NSFetchRequest<NewFavoriteMeals> = NewFavoriteMeals.fetchRequest()
         await exportToCSV(fetchRequest: fetchRequest, fileName: "FavoriteMeals.csv", createCSV: createCSV(from:))
     }
     
@@ -290,20 +290,27 @@ class DataSharingViewController: UIViewController {
         
         return csvString
     }
-    
-    private func createCSV(from favoriteMeals: [FavoriteMeals]) -> String {
-        var csvString = "id;name;lastEdited;delete;items\n"
+    private func createCSV(from favoriteMeals: [NewFavoriteMeals]) -> String {
+        var csvString = "id;name;lastEdited;delete;favoriteEntries\n"
         
-        let dateFormatter = ISO8601DateFormatter()  // Using ISO 8601 format for dates
+        let dateFormatter = ISO8601DateFormatter()
         
         for meal in favoriteMeals {
             let id = meal.id?.uuidString ?? ""
             let name = meal.name ?? ""
-            let lastEdited = dateFormatter.string(from: meal.lastEdited ?? Date())  // Format lastEdited date
-            let deleteFlag = meal.delete ? "true" : "false"  // Convert delete flag to string
-            let itemsString = meal.items as? String ?? ""
+            let lastEdited = dateFormatter.string(from: meal.lastEdited ?? Date())
+            let deleteFlag = meal.delete ? "true" : "false"
             
-            csvString += "\(id);\(name);\(lastEdited);\(deleteFlag);\(itemsString)\n"
+            let favoriteEntries = (meal.favoriteEntries as? Set<FoodItemFavorite>)?.map { entry in
+                [
+                    cleanString(entry.id?.uuidString ?? ""),
+                    cleanString(entry.name ?? ""),
+                    entry.portionServed,
+                    entry.perPiece ? "1" : "0"
+                ].map { "\($0)" }.joined(separator: ",")
+            }.joined(separator: "|") ?? ""
+            
+            csvString += "\(id);\(name);\(lastEdited);\(deleteFlag);\(favoriteEntries)\n"
         }
         
         return csvString
@@ -529,68 +536,62 @@ class DataSharingViewController: UIViewController {
     // Parse Favorite Meals CSV
     public func parseFavoriteMealsCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 5 else { // Updated to 5 columns: id, name, lastEdited, delete, items
+        guard columns.count == 5 else {
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
-
-        let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
+        
+        let fetchRequest: NSFetchRequest<NewFavoriteMeals> = NewFavoriteMeals.fetchRequest()
         let existingFavoriteMeals = try? context.fetch(fetchRequest)
         let existingFavoriteMealsDict = Dictionary(uniqueKeysWithValues: existingFavoriteMeals?.compactMap { ($0.id, $0) } ?? [])
-
-        // Date formatter for parsing dates from CSV
+        
         let dateFormatter = ISO8601DateFormatter()
-
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 5, // Check for 5 columns
-               !values.allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-                if let id = UUID(uuidString: values[0]) {
-                    
-                    // Retrieve existing favorite meal if available
-                    let existingItem = existingFavoriteMealsDict[id]
-                    
-                    // Check the delete flag
-                    let deleteFlag = (values[3] as NSString).boolValue
-                    
-                    // Access the lastEdited date string directly
-                    let lastEditedString = values[2]
-                    
-                    // Parse the lastEdited date from the CSV row
-                    if let newLastEditedDate = dateFormatter.date(from: lastEditedString) {
-                        if let existingLastEdited = existingItem?.lastEdited,
-                           existingLastEdited >= newLastEditedDate {
-                            // Skip if existing item is more recent or same as the one being imported
-                            continue
-                        }
+            if values.count == 5,
+               let id = UUID(uuidString: values[0]) {
+                
+                let existingMeal = existingFavoriteMealsDict[id]
+                let deleteFlag = (values[3] as NSString).boolValue
+                let lastEditedString = values[2]
+                
+                guard let newLastEditedDate = dateFormatter.date(from: lastEditedString) else {
+                    print("Invalid lastEdited date format")
+                    continue
+                }
+                
+                if let existingLastEdited = existingMeal?.lastEdited, existingLastEdited >= newLastEditedDate {
+                    continue
+                }
+                
+                let favoriteMeal = existingMeal ?? NewFavoriteMeals(context: context)
+                favoriteMeal.id = id
+                favoriteMeal.name = values[1]
+                favoriteMeal.lastEdited = newLastEditedDate
+                favoriteMeal.delete = deleteFlag
+                
+                let foodItemStrings = values[4].components(separatedBy: "|")
+                favoriteMeal.favoriteEntries = []
+                
+                for itemString in foodItemStrings {
+                    let itemValues = itemString.components(separatedBy: ",")
+                    if itemValues.count == 4,
+                       let itemId = UUID(uuidString: itemValues[0]),
+                       let portionServed = Double(itemValues[2]) {
                         
-                        // Update or create a new FavoriteMeals
-                        let favoriteMeal = existingItem ?? FavoriteMeals(context: context)
-                        favoriteMeal.id = id
-                        favoriteMeal.name = values[1]
-                        favoriteMeal.lastEdited = newLastEditedDate
-                        favoriteMeal.delete = deleteFlag // Set the delete flag
-                        favoriteMeal.items = values[4] as NSObject
-                    } else {
-                        // If there's no valid lastEdited date in the CSV, handle the fallback case here
-                        let favoriteMeal = existingItem ?? FavoriteMeals(context: context)
-                        favoriteMeal.id = id
-                        favoriteMeal.name = values[1]
-                        favoriteMeal.items = values[4] as NSObject
+                        let foodItemFavorite = FoodItemFavorite(context: context)
+                        foodItemFavorite.id = itemId
+                        foodItemFavorite.name = itemValues[1]
+                        foodItemFavorite.portionServed = portionServed
+                        foodItemFavorite.perPiece = itemValues[3] == "1"
                         
-                        // Use values[2] as the fallback lastEdited date if possible
-                        if let fallbackLastEditedDate = dateFormatter.date(from: lastEditedString) {
-                            favoriteMeal.lastEdited = fallbackLastEditedDate
-                        } else {
-                            // Set lastEdited to current date if no valid date is provided
-                            favoriteMeal.lastEdited = Date()
-                        }
-                        favoriteMeal.delete = deleteFlag // Set the delete flag
+                        favoriteMeal.addToFavoriteEntries(foodItemFavorite)
                     }
                 }
             }
         }
-
+        
         do {
             try context.save()
         } catch {

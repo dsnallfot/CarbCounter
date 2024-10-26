@@ -14,16 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         return true
     }
-    /*
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        if let rootViewController = window?.rootViewController as? UINavigationController {
-            if rootViewController.topViewController is NightscoutWebViewController {
-                return .landscape
-            }
-        }
-        return .portrait
-    }*/
-
 
     // MARK: - Background Task Handling
     

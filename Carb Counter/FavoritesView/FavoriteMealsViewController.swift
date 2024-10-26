@@ -6,10 +6,12 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     var tableView: UITableView!
     var searchBar: UISearchBar!
     var clearButton: UIBarButtonItem!
-    var favoriteMeals: [FavoriteMeals] = []
-    var filteredFavoriteMeals: [FavoriteMeals] = []
-    private var tableBottomConstraint: NSLayoutConstraint?
     
+    // Updated data arrays to use NewFavoriteMeals
+    var favoriteMeals: [NewFavoriteMeals] = []
+    var filteredFavoriteMeals: [NewFavoriteMeals] = []
+    
+    private var tableBottomConstraint: NSLayoutConstraint?
     var dataSharingVC: DataSharingViewController?
 
     override func viewDidLoad() {
@@ -197,7 +199,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
-            //tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
             tableBottomConstraint!,
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
@@ -223,7 +224,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func fetchFavoriteMeals() {
-        let fetchRequest: NSFetchRequest<FavoriteMeals> = FavoriteMeals.fetchRequest()
+        let fetchRequest: NSFetchRequest<NewFavoriteMeals> = NewFavoriteMeals.fetchRequest()
         
         // Add a predicate to filter out items where the delete flag is true
         fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
@@ -264,9 +265,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         cell.textLabel?.text = favoriteMeal.name
         
-        let items = getItems(from: favoriteMeal)
-        let itemNames = items.compactMap { $0["name"] as? String }
-        cell.detailTextLabel?.text = itemNames.joined(separator: " | ")
+        // Updated to fetch items from the relationship
+        if let itemsSet = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> {
+            let items = Array(itemsSet)
+            let itemNames = items.compactMap { $0.name }
+            cell.detailTextLabel?.text = itemNames.joined(separator: " | ")
+        } else {
+            cell.detailTextLabel?.text = ""
+        }
         
         // Apply custom formatting
         cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -279,15 +285,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         cell.selectedBackgroundView = customSelectionColor
         
         return cell
-    }
-    
-    private func getItems(from favoriteMeal: FavoriteMeals) -> [[String: Any]] {
-        if let jsonString = favoriteMeal.items as? String,
-           let jsonData = jsonString.data(using: .utf8),
-           let items = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
-            return items
-        }
-        return []
     }
     
     // MARK: - UITableViewDelegate

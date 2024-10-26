@@ -177,7 +177,7 @@ class CoreDataHelper {
     
     // Clear all favorite meals entries
     func clearAllFavorites() {
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = FavoriteMeals.fetchRequest()
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NewFavoriteMeals.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         do {
             try context.execute(deleteRequest)

@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23231" systemVersion="24A348" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
     <entity name="CarbRatioSchedule" representedClassName="CarbRatioSchedule" syncable="YES" codeGenerationType="class">
         <attribute name="carbRatio" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="hour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-    </entity>
-    <entity name="FavoriteMeals" representedClassName="FavoriteMeals" syncable="YES" codeGenerationType="class">
-        <attribute name="delete" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="items" optional="YES" attributeType="Transformable"/>
-        <attribute name="lastEdited" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="name" optional="YES" attributeType="String"/>
     </entity>
     <entity name="FoodItem" representedClassName="FoodItem" syncable="YES" codeGenerationType="class">
         <attribute name="carbohydrates" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -46,6 +39,13 @@
         <attribute name="entryProteinPP" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="mealHistory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MealHistory" inverseName="foodEntries" inverseEntity="MealHistory"/>
     </entity>
+    <entity name="FoodItemFavorite" representedClassName="FoodItemFavorite" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="perPiece" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="portionServed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="favoriteMeals" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NewFavoriteMeals" inverseName="favoriteEntries" inverseEntity="NewFavoriteMeals"/>
+    </entity>
     <entity name="FoodItemRow" representedClassName="FoodItemRow" syncable="YES" codeGenerationType="class">
         <attribute name="foodItemID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="netCarbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -71,6 +71,14 @@
         <attribute name="totalNetFat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="totalNetProtein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="foodEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FoodItemEntry" inverseName="mealHistory" inverseEntity="FoodItemEntry"/>
+    </entity>
+    <entity name="NA" representedClassName="NA" syncable="YES" codeGenerationType="class"/>
+    <entity name="NewFavoriteMeals" representedClassName="NewFavoriteMeals" syncable="YES" codeGenerationType="class">
+        <attribute name="delete" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastEdited" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="favoriteEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FoodItemFavorite" inverseName="favoriteMeals" inverseEntity="FoodItemFavorite"/>
     </entity>
     <entity name="StartDoseSchedule" representedClassName="StartDoseSchedule" syncable="YES" codeGenerationType="class">
         <attribute name="hour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>

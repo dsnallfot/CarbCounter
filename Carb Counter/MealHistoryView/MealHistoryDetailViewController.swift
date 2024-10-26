@@ -56,24 +56,6 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
-        /*
-        // Check if the Nightscout URL and token are available
-        if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
-           let nightscoutToken = UserDefaultsRepository.nightscoutToken, !nightscoutToken.isEmpty {
-            // Load the custom image and resize it to the appropriate navigation bar icon size
-            if let nightscoutImage = UIImage(named: "nightscout")?.resized(to: CGSize(width: 28, height: 28)) {
-                let nightscoutButton = UIBarButtonItem(
-                    image: nightscoutImage,
-                    style: .plain,
-                    target: self,
-                    action: #selector(openNightscout)
-                )
-                navigationItem.rightBarButtonItem = nightscoutButton
-            }
-        } else {
-            // If URL or token is missing, log or handle the scenario without blocking view loading
-            print("Nightscout URL or token is missing.")
-        }*/
         
         setupSummaryView()
         setupActionButton()
@@ -446,23 +428,6 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
     // Present MealInsightsViewController
     private func presentMealInsightsViewController(with foodEntry: FoodItemEntry) {
         let mealInsightsVC = MealInsightsViewController()
-/*
-        // Attempt to find ComposeMealViewController from the tab bar controller
-        if let tabBarController = self.tabBarController {
-            for viewController in tabBarController.viewControllers ?? [] {
-                if let navController = viewController as? UINavigationController {
-                    for vc in navController.viewControllers {
-                        if let composeMealVC = vc as? ComposeMealViewController {
-                            mealInsightsVC.delegate = composeMealVC // Set the delegate
-                            break
-                        }
-                    }
-                }
-            }
-        } else {
-            // If tabBarController is nil, use another way to find ComposeMealViewController, maybe via a delegate or navigation stack
-            print("Tab bar controller not found")
-        }*/
 
         // Pass the foodEntry to MealInsightsViewController
         mealInsightsVC.prepopulatedSearchText = foodEntry.entryName ?? ""
