@@ -341,11 +341,13 @@ class DataSharingViewController: UIViewController {
     }
     
     private func cleanString(_ input: String) -> String {
-        // Remove invisible characters and trim whitespace
+        // Remove invisible characters, trim whitespace, and remove commas
         let cleaned = input
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: .controlCharacters)
             .joined()
+            .replacingOccurrences(of: ",", with: ".") // Remove commas
+
         return cleaned
     }
 
