@@ -517,6 +517,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         // Step 1: Set the delete flag to true
         mealHistory.delete = true
+        mealHistory.lastEdited = Date() // Update lastEdited date to current date
 
         // Step 2: Export the updated list of meal histories
         guard let dataSharingVC = dataSharingVC else { return }

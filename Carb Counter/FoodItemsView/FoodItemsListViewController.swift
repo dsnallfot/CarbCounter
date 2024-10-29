@@ -955,6 +955,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Step 1: Set the delete flag to true
         foodItem.delete = true
+        foodItem.lastEdited = Date() // Update lastEdited date to current date
         
         do {
             // Step 2: Save the context with the updated delete flag
