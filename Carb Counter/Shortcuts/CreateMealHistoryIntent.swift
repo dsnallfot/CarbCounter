@@ -1,4 +1,5 @@
 import AppIntents
+import UIKit
 import CoreData
 
 struct CreateMealHistoryIntent: AppIntent {
@@ -18,7 +19,7 @@ struct CreateMealHistoryIntent: AppIntent {
     var mealDate: Date
 
     func perform() async throws -> some IntentResult {
-        saveMealHistory(
+        await saveMealHistory(
             foodItem: foodItem.foodItem,
             portionServed: portionServed,
             bolus: bolus,
@@ -28,7 +29,7 @@ struct CreateMealHistoryIntent: AppIntent {
         return .result()
     }
 
-    private func saveMealHistory(foodItem: FoodItem, portionServed: Double, bolus: Double, mealDate: Date) {
+    private func saveMealHistory(foodItem: FoodItem, portionServed: Double, bolus: Double, mealDate: Date) async {
         let context = CoreDataStack.shared.context
         let mealHistory = MealHistory(context: context)
         
@@ -37,19 +38,19 @@ struct CreateMealHistoryIntent: AppIntent {
         mealHistory.delete = false
         
         mealHistory.totalNetCarbs = foodItem.perPiece
-            ? foodItem.carbsPP * portionServed
-            : foodItem.carbohydrates * portionServed / 100
-
+        ? foodItem.carbsPP * portionServed
+        : foodItem.carbohydrates * portionServed / 100
+        
         mealHistory.totalNetFat = foodItem.perPiece
-            ? foodItem.fatPP * portionServed
-            : foodItem.fat * portionServed / 100
-
+        ? foodItem.fatPP * portionServed
+        : foodItem.fat * portionServed / 100
+        
         mealHistory.totalNetProtein = foodItem.perPiece
-            ? foodItem.proteinPP * portionServed
-            : foodItem.protein * portionServed / 100
-
+        ? foodItem.proteinPP * portionServed
+        : foodItem.protein * portionServed / 100
+        
         mealHistory.totalNetBolus = bolus
-
+        
         let foodEntry = FoodItemEntry(context: context)
         foodEntry.entryId = foodItem.id
         foodEntry.entryName = foodItem.name
@@ -62,12 +63,20 @@ struct CreateMealHistoryIntent: AppIntent {
         foodEntry.entryFatPP = foodItem.fatPP
         foodEntry.entryProteinPP = foodItem.proteinPP
         foodEntry.entryPerPiece = foodItem.perPiece
-
+        
         mealHistory.addToFoodEntries(foodEntry)
-
+        
         do {
             try context.save()
             print("MealHistory saved successfully through shortcut!")
+            
+            // Trigger the export after saving
+            if let appDelegate = await UIApplication.shared.delegate as? AppDelegate, let dataSharingVC = await appDelegate.dataSharingVC {
+                // Use dataSharingVC here
+                await dataSharingVC.exportMealHistoryToCSV()
+                print("Meal history export triggered from shortcut")
+            }
+            
         } catch {
             print("Failed to save MealHistory: \(error)")
         }
