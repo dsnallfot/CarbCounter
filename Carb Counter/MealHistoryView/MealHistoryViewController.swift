@@ -695,8 +695,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         customAlertVC.modalPresentationStyle = .overFullScreen
         customAlertVC.modalTransitionStyle = .crossDissolve
         customAlertVC.onSave = { [weak self] newDate in
-            // Update the meal date in the meal history
+            // Update the meal date and lastEdited in the meal history
             mealHistory.mealDate = newDate
+            mealHistory.lastEdited = Date()  // Update lastEdited to current date and time
 
             // Save to Core Data
             let context = CoreDataStack.shared.context

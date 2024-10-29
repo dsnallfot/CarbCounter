@@ -2332,10 +2332,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let context = CoreDataStack.shared.context
         let mealHistory = MealHistory(context: context)
         
-        // Set unique ID and date
+        // Set unique ID, date, and lastEdited
         mealHistory.id = UUID()
         mealHistory.mealDate = mealDate ?? Date()
-
+        mealHistory.lastEdited = Date()  // Set lastEdited to current date
+        
         // Set delete flag to false (as it's a new entry)
         mealHistory.delete = false
         
@@ -2370,7 +2371,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
                 // Link the food entry to the meal history
                 mealHistory.addToFoodEntries(foodEntry)
-
             }
         }
         

@@ -33,21 +33,24 @@ struct CreateMealHistoryIntent: AppIntent {
         let context = CoreDataStack.shared.context
         let mealHistory = MealHistory(context: context)
         
+        // Set unique ID, date, and lastEdited
         mealHistory.id = UUID()
         mealHistory.mealDate = mealDate
+        mealHistory.lastEdited = Date()  // Set lastEdited to current date
+        
         mealHistory.delete = false
         
         mealHistory.totalNetCarbs = foodItem.perPiece
-        ? foodItem.carbsPP * portionServed
-        : foodItem.carbohydrates * portionServed / 100
+            ? foodItem.carbsPP * portionServed
+            : foodItem.carbohydrates * portionServed / 100
         
         mealHistory.totalNetFat = foodItem.perPiece
-        ? foodItem.fatPP * portionServed
-        : foodItem.fat * portionServed / 100
+            ? foodItem.fatPP * portionServed
+            : foodItem.fat * portionServed / 100
         
         mealHistory.totalNetProtein = foodItem.perPiece
-        ? foodItem.proteinPP * portionServed
-        : foodItem.protein * portionServed / 100
+            ? foodItem.proteinPP * portionServed
+            : foodItem.protein * portionServed / 100
         
         mealHistory.totalNetBolus = bolus
         

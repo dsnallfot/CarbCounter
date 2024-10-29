@@ -359,10 +359,12 @@ class DataSharingViewController: UIViewController {
     }
 
     private func createCSV(from mealHistories: [MealHistory]) -> String {
-        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;totalNetBolus;delete;foodEntries\n"
+        var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;totalNetBolus;delete;foodEntries;lastEdited\n"
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
+        let lastEditedFormatter = ISO8601DateFormatter() // Use ISO8601 for lastEdited field
         
         for mealHistory in mealHistories {
             let id = mealHistory.id?.uuidString ?? ""
@@ -372,6 +374,7 @@ class DataSharingViewController: UIViewController {
             let totalNetProtein = mealHistory.totalNetProtein
             let totalNetBolus = mealHistory.totalNetBolus
             let deleteFlag = mealHistory.delete ? "true" : "false"
+            let lastEdited = lastEditedFormatter.string(from: mealHistory.lastEdited ?? Date()) // Add lastEdited field
             
             let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
                 [
@@ -387,7 +390,7 @@ class DataSharingViewController: UIViewController {
                 ].map { "\($0)" }.joined(separator: ",")
             }.joined(separator: "|") ?? ""
             
-            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(deleteFlag);\(foodEntries)\n"
+            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(deleteFlag);\(foodEntries);\(lastEdited)\n"
         }
         
         return csvString
@@ -692,7 +695,7 @@ class DataSharingViewController: UIViewController {
 
     public func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 8 else {
+        guard columns.count == 9 else { // Updated count to 9 to include lastEdited
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
@@ -705,53 +708,77 @@ class DataSharingViewController: UIViewController {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
             
+            let lastEditedFormatter = ISO8601DateFormatter() // Use ISO8601 for lastEdited field
+            
             for row in rows[1...] {
                 let values = row.components(separatedBy: ";").map(cleanCSVValue)
-                if values.count == 8,
+                if values.count == 9, // Updated count to 9
                    !values.allSatisfy({ $0.isEmpty || $0 == "0" }) {
+                    
                     if let id = UUID(uuidString: values[0]) {
                         let existingItem = existingMealHistoriesDict[id]
+                        
                         let mealDateString = values[1]
-                        if let newMealDate = dateFormatter.date(from: mealDateString) {
-                            if let existingMealDate = existingItem?.mealDate, existingMealDate >= newMealDate {
+                        let lastEditedString = values[8] // Get lastEdited value from CSV
+                        
+                        guard let newMealDate = dateFormatter.date(from: mealDateString),
+                              let newLastEditedDate = lastEditedFormatter.date(from: lastEditedString) else {
+                            print("Invalid date format in CSV")
+                            continue
+                        }
+                        
+                        // Determine if we should replace the existing item based on lastEdited dates
+                        if let existingLastEdited = existingItem?.lastEdited {
+                            // Skip updating if the existing item's lastEdited date is newer
+                            if existingLastEdited >= newLastEditedDate {
                                 continue
                             }
-                            
-                            let deleteFlag = values[6] == "true"
-                            let mealHistory = existingItem ?? MealHistory(context: context)
-                            mealHistory.id = id
-                            mealHistory.mealDate = newMealDate
-                            mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
-                            mealHistory.totalNetFat = Double(values[3]) ?? 0.0
-                            mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
-                            mealHistory.totalNetBolus = Double(values[5]) ?? 0.0
-                            mealHistory.delete = deleteFlag
-                            
-                            if let existingItem = existingItem {
-                                existingItem.removeFromFoodEntries(existingItem.foodEntries ?? NSSet())
-                            }
-                            
-                            let foodEntriesValues = values[7].components(separatedBy: "|")
-                            for foodEntryValue in foodEntriesValues {
-                                let foodEntryParts = foodEntryValue.components(separatedBy: ",").map(cleanCSVValue)
-                                if foodEntryParts.count == 9 {
-                                    let foodEntry = FoodItemEntry(context: context)
-                                    foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
-                                    foodEntry.entryName = foodEntryParts[1]
-                                    foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
-                                    foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
-                                    foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
-                                    foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
-                                    foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
-                                    foodEntry.entryPerPiece = foodEntryParts[7] == "1"
-                                    foodEntry.entryEmoji = foodEntryParts[8]
-                                    mealHistory.addToFoodEntries(foodEntry)
-                                }
+                        } else if existingItem != nil && existingItem?.lastEdited == nil {
+                            // Allow update if the existing item has no lastEdited date but CSV item does
+                            existingItem?.lastEdited = newLastEditedDate
+                        }
+                        
+                        let deleteFlag = values[6] == "true"
+                        let mealHistory = existingItem ?? MealHistory(context: context)
+                        
+                        // Assign the parsed values to the mealHistory
+                        mealHistory.id = id
+                        mealHistory.mealDate = newMealDate
+                        mealHistory.lastEdited = newLastEditedDate // Set the new lastEdited date
+                        mealHistory.totalNetCarbs = Double(values[2]) ?? 0.0
+                        mealHistory.totalNetFat = Double(values[3]) ?? 0.0
+                        mealHistory.totalNetProtein = Double(values[4]) ?? 0.0
+                        mealHistory.totalNetBolus = Double(values[5]) ?? 0.0
+                        mealHistory.delete = deleteFlag
+                        
+                        // Remove existing food entries if updating
+                        if let existingItem = existingItem {
+                            existingItem.removeFromFoodEntries(existingItem.foodEntries ?? NSSet())
+                        }
+                        
+                        // Parse food entries from CSV
+                        let foodEntriesValues = values[7].components(separatedBy: "|")
+                        for foodEntryValue in foodEntriesValues {
+                            let foodEntryParts = foodEntryValue.components(separatedBy: ",").map(cleanCSVValue)
+                            if foodEntryParts.count == 9 {
+                                let foodEntry = FoodItemEntry(context: context)
+                                foodEntry.entryId = UUID(uuidString: foodEntryParts[0])
+                                foodEntry.entryName = foodEntryParts[1]
+                                foodEntry.entryPortionServed = Double(foodEntryParts[2]) ?? 0.0
+                                foodEntry.entryNotEaten = Double(foodEntryParts[3]) ?? 0.0
+                                foodEntry.entryCarbohydrates = Double(foodEntryParts[4]) ?? 0.0
+                                foodEntry.entryFat = Double(foodEntryParts[5]) ?? 0.0
+                                foodEntry.entryProtein = Double(foodEntryParts[6]) ?? 0.0
+                                foodEntry.entryPerPiece = foodEntryParts[7] == "1"
+                                foodEntry.entryEmoji = foodEntryParts[8]
+                                mealHistory.addToFoodEntries(foodEntry)
                             }
                         }
                     }
                 }
             }
+            
+            // Save the context after parsing
             try context.save()
         } catch {
             print("Import Failed: Error fetching or saving data: \(error)")
