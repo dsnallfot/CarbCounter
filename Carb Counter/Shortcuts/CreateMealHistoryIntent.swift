@@ -93,7 +93,7 @@ struct FoodItemEntity: AppEntity {
     
     var displayRepresentation: DisplayRepresentation {
         return DisplayRepresentation(
-            title: "\(emoji) \(name)"
+            title: "\(name)" // Removed emoji from display
         )
     }
     
@@ -111,6 +111,7 @@ struct FoodItemQuery: EntityQuery {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] // Added sorting
         
         let foodItems = try context.fetch(fetchRequest)
         return foodItems.map { foodItem in
@@ -131,6 +132,7 @@ struct FoodItemQuery: EntityQuery {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "(delete == NO OR delete == nil) AND id IN %@", identifiers)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] // Added sorting
         
         let foodItems = try context.fetch(fetchRequest)
         return foodItems.map { foodItem in
@@ -149,6 +151,7 @@ struct FoodItemOptionsProvider: DynamicOptionsProvider {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] // Added sorting
         
         let foodItems = try context.fetch(fetchRequest)
         return foodItems.map { foodItem in
