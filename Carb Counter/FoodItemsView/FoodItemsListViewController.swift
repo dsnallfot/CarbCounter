@@ -1248,20 +1248,29 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     // AddFoodItemDelegate conformance
-    func didAddFoodItem() {
-            // Fetch updated list of food items
-            fetchFoodItems()
+    func didAddFoodItem(foodItem: FoodItem) {
+        // Fetch updated list of food items
+        fetchFoodItems()
 
-            // Re-apply the search filter
-            if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
-                searchBar.text = savedSearchText
-                applySearchFilter(with: savedSearchText)
-            } else {
-                // If no search text is saved, show the full list
-                filteredFoodItems = foodItems
-                tableView.reloadData()
+        // Re-apply the search filter if applicable
+        if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+            searchBar.text = savedSearchText
+            applySearchFilter(with: savedSearchText)
+        } else {
+            // If no search text is saved, show the full list
+            filteredFoodItems = foodItems
+        }
+        
+        // Reload the table view and then scroll to the new item after a short delay
+        tableView.reloadData()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let index = self.filteredFoodItems.firstIndex(where: { $0.id == foodItem.id }) {
+                let indexPath = IndexPath(row: index, section: 0)
+                self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
             }
         }
+    }
 }
 
 struct OpenFoodFactsResponse: Codable {

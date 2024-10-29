@@ -4,7 +4,7 @@ import CoreData
 import ISEmojiView
 
 protocol AddFoodItemDelegate: AnyObject {
-    func didAddFoodItem()
+    func didAddFoodItem(foodItem: FoodItem)
 }
 
 class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
@@ -607,7 +607,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
-
+            
             // Set the delete flag to false by default for new food items
             newFoodItem.delete = false
             
@@ -620,18 +620,23 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         do {
             try context.save()
             print("Saved food item successfully.")
-            delegate?.didAddFoodItem()
+            
+            // Notify delegate using the default protocol implementation
+            if let savedFoodItem = foodItem {
+                delegate?.didAddFoodItem(foodItem: savedFoodItem)
+            }
+            
             NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
             
             if addToMeal {
                 addToComposeMealViewController()
-
+                
                 // Show SuccessView when adding to meal
                 let successView = SuccessView()
                 if let window = self.view.window {
                     successView.showInView(window)
                 }
-
+                
                 // Wait for the success view animation to finish before dismissing or popping
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     // Dismiss or pop view controller based on the presentation style
@@ -844,11 +849,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
 
 // MARK: Extension (AddFoodItemDelegate)
 extension ComposeMealViewController: AddFoodItemDelegate {
-    func didAddFoodItem() {
+    func didAddFoodItem(foodItem: FoodItem) {
         fetchFoodItems()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
+        
+        // Optionally do something with foodItem if needed
     }
 }
 
@@ -870,4 +877,14 @@ extension AddFoodItemViewController: EmojiViewDelegate {
     func emojiViewDidPressDismissKeyboardButton(_ emojiView: EmojiView) {
         emojiTextField.resignFirstResponder()
     }
+}
+
+extension AddFoodItemDelegate {
+    // Default implementation for types that don’t use foodItem
+    func didAddFoodItem(foodItem: FoodItem) {
+        didAddFoodItem() // Calls the original method if needed
+    }
+
+    // Preserve the original method for backward compatibility
+    func didAddFoodItem() {}
 }
