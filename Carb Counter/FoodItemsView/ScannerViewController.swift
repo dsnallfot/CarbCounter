@@ -302,7 +302,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
+        fetchRequest.predicate = NSPredicate(format: "name == %@ AND (delete == NO OR delete == nil)", productName)
         
         do {
             let existingItems = try context.fetch(fetchRequest)

@@ -1142,7 +1142,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func showProductAlert(title: String, message: String, productName: String, carbohydrates: Double, fat: Double, proteins: Double) {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
+        fetchRequest.predicate = NSPredicate(format: "name == %@ AND (delete == NO OR delete == nil)", productName)
         
         var isPerPiece: Bool = false // New flag
         
@@ -1297,13 +1297,16 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems = foodItems
         }
         
-        // Reload the table view and then scroll to the new item after a short delay
+        // Reload the table view
         tableView.reloadData()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if let index = self.filteredFoodItems.firstIndex(where: { $0.id == foodItem.id }) {
-                let indexPath = IndexPath(row: index, section: 0)
-                self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+        // Only scroll to the new item if the search mode is local
+        if searchMode == .local {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let index = self.filteredFoodItems.firstIndex(where: { $0.id == foodItem.id }) {
+                    let indexPath = IndexPath(row: index, section: 0)
+                    self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+                }
             }
         }
     }
