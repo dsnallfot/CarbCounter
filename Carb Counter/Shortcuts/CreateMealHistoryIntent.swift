@@ -2,10 +2,10 @@ import AppIntents
 import CoreData
 
 struct CreateMealHistoryIntent: AppIntent {
-    static var title: LocalizedStringResource = "Create Meal History Entry"
-    static var description = IntentDescription("Create a new MealHistory entry using a selected FoodItem.")
+    static var title: LocalizedStringResource = "Logga måltidshistorik"
+    static var description = IntentDescription("Skapa ett nytt inlägg i måltidshistoriken.")
 
-    @Parameter(title: "Select Food Item", optionsProvider: FoodItemOptionsProvider())
+    @Parameter(title: "Välj livsmedel", optionsProvider: FoodItemOptionsProvider())
     var foodItem: FoodItemEntity
 
     @Parameter(title: "Mängd")
@@ -14,7 +14,7 @@ struct CreateMealHistoryIntent: AppIntent {
     @Parameter(title: "Bolus")
     var bolus: Double
 
-    @Parameter(title: "Meal Date")
+    @Parameter(title: "Datum")
     var mealDate: Date
 
     func perform() async throws -> some IntentResult {
@@ -111,7 +111,7 @@ struct FoodItemQuery: EntityQuery {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] // Added sorting
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         
         let foodItems = try context.fetch(fetchRequest)
         return foodItems.map { foodItem in
@@ -132,7 +132,7 @@ struct FoodItemQuery: EntityQuery {
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "(delete == NO OR delete == nil) AND id IN %@", identifiers)
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] // Added sorting
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         
         let foodItems = try context.fetch(fetchRequest)
         return foodItems.map { foodItem in

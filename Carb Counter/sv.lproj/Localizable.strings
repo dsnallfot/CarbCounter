@@ -591,6 +591,13 @@
 "Protein (g)" = "Protein (g)";
 "Bolus (E)" = "Bolus (E)";
 "Startdos" = "Startdos";
+"Logga måltidshistorik" = "Logga måltidshistorik";
+"Skapa ett nytt inlägg i måltidshistoriken." = "Skapa ett nytt inlägg i måltidshistoriken.";
+"Välj livsmedel" = "Välj livsmedel";
+"Mängd" = "Mängd";
+"Datum" = "Datum";
+
+
 
 /* Quick actions */
 "SCAN_BARCODE_KEY" = "Scanna streckkod";
