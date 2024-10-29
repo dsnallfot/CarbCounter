@@ -1207,6 +1207,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: startDose)
     }
     
+    func didUpdateMealDate(_ date: Date) {
+            self.mealDate = date
+            print("Meal date set to: \(mealDate!)")
+        }
+    
     public func updateRegisteredAmount(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
         print("updateRegisteredAmount function ran")
         self.startDoseGiven = startDose

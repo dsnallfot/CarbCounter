@@ -38,6 +38,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var method: UITextField!
     @IBOutlet weak var plusSign: UIImageView!
     
+    private var dateChangedManually = false
+    
     var startDose: Bool = false
     
     var CR: Decimal = 0.0
@@ -122,6 +124,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                     self?.updateNavigationBarButton()
                 }
             }
+        
+        mealDateTime.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
         
         // Register observers for shortcut callback notifications
         NotificationCenter.default.addObserver(self, selector: #selector(handleShortcutSuccess), name: NSNotification.Name("ShortcutSuccess"), object: nil)
@@ -237,6 +241,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             
             mealDateTime.minimumDate = now.addingTimeInterval(-oneDayInterval)
             mealDateTime.maximumDate = now.addingTimeInterval(oneDayInterval)
+        }
+    
+    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
+            // Set the flag to true whenever the date picker value is manually changed
+            dateChangedManually = true
         }
     
     func setupInputAccessoryView() {
@@ -858,6 +867,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             return // If button is already disabled, return to prevent double registration
         }
         
+        if dateChangedManually {
+            delegate?.didUpdateMealDate(mealDateTime.date)
+            dateChangedManually = false // Reset the flag
+        }
+        
         // BOLUS ENTRIES
         //Process bolus entries
         guard var bolusText = bolusUnits.text else {
@@ -1329,4 +1343,5 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
 
 protocol MealViewControllerDelegate: AnyObject {
     func didUpdateMealValues(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool)
+    func didUpdateMealDate(_ date: Date)
 }
