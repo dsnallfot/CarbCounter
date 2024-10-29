@@ -4,6 +4,7 @@ import CoreData
 import UIKit
 
 class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+    weak var delegate: ScannerViewControllerDelegate?
     var captureSession: AVCaptureSession!
     var previewLayer: AVCaptureVideoPreviewLayer!
     var isProcessingBarcode = false
@@ -205,8 +206,8 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
                     // Display product alert on the main thread
                     DispatchQueue.main.async {
-                        self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
-                    }
+                            self.showProductAlert(title: artikelbenamning, message: message, productName: artikelbenamning, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                        }
                     print("Dabas produktmatchning OK")
                 } else {
                     print("Dabas API fel: Kunde inte tolka svar från servern")
@@ -303,8 +304,6 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "name == %@", productName)
         
-        var isPerPiece: Bool = false // New flag
-        
         do {
             let existingItems = try context.fetch(fetchRequest)
             
@@ -334,18 +333,41 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 style: .default,
                 handler: { _ in
                     let adjustedProductName = productName
+                    var productInfo: ProductInfo
                     if let textField = alert.textFields?.first, let text = textField.text, let weight = Double(text), weight > 0 {
                         let adjustedCarbs = (carbohydrates * weight / 100).roundToDecimal(1)
                         let adjustedFat = (fat * weight / 100).roundToDecimal(1)
                         let adjustedProteins = (proteins * weight / 100).roundToDecimal(1)
-                        isPerPiece = true // Update the flag
-                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: adjustedCarbs, fat: adjustedFat, proteins: adjustedProteins, isPerPiece: isPerPiece, weightPerPiece: weight)
+                        let isPerPiece = true // Update the flag
+                        productInfo = ProductInfo(
+                            productName: adjustedProductName,
+                            carbohydrates: adjustedCarbs,
+                            fat: adjustedFat,
+                            proteins: adjustedProteins,
+                            isPerPiece: isPerPiece,
+                            weightPerPiece: weight
+                        )
                     } else {
-                        self.navigateToAddFoodItem(productName: adjustedProductName, carbohydrates: carbohydrates, fat: fat, proteins: proteins, isPerPiece: isPerPiece, weightPerPiece: 0.0)
+                        let isPerPiece = false
+                        productInfo = ProductInfo(
+                            productName: adjustedProductName,
+                            carbohydrates: carbohydrates,
+                            fat: fat,
+                            proteins: proteins,
+                            isPerPiece: isPerPiece,
+                            weightPerPiece: 0.0
+                        )
                     }
+                    
+                    // Post notification with product info
+                    NotificationCenter.default.post(name: NSNotification.Name("ProductFound"), object: nil, userInfo: ["productInfo": productInfo])
+                    
+                    // Dismiss the scanner
+                    self.dismiss(animated: true, completion: nil)
                 })
             )
             
+            // Existing code for handling duplicates...
             if let existingItem = existingItems.first {
                 let comparisonMessage = String(
                     format: NSLocalizedString("""
@@ -371,14 +393,32 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                     title: NSLocalizedString("Behåll befintliga", comment: "Keep existing data"),
                     style: .default,
                     handler: { _ in
-                        self.navigateToAddFoodItem(foodItem: existingItem)
+                        let productInfo = ProductInfo(
+                            productName: existingItem.name ?? "",
+                            carbohydrates: existingItem.carbohydrates,
+                            fat: existingItem.fat,
+                            proteins: existingItem.protein,
+                            isPerPiece: existingItem.perPiece,
+                            weightPerPiece: 0.0 // or use existingItem.weightPerPiece if available
+                        )
+                        NotificationCenter.default.post(name: NSNotification.Name("ProductFound"), object: nil, userInfo: ["productInfo": productInfo])
+                        self.dismiss(animated: true, completion: nil)
                     })
                 )
                 duplicateAlert.addAction(UIAlertAction(
                     title: NSLocalizedString("Uppdatera", comment: "Update existing data"),
                     style: .default,
                     handler: { _ in
-                        self.navigateToAddFoodItemWithUpdate(existingItem: existingItem, productName: productName, carbohydrates: carbohydrates, fat: fat, proteins: proteins)
+                        let productInfo = ProductInfo(
+                            productName: productName,
+                            carbohydrates: carbohydrates,
+                            fat: fat,
+                            proteins: proteins,
+                            isPerPiece: existingItem.perPiece,
+                            weightPerPiece: 0.0
+                        )
+                        NotificationCenter.default.post(name: NSNotification.Name("ProductFound"), object: nil, userInfo: ["productInfo": productInfo])
+                        self.dismiss(animated: true, completion: nil)
                     })
                 )
                 duplicateAlert.addAction(UIAlertAction(
@@ -573,4 +613,18 @@ class ScannerOverlayView: UIView {
         context.addPath(cornerPath.cgPath)
         context.strokePath()
     }
+}
+
+// ScannerViewControllerDelegate.swift
+protocol ScannerViewControllerDelegate: AnyObject {
+    func scannerViewController(_ controller: ScannerViewController, didFindProduct productInfo: ProductInfo)
+}
+
+struct ProductInfo {
+    let productName: String
+    let carbohydrates: Double
+    let fat: Double
+    let proteins: Double
+    let isPerPiece: Bool
+    let weightPerPiece: Double
 }

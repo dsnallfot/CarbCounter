@@ -26,6 +26,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = loadingVC
         window?.makeKeyAndVisible()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(handleProductFoundNotification(_:)), name: NSNotification.Name("ProductFound"), object: nil)
+        
         // Simulate some delay to show the loading screen
         // DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
         //    self?.showMainViewController()
@@ -55,6 +57,51 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             shouldOpenAddFood = true
         }
     }
+    
+    @objc private func handleProductFoundNotification(_ notification: Notification) {
+            guard let userInfo = notification.userInfo,
+                  let productInfo = userInfo["productInfo"] as? ProductInfo else { return }
+
+            // Dismiss any presented view controller (ScannerViewController)
+            if let rootVC = window?.rootViewController {
+                rootVC.dismiss(animated: true) {
+                    // After dismissing, navigate to AddFoodItemViewController
+                    self.navigateToAddFoodItemViewController(with: productInfo)
+                }
+            } else {
+                // If nothing is presented, just navigate
+                navigateToAddFoodItemViewController(with: productInfo)
+            }
+        }
+    
+    private func navigateToAddFoodItemViewController(with productInfo: ProductInfo) {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            guard let addFoodVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController else { return }
+
+            // Populate AddFoodItemViewController with product information
+            addFoodVC.prePopulatedData = (
+                productInfo.productName,
+                productInfo.carbohydrates,
+                productInfo.fat,
+                productInfo.proteins,
+                "", // emoji
+                productInfo.isPerPiece ? String(format: NSLocalizedString("Vikt per styck: %.1f g", comment: "Weight info"), productInfo.weightPerPiece) : "",
+                productInfo.isPerPiece,
+                productInfo.isPerPiece ? productInfo.carbohydrates : 0.0,
+                productInfo.isPerPiece ? productInfo.fat : 0.0,
+                productInfo.isPerPiece ? productInfo.proteins : 0.0
+            )
+            addFoodVC.isPerPiece = productInfo.isPerPiece
+
+            // Present AddFoodItemViewController
+            let navigationController = UINavigationController(rootViewController: addFoodVC)
+            navigationController.modalPresentationStyle = .pageSheet
+
+            if let tabBarController = window?.rootViewController as? UITabBarController,
+               let selectedVC = tabBarController.selectedViewController {
+                selectedVC.present(navigationController, animated: true, completion: nil)
+            }
+        }
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         guard let urlContext = URLContexts.first else { return }
@@ -216,4 +263,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tabBarController.selectedIndex = 0
         }
     }*/
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ProductFound"), object: nil)
+    }
 }

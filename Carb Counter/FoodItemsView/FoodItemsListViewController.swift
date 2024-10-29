@@ -3,7 +3,7 @@ import UIKit
 import CoreData
 import UniformTypeIdentifiers
 
-class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UISearchBarDelegate, AddFoodItemDelegate {
+class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UISearchBarDelegate, AddFoodItemDelegate, ScannerViewControllerDelegate {
     private var lastSearchTime: Date?
     private var isUsingDabas: Bool = true
     
@@ -417,6 +417,41 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
     }
+    
+    func scannerViewController(_ controller: ScannerViewController, didFindProduct productInfo: ProductInfo) {
+        // Dismiss ScannerViewController first
+                controller.dismiss(animated: true) {
+                    // This code runs after the ScannerViewController has been fully dismissed
+                    self.navigateToAddFoodItem(with: productInfo)
+                }
+        }
+    
+    func navigateToAddFoodItem(with productInfo: ProductInfo) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self
+
+            // Set prePopulatedData using productInfo
+            addFoodItemVC.prePopulatedData = (
+                productInfo.productName,
+                productInfo.carbohydrates,
+                productInfo.fat,
+                productInfo.proteins,
+                "", // emoji
+                productInfo.isPerPiece ? "Vikt per styck: \(productInfo.weightPerPiece) g" : "",
+                productInfo.isPerPiece,
+                productInfo.isPerPiece ? productInfo.carbohydrates : 0.0,
+                productInfo.isPerPiece ? productInfo.fat : 0.0,
+                productInfo.isPerPiece ? productInfo.proteins : 0.0
+            )
+            addFoodItemVC.isPerPiece = productInfo.isPerPiece
+
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            present(navController, animated: true, completion: nil)
+        }
+    }
+    
     private func fetchOnlineArticles(for searchText: String) {
         // Replace all spaces with + signs and make the search text HTTP friendly
         let formattedSearchText = searchText.replacingOccurrences(of: " ", with: "+").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? searchText
@@ -1018,6 +1053,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     @objc private func navigateToScanner() {
         let scannerVC = ScannerViewController()
+        scannerVC.delegate = self // Set the delegate
         let navController = UINavigationController(rootViewController: scannerVC)
         navController.modalPresentationStyle = .pageSheet
         
