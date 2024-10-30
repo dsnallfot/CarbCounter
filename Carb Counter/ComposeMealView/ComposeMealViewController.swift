@@ -426,7 +426,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     /// Helper function to add the semi-transparent overlay layer behind the labels
     private func addOverlayLayer(to container: UIView, percentage: CGFloat, belowView: UIView) {
         let overlayView = UIView()
-        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        //overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        overlayView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.4)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         container.insertSubview(overlayView, at: 0)
         
@@ -585,7 +586,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         // Create a new overlay view
         let overlayView = UIView()
-        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        //overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        overlayView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.4)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         overlayView.tag = 999
         container.insertSubview(overlayView, at: 0)
