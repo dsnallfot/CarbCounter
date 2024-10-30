@@ -1156,7 +1156,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 khValue: String(format: "%.0f", maxregisteredCarbsSoFar),
                 fatValue: String(format: "%.0f", maxRegisteredFatSoFar),
                 proteinValue: String(format: "%.0f", maxRegisteredProteinSoFar),
-                bolusValue: String(format: "%.0f", maxRegisteredBolusSoFar),
+                bolusValue: String(format: "%.2f", maxRegisteredBolusSoFar),
                 startDose: startDose
             )
 
