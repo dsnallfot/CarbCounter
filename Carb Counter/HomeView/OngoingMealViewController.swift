@@ -10,6 +10,7 @@ struct FoodItemRowData {
     var registeredFatSoFar: Double
     var registeredProteinSoFar: Double
     var registeredBolusSoFar: Double
+    //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
 }
 
 class OngoingMealViewController: UIViewController {
@@ -191,6 +192,7 @@ class OngoingMealViewController: UIViewController {
                 registeredFatSoFar: row.registeredFatSoFar,
                 registeredProteinSoFar: row.registeredProteinSoFar,
                 registeredBolusSoFar: row.registeredBolusSoFar
+                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
             )
         }
         

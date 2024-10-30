@@ -1137,6 +1137,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             let maxRegisteredBolusSoFar = importedRows.map { $0.registeredBolusSoFar }.max() ?? 0.0
             //print("Max registered bolus so far: \(maxRegisteredBolusSoFar)")
+            
+            //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
 
             // Determine if start dose should be true based on bolus value
             let startDose = maxRegisteredBolusSoFar > 0
@@ -1159,6 +1161,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 proteinValue: String(format: "%.0f", maxRegisteredProteinSoFar),
                 bolusValue: String(format: "%.2f", maxRegisteredBolusSoFar),
                 startDose: startDose
+                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
             )
 
             if maxregisteredCarbsSoFar == 0 {
@@ -2304,12 +2307,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
                 
             } else {
                 let foodItemRow = FoodItemRow(context: context)
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
+                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
                 
                 rowView.foodItemRow = foodItemRow
                 
