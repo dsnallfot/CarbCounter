@@ -117,9 +117,9 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
         // Check if the app is in dark mode
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

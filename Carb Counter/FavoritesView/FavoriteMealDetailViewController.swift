@@ -17,7 +17,6 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     override func viewDidLoad() {
         super.viewDidLoad()
         title = NSLocalizedString("Ändra favoritmåltid", comment: "Edit favorite meal")
-        view.backgroundColor = .systemBackground
         updateBackgroundForCurrentMode()
         
         setupView()
@@ -39,6 +38,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         view.subviews.filter { $0 is GradientView }.forEach { $0.removeFromSuperview() }
         
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
                 UIColor.systemBlue.withAlphaComponent(0.25).cgColor,

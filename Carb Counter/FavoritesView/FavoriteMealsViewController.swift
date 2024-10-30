@@ -17,7 +17,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     override func viewDidLoad() {
         super.viewDidLoad()
         title = NSLocalizedString("Välj en favoritmåltid", comment: "Select a favorite meal")
-        view.backgroundColor = .systemBackground
         
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
@@ -60,6 +59,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         // Update the background based on the current interface style
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

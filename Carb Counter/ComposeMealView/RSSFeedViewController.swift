@@ -12,7 +12,6 @@ class RSSFeedViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
         
         // Setup gradient view and close button
         setupGradientView()
@@ -28,6 +27,7 @@ class RSSFeedViewController: UIViewController {
     private func setupGradientView() {
         // Check if the app is in dark mode
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

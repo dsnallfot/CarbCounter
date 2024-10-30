@@ -43,8 +43,6 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         
         title = String(format: NSLocalizedString("Måltid %@", comment: "Meal time format"), mealTimeStr)
         
-        view.backgroundColor = .systemBackground
-        
         // Check if the view controller is presented modally and add a close button
         if isModalPresentation {
             navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -102,6 +100,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         
         // Update the background based on the current interface style
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

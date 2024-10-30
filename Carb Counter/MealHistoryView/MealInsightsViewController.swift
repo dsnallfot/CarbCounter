@@ -145,9 +145,6 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
-        view.backgroundColor = .systemBackground
-        
         // Set the flag based on whether the view controller is presented modally
         isComingFromModal = isModalPresentation
         
@@ -291,6 +288,7 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
         
         // Update the background based on the current interface style
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

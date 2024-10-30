@@ -37,7 +37,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     override func viewDidLoad() {
         super.viewDidLoad()
         title = NSLocalizedString("Historik", comment: "Title for Meal History screen")
-        view.backgroundColor = .systemBackground
         
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
@@ -143,6 +142,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         // Update the background based on the current interface style
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,

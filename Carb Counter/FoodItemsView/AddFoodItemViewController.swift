@@ -76,8 +76,6 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Assign the custom emoji keyboard to the emojiTextField
             emojiTextField.inputView = emojiView
         
-        view.backgroundColor = .systemBackground
-        
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
 
@@ -220,6 +218,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         
         // Update the background based on the current interface style
         if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
             // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
