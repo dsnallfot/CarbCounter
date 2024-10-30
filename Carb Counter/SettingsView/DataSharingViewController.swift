@@ -789,14 +789,19 @@ class DataSharingViewController: UIViewController {
         var foodItemRows = [FoodItemRowData]()
         
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 7 else {
+        guard columns.count == 8 else {
             print("Import Failed: CSV file was not correctly formatted")
             return []
         }
         
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 7 {
+            if values.count == 8 {
+                let mealDate = dateFormatter.date(from: values[7])
+
                 let foodItemRow = FoodItemRowData(
                     foodItemID: UUID(uuidString: values[0]),
                     portionServed: Double(values[1]) ?? 0.0,
@@ -804,7 +809,8 @@ class DataSharingViewController: UIViewController {
                     registeredCarbsSoFar: Double(values[3]) ?? 0.0,
                     registeredFatSoFar: Double(values[4]) ?? 0.0,
                     registeredProteinSoFar: Double(values[5]) ?? 0.0,
-                    registeredBolusSoFar: Double(values[6]) ?? 0.0
+                    registeredBolusSoFar: Double(values[6]) ?? 0.0,
+                    mealDate: mealDate
                 )
                 foodItemRows.append(foodItemRow)
             } else {
@@ -814,6 +820,8 @@ class DataSharingViewController: UIViewController {
         
         return foodItemRows
     }
+
+
     
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -982,8 +990,11 @@ extension DataSharingViewController {
     }
     
     private func createOngoingMealCSV(from foodItemRows: [FoodItemRowData]) -> String {
-        var csvString = "foodItemID;portionServed;notEaten;registeredCarbsSoFar;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
+        var csvString = "foodItemID;portionServed;notEaten;registeredCarbsSoFar;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar;mealDate\n"
         
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
         for row in foodItemRows {
             let foodItemID = row.foodItemID?.uuidString ?? ""
             let portionServed = row.portionServed
@@ -992,12 +1003,18 @@ extension DataSharingViewController {
             let registeredFatSoFar = row.registeredFatSoFar
             let registeredProteinSoFar = row.registeredProteinSoFar
             let registeredBolusSoFar = row.registeredBolusSoFar
+            let mealDate = row.mealDate.map { dateFormatter.string(from: $0) } ?? ""
             
-            csvString += "\(foodItemID);\(portionServed);\(notEaten);\(registeredCarbsSoFar);\(registeredFatSoFar);\(registeredProteinSoFar);\(registeredBolusSoFar)\n"
+            //print("Mealdate for row in CSV: \(mealDate)") // Debug print to verify formatted date
+            
+            csvString += "\(foodItemID);\(portionServed);\(notEaten);\(registeredCarbsSoFar);\(registeredFatSoFar);\(registeredProteinSoFar);\(registeredBolusSoFar);\(mealDate)\n"
         }
         
         return csvString
     }
+
+
+
     
     public func saveCSV(data: String, fileName: String) async {
             let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())

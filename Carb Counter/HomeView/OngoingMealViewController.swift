@@ -10,7 +10,7 @@ struct FoodItemRowData {
     var registeredFatSoFar: Double
     var registeredProteinSoFar: Double
     var registeredBolusSoFar: Double
-    //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
+    var mealDate: Date?
 }
 
 class OngoingMealViewController: UIViewController {
@@ -191,8 +191,8 @@ class OngoingMealViewController: UIViewController {
                 registeredCarbsSoFar: row.registeredCarbsSoFar,
                 registeredFatSoFar: row.registeredFatSoFar,
                 registeredProteinSoFar: row.registeredProteinSoFar,
-                registeredBolusSoFar: row.registeredBolusSoFar
-                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
+                registeredBolusSoFar: row.registeredBolusSoFar,
+                mealDate: row.mealDate
             )
         }
         
@@ -202,6 +202,7 @@ class OngoingMealViewController: UIViewController {
         // Dismiss the view controller
         dismiss(animated: true, completion: nil)
     }
+
     
     @objc private func closeView() {
         dismiss(animated: true, completion: nil)

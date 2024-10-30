@@ -1122,32 +1122,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func didTakeoverRegistration(_ notification: Notification) {
         if let importedRows = notification.userInfo?["foodItemRows"] as? [FoodItemRowData] {
             
-            // Print the imported rows for debugging
-            //print("Imported rows: \(importedRows)")
-            
             // Find the maximum registeredCarbsSoFar (and fat, protein & bolus so far) from the imported rows
             let maxregisteredCarbsSoFar = importedRows.map { $0.registeredCarbsSoFar }.max() ?? 0.0
-            //print("Max registered carbs so far: \(maxregisteredCarbsSoFar)")
-
             let maxRegisteredFatSoFar = importedRows.map { $0.registeredFatSoFar }.max() ?? 0.0
-            //print("Max registered fat so far: \(maxRegisteredFatSoFar)")
-
             let maxRegisteredProteinSoFar = importedRows.map { $0.registeredProteinSoFar }.max() ?? 0.0
-            //print("Max registered protein so far: \(maxRegisteredProteinSoFar)")
-
             let maxRegisteredBolusSoFar = importedRows.map { $0.registeredBolusSoFar }.max() ?? 0.0
-            //print("Max registered bolus so far: \(maxRegisteredBolusSoFar)")
             
-            //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
+            // Retrieve mealDate if it's set in any of the imported rows
+            if let importedMealDate = importedRows.compactMap({ $0.mealDate }).first {
+                self.mealDate = importedMealDate
+                print("Meal date set to: \(self.mealDate)")
+            } else {
+                print("No meal date found in imported rows")
+            }
 
             // Determine if start dose should be true based on bolus value
             let startDose = maxRegisteredBolusSoFar > 0
-            //print("Start dose set to: \(startDose ? "true" : "false")")
 
             for row in importedRows {
-                //print("Processing row with foodItemID: \(row.foodItemID), portionServed: \(row.portionServed), notEaten: \(row.notEaten)")
                 if let foodItem = getFoodItemByID(row.foodItemID) {
-                    //print("Found food item: \(foodItem.name ?? "Unnamed")")
                     addFoodItemRow(with: foodItem, portionServed: row.portionServed, notEaten: row.notEaten)
                 } else {
                     print("Food item not found for ID: \(row.foodItemID)")
@@ -1161,29 +1154,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 proteinValue: String(format: "%.0f", maxRegisteredProteinSoFar),
                 bolusValue: String(format: "%.2f", maxRegisteredBolusSoFar),
                 startDose: startDose
-                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
             )
 
             if maxregisteredCarbsSoFar == 0 {
                 totalRegisteredCarbsLabel?.text = "--"
-                print("Total registered carbs is zero, setting label to --")
             } else {
                 totalRegisteredCarbsLabel?.text = String(format: "%.0f g", maxregisteredCarbsSoFar)
-                print("Total registered carbs label set to: \(totalRegisteredCarbsLabel?.text ?? "nil")")
             }
 
             registeredFatSoFar = maxRegisteredFatSoFar
-            print("Registered fat so far set to: \(registeredFatSoFar)")
-
             registeredProteinSoFar = maxRegisteredProteinSoFar
-            print("Registered protein so far set to: \(registeredProteinSoFar)")
-
             registeredBolusSoFar = maxRegisteredBolusSoFar
-            print("Registered bolus so far set to: \(registeredBolusSoFar)")
+
         } else {
             print("No foodItemRows found in notification")
         }
     }
+
     
     private func clearCurrentRows() {
         for row in foodItemRows {
@@ -2092,10 +2079,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     // MARK: Methods (Core data and csv handling)
     private func exportBlankCSV() {
-        let blankCSVString = "foodItemID;portionServed;notEaten;registeredCarbsSoFar;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar\n"
+        let blankCSVString = "foodItemID;portionServed;notEaten;registeredCarbsSoFar;registeredFatSoFar;registeredProteinSoFar;registeredBolusSoFar;mealDate\n"
         saveCSV(data: blankCSVString, fileName: "OngoingMeal.csv")
         print("Blank ongoing meal CSV export done")
     }
+
     
     private func saveCSV(data: String, fileName: String) {
         guard let dataSharingVC = dataSharingVC else { return }
@@ -2302,22 +2290,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     func saveToCoreData() {
         let context = CoreDataStack.shared.context
         
+        //print("Current mealDate in ComposeMealVC: \(String(describing: self.mealDate))") // Debug print
+        
         for rowView in foodItemRows {
             if let foodItemRow = rowView.foodItemRow {
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
+                
+                if let mealDate = self.mealDate {
+                    foodItemRow.mealDate = mealDate
+                    //print("Saving mealDate: \(mealDate) to existing FoodItemRow") // Debug print
+                }
                 
             } else {
                 let foodItemRow = FoodItemRow(context: context)
                 foodItemRow.portionServed = Double(rowView.portionServedTextField.text ?? "0") ?? 0
                 foodItemRow.notEaten = Double(rowView.notEatenTextField.text ?? "0") ?? 0
                 foodItemRow.foodItemID = rowView.selectedFoodItem?.id
-                //TODO: Add mealdate to be able to takeover ongoing meal with initial mealdate
+                
+                if let mealDate = self.mealDate {
+                    foodItemRow.mealDate = mealDate
+                    //print("Saving mealDate: \(mealDate) to new FoodItemRow") // Debug print
+                }
                 
                 rowView.foodItemRow = foodItemRow
-                
             }
         }
         
@@ -2327,6 +2324,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Debug - Failed to save FoodItemRows: \(error)")
         }
     }
+
+
     
     private func saveMealHistory() {
         guard !foodItemRows.isEmpty else {
@@ -2530,7 +2529,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     registeredCarbsSoFar: registeredCarbsSoFar,
                     registeredFatSoFar: registeredFatSoFar,
                     registeredProteinSoFar: registeredProteinSoFar,
-                    registeredBolusSoFar: registeredBolusSoFar
+                    registeredBolusSoFar: registeredBolusSoFar,
+                    mealDate: self.mealDate
                 )
                 foodItemRowData.append(rowData)
             }
@@ -2538,6 +2538,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         return foodItemRowData
     }
+
     
     private func getFoodItemByID(_ id: UUID?) -> FoodItem? {
         guard let id = id else { return nil }
