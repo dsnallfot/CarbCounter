@@ -37,8 +37,8 @@ class DataSharingViewController: UIViewController {
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         } else {
-            // In light mode, set a solid white background
-            view.backgroundColor = .systemBackground
+            // In light mode, set a solid background
+            view.backgroundColor = .systemGray6
         }
         
         title = NSLocalizedString("Dela data", comment: "Dela data")

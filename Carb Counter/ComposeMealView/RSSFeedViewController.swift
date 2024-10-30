@@ -50,7 +50,7 @@ class RSSFeedViewController: UIViewController {
             ])
         } else {
             // In light mode, set a solid white background
-            view.backgroundColor = .systemBackground
+            view.backgroundColor = .systemGray6
         }
     }
     

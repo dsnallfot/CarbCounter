@@ -142,7 +142,7 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
             ])
         } else {
             // In light mode, set a solid white background
-            view.backgroundColor = .systemBackground
+            view.backgroundColor = .systemGray6
         }
         
         view.addSubview(searchBar)

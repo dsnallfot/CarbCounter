@@ -25,7 +25,7 @@ class RemoteSettingsViewController: UITableViewController {
             if traitCollection.userInterfaceStyle == .dark {
                 solidBackgroundView.backgroundColor = .systemBackground // This is the solid background in dark mode
             } else {
-                solidBackgroundView.backgroundColor = .systemBackground // Solid white background in light mode
+                solidBackgroundView.backgroundColor = .systemGray6 // Solid background in light mode
             }
 
             // Create gradient view (used only in dark mode)

@@ -350,7 +350,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             ])
         } else {
             // In light mode, set a solid white background
-            view.backgroundColor = .systemBackground
+            view.backgroundColor = .systemGray6
         }
     }
 

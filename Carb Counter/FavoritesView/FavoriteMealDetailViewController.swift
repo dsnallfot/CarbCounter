@@ -57,7 +57,7 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         } else {
-            view.backgroundColor = .systemBackground
+            view.backgroundColor = .systemGray6
         }
     }
     

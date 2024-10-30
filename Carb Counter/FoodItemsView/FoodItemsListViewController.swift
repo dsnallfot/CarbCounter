@@ -11,7 +11,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let textField = UITextField()
         textField.placeholder = NSLocalizedString("Sök efter livsmedel online", comment: "Sök efter livsmedel online")
         textField.borderStyle = .roundedRect
-        textField.backgroundColor = .systemGray6
+        textField.backgroundColor = .systemBackground
         textField.translatesAutoresizingMaskIntoConstraints = false
         
         let placeholderText = NSLocalizedString("Sök efter livsmedel online", comment: "Sök efter livsmedel online")
@@ -162,8 +162,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         } else {
-            // In light mode, set a solid white background
-            view.backgroundColor = .systemBackground
+            // In light mode, set a solid background
+            view.backgroundColor = .systemGray6
         }
     }
 
