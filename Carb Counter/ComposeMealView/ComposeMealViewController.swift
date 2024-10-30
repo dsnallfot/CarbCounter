@@ -427,16 +427,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private func addOverlayLayer(to container: UIView, percentage: CGFloat, belowView: UIView) {
         let overlayView = UIView()
         overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
-        //overlayView.backgroundColor = UIColor.systemGray2.withAlphaComponent(1)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
-        // Insert the overlay view at index 0 to ensure it's behind other subviews
         container.insertSubview(overlayView, at: 0)
         
         NSLayoutConstraint.activate([
             overlayView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             overlayView.topAnchor.constraint(equalTo: container.topAnchor),
             overlayView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            overlayView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: percentage)
+            overlayView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: 1 - percentage) // Inverted percentage
         ])
     }
     /// Helper function to clamp a value between a minimum and maximum value
@@ -596,7 +594,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             overlayView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             overlayView.topAnchor.constraint(equalTo: container.topAnchor),
             overlayView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            overlayView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: percentage) // Set width based on percentage
+            overlayView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: 1 - percentage) // Inverted percentage
         ])
     }
     
@@ -1728,7 +1726,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         guard let totalString = totalValue, let total = Double(totalString.replacingOccurrences(of: "[^0-9.]", with: "", options: .regularExpression)), total > 0 else {
             return 0.0
         }
-        let percentage = 1 - (registeredSoFar / total)
+        let percentage = registeredSoFar / total // Normal calculation
         return CGFloat(clamp(percentage, to: 0...1)) // Ensure percentage stays between 0 and 1
     }
     
