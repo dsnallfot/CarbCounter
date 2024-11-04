@@ -45,8 +45,8 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
         let previousDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(loadPreviousDay))
                 let nextDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(loadNextDay))
-                toggleReportButton = UIBarButtonItem(image: UIImage(systemName: "chart.pie"), style: .plain, target: self, action: #selector(toggleReportType))
-                glucoseDistributionButton = UIBarButtonItem(image: UIImage(systemName: "14.square"), style: .plain, target: self, action: #selector(loadGlucoseDistributionReport))
+                toggleReportButton = UIBarButtonItem(image: UIImage(systemName: "gauge.with.dots.needle.67percent"), style: .plain, target: self, action: #selector(toggleReportType))
+                glucoseDistributionButton = UIBarButtonItem(image: UIImage(systemName: "chart.pie"), style: .plain, target: self, action: #selector(loadGlucoseDistributionReport))
 
                 navigationItem.rightBarButtonItems = [glucoseDistributionButton, toggleReportButton, nextDayButton, previousDayButton]
             }
@@ -234,7 +234,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         }
 
     private func updateToggleReportButtonIcon() {
-        let iconName = (currentReportType == "daytoday") ? "chart.pie" : "chart.dots.scatter"
+        let iconName = (currentReportType == "daytoday") ? "gauge.with.dots.needle.67percent" : "chart.dots.scatter"
         toggleReportButton.image = UIImage(systemName: iconName)
     }
 
