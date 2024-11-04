@@ -939,6 +939,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
 
         // Prepopulate the search text field with the foodItem name
         mealInsightsVC.prepopulatedSearchText = foodItem.name ?? ""
+        mealInsightsVC.prepopulatedSearchTextId = foodItem.id ?? nil
 
         // Embed the MealInsightsViewController in a UINavigationController
         let navController = UINavigationController(rootViewController: mealInsightsVC)

@@ -430,6 +430,7 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
 
         // Pass the foodEntry to MealInsightsViewController
         mealInsightsVC.prepopulatedSearchText = foodEntry.entryName ?? ""
+        mealInsightsVC.prepopulatedSearchTextId = foodEntry.entryId ?? nil
         mealInsightsVC.isComingFromDetailView = true
         mealInsightsVC.selectedFoodEntry = foodEntry  // Pass the foodEntry with entryId
 

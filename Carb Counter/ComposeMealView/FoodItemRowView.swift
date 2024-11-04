@@ -316,6 +316,7 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
 
         // Prepopulate the search text field with the foodItem name
         mealInsightsVC.prepopulatedSearchText = selectedFoodItem.name ?? ""
+        mealInsightsVC.prepopulatedSearchTextId = selectedFoodItem.id ?? nil
         
         mealInsightsVC.isComingFromFoodItemRow = true
 

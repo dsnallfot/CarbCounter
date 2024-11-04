@@ -13,6 +13,7 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
     weak var delegate: MealInsightsDelegate?
     
     var prepopulatedSearchText: String?
+    var prepopulatedSearchTextId: UUID?
     var onAveragePortionSelected: ((Double) -> Void)?
     private var selectedEntryName: String?
     private var selectedEntryId: UUID?
@@ -1100,20 +1101,32 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
             // Filter entries based on the trimmed search text
             self.filterFoodEntries()
             
-            // Try to find the matching entry
+            // Try to find the matching entry by name
             if let matchingEntry = allFilteredFoodEntries.first(where: {
                 let trimmedEntryName = $0.entryName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
                 return trimmedEntryName == trimmedSearchText
             }) {
-                print("Exact match found \(matchingEntry.entryName ?? "")")
+                print("Exact match found: \(matchingEntry.entryName ?? "")")
                 self.selectedEntryName = matchingEntry.entryName // Store the selected entry name
                 self.selectedEntryId = matchingEntry.entryId // Store the entryId for further filtering
                 
                 // Update stats using entryId
                 updateStats(for: matchingEntry.entryId)
+            
+            // Fallback: No exact name match, use `prepopulatedSearchTextId`
+            } else if let fallbackId = prepopulatedSearchTextId,
+                      let fallbackEntry = allFilteredFoodEntries.first(where: { $0.entryId == fallbackId }) {
+                print("No exact name match found. Using fallback ID.")
+                self.selectedEntryName = fallbackEntry.entryName // Store the fallback entry name
+                self.selectedEntryId = fallbackEntry.entryId // Store the entryId for further filtering
+                
+                // Update stats using fallback entryId
+                updateStats(for: fallbackEntry.entryId)
+            
             } else {
-                print("No exact match found for \(searchText)")
-                updateStats(for: nil) // Clear stats if no match
+                // No match found, clear stats
+                print("No match found for \(searchText) and no fallback ID match.")
+                updateStats(for: nil)
             }
         } else {
             // Execute the same search as when the user manually types into the search bar
@@ -1124,15 +1137,23 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
                 if let matchingEntry = allFilteredFoodEntries.first(where: { $0.entryName?.lowercased() == selectedEntry.lowercased() }) {
                     self.selectedEntryId = matchingEntry.entryId // Update the selected entryId for the matched name
                     updateStats(for: matchingEntry.entryId)
+                
+                // Fallback: No exact name match, use `prepopulatedSearchTextId`
+                } else if let fallbackId = prepopulatedSearchTextId,
+                          let fallbackEntry = allFilteredFoodEntries.first(where: { $0.entryId == fallbackId }) {
+                    print("No exact name match found in search. Using fallback ID.")
+                    self.selectedEntryName = fallbackEntry.entryName // Store the fallback entry name
+                    self.selectedEntryId = fallbackEntry.entryId // Store the entryId for further filtering
+                    
+                    // Update stats using fallback entryId
+                    updateStats(for: fallbackEntry.entryId)
                 } else {
                     updateStats(for: nil) // No match, clear stats
                 }
-            } else {
-                if searchBar.text?.isEmpty ?? true {
-                    self.selectedEntryName = nil // Reset the selected entry if search is cleared
-                    print("Search text is empty, no match found")
-                    updateStats(for: nil) // Clear stats
-                }
+            } else if searchBar.text?.isEmpty ?? true {
+                self.selectedEntryName = nil // Reset the selected entry if search is cleared
+                print("Search text is empty, no match found")
+                updateStats(for: nil) // Clear stats
             }
         }
     }
