@@ -1195,9 +1195,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func didUpdateMealValues(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
-        // Reset preBolus to false
-        self.preBolus = false
-        
         print("updateRegisteredAmount function ran from delegate")
         updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: startDose)
     }
@@ -2891,6 +2888,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 print("Device status has been updated.")
             }
         }
+        
+        // Reset preBolus to false
+            self.preBolus = false
     }
     
     private func authenticateUser(completion: @escaping (Bool) -> Void) {
