@@ -51,7 +51,7 @@ class OngoingMealViewController: UIViewController {
     
     let noDataLabel: UILabel = {
         let label = UILabel()
-        label.text = NSLocalizedString("Ingen måltidregistrering pågår", comment: "Ingen måltidregistrering pågår")
+        label.text = NSLocalizedString("Ingen måltidsregistrering pågår", comment: "Ingen måltidsregistrering pågår")
         label.textColor = .gray
         label.textAlignment = .center
         label.font = UIFont.italicSystemFont(ofSize: 16)

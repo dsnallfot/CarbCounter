@@ -15,7 +15,7 @@
 
 /* Ongoing Meal Viewcontroller */
 "Ta över registrering" = "Ta över registrering";
-"Ingen måltidregistrering pågår" = "Ingen måltidregistrering pågår";
+"Ingen måltidsregistrering pågår" = "Ingen måltidsregistrering delas just nu";
 "Pågående måltid" = "Pågående måltid";
 "Ingen näringsinformation tillgänglig." = "Ingen näringsinformation tillgänglig.";
 "LIVSMEDEL" = "LIVSMEDEL";
@@ -597,7 +597,9 @@
 "Mängd" = "Mängd";
 "Datum" = "Datum";
 
-
+/*RSS View*/
+"Meny saknas" = "Lunchmeny saknas";
+"\nIngen lunchmeny tillgänglig för det valda datumet" = "\nIngen lunchmeny finns tillgänglig detta datum";
 
 /* Quick actions */
 "SCAN_BARCODE_KEY" = "Scanna streckkod";

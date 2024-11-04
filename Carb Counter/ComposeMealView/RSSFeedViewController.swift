@@ -246,7 +246,7 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
             return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
         }
         if weekdayItems.isEmpty || weekdayItems.first?.courses.isEmpty == true {
-            cell.textLabel?.text = "Måltidsinformation saknas"
+            cell.textLabel?.text = "Lunchmeny saknas"
             cell.backgroundColor = .clear
         } else {
             let courses = weekdayItems.flatMap { $0.courses }
@@ -303,7 +303,20 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
             let calendar = Calendar(identifier: .iso8601)
             return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
         }
+        
         let courses = weekdayItems.flatMap { $0.courses }
+        
+        // Check if there are any courses for the selected day
+        if courses.isEmpty || indexPath.row >= courses.count {
+            // Show alert if no menu is available
+            let alert = UIAlertController(title: NSLocalizedString("Meny saknas", comment: "Title for missing menu"),
+                                          message: NSLocalizedString("\nIngen lunchmeny tillgänglig för det valda datumet", comment: "Message for missing menu"),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK button"), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+        
         let selectedCourse = courses[indexPath.row]
         let parsedWords = parseCourseDescription(selectedCourse)
         print("Food items for matching: \(parsedWords)")
@@ -348,6 +361,7 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         delegate?.didSelectFoodItems(Array(matchedFoodItems))
         dismiss(animated: true, completion: nil)
     }
+
 }
 
 protocol RSSFeedDelegate: AnyObject {

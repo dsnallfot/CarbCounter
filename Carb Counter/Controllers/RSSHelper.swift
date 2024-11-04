@@ -60,7 +60,7 @@ class RSSParser: NSObject, XMLParserDelegate {
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             if let date = dateFormatter.date(from: currentDate) {
                 let courses = currentDescription.components(separatedBy: "<br/>").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                let rssItem = RSSItem(title: currentTitle, date: date, description: currentDescription, courses: courses.isEmpty ? ["Måltidsinformation saknas"] : courses)
+                let rssItem = RSSItem(title: currentTitle, date: date, description: currentDescription, courses: courses.isEmpty ? ["Lunchmeny saknas"] : courses)
                 rssItems.append(rssItem)
             } else {
                 print("Date parsing error: \(currentDate)")

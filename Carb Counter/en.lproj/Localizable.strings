@@ -15,7 +15,7 @@
 
 /* Ongoing Meal Viewcontroller */
 "Ta över registrering" = "Take over registration";
-"Ingen måltidregistrering pågår" = "No meal registration in progress";
+"Ingen måltidsregistrering pågår" = "No meal registration are currently shared";
 "Pågående måltid" = "Ongoing meal";
 "Ingen näringsinformation tillgänglig." = "No nutritional information available.";
 "LIVSMEDEL" = "FOOD ITEM";
@@ -596,6 +596,11 @@
 "Välj livsmedel" = "Select food item";
 "Mängd" = "Amount";
 "Datum" = "Date";
+
+/*RSS View*/
+"Meny saknas" = "No menu";
+"\nIngen lunchmeny tillgänglig för det valda datumet" = "\nThe lunch menu is missing for the selected date.";
+
 
 /* Quick actions */
 "SCAN_BARCODE_KEY" = "Scan barcode";

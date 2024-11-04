@@ -136,7 +136,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
     @objc private func loadNextDay() {
         if currentReportType == "glucosedistribution" {
-            adjustGlucoseDistributionDates(by: 13)
+            adjustGlucoseDistributionDates(by: 14)
         } else {
             adjustDate(by: 1)
         }
@@ -173,7 +173,7 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
             let today = Date()
 
             // Set the initial end date to today and start date to 13 days before
-            currentEndDate = calendar.date(byAdding: .day, value: -1, to: today)
+            currentEndDate = calendar.date(byAdding: .day, value: 0, to: today)
             currentStartDate = calendar.date(byAdding: .day, value: -13, to: currentEndDate!)
 
             currentReportType = "glucosedistribution"
