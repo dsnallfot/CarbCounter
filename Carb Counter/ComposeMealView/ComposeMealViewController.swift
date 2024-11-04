@@ -81,6 +81,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     private var lateBreakfastTimer: Timer?
     private let lateBreakfastDuration: TimeInterval = 90 * 60 // 90 minutes in seconds
     var startDoseGiven: Bool = false
+    var preBolus = false
     var remainingDoseGiven: Bool = false
     var dataSharingVC: DataSharingViewController?
     var mealEmojis: String? = "🍴"
@@ -1194,10 +1195,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func didUpdateMealValues(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, startDose: Bool) {
+        // Reset preBolus to false
+        self.preBolus = false
+        
         print("updateRegisteredAmount function ran from delegate")
         updateRegisteredAmount(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, startDose: startDose)
     }
-    
     func didUpdateMealDate(_ date: Date) {
             self.mealDate = date
             print("Meal date set to: \(mealDate!)")
@@ -2632,6 +2635,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         hideAllDeleteButtons()
         createEmojiString()
+        
+        // Set preBolus based on foodItemRows
+            self.preBolus = self.foodItemRows.isEmpty
+            
+            let emojis = self.preBolus ? "⏱️" : self.getMealEmojis()
 
         // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
@@ -2639,7 +2647,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let proteinValue = "0"
         let bolusValue = formatValue(totalStartBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
         
-        let emojis = self.foodItemRows.isEmpty ? "⏱️" : self.getMealEmojis()
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             method = "iOS Shortcuts"
@@ -2818,7 +2825,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
 
         let emojis: String
-        if self.startDoseGiven == true {
+        if preBolus {
+            emojis = "\(self.getMealEmojis())🍽️"
+        } else if self.startDoseGiven {
             emojis = "🍽️"
         } else {
             emojis = "\(self.getMealEmojis())🍽️"
