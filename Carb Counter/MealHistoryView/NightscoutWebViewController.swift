@@ -11,6 +11,11 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
 
     // Add a reference to the toggleReportButton
     private var toggleReportButton: UIBarButtonItem!
+    private var glucoseDistributionButton: UIBarButtonItem!
+    
+    private var currentStartDate: Date? // Track the current start date for glucose distribution
+    private var currentEndDate: Date?   // Track the current end date for glucose distribution
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,11 +44,12 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
         }
 
         let previousDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(loadPreviousDay))
-        let nextDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(loadNextDay))
-        toggleReportButton = UIBarButtonItem(image: UIImage(systemName: "chart.pie"), style: .plain, target: self, action: #selector(toggleReportType))
+                let nextDayButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(loadNextDay))
+                toggleReportButton = UIBarButtonItem(image: UIImage(systemName: "chart.pie"), style: .plain, target: self, action: #selector(toggleReportType))
+                glucoseDistributionButton = UIBarButtonItem(image: UIImage(systemName: "14.square"), style: .plain, target: self, action: #selector(loadGlucoseDistributionReport))
 
-        navigationItem.rightBarButtonItems = [toggleReportButton, nextDayButton, previousDayButton]
-    }
+                navigationItem.rightBarButtonItems = [glucoseDistributionButton, toggleReportButton, nextDayButton, previousDayButton]
+            }
 
     private func setupWebView() {
         // Create and configure the web view
@@ -121,68 +127,111 @@ class NightscoutWebViewController: UIViewController, WKNavigationDelegate {
     }
 
     @objc private func loadPreviousDay() {
-        adjustDate(by: -1)
+        if currentReportType == "glucosedistribution" {
+            adjustGlucoseDistributionDates(by: -14)
+        } else {
+            adjustDate(by: -1)
+        }
     }
 
     @objc private func loadNextDay() {
-        adjustDate(by: 1)
+        if currentReportType == "glucosedistribution" {
+            adjustGlucoseDistributionDates(by: 13)
+        } else {
+            adjustDate(by: 1)
+        }
     }
+    
+    private func adjustGlucoseDistributionDates(by days: Int) {
+            let calendar = Calendar.current
+            let today = Date()
+
+            if let endDate = currentEndDate {
+                // Adjust endDate and startDate by 14 days
+                let newEndDate = calendar.date(byAdding: .day, value: days, to: endDate)!
+                
+                // Check if the new end date is in the future; if so, cap it at today
+                let finalEndDate = min(newEndDate, today)
+                let finalStartDate = calendar.date(byAdding: .day, value: -13, to: finalEndDate)!
+
+                // Update the current start and end dates
+                currentStartDate = finalStartDate
+                currentEndDate = finalEndDate
+
+                // Reload the page with the updated dates
+                reloadNightscoutPage(startDate: currentStartDate, endDate: currentEndDate)
+            }
+        }
 
     @objc private func toggleReportType() {
         currentReportType = (currentReportType == "daytoday") ? "dailystats" : "daytoday"
         reloadNightscoutPage()
     }
+    
+    @objc private func loadGlucoseDistributionReport() {
+            let calendar = Calendar.current
+            let today = Date()
+
+            // Set the initial end date to today and start date to 13 days before
+            currentEndDate = calendar.date(byAdding: .day, value: -1, to: today)
+            currentStartDate = calendar.date(byAdding: .day, value: -13, to: currentEndDate!)
+
+            currentReportType = "glucosedistribution"
+            reloadNightscoutPage(startDate: currentStartDate, endDate: currentEndDate)
+        }
 
     private func adjustDate(by days: Int) {
-        guard let currentDate = mealDate else { return }
-        mealDate = Calendar.current.date(byAdding: .day, value: days, to: currentDate)
-        reloadNightscoutPage()
-    }
-
-    private func reloadNightscoutPage() {
-        guard var baseURL = UserDefaultsRepository.nightscoutURL,
-              let token = UserDefaultsRepository.nightscoutToken,
-              let date = mealDate else { return }
-
-        // Ensure the base URL ends with '/'
-        if !baseURL.hasSuffix("/") {
-            baseURL += "/"
+            guard let currentDate = mealDate else { return }
+            mealDate = Calendar.current.date(byAdding: .day, value: days, to: currentDate)
+            reloadNightscoutPage()
         }
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
+    private func reloadNightscoutPage(startDate: Date? = nil, endDate: Date? = nil) {
+            guard var baseURL = UserDefaultsRepository.nightscoutURL,
+                  let token = UserDefaultsRepository.nightscoutToken else { return }
 
-        var urlComponents = URLComponents(string: baseURL + "report/")
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "token", value: token),
-            URLQueryItem(name: "report", value: currentReportType),
-            URLQueryItem(name: "startDate", value: dateString),
-            URLQueryItem(name: "endDate", value: dateString),
-            URLQueryItem(name: "autoShow", value: "true"),
-            URLQueryItem(name: "hideMenu", value: "true"),
-        ]
+            let reportStartDate = startDate ?? mealDate
+            let reportEndDate = endDate ?? mealDate
 
-        if let url = urlComponents?.url {
-            print("Constructed URL: \(url.absoluteString)")
-            // Show the overlay view again
-            overlayView.alpha = 1
-            overlayView.isHidden = false
-            view.bringSubviewToFront(overlayView)
+            guard let reportStartDate = reportStartDate, let reportEndDate = reportEndDate else { return }
 
-            // Update the toggleReportButton icon
-            updateToggleReportButtonIcon()
+            if !baseURL.hasSuffix("/") {
+                baseURL += "/"
+            }
 
-            loadNightscoutPage(with: url)
-        } else {
-            print("Failed to construct URL")
-            let alert = UIAlertController(title: NSLocalizedString("Fel", comment: "Error"),
-                                          message: NSLocalizedString("Kunde inte skapa Nightscout URL.", comment: "Could not create Nightscout URL."),
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let startDateString = dateFormatter.string(from: reportStartDate)
+            let endDateString = dateFormatter.string(from: reportEndDate)
+
+            var urlComponents = URLComponents(string: baseURL + "report/")
+            urlComponents?.queryItems = [
+                URLQueryItem(name: "token", value: token),
+                URLQueryItem(name: "report", value: currentReportType),
+                URLQueryItem(name: "startDate", value: startDateString),
+                URLQueryItem(name: "endDate", value: endDateString),
+                URLQueryItem(name: "autoShow", value: "true"),
+                URLQueryItem(name: "hideMenu", value: "true"),
+            ]
+
+            if let url = urlComponents?.url {
+                print("Constructed URL: \(url.absoluteString)")
+                overlayView.alpha = 1
+                overlayView.isHidden = false
+                view.bringSubviewToFront(overlayView)
+
+                updateToggleReportButtonIcon()
+                loadNightscoutPage(with: url)
+            } else {
+                showAlert(title: "Fel", message: "Kunde inte skapa Nightscout URL.")
+            }
+        }
+    
+    private func showAlert(title: String, message: String) {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             present(alert, animated: true, completion: nil)
         }
-    }
 
     private func updateToggleReportButtonIcon() {
         let iconName = (currentReportType == "daytoday") ? "chart.pie" : "chart.dots.scatter"
