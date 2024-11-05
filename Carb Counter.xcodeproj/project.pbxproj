@@ -573,7 +573,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Carb Counter/CarbsCounter.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = RMSRR5SURS;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				GIT_COMMIT_HASH = "$(GIT_COMMIT_HASH)";
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
@@ -611,7 +611,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Carb Counter/CarbsCounterRelease.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = RMSRR5SURS;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				GIT_COMMIT_HASH = "$(GIT_COMMIT_HASH)";
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
