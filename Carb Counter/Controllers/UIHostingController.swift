@@ -227,7 +227,7 @@ extension ComposeMealViewController {
             .replacingOccurrences(of: " DONE", with: "0 g")
             .replacingOccurrences(of: " PÅ INPUT", with: "0 g")
             .replacingOccurrences(of: " FOR INPUT", with: "0 g")
-        let carbsRegistered = totalRegisteredCarbsLabel.text ?? "0 g"
+        let carbsRegistered = (totalRegisteredCarbsLabel.text ?? "0 g").replacingOccurrences(of: "--", with: "0 g")
         
         // Calculate progress value
         let totalCarbsValue = Double(totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0

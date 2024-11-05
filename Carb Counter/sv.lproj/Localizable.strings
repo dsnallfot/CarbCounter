@@ -88,10 +88,10 @@
 "Fel" = "Fel";
 "OK" = "OK";
 "Tillfällig eller förinställd override?" = "Tillfällig eller förinställd override?";
-"\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan" = "\nVälj om du vill aktivera den förinställda overriden [%@], eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan";
-"Ange override-faktor i %" = "Ange override i %";
+"\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan" = "\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan";
+"Ange override-faktor i %" = "Ange tillfällig override %";
 "Använd tillfällig" = "Använd tillfällig override";
-"Använd %@" = "Använd [%@]";
+"Använd %@" = "Använd (%@)";
 "Manuell aktivering" = "Manuell aktivering";
 "\nKom ihåg att aktivera overriden \n%@ i iAPS/Trio" = "\nKom ihåg att aktivera overriden \n%@ i iAPS/Trio";
 "Aktivera override" = "Aktivera override";

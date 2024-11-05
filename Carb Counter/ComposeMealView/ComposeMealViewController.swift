@@ -56,7 +56,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var proteinContainer: UIView!
     var carbsContainer: UIView!
     var crContainer: UIView?
-    private var crContainerBackgroundColor: UIColor = .systemGray2
+    private var crContainerBackgroundColor: UIColor = .systemGray3
     var startAmountContainer: UIView!
     var remainsContainer: UIView!
     var registeredContainer: UIView!
@@ -731,7 +731,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             print("crContainer is nil and cannot be configured.")
         }
-        remainsContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 0)
+        remainsContainer = createContainerView(backgroundColor: .systemGray3, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
@@ -772,7 +772,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startAmountPadding = UIEdgeInsets(top: 4, left: 2, bottom: 7, right: 2)
         setupStackView(startAmountStack, in: startAmountContainer, padding: startAmountPadding)
         
-        registeredContainer = createContainerView(backgroundColor: .systemGray2, borderColor: .white, borderWidth: 0)
+        registeredContainer = createContainerView(backgroundColor: .systemGray3, borderColor: .white, borderWidth: 0)
         treatmentView.addSubview(registeredContainer)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(editCurrentRegistration))
         registeredContainer.addGestureRecognizer(tapGesture)
@@ -964,7 +964,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalStartBolusLabel.text = NSLocalizedString("0 E", comment: "0 E")
         
         // Reset the remainsContainer color and label
-        remainsContainer.backgroundColor = .systemGray2
+        remainsContainer.backgroundColor = .systemGray3
         remainsLabel.text = NSLocalizedString("+ RESTERANDE", comment: "+ RESTERANDE")
     }
     
@@ -1334,8 +1334,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             switch (remainsValue, remainsBolus, proteinRemaining, fatRemaining) {
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5) where proteinTotalValue == 0 && fatTotalValue == 0 && totalCarbsValue == 0:
-                remainsContainer.backgroundColor = .systemGray2
-                registeredContainer.backgroundColor = .systemGray2
+                remainsContainer.backgroundColor = .systemGray3
+                registeredContainer.backgroundColor = .systemGray3
                 remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
                 updateTotalRemainsLabel(text: NSLocalizedString(" PÅ INPUT", comment: " PÅ INPUT"), fontSize: 9)
                 updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
@@ -1344,7 +1344,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             case (-0.5...0.5, -0.05...0.05, -0.5...0.5, -0.5...0.5):
                 remainsContainer.backgroundColor = .systemGreen
                 registeredContainer.backgroundColor = .systemGreen
-                startAmountContainer.backgroundColor = .systemGray2
+                startAmountContainer.backgroundColor = .systemGray3
                 remainsLabel.text = NSLocalizedString("KVAR ATT GE", comment: "KVAR ATT GE")
                 updateTotalRemainsLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalRemainsBolusLabel.text = ""
@@ -1355,7 +1355,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 
             case let (x, y, z, w) where x > 0.5 || y > 0.05 || z > 0.5 || w > 0.5:
                 remainsContainer?.backgroundColor = .systemBlue
-                registeredContainer.backgroundColor = .systemGray2
+                registeredContainer.backgroundColor = .systemGray3
                 remainsLabel.text = remainsTextString
                 updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
                 updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
@@ -1363,7 +1363,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             default:
                 remainsContainer.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
-                startAmountContainer.backgroundColor = .systemGray2
+                startAmountContainer.backgroundColor = .systemGray3
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
                 updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalStartBolusLabel.text = ""
@@ -1382,8 +1382,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 proteinRemaining >= -0.5 && proteinRemaining <= 0.5 &&
                 fatRemaining >= -0.5 && fatRemaining <= 0.5 &&
                 proteinTotalValue == 0 && fatTotalValue == 0 && totalCarbsValue == 0 {
-                remainsContainer?.backgroundColor = .systemGray2
-                registeredContainer?.backgroundColor = .systemGray2
+                remainsContainer?.backgroundColor = .systemGray3
+                registeredContainer?.backgroundColor = .systemGray3
                 remainsLabel.text = NSLocalizedString("VÄNTAR", comment: "VÄNTAR")
                 updateTotalRemainsLabel(text: NSLocalizedString(" PÅ INPUT", comment: " PÅ INPUT"), fontSize: 9)
                 totalRemainsBolusLabel.text = " "
@@ -1407,7 +1407,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         proteinRemaining > 0.5 ||
                         fatRemaining > 0.5 {
                 remainsContainer?.backgroundColor = .systemBlue
-                registeredContainer.backgroundColor = .systemGray2
+                registeredContainer.backgroundColor = .systemGray3
                 remainsLabel.text = remainsTextString
                 updateTotalRemainsLabel(text: totalRemainsLabel.text ?? "", fontSize: 12)
                 updateTotalStartAmountLabel(text: totalStartAmountLabel.text ?? "", fontSize: 12)
@@ -1415,7 +1415,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 remainsContainer?.backgroundColor = .systemRed
                 registeredContainer.backgroundColor = .systemRed
-                startAmountContainer.backgroundColor = .systemGreen //systemGray2
+                startAmountContainer.backgroundColor = .systemGreen //systemGray3
                 remainsLabel.text = NSLocalizedString("ÖVERDOS!", comment: "ÖVERDOS!")
                 updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
                 totalStartBolusLabel.text = ""
@@ -1426,7 +1426,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         if registeredCarbsSoFar > 0 && totalNetCarbs > 0 && remainsValue <= scheduledStartDose {
             startAmountLabel.text = NSLocalizedString("DOS", comment: "DOS")
-            startAmountContainer.backgroundColor = .systemGreen //systemGray2
+            startAmountContainer.backgroundColor = .systemGreen //systemGray3
             updateTotalStartAmountLabel(text: NSLocalizedString(" KLAR", comment: " KLAR"), fontSize: 18)
             totalStartBolusLabel.text = ""
             if remainsValue > 0.4 {
@@ -1631,7 +1631,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             showTemporaryOverrideAlert()
             self.startLateBreakfastTimer()
         } else {
-            crContainerBackgroundColor = .systemGray2
+            crContainerBackgroundColor = .systemGray3
             
             updatePlaceholderValuesForCurrentHour()
             updateScheduledValuesUI()
@@ -1642,7 +1642,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
 
             if let addButtonRowView = self.addButtonRowView {
-                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemGray2
+                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemGray3
                 addButtonRowView.lateBreakfastLabel.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             }
         }
@@ -3008,7 +3008,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         let lateBreakfastContainer: UIView = {
             let view = UIView()
-            view.backgroundColor = .systemGray2
+            view.backgroundColor = .systemGray3
             view.layer.cornerRadius = 10
             view.layer.borderWidth = 0
             view.layer.borderColor = UIColor.white.cgColor
