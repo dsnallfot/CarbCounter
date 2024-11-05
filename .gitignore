@@ -1,0 +1,24 @@
+# Ignore the commit hash file
+commit_hash.txt
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Xcode build files and derived data
+/build/
+/DerivedData/
+
+# Ignore user-specific Xcode project files
+*.xcuserdatad
+*.xcscmblueprint
+
+# Ignore temporary files and system logs
+*.log
+*.tmp
+
+# Ignore Swift Package Manager build artifacts
+.build/
+.swiftpm/
+
+# Ignore Pods directory if using CocoaPods
+/Pods/
