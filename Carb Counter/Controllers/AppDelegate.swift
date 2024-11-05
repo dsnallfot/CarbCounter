@@ -1,4 +1,5 @@
 import UIKit
+import BackgroundTasks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,8 +8,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var dataSharingVC: DataSharingViewController?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {    // Override point for customization after application launch.
         setupAppearance()
         
         dataSharingVC = DataSharingViewController()
@@ -16,7 +16,80 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Register for remote notifications if needed
         application.registerForRemoteNotifications()
         
+        // Register background task
+            BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: backgroundTaskIdentifier,
+                using: nil
+            ) { task in
+                self.handleBackgroundTask(task as! BGProcessingTask)
+            }
+        
+        // Register background task for updating registered amount
+           BGTaskScheduler.shared.register(
+               forTaskWithIdentifier: updateAmountBackgroundTaskIdentifier,
+               using: nil
+           ) { task in
+               self.handleUpdateAmountBackgroundTask(task as! BGProcessingTask)
+           }
+        
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+               if granted {
+                   print("Notification permission granted")
+               } else if let error = error {
+                   print("Error requesting notification permission: \(error)")
+               }
+           }
+        
         return true
+    }
+    
+    func handleBackgroundTask(_ task: BGProcessingTask) {
+        // Schedule the next background task
+        scheduleBackgroundTask()
+        
+        task.expirationHandler = {
+            // Handle task expiration
+            task.setTaskCompleted(success: false)
+        }
+        
+        // Perform your background work here
+        // When done, call:
+        task.setTaskCompleted(success: true)
+    }
+    
+    func handleUpdateAmountBackgroundTask(_ task: BGProcessingTask) {
+        scheduleUpdateAmountBackgroundTask()
+        
+        task.expirationHandler = {
+            task.setTaskCompleted(success: false)
+        }
+        
+        // Perform background work
+        task.setTaskCompleted(success: true)
+    }
+    
+    func scheduleBackgroundTask() {
+        let request = BGProcessingTaskRequest(identifier: backgroundTaskIdentifier)
+        request.requiresNetworkConnectivity = false
+        request.requiresExternalPower = false
+        
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            print("Could not schedule background task: \(error)")
+        }
+    }
+    
+    func scheduleUpdateAmountBackgroundTask() {
+        let request = BGProcessingTaskRequest(identifier: updateAmountBackgroundTaskIdentifier)
+        request.requiresNetworkConnectivity = false
+        request.requiresExternalPower = false
+        
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            print("Could not schedule update amount background task: \(error)")
+        }
     }
 
     // MARK: - Background Task Handling

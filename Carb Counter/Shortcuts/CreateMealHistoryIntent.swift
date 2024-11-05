@@ -1,6 +1,10 @@
 import AppIntents
 import UIKit
 import CoreData
+import BackgroundTasks
+
+// Register background task identifier
+let backgroundTaskIdentifier = "com.dsnallfot.CarbsCounter.processMealHistory"
 
 struct CreateMealHistoryIntent: AppIntent {
     static var title: LocalizedStringResource = "Logga måltidshistorik"
@@ -19,69 +23,111 @@ struct CreateMealHistoryIntent: AppIntent {
     var mealDate: Date
 
     func perform() async throws -> some IntentResult {
+        // Create a background task request
+        let taskRequest = BGProcessingTaskRequest(identifier: backgroundTaskIdentifier)
+        taskRequest.requiresNetworkConnectivity = false
+        taskRequest.requiresExternalPower = false
+        
+        do {
+            try BGTaskScheduler.shared.submit(taskRequest)
+        } catch {
+            print("Could not schedule background task: \(error)")
+        }
+        
+        // Create a background URL session configuration
+        let config = URLSessionConfiguration.background(withIdentifier: "com.dsnallfot.CarbsCounter.backgroundSession")
+        config.sessionSendsLaunchEvents = true
+        config.isDiscretionary = false
+        
+        // Start background task
+        var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+        backgroundTask = await UIApplication.shared.beginBackgroundTask {
+            // End the task if the background task expires
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+        }
+        
+        // Perform the save operation
         await saveMealHistory(
             foodItem: foodItem.foodItem,
             portionServed: portionServed,
             bolus: bolus,
             mealDate: mealDate
         )
+        
+        // End background task
+        if backgroundTask != .invalid {
+            await UIApplication.shared.endBackgroundTask(backgroundTask)
+        }
 
         return .result()
     }
 
     private func saveMealHistory(foodItem: FoodItem, portionServed: Double, bolus: Double, mealDate: Date) async {
         let context = CoreDataStack.shared.context
-        let mealHistory = MealHistory(context: context)
         
-        // Set unique ID, date, and lastEdited
-        mealHistory.id = UUID()
-        mealHistory.mealDate = mealDate
-        mealHistory.lastEdited = Date()  // Set lastEdited to current date
+        // Create a child context for background operations
+        let backgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        backgroundContext.parent = context
         
-        mealHistory.delete = false
-        
-        mealHistory.totalNetCarbs = foodItem.perPiece
-            ? foodItem.carbsPP * portionServed
-            : foodItem.carbohydrates * portionServed / 100
-        
-        mealHistory.totalNetFat = foodItem.perPiece
-            ? foodItem.fatPP * portionServed
-            : foodItem.fat * portionServed / 100
-        
-        mealHistory.totalNetProtein = foodItem.perPiece
-            ? foodItem.proteinPP * portionServed
-            : foodItem.protein * portionServed / 100
-        
-        mealHistory.totalNetBolus = bolus
-        
-        let foodEntry = FoodItemEntry(context: context)
-        foodEntry.entryId = foodItem.id
-        foodEntry.entryName = foodItem.name
-        foodEntry.entryCarbohydrates = foodItem.carbohydrates
-        foodEntry.entryFat = foodItem.fat
-        foodEntry.entryProtein = foodItem.protein
-        foodEntry.entryEmoji = foodItem.emoji
-        foodEntry.entryPortionServed = portionServed
-        foodEntry.entryCarbsPP = foodItem.carbsPP
-        foodEntry.entryFatPP = foodItem.fatPP
-        foodEntry.entryProteinPP = foodItem.proteinPP
-        foodEntry.entryPerPiece = foodItem.perPiece
-        
-        mealHistory.addToFoodEntries(foodEntry)
-        
-        do {
-            try context.save()
-            print("MealHistory saved successfully through shortcut!")
+        await backgroundContext.perform {
+            let mealHistory = MealHistory(context: backgroundContext)
             
-            // Trigger the export after saving
-            if let appDelegate = await UIApplication.shared.delegate as? AppDelegate, let dataSharingVC = await appDelegate.dataSharingVC {
-                // Use dataSharingVC here
-                await dataSharingVC.exportMealHistoryToCSV()
-                print("Meal history export triggered from shortcut")
+            // Set unique ID, date, and lastEdited
+            mealHistory.id = UUID()
+            mealHistory.mealDate = mealDate
+            mealHistory.lastEdited = Date()
+            mealHistory.delete = false
+            
+            mealHistory.totalNetCarbs = foodItem.perPiece
+                ? foodItem.carbsPP * portionServed
+                : foodItem.carbohydrates * portionServed / 100
+            
+            mealHistory.totalNetFat = foodItem.perPiece
+                ? foodItem.fatPP * portionServed
+                : foodItem.fat * portionServed / 100
+            
+            mealHistory.totalNetProtein = foodItem.perPiece
+                ? foodItem.proteinPP * portionServed
+                : foodItem.protein * portionServed / 100
+            
+            mealHistory.totalNetBolus = bolus
+            
+            let foodEntry = FoodItemEntry(context: backgroundContext)
+            foodEntry.entryId = foodItem.id
+            foodEntry.entryName = foodItem.name
+            foodEntry.entryCarbohydrates = foodItem.carbohydrates
+            foodEntry.entryFat = foodItem.fat
+            foodEntry.entryProtein = foodItem.protein
+            foodEntry.entryEmoji = foodItem.emoji
+            foodEntry.entryPortionServed = portionServed
+            foodEntry.entryCarbsPP = foodItem.carbsPP
+            foodEntry.entryFatPP = foodItem.fatPP
+            foodEntry.entryProteinPP = foodItem.proteinPP
+            foodEntry.entryPerPiece = foodItem.perPiece
+            
+            mealHistory.addToFoodEntries(foodEntry)
+            
+            do {
+                // Save the background context
+                try backgroundContext.save()
+                
+                // Save the main context
+                try context.save()
+                
+                print("MealHistory saved successfully through shortcut!")
+                
+                // Trigger the export after saving
+                Task { @MainActor in
+                    if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+                       let dataSharingVC = appDelegate.dataSharingVC {
+                        await dataSharingVC.exportMealHistoryToCSV()
+                        print("Meal history export triggered from shortcut")
+                    }
+                }
+            } catch {
+                print("Failed to save MealHistory: \(error)")
             }
-            
-        } catch {
-            print("Failed to save MealHistory: \(error)")
         }
     }
 }
@@ -180,3 +226,4 @@ struct FoodItemOptionsProvider: DynamicOptionsProvider {
         return try? await results().first
     }
 }
+

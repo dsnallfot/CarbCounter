@@ -263,6 +263,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         super.viewWillAppear(animated)
         view.endEditing(true)
         loadTemporaryFoodItemsFromCoreData()
+        loadValuesFromUserDefaults()
         
         updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
         startHourChangeTimer() // Start timer while in this view to check if its a new hour and update CR/Startdoses if they are changed from the last hour to the new hour
@@ -1297,7 +1298,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updatePercentages()
     }
     
-    private func updateTotalRemainsLabel(text: String, fontSize: CGFloat) {
+    public func updateTotalRemainsLabel(text: String, fontSize: CGFloat) {
         let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
         totalRemainsLabel.text = newLabel.text
         totalRemainsLabel.font = newLabel.font
@@ -1305,7 +1306,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         totalRemainsLabel.textAlignment = newLabel.textAlignment
     }
     
-    private func updateTotalStartAmountLabel(text: String, fontSize: CGFloat) {
+    public func updateTotalStartAmountLabel(text: String, fontSize: CGFloat) {
         let newLabel = createLabel(text: text, fontSize: fontSize, weight: .bold, color: .white)
         totalStartAmountLabel.text = newLabel.text
         totalStartAmountLabel.font = newLabel.font
