@@ -39,6 +39,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var plusSign: UIImageView!
     
     private var dateChangedManually = false
+    private var dismissedWithoutAction = true
     
     var startDose: Bool = false
     
@@ -179,6 +180,14 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
 
         updateSendMealButtonText(sendMealButton.currentTitle ?? NSLocalizedString("Skicka Måltid", comment: "Skicka Måltid"))
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            
+            if dismissedWithoutAction {
+                PreBolusManager.shared.stopPreBolusCountdown()
+            }
+        }
     
     private func setupCloseButton() {
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
@@ -1208,6 +1217,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Play a success sound
         AudioServicesPlaySystemSound(SystemSoundID(1322))
         
+        // Mark that the dismissal is due to successful action
+        dismissedWithoutAction = false
+        
         // Only now call the delegate method after successful completion
         delegate?.didUpdateMealValues(
             khValue: carbsEntryField.text ?? "",
@@ -1231,34 +1243,28 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
 
     @objc private func handleShortcutError() {
         print("Shortcut failed, showing error alert...")
-        
-        // Play a error sound
         AudioServicesPlaySystemSound(SystemSoundID(1053))
-        
+
         showAlert(title: NSLocalizedString("Misslyckades", comment: "Misslyckades"), message: NSLocalizedString("Ett fel uppstod när genvägen skulle köras. Du kan försöka igen.", comment: "Ett fel uppstod när genvägen skulle köras. Du kan försöka igen."), completion: {
-            self.handleAlertDismissal()  // Re-enable the send button after error handling
+            self.handleAlertDismissal()
         })
     }
 
     @objc private func handleShortcutCancel() {
         print("Shortcut was cancelled, showing cancellation alert...")
-        
-        // Play a error sound
         AudioServicesPlaySystemSound(SystemSoundID(1053))
-        
+
         showAlert(title: NSLocalizedString("Avbröts", comment: "Avbröts"), message: NSLocalizedString("Genvägen avbröts innan den körts färdigt. Du kan försöka igen.", comment: "Genvägen avbröts innan den körts färdigt. Du kan försöka igen.") , completion: {
-            self.handleAlertDismissal()  // Re-enable the send button after cancellation
+            self.handleAlertDismissal()
         })
     }
-    
+
     @objc private func handleShortcutPasscode() {
         print("Shortcut was cancelled due to wrong passcode, showing passcode alert...")
-        
-        // Play a error sound
         AudioServicesPlaySystemSound(SystemSoundID(1053))
-        
+
         showAlert(title: NSLocalizedString("Fel lösenkod", comment: "Fel lösenkod"), message: NSLocalizedString("Genvägen avbröts pga fel lösenkod. Du kan försöka igen.", comment: "Genvägen avbröts pga fel lösenkod. Du kan försöka igen.") , completion: {
-            self.handleAlertDismissal()  // Re-enable the send button after cancellation
+            self.handleAlertDismissal()
         })
     }
 
@@ -1277,6 +1283,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             case .success:
                 // Play success sound
                 AudioServicesPlaySystemSound(SystemSoundID(1322))
+                
+                // Mark that the dismissal is due to successful action
+                self.dismissedWithoutAction = false
                 
                 // Show SuccessView
                 let successView = SuccessView()
@@ -1298,10 +1307,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                 }
                 
             case .failure(let error):
-                // Play failure sound
                 AudioServicesPlaySystemSound(SystemSoundID(1053))
-                
-                // Show failure alert
+
                 let alertController = UIAlertController(
                     title: NSLocalizedString("Fel", comment: "Error"),
                     message: error.localizedDescription,

@@ -11,6 +11,7 @@ import LocalAuthentication
 import CloudKit
 import QuartzCore
 import SwiftUI
+import UserNotifications
 
 
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate, MealInsightsDelegate {
@@ -1752,6 +1753,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         isEditingMeal = true
         print("Start editing triggered. isEditingMeal set to \(isEditingMeal)")
+        
+        // Cancel the preBolus timer through the PreBolusManager
+        PreBolusManager.shared.stopPreBolusCountdown()
+        
         startAutoSaveToCSV()
     }
     
@@ -2634,10 +2639,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         hideAllDeleteButtons()
         createEmojiString()
         
-        // Set preBolus based on foodItemRows
-            self.preBolus = self.foodItemRows.isEmpty
-            
-            let emojis = self.preBolus ? "⏱️" : self.getMealEmojis()
+        self.preBolus = self.foodItemRows.isEmpty
+        let emojis = self.preBolus ? "⏱️" : self.getMealEmojis()
+
+        if self.preBolus {
+            PreBolusManager.shared.startPreBolusCountdown()
+        } else {
+            PreBolusManager.shared.stopPreBolusCountdown()
+        }
 
         // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
