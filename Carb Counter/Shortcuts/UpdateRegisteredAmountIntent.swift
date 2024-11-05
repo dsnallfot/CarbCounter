@@ -39,8 +39,17 @@ final class UpdateRegisteredAmountIntent: AppIntent {
             startDose: self.startDose
         )
         
+        // Check notification settings
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        if settings.authorizationStatus != .authorized && settings.authorizationStatus != .provisional {
+            print("Data updated, but notifications are not enabled. Please open the app to enable notifications.")
+        }
+
+        // Return a generic result
         return .result()
     }
+
+
 
     
     private func performUpdate(
@@ -75,7 +84,7 @@ final class UpdateRegisteredAmountIntent: AppIntent {
         defaults.set(startDose, forKey: "startDoseGiven")
         
         // Schedule notification to inform the user
-        await scheduleNotification(
+        scheduleNotification(
             khValue: String(format: "%.1f", newCarbs),
             fatValue: String(format: "%.1f", newFat),
             proteinValue: String(format: "%.1f", newProtein),
@@ -84,23 +93,36 @@ final class UpdateRegisteredAmountIntent: AppIntent {
     }
 
 
-        private func scheduleNotification(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
-            let content = UNMutableNotificationContent()
-            content.title = "Måltid uppdaterad"
-            content.body = String(format: "KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E",
-                                khValue, fatValue, proteinValue, bolusValue)
-            content.sound = .default
-            
-            let request = UNNotificationRequest(
-                identifier: UUID().uuidString,
-                content: content,
-                trigger: nil
-            )
-            
-            UNUserNotificationCenter.current().add(request) { error in
-                if let error = error {
-                    print("Error scheduling notification: \(error)")
+    private func scheduleNotification(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                let content = UNMutableNotificationContent()
+                content.title = "Måltid uppdaterad"
+                content.body = String(format: "KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E",
+                                    khValue, fatValue, proteinValue, bolusValue)
+                content.sound = .default
+                
+                let request = UNNotificationRequest(
+                    identifier: UUID().uuidString,
+                    content: content,
+                    trigger: nil
+                )
+                
+                center.add(request) { error in
+                    if let error = error {
+                        print("Error scheduling notification: \(error)")
+                    }
                 }
+            case .denied:
+                print("Notifications are denied")
+            case .notDetermined:
+                print("Notifications are not determined")
+            @unknown default:
+                print("Unknown notification authorization status")
             }
         }
+    }
+
 }
