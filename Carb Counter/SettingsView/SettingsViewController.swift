@@ -110,7 +110,7 @@ class SettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return 4
+            return 5
         case 1:
             return 15
         default:
@@ -120,22 +120,24 @@ class SettingsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-            cell.accessoryType = .disclosureIndicator
-            cell.backgroundColor = .clear
-            switch indexPath.row {
-            case 0:
-                cell.textLabel?.text = NSLocalizedString("Carb Ratio schema", comment: "Carb ratio schema label")
-            case 1:
-                cell.textLabel?.text = NSLocalizedString("Startdoser schema", comment: "Start doses schema label")
-            case 2:
-                cell.textLabel?.text = NSLocalizedString("Dela data", comment: "Share data label")
-            case 3:
-                cell.textLabel?.text = NSLocalizedString("Fjärrstyrning", comment: "Remote control label")
-            default:
-                break
-            }
-            return cell
+                let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+                cell.accessoryType = .disclosureIndicator
+                cell.backgroundColor = .clear
+                switch indexPath.row {
+                case 0:
+                    cell.textLabel?.text = NSLocalizedString("Carb Ratio schema", comment: "Carb ratio schema label")
+                case 1:
+                    cell.textLabel?.text = NSLocalizedString("Startdoser schema", comment: "Start doses schema label")
+                case 2:
+                    cell.textLabel?.text = NSLocalizedString("Dela data", comment: "Share data label")
+                case 3:
+                    cell.textLabel?.text = NSLocalizedString("Notiser", comment: "Notifications label")
+                case 4:
+                    cell.textLabel?.text = NSLocalizedString("Fjärrstyrning", comment: "Remote control label")
+                default:
+                    break
+                }
+                return cell
         } else {
             let cell = UITableViewCell(style: .value1, reuseIdentifier: "valueCell")
             cell.backgroundColor = .clear
@@ -245,18 +247,20 @@ class SettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 0 {
-            let viewController: UIViewController
-            switch indexPath.row {
-            case 0:
-                viewController = CarbRatioViewController()
-            case 1:
-                viewController = StartDoseViewController()
-            case 2:
-                viewController = DataSharingViewController()
-            case 3:
-                viewController = RemoteSettingsViewController()
-            default:
-                return
+                let viewController: UIViewController
+                switch indexPath.row {
+                case 0:
+                    viewController = CarbRatioViewController()
+                case 1:
+                    viewController = StartDoseViewController()
+                case 2:
+                    viewController = DataSharingViewController()
+                case 3:
+                    viewController = NotificationViewController()
+                case 4:
+                    viewController = RemoteSettingsViewController()
+                default:
+                    return
             }
             navigationController?.pushViewController(viewController, animated: true)
         } else if indexPath.section == 1, indexPath.row >= 2 {

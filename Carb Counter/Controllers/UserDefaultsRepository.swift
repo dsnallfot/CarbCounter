@@ -278,6 +278,42 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "topUps")
         }
     }
+    
+    static var historyNotificationsAllowed: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: "historyNotificationsAllowed") == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: "historyNotificationsAllowed")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "historyNotificationsAllowed")
+        }
+    }
+
+    static var registrationNotificationsAllowed: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: "registrationNotificationsAllowed") == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: "registrationNotificationsAllowed")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "registrationNotificationsAllowed")
+        }
+    }
+
+    static var preBolusNotificationsAllowed: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: "preBolusNotificationsAllowed") == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: "preBolusNotificationsAllowed")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "preBolusNotificationsAllowed")
+        }
+    }
 }
 
 extension Notification.Name {

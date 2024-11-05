@@ -94,6 +94,12 @@ final class UpdateRegisteredAmountIntent: AppIntent {
 
 
     private func scheduleNotification(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
+        // Check if registration notifications are allowed
+        guard UserDefaultsRepository.registrationNotificationsAllowed else {
+            print("Registration notifications are disabled in settings.")
+            return
+        }
+        
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {

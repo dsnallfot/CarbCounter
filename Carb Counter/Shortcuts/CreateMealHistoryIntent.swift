@@ -108,6 +108,12 @@ struct CreateMealHistoryIntent: AppIntent {
     }
     
     private func scheduleNotification(foodItemName: String, portionServed: Double, bolus: Double, mealDate: Date) {
+        // Check if history notifications are allowed
+        guard UserDefaultsRepository.historyNotificationsAllowed else {
+            print("History notifications are disabled in settings.")
+            return
+        }
+        
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {

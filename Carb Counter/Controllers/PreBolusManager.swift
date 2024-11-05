@@ -38,6 +38,13 @@ class PreBolusManager {
     @objc private func preBolusTimerCompleted() {
         guard let startTime = preBolusStartTime else { return }
         
+        // Check if pre-bolus notifications are allowed
+        guard UserDefaultsRepository.preBolusNotificationsAllowed else {
+            print("Pre-bolus notifications are disabled in settings.")
+            stopPreBolusCountdown() // Stop the timer if notifications are not allowed
+            return
+        }
+
         // Fetch the bolus amount from UserDefaults to ensure it's the latest
         let bolus = UserDefaults.standard.double(forKey: "registeredBolusSoFar")
         
