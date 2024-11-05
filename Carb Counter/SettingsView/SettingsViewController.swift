@@ -10,6 +10,9 @@ class SettingsViewController: UITableViewController {
         
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeView))
         navigationItem.leftBarButtonItem = closeButton
+        
+        let infoButton = UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showAppInfo))
+            navigationItem.rightBarButtonItem = infoButton
     }
     
     private func setupView() {
@@ -91,6 +94,43 @@ class SettingsViewController: UITableViewController {
     
     @objc private func cancelButtonTapped() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    private func getAppInfo() -> (version: String, build: String, buildDate: String) {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "N/A"
+        
+        // Load the commit hash from commit_hash.txt
+        let build: String
+        if let path = Bundle.main.path(forResource: "commit_hash", ofType: "txt"),
+           let commitHash = try? String(contentsOfFile: path).trimmingCharacters(in: .whitespacesAndNewlines) {
+            build = commitHash
+        } else {
+            build = "N/A" // Fallback if the file is not found or cannot be read
+        }
+
+        // Get the app build date
+        let buildDate: String
+        if let path = Bundle.main.path(forResource: Bundle.main.infoDictionary?["CFBundleExecutable"] as? String, ofType: nil),
+           let attr = try? FileManager.default.attributesOfItem(atPath: path),
+           let creationDate = attr[.creationDate] as? Date {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            buildDate = formatter.string(from: creationDate)
+        } else {
+            buildDate = "N/A"
+        }
+
+        return (version, build, buildDate)
+    }
+    
+    @objc private func showAppInfo() {
+        let appInfo = getAppInfo()
+        let message = "\nUppdaterad \(appInfo.buildDate)\nVersion: \(appInfo.version)\nBuild: \(appInfo.build)"
+        let alert = UIAlertController(title: NSLocalizedString("Om Carb Counter", comment: "About Carb Counter"), message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     
     @objc private func useStartDosePercentageSegmentChanged(_ sender: UISegmentedControl) {

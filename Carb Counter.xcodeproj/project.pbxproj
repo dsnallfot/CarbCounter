@@ -23,6 +23,8 @@
 		653DE7A42C278F7700A639D1 /* Twilio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653DE7A32C278F7600A639D1 /* Twilio.swift */; };
 		653DE7A62C27930F00A639D1 /* RemoteSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653DE7A52C27930F00A639D1 /* RemoteSettingsViewController.swift */; };
 		653DE7A82C27937B00A639D1 /* UserDefaultsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */; };
+		654EAF972CDA48A400C5D87A /* PreBolusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654EAF962CDA48A100C5D87A /* PreBolusManager.swift */; };
+		654EAF992CDA5D8600C5D87A /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654EAF982CDA5D8400C5D87A /* NotificationViewController.swift */; };
 		6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */; };
 		6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */; };
 		6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */; };
@@ -35,6 +37,7 @@
 		6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */; };
 		6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */; };
 		656C64A52C6C007000431374 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 656C64A32C6C007000431374 /* Localizable.strings */; };
+		658302152CDAB51B000BC0AD /* commit_hash.txt in Resources */ = {isa = PBXBuildFile; fileRef = 658302142CDAB51B000BC0AD /* commit_hash.txt */; };
 		659632852C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */; };
 		65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */; };
@@ -75,6 +78,8 @@
 		653DE7A32C278F7600A639D1 /* Twilio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Twilio.swift; sourceTree = "<group>"; };
 		653DE7A52C27930F00A639D1 /* RemoteSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSettingsViewController.swift; sourceTree = "<group>"; };
 		653DE7A72C27937B00A639D1 /* UserDefaultsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsRepository.swift; sourceTree = "<group>"; };
+		654EAF962CDA48A100C5D87A /* PreBolusManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreBolusManager.swift; sourceTree = "<group>"; };
+		654EAF982CDA5D8400C5D87A /* NotificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewController.swift; sourceTree = "<group>"; };
 		6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Carb Counter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6553EDFA2C20DA9200B0FDF5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -91,6 +96,7 @@
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
 		656C64A42C6C007000431374 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		656C64A62C6C008400431374 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		658302142CDAB51B000BC0AD /* commit_hash.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = commit_hash.txt; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
 		65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownViewController.swift; sourceTree = "<group>"; };
 		65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedViewController.swift; sourceTree = "<group>"; };
@@ -130,6 +136,7 @@
 		6502A9D12C2B1A5300414DC0 /* SettingsView */ = {
 			isa = PBXGroup;
 			children = (
+				654EAF982CDA5D8400C5D87A /* NotificationViewController.swift */,
 				65C75CFB2C25962E00114BD3 /* SettingsViewController.swift */,
 				65C75CFD2C25966100114BD3 /* CarbRatioViewController.swift */,
 				653DE79F2C27520700A639D1 /* DataSharingViewController.swift */,
@@ -186,6 +193,7 @@
 		6502A9D62C2B1AF800414DC0 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				654EAF962CDA48A100C5D87A /* PreBolusManager.swift */,
 				6553EDF82C20DA9200B0FDF5 /* AppDelegate.swift */,
 				65C75CF52C255C8F00114BD3 /* CoreDataStack.swift */,
 				65C75D012C2597FC00114BD3 /* CoreDataHelper.swift */,
@@ -233,6 +241,7 @@
 		6553EDF72C20DA9200B0FDF5 /* Carb Counter */ = {
 			isa = PBXGroup;
 			children = (
+				658302142CDAB51B000BC0AD /* commit_hash.txt */,
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
 				656C64A32C6C007000431374 /* Localizable.strings */,
 				65599D632C50F9CE00EFE7C4 /* CoreData */,
@@ -341,6 +350,7 @@
 				656C64A52C6C007000431374 /* Localizable.strings in Resources */,
 				659632852C2436470098DF69 /* launch.png in Resources */,
 				6553EE082C20DA9400B0FDF5 /* LaunchScreen.storyboard in Resources */,
+				658302152CDAB51B000BC0AD /* commit_hash.txt in Resources */,
 				6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */,
 				6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */,
 			);
@@ -358,12 +368,14 @@
 				6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */,
 				5A24B6422CB5061C00A8786D /* NightscoutWebViewController.swift in Sources */,
 				6553EE032C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld in Sources */,
+				654EAF992CDA5D8600C5D87A /* NotificationViewController.swift in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
 				65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */,
 				65BAB4EE2C5AE76C0055638D /* RSSHelper.swift in Sources */,
 				653DE7A42C278F7700A639D1 /* Twilio.swift in Sources */,
 				65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */,
 				65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */,
+				654EAF972CDA48A400C5D87A /* PreBolusManager.swift in Sources */,
 				65D138AB2C43DEBD00FAE6BF /* LoadingViewController.swift in Sources */,
 				65BE764F2CA2C54E005EAFE2 /* Formatters.swift in Sources */,
 				65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */,
@@ -563,6 +575,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				GIT_COMMIT_HASH = "$(GIT_COMMIT_HASH)";
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = CarbsCounter;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
@@ -581,6 +594,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dsnallfot.CarbsCounter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -599,6 +613,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				GIT_COMMIT_HASH = "$(GIT_COMMIT_HASH)";
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = CarbsCounter;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
@@ -617,6 +632,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dsnallfot.CarbsCounter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

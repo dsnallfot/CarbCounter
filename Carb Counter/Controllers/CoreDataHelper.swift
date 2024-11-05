@@ -198,4 +198,31 @@ class CoreDataHelper {
             print("Failed to clear meal history: \(error)")
         }
     }
+    
+    // Delete all MealHistory entries older than 365 days
+        func clearOldMealHistory() {
+            let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
+            
+            // Calculate the date 365 days ago
+            let calendar = Calendar.current
+            if let date365DaysAgo = calendar.date(byAdding: .day, value: -365, to: Date()) {
+                fetchRequest.predicate = NSPredicate(format: "mealDate < %@", date365DaysAgo as NSDate)
+                
+                do {
+                    let oldMealHistories = try context.fetch(fetchRequest)
+                    
+                    // Delete each entry in the result
+                    for mealHistory in oldMealHistories {
+                        context.delete(mealHistory)
+                    }
+                    
+                    // Save the context to persist changes
+                    try context.save()
+                    print("Old meal history entries older than 365 days have been deleted.")
+                    
+                } catch {
+                    print("Failed to delete old meal history entries: \(error)")
+                }
+            }
+        }
 }

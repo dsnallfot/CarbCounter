@@ -13,10 +13,22 @@ class DataSharingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Check if the app is in dark mode
-        if traitCollection.userInterfaceStyle == .dark {
+        // Setup background depending on light/dark mode
+                if traitCollection.userInterfaceStyle == .dark {
+                    setupDarkModeBackground()
+                } else {
+                    view.backgroundColor = .systemGray6
+                }
+                
+                title = NSLocalizedString("Dela data", comment: "Dela data")
+                
+                setupNavigationBarButtons()
+                setupToggleForOngoingMealSharing()
+                setupClearHistoryRow()
+    }
+    
+    private func setupDarkModeBackground() {
             view.backgroundColor = .systemBackground
-            // Create the gradient view for dark mode
             let colors: [CGColor] = [
                 UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
                 UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
@@ -24,29 +36,16 @@ class DataSharingViewController: UIViewController {
             ]
             let gradientView = GradientView(colors: colors)
             gradientView.translatesAutoresizingMaskIntoConstraints = false
-
-            // Add the gradient view to the main view
             view.addSubview(gradientView)
             view.sendSubviewToBack(gradientView)
-
-            // Set up constraints for the gradient view
+            
             NSLayoutConstraint.activate([
                 gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 gradientView.topAnchor.constraint(equalTo: view.topAnchor),
                 gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
-        } else {
-            // In light mode, set a solid background
-            view.backgroundColor = .systemGray6
         }
-        
-        title = NSLocalizedString("Dela data", comment: "Dela data")
-        view.backgroundColor = .systemBackground
-        
-        setupNavigationBarButtons()
-        setupToggleForOngoingMealSharing()
-    }
     
     private func setupNavigationBarButtons() {
         let exportButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(exportData))
@@ -78,10 +77,63 @@ class DataSharingViewController: UIViewController {
         ])
     }
     
+    private func setupClearHistoryRow() {
+        let clearHistoryContainer = UIView()
+        clearHistoryContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(clearHistoryContainer)
+
+        let clearHistoryLabel = UILabel()
+        clearHistoryLabel.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear history over 365 days")
+        clearHistoryLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
+        trashIcon.tintColor = .red
+        trashIcon.translatesAutoresizingMaskIntoConstraints = false
+
+        clearHistoryContainer.addSubview(clearHistoryLabel)
+        clearHistoryContainer.addSubview(trashIcon)
+
+        NSLayoutConstraint.activate([
+            clearHistoryContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            clearHistoryContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            clearHistoryContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 56),
+            clearHistoryContainer.heightAnchor.constraint(equalToConstant: 44),  // Define a height for the container
+
+            clearHistoryLabel.leadingAnchor.constraint(equalTo: clearHistoryContainer.leadingAnchor),
+            clearHistoryLabel.centerYAnchor.constraint(equalTo: clearHistoryContainer.centerYAnchor),
+
+            trashIcon.trailingAnchor.constraint(equalTo: clearHistoryContainer.trailingAnchor),
+            trashIcon.centerYAnchor.constraint(equalTo: clearHistoryContainer.centerYAnchor)
+        ])
+
+        // Make the container tappable
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(clearHistoryTapped))
+        clearHistoryContainer.addGestureRecognizer(tapGesture)
+        clearHistoryContainer.isUserInteractionEnabled = true  // Ensure interaction is enabled
+    }
+    
     @objc private func toggleOngoingMealSharing(_ sender: UISwitch) {
         UserDefaultsRepository.allowSharingOngoingMeals = sender.isOn
         print("allowSharingOngoingMeals set to \(sender.isOn)")
     }
+    
+    @objc private func clearHistoryTapped() {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Rensa måltidshistorik", comment: "Clear meal history"),
+                message: NSLocalizedString("Vill du radera all måltidshistorik äldre än 365 dagar?", comment: "Delete all meal history older than 365 days"),
+                preferredStyle: .actionSheet
+            )
+            
+            let deleteAction = UIAlertAction(title: NSLocalizedString("Radera", comment: "Delete"), style: .destructive) { _ in
+                CoreDataHelper.shared.clearOldMealHistory()
+            }
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel)
+            
+            alert.addAction(deleteAction)
+            alert.addAction(cancelAction)
+            
+            present(alert, animated: true, completion: nil)
+        }
     
     //Manual exporting and importing
     @objc private func exportData() {
@@ -365,32 +417,39 @@ class DataSharingViewController: UIViewController {
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         
         let lastEditedFormatter = ISO8601DateFormatter() // Use ISO8601 for lastEdited field
-        
+
+        // Calculate the date 365 days ago from today
+        let calendar = Calendar.current
+        guard let date365DaysAgo = calendar.date(byAdding: .day, value: -365, to: Date()) else { return csvString }
+
         for mealHistory in mealHistories {
-            let id = mealHistory.id?.uuidString ?? ""
-            let mealDate = mealHistory.mealDate.map { dateFormatter.string(from: $0) } ?? ""
-            let totalNetCarbs = mealHistory.totalNetCarbs
-            let totalNetFat = mealHistory.totalNetFat
-            let totalNetProtein = mealHistory.totalNetProtein
-            let totalNetBolus = mealHistory.totalNetBolus
-            let deleteFlag = mealHistory.delete ? "true" : "false"
-            let lastEdited = lastEditedFormatter.string(from: mealHistory.lastEdited ?? Date()) // Add lastEdited field
-            
-            let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
-                [
-                    cleanString(entry.entryId?.uuidString ?? ""),
-                    cleanString(entry.entryName ?? ""),
-                    entry.entryPortionServed,
-                    entry.entryNotEaten,
-                    entry.entryCarbohydrates,
-                    entry.entryFat,
-                    entry.entryProtein,
-                    entry.entryPerPiece ? "1" : "0",
-                    cleanString(entry.entryEmoji ?? "")
-                ].map { "\($0)" }.joined(separator: ",")
-            }.joined(separator: "|") ?? ""
-            
-            csvString += "\(id);\(mealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(deleteFlag);\(foodEntries);\(lastEdited)\n"
+            // Only include mealHistory entries with mealDate within the last 365 days
+            if let mealDate = mealHistory.mealDate, mealDate >= date365DaysAgo {
+                let id = mealHistory.id?.uuidString ?? ""
+                let formattedMealDate = dateFormatter.string(from: mealDate)
+                let totalNetCarbs = mealHistory.totalNetCarbs
+                let totalNetFat = mealHistory.totalNetFat
+                let totalNetProtein = mealHistory.totalNetProtein
+                let totalNetBolus = mealHistory.totalNetBolus
+                let deleteFlag = mealHistory.delete ? "true" : "false"
+                let lastEdited = lastEditedFormatter.string(from: mealHistory.lastEdited ?? Date())
+                
+                let foodEntries = (mealHistory.foodEntries as? Set<FoodItemEntry>)?.map { entry in
+                    [
+                        cleanString(entry.entryId?.uuidString ?? ""),
+                        cleanString(entry.entryName ?? ""),
+                        entry.entryPortionServed,
+                        entry.entryNotEaten,
+                        entry.entryCarbohydrates,
+                        entry.entryFat,
+                        entry.entryProtein,
+                        entry.entryPerPiece ? "1" : "0",
+                        cleanString(entry.entryEmoji ?? "")
+                    ].map { "\($0)" }.joined(separator: ",")
+                }.joined(separator: "|") ?? ""
+                
+                csvString += "\(id);\(formattedMealDate);\(totalNetCarbs);\(totalNetFat);\(totalNetProtein);\(totalNetBolus);\(deleteFlag);\(foodEntries);\(lastEdited)\n"
+            }
         }
         
         return csvString
