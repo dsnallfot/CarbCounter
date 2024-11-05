@@ -50,23 +50,39 @@ final class UpdateRegisteredAmountIntent: AppIntent {
         bolusValue: String,
         startDose: Bool
     ) async throws {
-        // Update data in UserDefaults or your data model
         let defaults = UserDefaults.standard
-        defaults.set(Double(khValue) ?? 0.0, forKey: "registeredCarbsSoFar")
-        defaults.set(Double(fatValue) ?? 0.0, forKey: "registeredFatSoFar")
-        defaults.set(Double(proteinValue) ?? 0.0, forKey: "registeredProteinSoFar")
-        defaults.set(Double(bolusValue) ?? 0.0, forKey: "registeredBolusSoFar")
-        defaults.set(startDose, forKey: "startDoseGiven")
         
+        // Set mealDate if it’s not already set
+        if defaults.object(forKey: "mealDate") == nil {
+            defaults.set(Date(), forKey: "mealDate")
+        }
+        
+        // Accumulate values for carbs, fat, protein, and bolus in UserDefaults
+        let currentCarbs = defaults.double(forKey: "registeredCarbsSoFar")
+        let currentFat = defaults.double(forKey: "registeredFatSoFar")
+        let currentProtein = defaults.double(forKey: "registeredProteinSoFar")
+        let currentBolus = defaults.double(forKey: "registeredBolusSoFar")
+        
+        let newCarbs = (Double(khValue) ?? 0.0) + currentCarbs
+        let newFat = (Double(fatValue) ?? 0.0) + currentFat
+        let newProtein = (Double(proteinValue) ?? 0.0) + currentProtein
+        let newBolus = (Double(bolusValue) ?? 0.0) + currentBolus
+        
+        defaults.set(newCarbs, forKey: "registeredCarbsSoFar")
+        defaults.set(newFat, forKey: "registeredFatSoFar")
+        defaults.set(newProtein, forKey: "registeredProteinSoFar")
+        defaults.set(newBolus, forKey: "registeredBolusSoFar")
+        defaults.set(startDose, forKey: "startDoseGiven")
         
         // Schedule notification to inform the user
         await scheduleNotification(
-            khValue: khValue,
-            fatValue: fatValue,
-            proteinValue: proteinValue,
-            bolusValue: bolusValue
+            khValue: String(format: "%.1f", newCarbs),
+            fatValue: String(format: "%.1f", newFat),
+            proteinValue: String(format: "%.1f", newProtein),
+            bolusValue: String(format: "%.2f", newBolus)
         )
     }
+
 
         private func scheduleNotification(khValue: String, fatValue: String, proteinValue: String, bolusValue: String) {
             let content = UNMutableNotificationContent()
