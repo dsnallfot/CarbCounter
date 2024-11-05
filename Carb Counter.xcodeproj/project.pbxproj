@@ -37,7 +37,7 @@
 		6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */; };
 		6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */; };
 		656C64A52C6C007000431374 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 656C64A32C6C007000431374 /* Localizable.strings */; };
-		658302152CDAB51B000BC0AD /* commit_hash.txt in Resources */ = {isa = PBXBuildFile; fileRef = 658302142CDAB51B000BC0AD /* commit_hash.txt */; };
+		658302172CDABFA3000BC0AD /* commit_hash.txt in Resources */ = {isa = PBXBuildFile; fileRef = 658302162CDABFA3000BC0AD /* commit_hash.txt */; };
 		659632852C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */; };
 		65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */; };
@@ -96,7 +96,7 @@
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
 		656C64A42C6C007000431374 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		656C64A62C6C008400431374 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		658302142CDAB51B000BC0AD /* commit_hash.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = commit_hash.txt; sourceTree = "<group>"; };
+		658302162CDABFA3000BC0AD /* commit_hash.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = commit_hash.txt; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
 		65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownViewController.swift; sourceTree = "<group>"; };
 		65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedViewController.swift; sourceTree = "<group>"; };
@@ -225,6 +225,7 @@
 		6553EDEC2C20DA9100B0FDF5 = {
 			isa = PBXGroup;
 			children = (
+				658302162CDABFA3000BC0AD /* commit_hash.txt */,
 				6553EDF72C20DA9200B0FDF5 /* Carb Counter */,
 				6553EDF62C20DA9200B0FDF5 /* Products */,
 			);
@@ -241,7 +242,6 @@
 		6553EDF72C20DA9200B0FDF5 /* Carb Counter */ = {
 			isa = PBXGroup;
 			children = (
-				658302142CDAB51B000BC0AD /* commit_hash.txt */,
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
 				656C64A32C6C007000431374 /* Localizable.strings */,
 				65599D632C50F9CE00EFE7C4 /* CoreData */,
@@ -350,7 +350,7 @@
 				656C64A52C6C007000431374 /* Localizable.strings in Resources */,
 				659632852C2436470098DF69 /* launch.png in Resources */,
 				6553EE082C20DA9400B0FDF5 /* LaunchScreen.storyboard in Resources */,
-				658302152CDAB51B000BC0AD /* commit_hash.txt in Resources */,
+				658302172CDABFA3000BC0AD /* commit_hash.txt in Resources */,
 				6518ACB02C2428BF00C3BF63 /* Assets.xcassets in Resources */,
 				6553EE002C20DA9200B0FDF5 /* Main.storyboard in Resources */,
 			);
@@ -573,7 +573,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Carb Counter/CarbsCounter.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = RMSRR5SURS;
 				GENERATE_INFOPLIST_FILE = YES;
 				GIT_COMMIT_HASH = "$(GIT_COMMIT_HASH)";
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
@@ -611,7 +611,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Carb Counter/CarbsCounterRelease.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = RMSRR5SURS;
 				GENERATE_INFOPLIST_FILE = YES;
 				GIT_COMMIT_HASH = "$(GIT_COMMIT_HASH)";
 				INFOPLIST_FILE = "Carb Counter/Info.plist";
