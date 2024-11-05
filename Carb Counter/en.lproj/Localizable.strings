@@ -520,6 +520,10 @@
 "Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med punkt eller kommatecken" = "Add foods that are often used to top up with carbohydrates when fewer carbohydrates have been consumed than insulin has been dosed for. Separate the entries with periods or commas.";
 "Spara" = "Save";
 "Avbryt" = "Cancel";
+"Om appen" = "About this app";
+"Uppdaterad:" = "Updated:";
+"Version:" = "Version:";
+"Build:" = "Build:";
 
 /* Data Sharing VC */
 "Dela data" = "Share Data";
@@ -542,6 +546,10 @@
 "Användarinställningarna har exporterats." = "User settings have been exported.";
 "Documents/CarbsCounter/Användarinställningar" = "Documents/CarbsCounter/Usersettings";
 "OK" = "OK";
+"Rensa gammal måltidshistorik" = "Clear old meal history";
+"Rensa måltidshistorik" = "Clear meal history";
+"Vill du radera all måltidshistorik äldre än 365 dagar?" = "Do you want to delete meal history older than 365 days?";
+
 
 /* Carb ratio schedule */
 "Carb Ratio" = "Carb Ratios";
@@ -583,7 +591,7 @@
 "Twilio From #" = "Twilio From #";
 "Twilio To #" = "Twilio To #";
 
-/* Shortcuts */
+/* Shortcuts and notifications */
 "Uppdatera registrerad mängd" = "Update Registered Amount";
 "Uppdatera registrerad mängd kh, fett, protein och bolus." = "Update registered amount of carbs, fat, protein, and bolus.";
 "Kolhydrater (g)" = "Carbohydrates (g)";
@@ -596,6 +604,12 @@
 "Välj livsmedel" = "Select food item";
 "Mängd" = "Amount";
 "Datum" = "Date";
+"Måltid uppdaterad" = "Meal Updated";
+"KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E" = "Carbs: %@g, Fat: %@g, Protein: %@g, Bolus: %@U";
+"Måltid loggad i historiken" = "Meal Logged in History";
+"Livsmedel: %@\nMängd: %.1fg\nBolus: %.2fE\nDatum: %@" = "Food Item: %@\nAmount: %.1fg\nBolus: %.2fU\nDate: %@";
+"Kom ihåg att äta" = "Remember to Eat";
+"En prebolus på %.2f E gavs klockan %@" = "A pre-bolus of %.2f units was given at %@";
 
 /*RSS View*/
 "Meny saknas" = "No menu";

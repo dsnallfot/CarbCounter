@@ -50,8 +50,19 @@ class PreBolusManager {
         
         // Schedule the notification
         let content = UNMutableNotificationContent()
-        content.title = "Kom ihåg att äta"
-        content.body = "En prebolus på \(bolus) E gavs klockan \(DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .short))"
+        
+        // Localize title and body
+        content.title = NSLocalizedString("Kom ihåg att äta", comment: "Title for pre-bolus reminder notification")
+        
+        let bodyFormat = NSLocalizedString(
+            "En prebolus på %.2f E gavs klockan %@",
+            comment: "Body format for pre-bolus reminder notification"
+        )
+        content.body = String(
+            format: bodyFormat,
+            bolus,
+            DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .short)
+        )
         content.sound = .default
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)

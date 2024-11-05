@@ -119,7 +119,9 @@ struct CreateMealHistoryIntent: AppIntent {
             switch settings.authorizationStatus {
             case .authorized, .provisional:
                 let content = UNMutableNotificationContent()
-                content.title = "Måltid loggad i historiken"
+                
+                // Localize title
+                content.title = NSLocalizedString("Måltid loggad i historiken", comment: "Title for meal history notification")
                 
                 // Format date and amounts
                 let dateFormatter = DateFormatter()
@@ -127,13 +129,14 @@ struct CreateMealHistoryIntent: AppIntent {
                 dateFormatter.timeStyle = .short
                 let dateString = dateFormatter.string(from: mealDate)
                 
-                let body = """
-                Livsmedel: \(foodItemName)
-                Mängd: \(String(format: "%.1f", portionServed))
-                Bolus: \(String(format: "%.2f", bolus)) E
-                Datum: \(dateString)
-                """
-                content.body = body
+                // Localize body text with format string
+                let bodyFormat = NSLocalizedString(
+                    """
+                    Livsmedel: %@\nMängd: %.1fg\nBolus: %.2fE\nDatum: %@
+                    """,
+                    comment: "Body format for meal history notification"
+                )
+                content.body = String(format: bodyFormat, foodItemName, portionServed, bolus, dateString)
                 content.sound = .default
                 
                 let request = UNNotificationRequest(

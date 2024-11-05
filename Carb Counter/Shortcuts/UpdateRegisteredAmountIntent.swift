@@ -105,9 +105,15 @@ final class UpdateRegisteredAmountIntent: AppIntent {
             switch settings.authorizationStatus {
             case .authorized, .provisional:
                 let content = UNMutableNotificationContent()
-                content.title = "Måltid uppdaterad"
-                content.body = String(format: "KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E",
-                                    khValue, fatValue, proteinValue, bolusValue)
+                
+                // Localize title and body
+                content.title = NSLocalizedString("Måltid uppdaterad", comment: "Title for meal update notification")
+                
+                let bodyFormat = NSLocalizedString(
+                    "KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E",
+                    comment: "Body format for meal update notification"
+                )
+                content.body = String(format: bodyFormat, khValue, fatValue, proteinValue, bolusValue)
                 content.sound = .default
                 
                 let request = UNNotificationRequest(

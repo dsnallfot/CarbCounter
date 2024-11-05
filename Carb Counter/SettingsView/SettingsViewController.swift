@@ -126,8 +126,12 @@ class SettingsViewController: UITableViewController {
     
     @objc private func showAppInfo() {
         let appInfo = getAppInfo()
-        let message = "\nUppdaterad \(appInfo.buildDate)\nVersion: \(appInfo.version)\nBuild: \(appInfo.build)"
-        let alert = UIAlertController(title: NSLocalizedString("Om Carb Counter", comment: "About Carb Counter"), message: message, preferredStyle: .alert)
+        let updatedText = NSLocalizedString("Uppdaterad:", comment: "Updated date label")
+            let versionText = NSLocalizedString("Version:", comment: "Version label")
+            let buildText = NSLocalizedString("Build:", comment: "Build label")
+            
+            let message = "\n\(updatedText) \(appInfo.buildDate)\n\(versionText) \(appInfo.version)\n\(buildText) \(appInfo.build)"
+                    let alert = UIAlertController(title: NSLocalizedString("Om appen", comment: "About Carb Counter"), message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(okAction)
         present(alert, animated: true, completion: nil)

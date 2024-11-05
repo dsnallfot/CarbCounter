@@ -11,6 +11,7 @@ commit_hash.txt
 # Ignore user-specific Xcode project files
 *.xcuserdatad
 *.xcscmblueprint
+*.xcuserstate
 
 # Ignore temporary files and system logs
 *.log

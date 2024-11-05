@@ -520,6 +520,12 @@
 "Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med punkt eller kommatecken" = "Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med punkt eller kommatecken";
 "Spara" = "Spara";
 "Avbryt" = "Avbryt";
+"Om appen" = "Om appen";
+"Uppdaterad:" = "Uppdaterad:";
+"Version:" = "Version:";
+"Build:" = "Build:";
+
+
 
 /* Data Sharing VC */
 "Dela data" = "Dela data";
@@ -542,6 +548,10 @@
 "Användarinställningarna har exporterats." = "Användarinställningarna har exporterats.";
 "Documents/CarbsCounter/Användarinställningar" = "Documents/CarbsCounter/Användarinställningar";
 "OK" = "OK";
+"Rensa gammal måltidshistorik" = "Rensa gammal måltidshistorik";
+"Rensa måltidshistorik" = "Rensa måltidshistorik";
+"Vill du radera all måltidshistorik äldre än 365 dagar?" = "Vill du radera all måltidshistorik äldre än 365 dagar?";
+
 
 /* Carb ratio schedule */
 "Carb Ratio" = "Insulinkvoter";
@@ -583,7 +593,7 @@
 "Twilio From #" = "Twilio från #";
 "Twilio To #" = "Twilio till #";
 
-/* Shortcuts */
+/* Shortcuts and notifications */
 "Uppdatera registrerad mängd" = "Uppdatera registrerad mängd";
 "Uppdatera registrerad mängd kh, fett, protein och bolus." = "Uppdatera registrerad mängd kh, fett, protein och bolus.";
 "Kolhydrater (g)" = "Kolhydrater (g)";
@@ -596,6 +606,12 @@
 "Välj livsmedel" = "Välj livsmedel";
 "Mängd" = "Mängd";
 "Datum" = "Datum";
+"Måltid uppdaterad" = "Måltid uppdaterad";
+"KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E" = "KH: %@g, Fett: %@g, Protein: %@g, Bolus: %@E";
+"Måltid loggad i historiken" = "Måltid loggad i historiken";
+"Livsmedel: %@\nMängd: %.1fg\nBolus: %.2fE\nDatum: %@" = "Livsmedel: %@\nMängd: %.1fg\nBolus: %.2fE\nDatum: %@";
+"Kom ihåg att äta" = "Kom ihåg att äta";
+"En prebolus på %.2f E gavs klockan %@" = "En prebolus på %.2f E gavs klockan %@";
 
 /*RSS View*/
 "Meny saknas" = "Lunchmeny saknas";
