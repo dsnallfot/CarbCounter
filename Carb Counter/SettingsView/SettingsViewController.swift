@@ -154,9 +154,9 @@ class SettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return 5
+            return 6
         case 1:
-            return 15
+            return 9 //15
         default:
             return 0
         }
@@ -169,15 +169,17 @@ class SettingsViewController: UITableViewController {
                 cell.backgroundColor = .clear
                 switch indexPath.row {
                 case 0:
-                    cell.textLabel?.text = NSLocalizedString("Carb Ratio schema", comment: "Carb ratio schema label")
+                    cell.textLabel?.text = NSLocalizedString("Anslutningar", comment: "Connections label")
                 case 1:
-                    cell.textLabel?.text = NSLocalizedString("Startdoser schema", comment: "Start doses schema label")
-                case 2:
                     cell.textLabel?.text = NSLocalizedString("Dela data", comment: "Share data label")
+                case 2:
+                    cell.textLabel?.text = NSLocalizedString("Fjärrstyrning", comment: "Remote control label")
                 case 3:
                     cell.textLabel?.text = NSLocalizedString("Notiser", comment: "Notifications label")
                 case 4:
-                    cell.textLabel?.text = NSLocalizedString("Fjärrstyrning", comment: "Remote control label")
+                    cell.textLabel?.text = NSLocalizedString("Carb Ratio schema", comment: "Carb ratio schema label")
+                case 5:
+                    cell.textLabel?.text = NSLocalizedString("Startdoser schema", comment: "Start doses schema label")
                 default:
                     break
                 }
@@ -212,33 +214,33 @@ class SettingsViewController: UITableViewController {
                 cell.textLabel?.addGestureRecognizer(tapGesture)
                 
             case 2:
-                let segmentedControl = UISegmentedControl(items: [NSLocalizedString("Schema", comment: "Schedule label"), NSLocalizedString("Fraktion", comment: "Fraction label")])
-                segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
-                segmentedControl.addTarget(self, action: #selector(useStartDosePercentageSegmentChanged(_:)), for: .valueChanged)
-                cell.textLabel?.text = NSLocalizedString("Startdoser", comment: "Start doses label")
-                cell.accessoryView = segmentedControl
-            case 3:
-                cell.textLabel?.text = NSLocalizedString("Startdos Fraktion", comment: "Start dose fraction label")
-                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.startDoseFactor)
-            case 4:
-                cell.textLabel?.text = NSLocalizedString("Maxgräns Kolhydrater", comment: "Max carbs limit label")
-                cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxCarbs)) g"
-            case 5:
-                cell.textLabel?.text = NSLocalizedString("Maxgräns Bolus", comment: "Max bolus limit label")
-                cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
-            case 6:
-                cell.textLabel?.text = NSLocalizedString("Override-faktor", comment: "Override factor label")
-                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
-            case 7:
-                cell.textLabel?.text = NSLocalizedString("Override", comment: "Override label")
-                cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
-            case 8:
                 let segmentedControl = UISegmentedControl(items: [NSLocalizedString("mg/dl", comment: "mg/dl"), NSLocalizedString("mmol", comment: "mmol")])
                 segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useMmol ? 1 : 0
                 segmentedControl.addTarget(self, action: #selector(unitsSegmentChanged(_:)), for: .valueChanged)
                 cell.textLabel?.text = NSLocalizedString("Blodsocker enhet", comment: "Blodsocker enhet")
                 cell.accessoryView = segmentedControl
-            case 9:
+            case 3:
+                let segmentedControl = UISegmentedControl(items: [NSLocalizedString("Schema", comment: "Schedule label"), NSLocalizedString("Fraktion", comment: "Fraction label")])
+                segmentedControl.selectedSegmentIndex = UserDefaultsRepository.useStartDosePercentage ? 1 : 0
+                segmentedControl.addTarget(self, action: #selector(useStartDosePercentageSegmentChanged(_:)), for: .valueChanged)
+                cell.textLabel?.text = NSLocalizedString("Startdoser", comment: "Start doses label")
+                cell.accessoryView = segmentedControl
+            case 4:
+                cell.textLabel?.text = NSLocalizedString("Startdos Fraktion", comment: "Start dose fraction label")
+                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.startDoseFactor)
+            case 5:
+                cell.textLabel?.text = NSLocalizedString("Maxgräns Kolhydrater", comment: "Max carbs limit label")
+                cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxCarbs)) g"
+            case 6:
+                cell.textLabel?.text = NSLocalizedString("Maxgräns Bolus", comment: "Max bolus limit label")
+                cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
+            case 7:
+                cell.textLabel?.text = NSLocalizedString("Override-faktor", comment: "Override factor label")
+                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
+            case 8:
+                cell.textLabel?.text = NSLocalizedString("Override", comment: "Override label")
+                cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
+            /*case 9:
                 cell.textLabel?.text = NSLocalizedString("Nightscout URL", comment: "Nightscout URL label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
             case 10:
@@ -255,7 +257,7 @@ class SettingsViewController: UITableViewController {
                 cell.detailTextLabel?.text = UserDefaultsRepository.excludeWords
             case 14:
                 cell.textLabel?.text = NSLocalizedString("Lägg till top-ups", comment: "Lägg till top-ups")
-                cell.detailTextLabel?.text = UserDefaultsRepository.topUps
+                cell.detailTextLabel?.text = UserDefaultsRepository.topUps*/
             default:
                 break
             }
@@ -294,19 +296,21 @@ class SettingsViewController: UITableViewController {
                 let viewController: UIViewController
                 switch indexPath.row {
                 case 0:
-                    viewController = CarbRatioViewController()
+                    viewController = ConnectionsViewController()
                 case 1:
-                    viewController = StartDoseViewController()
-                case 2:
                     viewController = DataSharingViewController()
+                case 2:
+                    viewController = RemoteSettingsViewController()
                 case 3:
                     viewController = NotificationViewController()
                 case 4:
-                    viewController = RemoteSettingsViewController()
+                    viewController = CarbRatioViewController()
+                case 5:
+                    viewController = StartDoseViewController()
                 default:
                     return
-            }
-            navigationController?.pushViewController(viewController, animated: true)
+                }
+                navigationController?.pushViewController(viewController, animated: true)
         } else if indexPath.section == 1, indexPath.row >= 2 {
             var title = ""
             var message = ""
@@ -315,44 +319,44 @@ class SettingsViewController: UITableViewController {
             
             switch indexPath.row {
             case 2:
+                title = NSLocalizedString("Blodsocker enhet", comment: "Blodsocker enhet")
+                message = NSLocalizedString("Välj om du vill vill använda mmol eller mg/dl som enhet för blodsockervärden i appen", comment: "Blodsocker enhet text")
+                showSimpleAlert(title: title, message: message)
+                return
+            case 3:
                 title = NSLocalizedString("Startdoser", comment: "Start doses label")
                 message = NSLocalizedString("Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).", comment: "Startdos text")
                 showSimpleAlert(title: title, message: message)
                 return
-            case 3:
+            case 4:
                 title = NSLocalizedString("Startdos Fraktion", comment: "Start dose fraction title")
                 message = NSLocalizedString("Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.", comment: "Start dose fraction message")
                 value = UserDefaultsRepository.startDoseFactor
                 userDefaultSetter = { UserDefaultsRepository.startDoseFactor = $0 }
-            case 4:
+            case 5:
                 title = NSLocalizedString("Maxgräns Kolhydrater (g)", comment: "Max carbs limit title")
                 message = NSLocalizedString("Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:", comment: "Max carbs limit message")
                 value = UserDefaultsRepository.maxCarbs
                 userDefaultSetter = { UserDefaultsRepository.maxCarbs = $0 }
-            case 5:
+            case 6:
                 title = NSLocalizedString("Maxgräns Bolus (E)", comment: "Max bolus limit title")
                 message = NSLocalizedString("Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:", comment: "Max bolus limit message")
                 value = UserDefaultsRepository.maxBolus
                 userDefaultSetter = { UserDefaultsRepository.maxBolus = $0 }
-            case 6:
+            case 7:
                 title = NSLocalizedString("Override-faktor", comment: "Override factor title")
                 message = NSLocalizedString("När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:", comment: "Override factor message")
                 value = UserDefaultsRepository.lateBreakfastFactor
                 userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
-            case 7:
-                title = NSLocalizedString("Override namn", comment: "Override name title")
+            case 8:
+                title = NSLocalizedString("Override", comment: "Override name title")
                 message = NSLocalizedString("Ange exakt namn på den override du vill aktivera i iAPS/Trio", comment: "Override name message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.lateBreakfastOverrideName ?? "") { newValue in
                     UserDefaultsRepository.lateBreakfastOverrideName = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            case 8:
-                title = NSLocalizedString("Blodsocker enhet", comment: "Blodsocker enhet")
-                message = NSLocalizedString("Välj om du vill vill använda mmol eller mg/dl som enhet för blodsockervärden i appen", comment: "Blodsocker enhet text")
-                showSimpleAlert(title: title, message: message)
-                return
-            case 9:
+            /*case 9:
                 title = NSLocalizedString("Nightscout URL", comment: "Nightscout URL title")
                 message = NSLocalizedString("Ange din Nightscout URL:", comment: "Nightscout URL message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutURL ?? "") { newValue in
@@ -399,7 +403,7 @@ class SettingsViewController: UITableViewController {
                     UserDefaultsRepository.topUps = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
-                return
+                return*/
             default:
                 return
             }

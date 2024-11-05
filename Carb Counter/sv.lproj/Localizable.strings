@@ -478,8 +478,8 @@
 /* Settings */
 "Inställningar" = "Inställningar";
 "Tillbaka" = "Tillbaka";
-"Carb Ratio schema" = "Insulinkvoter schema";
-"Startdoser schema" = "Startdoser schema";
+"Carb Ratio schema" = "Schema Insulinkvoter";
+"Startdoser schema" = "Schema Startdoser";
 "Dela data" = "Dela data";
 "Fjärrstyrning" = "Fjärrstyrning";
 "Tillåt fjärrstyrning" = "Tillåt fjärrstyrning";
@@ -492,8 +492,8 @@
 "Maxgräns Kolhydrater" = "Maxgräns Kolhydrater";
 "Maxgräns Bolus (E)" = "Maxgräns Bolus (E)";
 "Maxgräns Bolus" = "Maxgräns Bolus";
-"Override-faktor" = "Override-faktor";
-"Override" = "Override";
+"Override-faktor" = "Förinställd Override-faktor";
+"Override" = "Förinställd Override";
 "mmol" = "mmol";
 "mg/dl" = "mg/dl";
 "Blodsocker enhet" = "Blodsocker enhet";
@@ -503,13 +503,13 @@
 "Skolmaten URL" = "Skolmaten URL";
 "Exkludera sökord" = "Exkludera sökord";
 "Lägg till top-ups" = "Lägg till top-ups";
-"Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan)." = "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).";
+"Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan)." = "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Schema Startdoser' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).";
 "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio." = "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio.";
-"Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy" = "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy";
+"Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy" = "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, favoriter, historik, insulinkvoter eller startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy";
 "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater." = "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.";
 "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
 "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
-"När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:";
+"När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när 'Förinställd Override' aktiveras i måltidsvyn:";
 "Ange exakt namn på den override du vill aktivera i iAPS/Trio" = "Ange exakt namn på den override du vill aktivera i iAPS/Trio";
 "Välj om du vill vill använda mmol eller mg/dl som enhet för blodsockervärden i appen"= "Välj om du vill vill använda mg/dl eller mmol/L som enhet för blodsockervärden i appen";
 "Ange din Nightscout URL:" = "Ange din Nightscout URL:";
@@ -540,8 +540,8 @@
 "Livsmedel" = "Livsmedel";
 "Favoritmåltider" = "Favoritmåltider";
 "Måltidshistorik" = "Måltidshistorik";
-"Carb ratios schema" = "Carb ratios schema";
-"Startdoser schema" = "Startdoser schema";
+"Carb Ratio schema" = "Schema Insulinkvoter";
+"Startdoser schema" = "Schema Startdoser";
 "Import lyckades" = "Import lyckades";
 "Användarinställningarna har importerats." = "Användarinställningarna har importerats.";
 "Export lyckades" = "Export lyckades";
