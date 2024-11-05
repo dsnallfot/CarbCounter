@@ -23,54 +23,33 @@ struct CreateMealHistoryIntent: AppIntent {
     var mealDate: Date
 
     func perform() async throws -> some IntentResult {
-        // Create a background task request
-        let taskRequest = BGProcessingTaskRequest(identifier: backgroundTaskIdentifier)
-        taskRequest.requiresNetworkConnectivity = false
-        taskRequest.requiresExternalPower = false
-        
-        do {
-            try BGTaskScheduler.shared.submit(taskRequest)
-        } catch {
-            print("Could not schedule background task: \(error)")
-        }
-        
-        // Create a background URL session configuration
-        let config = URLSessionConfiguration.background(withIdentifier: "com.dsnallfot.CarbsCounter.backgroundSession")
-        config.sessionSendsLaunchEvents = true
-        config.isDiscretionary = false
-        
-        // Start background task
-        var backgroundTask: UIBackgroundTaskIdentifier = .invalid
-        backgroundTask = await UIApplication.shared.beginBackgroundTask {
-            // End the task if the background task expires
-            UIApplication.shared.endBackgroundTask(backgroundTask)
-            backgroundTask = .invalid
-        }
-        
         // Perform the save operation
-        await saveMealHistory(
+        try await saveMealHistory(
             foodItem: foodItem.foodItem,
             portionServed: portionServed,
             bolus: bolus,
             mealDate: mealDate
         )
         
-        // End background task
-        if backgroundTask != .invalid {
-            await UIApplication.shared.endBackgroundTask(backgroundTask)
-        }
+        // Schedule notification
+        scheduleNotification(
+            foodItemName: foodItem.name,
+            portionServed: portionServed,
+            bolus: bolus,
+            mealDate: mealDate
+        )
 
         return .result()
     }
 
-    private func saveMealHistory(foodItem: FoodItem, portionServed: Double, bolus: Double, mealDate: Date) async {
+    private func saveMealHistory(foodItem: FoodItem, portionServed: Double, bolus: Double, mealDate: Date) async throws {
         let context = CoreDataStack.shared.context
         
         // Create a child context for background operations
         let backgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         backgroundContext.parent = context
         
-        await backgroundContext.perform {
+        try await backgroundContext.perform {
             let mealHistory = MealHistory(context: backgroundContext)
             
             // Set unique ID, date, and lastEdited
@@ -79,6 +58,7 @@ struct CreateMealHistoryIntent: AppIntent {
             mealHistory.lastEdited = Date()
             mealHistory.delete = false
             
+            // Calculate total nutrients
             mealHistory.totalNetCarbs = foodItem.perPiece
                 ? foodItem.carbsPP * portionServed
                 : foodItem.carbohydrates * portionServed / 100
@@ -108,25 +88,65 @@ struct CreateMealHistoryIntent: AppIntent {
             
             mealHistory.addToFoodEntries(foodEntry)
             
-            do {
-                // Save the background context
-                try backgroundContext.save()
+            // Save the background context
+            try backgroundContext.save()
+            
+            // Save the main context
+            try context.save()
+            
+            print("MealHistory saved successfully through shortcut!")
+            
+            // Trigger the export after saving
+            Task { @MainActor in
+                if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+                   let dataSharingVC = appDelegate.dataSharingVC {
+                    await dataSharingVC.exportMealHistoryToCSV()
+                    print("Meal history export triggered from shortcut")
+                }
+            }
+        }
+    }
+    
+    private func scheduleNotification(foodItemName: String, portionServed: Double, bolus: Double, mealDate: Date) {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                let content = UNMutableNotificationContent()
+                content.title = "Måltid loggad i historiken"
                 
-                // Save the main context
-                try context.save()
+                // Format date and amounts
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateStyle = .short
+                dateFormatter.timeStyle = .short
+                let dateString = dateFormatter.string(from: mealDate)
                 
-                print("MealHistory saved successfully through shortcut!")
+                let body = """
+                Livsmedel: \(foodItemName)
+                Mängd: \(String(format: "%.1f", portionServed))
+                Bolus: \(String(format: "%.2f", bolus)) E
+                Datum: \(dateString)
+                """
+                content.body = body
+                content.sound = .default
                 
-                // Trigger the export after saving
-                Task { @MainActor in
-                    if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
-                       let dataSharingVC = appDelegate.dataSharingVC {
-                        await dataSharingVC.exportMealHistoryToCSV()
-                        print("Meal history export triggered from shortcut")
+                let request = UNNotificationRequest(
+                    identifier: UUID().uuidString,
+                    content: content,
+                    trigger: nil
+                )
+                
+                center.add(request) { error in
+                    if let error = error {
+                        print("Error scheduling notification: \(error)")
                     }
                 }
-            } catch {
-                print("Failed to save MealHistory: \(error)")
+            case .denied:
+                print("Notifications are denied")
+            case .notDetermined:
+                print("Notifications are not determined")
+            @unknown default:
+                print("Unknown notification authorization status")
             }
         }
     }
@@ -221,9 +241,4 @@ struct FoodItemOptionsProvider: DynamicOptionsProvider {
             )
         }
     }
-    
-    func defaultResult() async -> FoodItemEntity? {
-        return try? await results().first
-    }
 }
-
