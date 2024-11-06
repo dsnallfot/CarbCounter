@@ -619,3 +619,6 @@
 /* Quick actions */
 "SCAN_BARCODE_KEY" = "Scan barcode";
 "ADD_FOOD_KEY" = "Add food item";
+
+/*Other*/
+"Uppdaterar data..." = "Refreshing data...";

@@ -8,7 +8,7 @@ import UIKit
 class LoadingViewController: UIViewController {
     
     var dataSharingVC: DataSharingViewController?
-    var minimumDisplayTime: TimeInterval = 2.5
+    var minimumDisplayTime: TimeInterval = 1.5
 
     override func viewDidLoad() {
             super.viewDidLoad()
@@ -158,34 +158,10 @@ class LoadingViewController: UIViewController {
         
         // Add the image view to the container view
         imageContainerView.addSubview(appIconImageView)
-        /*
-        // Create and set up the loading indicator
-        let loadingIndicator = UIActivityIndicatorView(style: .large)
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.startAnimating()
-        
-        // Create and set up the label
-        let loadingLabel = UILabel()
-        loadingLabel.text = NSLocalizedString("Uppdaterar data", comment: "Updating data")
-        loadingLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        loadingLabel.textAlignment = .center
-        loadingLabel.textColor = .label
-        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Create and setup the copyright label
-        let copyrightLabel = UILabel()
-        copyrightLabel.text = "© 2024 Daniel Snällfot"
-        copyrightLabel.textAlignment = .center
-        copyrightLabel.textColor = .clear
-        copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
-        copyrightLabel.translatesAutoresizingMaskIntoConstraints = false
-        */
+       
         // Add subviews to the main view
         view.addSubview(titleLabel)
         view.addSubview(imageContainerView)
-        //view.addSubview(copyrightLabel)
-        //view.addSubview(loadingIndicator)
-        //view.addSubview(loadingLabel)
         
         // Set up constraints
         NSLayoutConstraint.activate([
@@ -205,20 +181,6 @@ class LoadingViewController: UIViewController {
             appIconImageView.bottomAnchor.constraint(equalTo: imageContainerView.bottomAnchor),
             appIconImageView.leadingAnchor.constraint(equalTo: imageContainerView.leadingAnchor),
             appIconImageView.trailingAnchor.constraint(equalTo: imageContainerView.trailingAnchor),
-            /*
-            // Copyright label constraints
-            copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
-            copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -159),
-            
-            // Loading indicator constraints
-            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loadingIndicator.topAnchor.constraint(equalTo: copyrightLabel.bottomAnchor, constant: 10),
-            
-            // Loading label constraints
-            loadingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 20)
-            */
             
         ])
     }

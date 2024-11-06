@@ -129,8 +129,9 @@ class SettingsViewController: UITableViewController {
         let updatedText = NSLocalizedString("Uppdaterad:", comment: "Updated date label")
             let versionText = NSLocalizedString("Version:", comment: "Version label")
             let buildText = NSLocalizedString("Build:", comment: "Build label")
+            let copyrightText = NSLocalizedString("© 2024 Daniel Snällfot", comment: "Copyright label")
             
-            let message = "\n\(updatedText) \(appInfo.buildDate)\n\(versionText) \(appInfo.version)\n\(buildText) \(appInfo.build)"
+            let message = "\n\(updatedText) \(appInfo.buildDate)\n\(versionText) \(appInfo.version)\n\(buildText) \(appInfo.build)\n\(copyrightText)"
                     let alert = UIAlertController(title: NSLocalizedString("Om appen", comment: "About Carb Counter"), message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(okAction)
@@ -240,24 +241,6 @@ class SettingsViewController: UITableViewController {
             case 8:
                 cell.textLabel?.text = NSLocalizedString("Override", comment: "Override label")
                 cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
-            /*case 9:
-                cell.textLabel?.text = NSLocalizedString("Nightscout URL", comment: "Nightscout URL label")
-                cell.detailTextLabel?.text = UserDefaultsRepository.nightscoutURL
-            case 10:
-                cell.textLabel?.text = NSLocalizedString("Nightscout Token", comment: "Nightscout Token label")
-                cell.detailTextLabel?.text = maskText(UserDefaultsRepository.nightscoutToken)
-            case 11:
-                cell.textLabel?.text = NSLocalizedString("Dabas API Secret", comment: "Dabas API Secret label")
-                cell.detailTextLabel?.text = maskText(UserDefaultsRepository.dabasAPISecret)
-            case 12:
-                cell.textLabel?.text = NSLocalizedString("Skolmaten URL", comment: "School food URL label")
-                cell.detailTextLabel?.text = UserDefaultsRepository.schoolFoodURL
-            case 13:
-                cell.textLabel?.text = NSLocalizedString("Exkludera sökord", comment: "Exkludera sökord")
-                cell.detailTextLabel?.text = UserDefaultsRepository.excludeWords
-            case 14:
-                cell.textLabel?.text = NSLocalizedString("Lägg till top-ups", comment: "Lägg till top-ups")
-                cell.detailTextLabel?.text = UserDefaultsRepository.topUps*/
             default:
                 break
             }
@@ -356,54 +339,7 @@ class SettingsViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return
-            /*case 9:
-                title = NSLocalizedString("Nightscout URL", comment: "Nightscout URL title")
-                message = NSLocalizedString("Ange din Nightscout URL:", comment: "Nightscout URL message")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutURL ?? "") { newValue in
-                    UserDefaultsRepository.nightscoutURL = newValue
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                }
-                return
-            case 10:
-                title = NSLocalizedString("Nightscout Token", comment: "Nightscout Token title")
-                message = NSLocalizedString("Ange din Nightscout Token:", comment: "Nightscout Token message")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.nightscoutToken ?? "") { newValue in
-                    UserDefaultsRepository.nightscoutToken = newValue
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                }
-                return
-            case 11:
-                title = NSLocalizedString("Dabas API Secret", comment: "Dabas API Secret title")
-                message = NSLocalizedString("Om du vill använda den svenska livsmedelsdatabasen Dabas, ange din API Secret.\n\nOm du inte anger ngn API secret används OpenFoodFacts som default för EAN-scanning och livsmedelssökningar online", comment: "Dabas API Secret message")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.dabasAPISecret) { newValue in
-                    UserDefaultsRepository.dabasAPISecret = newValue
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                }
-                return
-            case 12:
-                title = NSLocalizedString("Skolmaten URL", comment: "School food URL title")
-                message = NSLocalizedString("Ange URL till Skolmaten.se RSS-flöde som du vill använda:", comment: "School food URL message")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.schoolFoodURL ?? "") { newValue in
-                    UserDefaultsRepository.schoolFoodURL = newValue
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                }
-                return
-            case 13:
-                title = NSLocalizedString("Exkludera sökord", comment: "Exkludera sökord")
-                message = NSLocalizedString("För att förbättra matchningen mellan lunchmenyerna i skolmaten.se och appens livsmedelsdatabas, så kan du välja att exkludera vissa sökord. Ange sökorden separerade med punkt eller komma", comment: "Exkludera sökord-text")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.excludeWords ?? "") { newValue in
-                    UserDefaultsRepository.excludeWords = newValue
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                }
-                return
-            case 14:
-                title = NSLocalizedString("Lägg till top-ups", comment: "Lägg till top-ups")
-                message = NSLocalizedString("Lägg till livsmedel som ofta används för att toppa up med kolhydrater när det ätits färre kolhydrater än vad insulin doserats för. Separera livsmedlen med punkt eller kommatecken", comment: "Lägg till top-ups-text")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.topUps ?? "") { newValue in
-                    UserDefaultsRepository.topUps = newValue
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                }
-                return*/
+           
             default:
                 return
             }

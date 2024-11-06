@@ -18,8 +18,8 @@ class UpdateView: UIView {
     private let successLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = NSLocalizedString("Uppdaterar data", comment: "Updating data label text")
-        label.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        label.text = NSLocalizedString("Uppdaterar data...", comment: "Updating data label text")
+        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.textColor = .label
         label.textAlignment = .center
         return label
@@ -36,10 +36,10 @@ class UpdateView: UIView {
     }
 
     private func setupView() {
-        self.backgroundColor = .systemGray4.withAlphaComponent(1)
+        self.backgroundColor = .systemGray4.withAlphaComponent(0)//1)
         self.layer.cornerRadius = 10
         self.layer.shadowColor = UIColor.black.cgColor
-        self.layer.shadowOpacity = 0.2
+        self.layer.shadowOpacity = 0//0.2
         self.layer.shadowOffset = CGSize(width: 0, height: 2)
         self.layer.shadowRadius = 20
 
@@ -49,14 +49,13 @@ class UpdateView: UIView {
         NSLayoutConstraint.activate([
             // Center the loading indicator
             loadingIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            loadingIndicator.topAnchor.constraint(equalTo: self.topAnchor, constant: 20),
-            loadingIndicator.widthAnchor.constraint(equalToConstant: 80),
-            loadingIndicator.heightAnchor.constraint(equalToConstant: 80),
+            loadingIndicator.topAnchor.constraint(equalTo: self.topAnchor),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 40),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 40),
 
             // Center the label below the loading indicator
             successLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            successLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 10),
-            successLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20)
+            successLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor),
         ])
     }
 
@@ -66,9 +65,9 @@ class UpdateView: UIView {
 
         NSLayoutConstraint.activate([
             self.centerXAnchor.constraint(equalTo: parentView.centerXAnchor),
-            self.centerYAnchor.constraint(equalTo: parentView.centerYAnchor),
+            self.bottomAnchor.constraint(equalTo: parentView.bottomAnchor, constant: -140),
             self.widthAnchor.constraint(equalToConstant: 160),
-            self.heightAnchor.constraint(equalToConstant: 160)
+            self.heightAnchor.constraint(equalToConstant: 80)
         ])
 
         loadingIndicator.startAnimating()
