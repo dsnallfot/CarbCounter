@@ -23,6 +23,18 @@ struct CreateMealHistoryIntent: AppIntent {
     var mealDate: Date
 
     func perform() async throws -> some IntentResult {
+        // Ensure dataSharingVC is instantiated
+        guard let appDelegate = await UIApplication.shared.delegate as? AppDelegate,
+              let dataSharingVC = await appDelegate.dataSharingVC else {
+            print("DataSharingVC could not be instantiated.")
+            return .result()
+        }
+        
+        // Trigger data import before saving the new MealHistory entry
+        print("Starting data import before MealHistory save")
+        await dataSharingVC.importCSVFiles()
+        //print("Data import complete")
+        
         // Perform the save operation
         try await saveMealHistory(
             foodItem: foodItem.foodItem,
