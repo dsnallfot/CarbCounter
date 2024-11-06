@@ -158,7 +158,7 @@ class LoadingViewController: UIViewController {
         
         // Add the image view to the container view
         imageContainerView.addSubview(appIconImageView)
-        
+        /*
         // Create and set up the loading indicator
         let loadingIndicator = UIActivityIndicatorView(style: .large)
         loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -179,13 +179,13 @@ class LoadingViewController: UIViewController {
         copyrightLabel.textColor = .clear
         copyrightLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
         copyrightLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+        */
         // Add subviews to the main view
         view.addSubview(titleLabel)
         view.addSubview(imageContainerView)
-        view.addSubview(copyrightLabel)
-        view.addSubview(loadingIndicator)
-        view.addSubview(loadingLabel)
+        //view.addSubview(copyrightLabel)
+        //view.addSubview(loadingIndicator)
+        //view.addSubview(loadingLabel)
         
         // Set up constraints
         NSLayoutConstraint.activate([
@@ -195,6 +195,7 @@ class LoadingViewController: UIViewController {
             
             // Image container view constraints
             imageContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            imageContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             imageContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             imageContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             imageContainerView.heightAnchor.constraint(equalTo: imageContainerView.widthAnchor),
@@ -204,7 +205,7 @@ class LoadingViewController: UIViewController {
             appIconImageView.bottomAnchor.constraint(equalTo: imageContainerView.bottomAnchor),
             appIconImageView.leadingAnchor.constraint(equalTo: imageContainerView.leadingAnchor),
             appIconImageView.trailingAnchor.constraint(equalTo: imageContainerView.trailingAnchor),
-            
+            /*
             // Copyright label constraints
             copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -217,7 +218,7 @@ class LoadingViewController: UIViewController {
             // Loading label constraints
             loadingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 20)
-            
+            */
             
         ])
     }

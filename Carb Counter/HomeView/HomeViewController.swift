@@ -136,6 +136,7 @@ class HomeViewController: UIViewController {
             // Image container view constraints
             //imageContainerView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: -10), // Adjusted to move higher
             imageContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            imageContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             imageContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             imageContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             imageContainerView.heightAnchor.constraint(equalTo: imageContainerView.widthAnchor), // Maintain aspect ratio
@@ -149,7 +150,7 @@ class HomeViewController: UIViewController {
             // Copyright label constraints
             copyrightLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 33),
             copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -110)
+            //copyrightLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -110)
         ])
         updateNavigationBarButtons()
     }

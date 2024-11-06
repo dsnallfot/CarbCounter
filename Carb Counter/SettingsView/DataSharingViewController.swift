@@ -208,6 +208,8 @@ class DataSharingViewController: UIViewController {
     }
 
     private func performImportCSVFiles(specificFileName: String? = nil) async {
+        var updateView: UpdateView?
+        
         // Apply the 300-second block only if no specific file is provided (i.e., all files are imported)
         if specificFileName == nil {
             if let lastImportTime = lastImportTime, Date().timeIntervalSince(lastImportTime) < 300 {
@@ -217,11 +219,21 @@ class DataSharingViewController: UIViewController {
             
             // Update the last import time when importing all files
             lastImportTime = Date()
+            
+            // Create and display the UpdateView if no specific file is provided and the import proceeds
+            updateView = UpdateView()
+            if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                updateView?.showInView(keyWindow)
+            }
         }
 
         let fileManager = FileManager.default
         guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
             print("Import Failed: iCloud Drive URL is nil.")
+            // Hide UpdateView in case of failure
+            if let updateView = updateView {
+                await hideUpdateView(updateView)
+            }
             return
         }
 
@@ -254,15 +266,36 @@ class DataSharingViewController: UIViewController {
         } catch {
             print("Failed to list directory: \(error)")
         }
+        
+        // Hide UpdateView once import is done
+        if let updateView = updateView {
+            await hideUpdateView(updateView)
+        }
     }
+
+    private func hideUpdateView(_ updateView: UpdateView) async {
+        await MainActor.run {
+            updateView.hide()
+        }
+    }
+
     
 ///Ongoing meal import
     @objc public func importOngoingMealCSV() {
+        // Initialize and display the UpdateView
+        let updateView = UpdateView()
+        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+            updateView.showInView(keyWindow)
+        }
+        
         let fileManager = FileManager.default
         guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter/OngoingMeal.csv") else {
             print("Import Failed: iCloud Drive URL is nil.")
+            // Hide UpdateView immediately in case of failure
+            updateView.hide()
             return
         }
+        
         do {
             let csvData = try String(contentsOf: iCloudURL, encoding: .utf8)
             let rows = csvData.components(separatedBy: "\n").filter { !$0.isEmpty }
@@ -272,6 +305,9 @@ class DataSharingViewController: UIViewController {
         } catch {
             print("Failed to read CSV file: \(error)")
         }
+        
+        // Hide UpdateView once import is done
+        updateView.hide()
     }
     ///Exporting
     @objc public func exportFoodItemsToCSV() async {

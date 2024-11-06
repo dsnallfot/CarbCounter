@@ -39,6 +39,7 @@
 		656C64A52C6C007000431374 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 656C64A32C6C007000431374 /* Localizable.strings */; };
 		658302172CDABFA3000BC0AD /* commit_hash.txt in Resources */ = {isa = PBXBuildFile; fileRef = 658302162CDABFA3000BC0AD /* commit_hash.txt */; };
 		658302192CDAD461000BC0AD /* ConnectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658302182CDAD456000BC0AD /* ConnectionsViewController.swift */; };
+		6583021B2CDB9054000BC0AD /* UpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6583021A2CDB904F000BC0AD /* UpdateView.swift */; };
 		659632852C2436470098DF69 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 659632842C2436470098DF69 /* launch.png */; };
 		65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */; };
 		65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */; };
@@ -99,6 +100,7 @@
 		656C64A62C6C008400431374 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		658302162CDABFA3000BC0AD /* commit_hash.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = commit_hash.txt; sourceTree = "<group>"; };
 		658302182CDAD456000BC0AD /* ConnectionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsViewController.swift; sourceTree = "<group>"; };
+		6583021A2CDB904F000BC0AD /* UpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateView.swift; sourceTree = "<group>"; };
 		659632842C2436470098DF69 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
 		65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDropdownViewController.swift; sourceTree = "<group>"; };
 		65BAB4E72C5A95650055638D /* RSSFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedViewController.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				65BE764A2CA2C134005EAFE2 /* GradientView.swift */,
 				65BE764E2CA2C54E005EAFE2 /* Formatters.swift */,
 				65D185712CB13B2D00E82D51 /* SuccessView.swift */,
+				6583021A2CDB904F000BC0AD /* UpdateView.swift */,
 				65380D2E2CB284CF00BF635E /* TooltipMarkerView.swift */,
 			);
 			path = Controllers;
@@ -373,6 +376,7 @@
 				6553EE032C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld in Sources */,
 				654EAF992CDA5D8600C5D87A /* NotificationViewController.swift in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
+				6583021B2CDB9054000BC0AD /* UpdateView.swift in Sources */,
 				65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */,
 				65BAB4EE2C5AE76C0055638D /* RSSHelper.swift in Sources */,
 				653DE7A42C278F7700A639D1 /* Twilio.swift in Sources */,
