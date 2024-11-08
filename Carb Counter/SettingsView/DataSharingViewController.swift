@@ -4,7 +4,7 @@ import CloudKit
 import CoreData
 import UniformTypeIdentifiers
 
-class DataSharingViewController: UIViewController {
+class DataSharingViewController: UITableViewController {
     
     private var lastImportTime: Date?
     private var viewHasAppeared = false
@@ -12,128 +12,261 @@ class DataSharingViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = NSLocalizedString("Dela data", comment: "Share Data")
         
-        // Setup background depending on light/dark mode
-                if traitCollection.userInterfaceStyle == .dark {
-                    setupDarkModeBackground()
-                } else {
-                    view.backgroundColor = .systemGray6
-                }
-                
-                title = NSLocalizedString("Dela data", comment: "Dela data")
-                
-                setupNavigationBarButtons()
-                setupToggleForOngoingMealSharing()
-                setupClearHistoryRow()
+        setupBackground()
+        
+        // Register cell style
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "dataCell")
+        
+        // Add Done button to the navigation bar
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
     }
     
-    private func setupDarkModeBackground() {
-            view.backgroundColor = .systemBackground
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(gradientView)
-            view.sendSubviewToBack(gradientView)
+    @objc private func doneButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+    
+    private func setupBackground() {
+            // Create a solid background for light mode and a gradient for dark mode
+            let backgroundContainerView = UIView()
+            let solidBackgroundView = UIView()
+            solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+            backgroundContainerView.addSubview(solidBackgroundView)
             
+            if traitCollection.userInterfaceStyle == .dark {
+                solidBackgroundView.backgroundColor = .systemBackground
+                
+                // Set up gradient
+                let colors: [CGColor] = [
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+                ]
+                let gradientView = GradientView(colors: colors)
+                gradientView.translatesAutoresizingMaskIntoConstraints = false
+                backgroundContainerView.addSubview(gradientView)
+                
+                NSLayoutConstraint.activate([
+                    gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                    gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                    gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                    gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+                ])
+            } else {
+                solidBackgroundView.backgroundColor = .systemGray6
+            }
+
+            // Set the container view as the table's background view
+            tableView.backgroundView = backgroundContainerView
+
             NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+                solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
             ])
         }
     
-    private func setupNavigationBarButtons() {
-        let exportButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(exportData))
-        let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
-        navigationItem.rightBarButtonItems = [exportButton, importButton]
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1  // All settings are in a single section
     }
     
-    private func setupToggleForOngoingMealSharing() {
-        let toggleSwitch = UISwitch()
-        toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
-        toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 4  // Toggle Sharing, Export, Import, Clear History
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell(style: .default, reuseIdentifier: "dataCell")
+        cell.backgroundColor = .clear
         
-        let toggleLabel = UILabel()
-        toggleLabel.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Tillåt delning av pågående måltid")
-        toggleLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
+        // Create a horizontal stack view for aligning label and icon/switch
+        let stackView = UIStackView()
         stackView.axis = .horizontal
-        stackView.spacing = 16
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.distribution = .fill
         
-        view.addSubview(stackView)
+        // Label for row text
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 17)
+        label.textColor = .label
         
+        // Configure cell content based on row
+        switch indexPath.row {
+        case 0:
+            label.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Allow ongoing meal sharing")
+            
+            // Add switch as the trailing accessory
+            let toggleSwitch = UISwitch()
+            toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
+            toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
+            stackView.addArrangedSubview(label)
+            stackView.addArrangedSubview(toggleSwitch)
+            
+        case 1:
+            label.text = NSLocalizedString("Exportera data", comment: "Export data")
+            let exportIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
+            exportIcon.tintColor = .label
+            stackView.addArrangedSubview(label)
+            stackView.addArrangedSubview(exportIcon)
+            
+        case 2:
+            label.text = NSLocalizedString("Importera data", comment: "Import data")
+            let importIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.down"))
+            importIcon.tintColor = .label
+            stackView.addArrangedSubview(label)
+            stackView.addArrangedSubview(importIcon)
+            
+        case 3:
+            label.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear old meal history")
+            let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
+            trashIcon.tintColor = .red
+            stackView.addArrangedSubview(label)
+            stackView.addArrangedSubview(trashIcon)
+            
+        default:
+            break
+        }
+        
+        // Add stack view to cell content
+        cell.contentView.addSubview(stackView)
+        
+        // Set up constraints for stack view to fit within cell
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16)
+            stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+            stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 10),
+            stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -10)
         ])
+        
+        return cell
     }
     
-    private func setupClearHistoryRow() {
-        let clearHistoryContainer = UIView()
-        clearHistoryContainer.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(clearHistoryContainer)
-
-        let clearHistoryLabel = UILabel()
-        clearHistoryLabel.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear history over 365 days")
-        clearHistoryLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
-        trashIcon.tintColor = .red
-        trashIcon.translatesAutoresizingMaskIntoConstraints = false
-
-        clearHistoryContainer.addSubview(clearHistoryLabel)
-        clearHistoryContainer.addSubview(trashIcon)
-
-        NSLayoutConstraint.activate([
-            clearHistoryContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            clearHistoryContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            clearHistoryContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 56),
-            clearHistoryContainer.heightAnchor.constraint(equalToConstant: 44),  // Define a height for the container
-
-            clearHistoryLabel.leadingAnchor.constraint(equalTo: clearHistoryContainer.leadingAnchor),
-            clearHistoryLabel.centerYAnchor.constraint(equalTo: clearHistoryContainer.centerYAnchor),
-
-            trashIcon.trailingAnchor.constraint(equalTo: clearHistoryContainer.trailingAnchor),
-            trashIcon.centerYAnchor.constraint(equalTo: clearHistoryContainer.centerYAnchor)
-        ])
-
-        // Make the container tappable
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(clearHistoryTapped))
-        clearHistoryContainer.addGestureRecognizer(tapGesture)
-        clearHistoryContainer.isUserInteractionEnabled = true  // Ensure interaction is enabled
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        switch indexPath.row {
+        case 1:
+            exportData()
+        case 2:
+            importData()
+        case 3:
+            clearHistoryTapped()
+        default:
+            break
+        }
     }
     
+    /*
+     private func setupDarkModeBackground() {
+     view.backgroundColor = .systemBackground
+     let colors: [CGColor] = [
+     UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+     UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+     UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+     ]
+     let gradientView = GradientView(colors: colors)
+     gradientView.translatesAutoresizingMaskIntoConstraints = false
+     view.addSubview(gradientView)
+     view.sendSubviewToBack(gradientView)
+     
+     NSLayoutConstraint.activate([
+     gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+     gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+     gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+     gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+     ])
+     }*/
+    /*
+     private func setupNavigationBarButtons() {
+     let exportButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(exportData))
+     let importButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(importData))
+     navigationItem.rightBarButtonItems = [exportButton, importButton]
+     }*/
+    /*
+     private func setupToggleForOngoingMealSharing() {
+     let toggleSwitch = UISwitch()
+     toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
+     toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
+     
+     let toggleLabel = UILabel()
+     toggleLabel.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Tillåt delning av pågående måltid")
+     toggleLabel.translatesAutoresizingMaskIntoConstraints = false
+     
+     let stackView = UIStackView(arrangedSubviews: [toggleLabel, toggleSwitch])
+     stackView.axis = .horizontal
+     stackView.spacing = 16
+     stackView.translatesAutoresizingMaskIntoConstraints = false
+     stackView.distribution = .fill
+     
+     view.addSubview(stackView)
+     
+     NSLayoutConstraint.activate([
+     stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+     stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+     stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16)
+     ])
+     }
+     
+     private func setupClearHistoryRow() {
+     let clearHistoryContainer = UIView()
+     clearHistoryContainer.translatesAutoresizingMaskIntoConstraints = false
+     view.addSubview(clearHistoryContainer)
+     
+     let clearHistoryLabel = UILabel()
+     clearHistoryLabel.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear history over 365 days")
+     clearHistoryLabel.translatesAutoresizingMaskIntoConstraints = false
+     
+     let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
+     trashIcon.tintColor = .red
+     trashIcon.translatesAutoresizingMaskIntoConstraints = false
+     
+     clearHistoryContainer.addSubview(clearHistoryLabel)
+     clearHistoryContainer.addSubview(trashIcon)
+     
+     NSLayoutConstraint.activate([
+     clearHistoryContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+     clearHistoryContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+     clearHistoryContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 56),
+     clearHistoryContainer.heightAnchor.constraint(equalToConstant: 44),  // Define a height for the container
+     
+     clearHistoryLabel.leadingAnchor.constraint(equalTo: clearHistoryContainer.leadingAnchor),
+     clearHistoryLabel.centerYAnchor.constraint(equalTo: clearHistoryContainer.centerYAnchor),
+     
+     trashIcon.trailingAnchor.constraint(equalTo: clearHistoryContainer.trailingAnchor),
+     trashIcon.centerYAnchor.constraint(equalTo: clearHistoryContainer.centerYAnchor)
+     ])
+     
+     // Make the container tappable
+     let tapGesture = UITapGestureRecognizer(target: self, action: #selector(clearHistoryTapped))
+     clearHistoryContainer.addGestureRecognizer(tapGesture)
+     clearHistoryContainer.isUserInteractionEnabled = true  // Ensure interaction is enabled
+     }
+     */
     @objc private func toggleOngoingMealSharing(_ sender: UISwitch) {
         UserDefaultsRepository.allowSharingOngoingMeals = sender.isOn
         print("allowSharingOngoingMeals set to \(sender.isOn)")
     }
     
     @objc private func clearHistoryTapped() {
-            let alert = UIAlertController(
-                title: NSLocalizedString("Rensa måltidshistorik", comment: "Clear meal history"),
-                message: NSLocalizedString("Vill du radera all måltidshistorik äldre än 365 dagar?", comment: "Delete all meal history older than 365 days"),
-                preferredStyle: .actionSheet
-            )
-            
-            let deleteAction = UIAlertAction(title: NSLocalizedString("Radera", comment: "Delete"), style: .destructive) { _ in
-                CoreDataHelper.shared.clearOldMealHistory()
-            }
-            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel)
-            
-            alert.addAction(deleteAction)
-            alert.addAction(cancelAction)
-            
-            present(alert, animated: true, completion: nil)
+        let alert = UIAlertController(
+            title: NSLocalizedString("Rensa måltidshistorik", comment: "Clear meal history"),
+            message: NSLocalizedString("Vill du radera all måltidshistorik äldre än 365 dagar?", comment: "Delete all meal history older than 365 days"),
+            preferredStyle: .actionSheet
+        )
+        
+        let deleteAction = UIAlertAction(title: NSLocalizedString("Radera", comment: "Delete"), style: .destructive) { _ in
+            CoreDataHelper.shared.clearOldMealHistory()
         }
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
     
     //Manual exporting and importing
     @objc private func exportData() {
@@ -151,7 +284,7 @@ class DataSharingViewController: UIViewController {
         
         present(alert, animated: true, completion: nil)
     }
-
+    
     @objc private func importData() {
         let alert = UIAlertController(title: NSLocalizedString("Importera data", comment: "Importera data"), message: NSLocalizedString("Välj vilken data du vill importera", comment: "Välj vilken data du vill importera"), preferredStyle: .actionSheet)
         
@@ -206,7 +339,7 @@ class DataSharingViewController: UIViewController {
     @objc public func importCSVFiles(specificFileName: String? = nil) async {
         await self.performImportCSVFiles(specificFileName: specificFileName)
     }
-
+    
     private func performImportCSVFiles(specificFileName: String? = nil) async {
         var updateView: UpdateView?
         
@@ -226,7 +359,7 @@ class DataSharingViewController: UIViewController {
                 updateView?.showInView(keyWindow)
             }
         }
-
+        
         let fileManager = FileManager.default
         guard let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter") else {
             print("Import Failed: iCloud Drive URL is nil.")
@@ -236,10 +369,10 @@ class DataSharingViewController: UIViewController {
             }
             return
         }
-
+        
         do {
             let fileURLs = try fileManager.contentsOfDirectory(at: iCloudURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-
+            
             let entityFileMapping: [String: String] = [
                 "FoodItems.csv": "Food Items",
                 "FavoriteMeals.csv": "Favorite Meals",
@@ -250,8 +383,8 @@ class DataSharingViewController: UIViewController {
             
             // If specificFileName is provided, filter the mapping to import just that file
             let filesToImport = specificFileName != nil ?
-                entityFileMapping.filter { $0.key == specificFileName } :
-                entityFileMapping
+            entityFileMapping.filter { $0.key == specificFileName } :
+            entityFileMapping
             
             for (fileName, entityName) in filesToImport {
                 if let fileURL = fileURLs.first(where: { $0.lastPathComponent == fileName }) {
@@ -260,9 +393,9 @@ class DataSharingViewController: UIViewController {
                     print("File \(specificFileName!) not found.")
                 }
             }
-
+            
             print("Data import done!")
-
+            
         } catch {
             print("Failed to list directory: \(error)")
         }
@@ -272,15 +405,15 @@ class DataSharingViewController: UIViewController {
             await hideUpdateView(updateView)
         }
     }
-
+    
     private func hideUpdateView(_ updateView: UpdateView) async {
         await MainActor.run {
             updateView.hide()
         }
     }
-
     
-///Ongoing meal import
+    
+    ///Ongoing meal import
     @objc public func importOngoingMealCSV() {
         // Initialize and display the UpdateView
         let updateView = UpdateView()
@@ -372,7 +505,7 @@ class DataSharingViewController: UIViewController {
             let lastEdited = dateFormatter.string(from: item.lastEdited ?? Date())  // Format lastEdited date
             let delete = item.delete  // Adding the delete field
             let emoji = item.emoji ?? ""
-
+            
             csvString += "\(id);\(name);\(carbohydrates);\(carbsPP);\(fat);\(fatPP);\(netCarbs);\(netFat);\(netProtein);\(perPiece);\(protein);\(proteinPP);\(count);\(notes);\(lastEdited);\(delete);\(emoji)\n"
         }
         
@@ -417,7 +550,7 @@ class DataSharingViewController: UIViewController {
         }
         return csvString
     }
-
+    
     
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
         var csvString = "hour;startDose;lastEdited\n"
@@ -432,7 +565,7 @@ class DataSharingViewController: UIViewController {
         }
         return csvString
     }
-
+    
     
     private func cleanString(_ input: String) -> String {
         // Remove invisible characters, trim whitespace, and remove commas
@@ -441,10 +574,10 @@ class DataSharingViewController: UIViewController {
             .components(separatedBy: .controlCharacters)
             .joined()
             .replacingOccurrences(of: ",", with: ".") // Remove commas
-
+        
         return cleaned
     }
-
+    
     private func createCSV(from mealHistories: [MealHistory]) -> String {
         var csvString = "id;mealDate;totalNetCarbs;totalNetFat;totalNetProtein;totalNetBolus;delete;foodEntries;lastEdited\n"
         
@@ -452,11 +585,11 @@ class DataSharingViewController: UIViewController {
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         
         let lastEditedFormatter = ISO8601DateFormatter() // Use ISO8601 for lastEdited field
-
+        
         // Calculate the date 365 days ago from today
         let calendar = Calendar.current
         guard let date365DaysAgo = calendar.date(byAdding: .day, value: -365, to: Date()) else { return csvString }
-
+        
         for mealHistory in mealHistories {
             // Only include mealHistory entries with mealDate within the last 365 days
             if let mealDate = mealHistory.mealDate, mealDate >= date365DaysAgo {
@@ -549,29 +682,29 @@ class DataSharingViewController: UIViewController {
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
-
+        
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         let existingFoodItems = try? context.fetch(fetchRequest)
         let existingFoodItemsDict = Dictionary(uniqueKeysWithValues: existingFoodItems?.compactMap { ($0.id, $0) } ?? [])
-
+        
         // Date formatter for parsing dates from CSV
         let dateFormatter = ISO8601DateFormatter()
-
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 17,  // Ensure the row has 17 columns
                let id = UUID(uuidString: values[0]),
                !values.dropFirst().allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
-
+                
                 // Retrieve the delete flag from the CSV
                 let deleteFlag = (values[15] as NSString).boolValue
-
+                
                 // Retrieve existing food item if available
                 let existingItem = existingFoodItemsDict[id]
-
+                
                 // Access the lastEdited date string directly
                 let lastEditedString = values[14]
-
+                
                 // Parse the lastEdited date from the CSV row
                 if let newLastEditedDate = dateFormatter.date(from: lastEditedString) {
                     if let existingLastEdited = existingItem?.lastEdited,
@@ -579,7 +712,7 @@ class DataSharingViewController: UIViewController {
                         // Skip if existing item is more recent or same as the one being imported
                         continue
                     }
-
+                    
                     // Update or create a new FoodItem
                     let foodItem = existingItem ?? FoodItem(context: context)
                     foodItem.id = id
@@ -622,7 +755,7 @@ class DataSharingViewController: UIViewController {
                 }
             }
         }
-
+        
         do {
             try context.save()
         } catch {
@@ -740,7 +873,7 @@ class DataSharingViewController: UIViewController {
             print("Save Failed: Failed to save Carb Ratio Schedules: \(error)")
         }
     }
-
+    
     // Parse Start Dose Schedule CSV
     public func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
@@ -785,7 +918,7 @@ class DataSharingViewController: UIViewController {
             print("Save Failed: Failed to save Start Dose Schedules: \(error)")
         }
     }
-
+    
     
     // Parse Meal History CSV
     private func cleanCSVValue(_ value: String) -> String {
@@ -794,7 +927,7 @@ class DataSharingViewController: UIViewController {
             .components(separatedBy: .controlCharacters)
             .joined()
     }
-
+    
     public func parseMealHistoryCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
         guard columns.count == 9 else { // Updated count to 9 to include lastEdited
@@ -898,12 +1031,12 @@ class DataSharingViewController: UIViewController {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
             if values.count == 8 {
                 let mealDate = dateFormatter.date(from: values[7])
-
+                
                 let foodItemRow = FoodItemRowData(
                     foodItemID: UUID(uuidString: values[0]),
                     portionServed: Double(values[1]) ?? 0.0,
@@ -922,8 +1055,8 @@ class DataSharingViewController: UIViewController {
         
         return foodItemRows
     }
-
-
+    
+    
     
     private func showAlert(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -935,51 +1068,51 @@ class DataSharingViewController: UIViewController {
     ///Userdefaults export, import and parsing
     @objc private func exportUserDefaultsToCSV() async {
         var userDefaultsData = [String: String]()
-
+        
         // Collecting UserDefaults data
         userDefaultsData["twilioSIDString"] = UserDefaultsRepository.twilioSIDString
         userDefaultsData["twilioSecretString"] = UserDefaultsRepository.twilioSecretString
         userDefaultsData["twilioFromNumberString"] = UserDefaultsRepository.twilioFromNumberString
         //userDefaultsData["twilioToNumberString"] = UserDefaultsRepository.twilioToNumberString
         userDefaultsData["remoteSecretCode"] = UserDefaultsRepository.remoteSecretCode
-
+        
         userDefaultsData["useStartDosePercentage"] = UserDefaultsRepository.useStartDosePercentage.description
         userDefaultsData["startDoseFactor"] = String(UserDefaultsRepository.startDoseFactor)
         userDefaultsData["maxCarbs"] = String(UserDefaultsRepository.maxCarbs)
         userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
         userDefaultsData["lateBreakfastFactor"] = String(UserDefaultsRepository.lateBreakfastFactor)
         userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
-
+        
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
         userDefaultsData["lateBreakfastFactorUsed"] = UserDefaultsRepository.lateBreakfastFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = UserDefaultsRepository.nightscoutURL ?? ""
         userDefaultsData["nightscoutToken"] = UserDefaultsRepository.nightscoutToken ?? ""
-
+        
         userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
         userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
         userDefaultsData["topUps"] = UserDefaultsRepository.topUps ?? ""
-
+        
         let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
-
+        
         // Get the current caregiver name
         let caregiverName = UserDefaultsRepository.caregiverName.replacingOccurrences(of: " ", with: "_")
-
+        
         // Create a timestamped filename with caregiver name
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
         let timestamp = dateFormatter.string(from: Date())
         let fileName = "UserDefaults_\(caregiverName)_\(timestamp).csv"
-
+        
         await saveUserDefaultsCSV(data: csvString, fileName: fileName)
         showAlert(title: NSLocalizedString("Export lyckades", comment: "Export lyckades"), message: NSLocalizedString("Användarinställningarna har exporterats.", comment: "Användarinställningarna har exporterats."))
     }
-
-
-
+    
+    
+    
     
     @objc private func importUserDefaultsFromCSV() async {
         await presentDocumentPicker(for: "UserDefaults")
@@ -997,8 +1130,8 @@ class DataSharingViewController: UIViewController {
                 UserDefaultsRepository.twilioSecretString = values[1]
             case "twilioFromNumberString":
                 UserDefaultsRepository.twilioFromNumberString = values[1]
-            //case "twilioToNumberString":
-            //    UserDefaultsRepository.twilioToNumberString = values[1]
+                //case "twilioToNumberString":
+                //    UserDefaultsRepository.twilioToNumberString = values[1]
             case "remoteSecretCode":
                 UserDefaultsRepository.remoteSecretCode = values[1]
             case "useStartDosePercentage":
@@ -1069,7 +1202,7 @@ extension DataSharingViewController: UIDocumentPickerDelegate {
             print("Failed to access security-scoped resource.")
         }
     }
-
+    
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
     }
@@ -1096,7 +1229,7 @@ extension DataSharingViewController {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-
+        
         for row in foodItemRows {
             let foodItemID = row.foodItemID?.uuidString ?? ""
             let portionServed = row.portionServed
@@ -1114,58 +1247,58 @@ extension DataSharingViewController {
         
         return csvString
     }
-
-
-
+    
+    
+    
     
     public func saveCSV(data: String, fileName: String) async {
-            let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
-            let tempFilePath = tempDirectory.appendingPathComponent(fileName)
+        let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
+        let tempFilePath = tempDirectory.appendingPathComponent(fileName)
+        
+        do {
+            try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
             
-            do {
-                try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
-                
-                let fileManager = FileManager.default
-                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
-                let destinationURL = iCloudURL?.appendingPathComponent(fileName)
-                
-                if let destinationURL = destinationURL {
-                    if fileManager.fileExists(atPath: destinationURL.path) {
-                        try fileManager.removeItem(at: destinationURL)
-                    }
-                    try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
-                    print("Export Successful: Data has been exported to iCloud successfully.")
-                } else {
-                    print("Export Failed: iCloud Drive URL is nil.")
+            let fileManager = FileManager.default
+            let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/CarbsCounter")
+            let destinationURL = iCloudURL?.appendingPathComponent(fileName)
+            
+            if let destinationURL = destinationURL {
+                if fileManager.fileExists(atPath: destinationURL.path) {
+                    try fileManager.removeItem(at: destinationURL)
                 }
-            } catch {
-                print("Failed to save file to iCloud: \(error)")
+                try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
+                print("Export Successful: Data has been exported to iCloud successfully.")
+            } else {
+                print("Export Failed: iCloud Drive URL is nil.")
             }
+        } catch {
+            print("Failed to save file to iCloud: \(error)")
         }
+    }
     public func saveUserDefaultsCSV(data: String, fileName: String) async {
-            let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
-            let tempFilePath = tempDirectory.appendingPathComponent(fileName)
+        let tempDirectory = NSURL(fileURLWithPath: NSTemporaryDirectory())
+        let tempFilePath = tempDirectory.appendingPathComponent(fileName)
+        
+        do {
+            try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
             
-            do {
-                try data.write(to: tempFilePath!, atomically: true, encoding: .utf8)
-                
-                let fileManager = FileManager.default
-                let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent(NSLocalizedString("Documents/CarbsCounter/Användarinställningar", comment: "Documents/CarbsCounter/Användarinställningar"))
-                let destinationURL = iCloudURL?.appendingPathComponent(fileName)
-                
-                if let destinationURL = destinationURL {
-                    if fileManager.fileExists(atPath: destinationURL.path) {
-                        try fileManager.removeItem(at: destinationURL)
-                    }
-                    try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
-                    print("Export Successful: Data has been exported to iCloud successfully.")
-                } else {
-                    print("Export Failed: iCloud Drive URL is nil.")
+            let fileManager = FileManager.default
+            let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent(NSLocalizedString("Documents/CarbsCounter/Användarinställningar", comment: "Documents/CarbsCounter/Användarinställningar"))
+            let destinationURL = iCloudURL?.appendingPathComponent(fileName)
+            
+            if let destinationURL = destinationURL {
+                if fileManager.fileExists(atPath: destinationURL.path) {
+                    try fileManager.removeItem(at: destinationURL)
                 }
-            } catch {
-                print("Failed to save file to iCloud: \(error)")
+                try fileManager.copyItem(at: tempFilePath!, to: destinationURL)
+                print("Export Successful: Data has been exported to iCloud successfully.")
+            } else {
+                print("Export Failed: iCloud Drive URL is nil.")
             }
+        } catch {
+            print("Failed to save file to iCloud: \(error)")
         }
+    }
 }
 
 extension Notification.Name {

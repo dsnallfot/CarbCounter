@@ -10,69 +10,23 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         tableView.backgroundColor = .clear
-            let solidBackgroundView = UIView()
-            solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Set solid background depending on light or dark mode
-            if traitCollection.userInterfaceStyle == .dark {
-                solidBackgroundView.backgroundColor = .systemBackground // This is the solid background in dark mode
-            } else {
-                solidBackgroundView.backgroundColor = .systemGray6 // Solid background in light mode
-            }
-
-            // Create gradient view (used only in dark mode)
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            let backgroundContainerView = UIView()
-            backgroundContainerView.addSubview(solidBackgroundView)
-            
-            // Only add gradient view in dark mode
-            if traitCollection.userInterfaceStyle == .dark {
-                backgroundContainerView.addSubview(gradientView)
-            }
-            
-            tableView.backgroundView = backgroundContainerView
-
-            NSLayoutConstraint.activate([
-                solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-            ])
-            
-        if traitCollection.userInterfaceStyle == .dark {
-            NSLayoutConstraint.activate([
-                gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-            ])
-        }
+        setupBackgroundView()
         
         title = NSLocalizedString("Startdoser", comment: "Startdoser")
         tableView.register(StartDoseCell.self, forCellReuseIdentifier: "StartDoseCell")
         loadStartDoses()
         
-        // Add Done button to the navigation bar
+        // Initialize Done and Clear buttons
         doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
-        navigationItem.rightBarButtonItem = doneButton
-        
-        // Setup Clear button
         clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
-        navigationItem.rightBarButtonItem = clearButton
         
         // Listen for changes to allowDataClearing setting
         NotificationCenter.default.addObserver(self, selector: #selector(updateClearButtonVisibility), name: Notification.Name("AllowDataClearingChanged"), object: nil)
         
-        // Update Clear button visibility based on the current setting
+        // Update button visibility based on the current setting
         updateClearButtonVisibility()
         
         // Instantiate DataSharingViewController programmatically
@@ -85,19 +39,63 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         NotificationCenter.default.removeObserver(self)
     }
     
-    @objc private func updateClearButtonVisibility() {
-        clearButton.isHidden = !UserDefaultsRepository.allowDataClearing
+    private func setupBackgroundView() {
+        let solidBackgroundView = UIView()
+        solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        
+        if traitCollection.userInterfaceStyle == .dark {
+            solidBackgroundView.backgroundColor = .systemBackground
+        } else {
+            solidBackgroundView.backgroundColor = .systemGray6
+        }
+        
+        let colors: [CGColor] = [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ]
+        let gradientView = GradientView(colors: colors)
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let backgroundContainerView = UIView()
+        backgroundContainerView.addSubview(solidBackgroundView)
+        
+        if traitCollection.userInterfaceStyle == .dark {
+            backgroundContainerView.addSubview(gradientView)
+        }
+        
+        tableView.backgroundView = backgroundContainerView
+
+        NSLayoutConstraint.activate([
+            solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+            solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+            solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+            solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+        ])
+        
+        if traitCollection.userInterfaceStyle == .dark {
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+            ])
+        }
     }
     
-    @objc private func updateDoneButtonVisibility() {
-        doneButton.isHidden = UserDefaultsRepository.allowDataClearing
+    @objc private func updateClearButtonVisibility() {
+        // Update the right bar button based on allowDataClearing
+        if UserDefaultsRepository.allowDataClearing {
+            navigationItem.rightBarButtonItem = clearButton
+        } else {
+            navigationItem.rightBarButtonItem = doneButton
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadStartDoses()
     }
-    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         

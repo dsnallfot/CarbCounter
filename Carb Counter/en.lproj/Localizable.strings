@@ -549,6 +549,8 @@
 "Rensa gammal måltidshistorik" = "Clear old meal history";
 "Rensa måltidshistorik" = "Clear meal history";
 "Vill du radera all måltidshistorik äldre än 365 dagar?" = "Do you want to delete meal history older than 365 days?";
+"Exportera data" = "Export data";
+"Importera data" = "Import data";
 
 
 /* Carb ratio schedule */

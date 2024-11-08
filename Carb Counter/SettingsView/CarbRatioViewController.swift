@@ -70,7 +70,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         clearButton.tintColor = .red
 
         // Setup Download button with SF Symbol
-        let downloadImage = UIImage(systemName: "square.and.arrow.down")
+        let downloadImage = UIImage(systemName: "icloud.and.arrow.down")
         downloadButton = UIBarButtonItem(image: downloadImage, style: .plain, target: self, action: #selector(downloadButtonTapped))
 
         // Listen for changes to allowDataClearing setting
@@ -122,16 +122,6 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
 
     @objc private func doneButtonTapped() {
-        // Trigger export if there were changes
-        if hasChanges, let dataSharingVC = dataSharingVC {
-            Task {
-                print("Export triggered by Done button")
-                await dataSharingVC.exportCarbRatioScheduleToCSV()
-                hasChanges = false  // Reset changes flag after export
-            }
-        }
-        
-        // Navigate back
         navigationController?.popViewController(animated: true)
     }
 

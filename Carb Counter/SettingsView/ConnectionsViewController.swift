@@ -61,6 +61,14 @@ class ConnectionsViewController: UITableViewController {
                 gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
             ])
         }
+        
+        // Add Done button to the navigation bar
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
+        navigationItem.rightBarButtonItem = doneButton
+    }
+    
+    @objc private func doneButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
