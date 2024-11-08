@@ -127,12 +127,12 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
 
 
     @objc private func clearButtonTapped() {
-        let alertController = UIAlertController(title: NSLocalizedString("Rensa", comment: "Rensa"), message: NSLocalizedString("Är du säker på att du vill rensa all data?", comment: "Är du säker på att du vill rensa all data?"), preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: NSLocalizedString("⚠️ Rensa", comment: "Rensa"), message: NSLocalizedString("\nÄr du säker på att du vill rensa all data?", comment: "Är du säker på att du vill rensa all data?"), preferredStyle: .alert)
         let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { _ in
             CoreDataHelper.shared.clearAllCarbRatios()
             self.loadCarbRatios()
         }
-        let noAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
+        let noAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
 
         alertController.addAction(yesAction)
         alertController.addAction(noAction)

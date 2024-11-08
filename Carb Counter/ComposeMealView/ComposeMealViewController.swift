@@ -904,23 +904,76 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         view.endEditing(true)
         
+        // Calculate values for the conditions
+        let fatTotalValue = Double(totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let fatRemaining = fatTotalValue - registeredFatSoFar
+        
+        let proteinTotalValue = Double(totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let proteinRemaining = proteinTotalValue - registeredProteinSoFar
+        
+        let totalCarbsValue = Double(totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "") ?? "0") ?? 0.0
+        let carbsRemains = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "") ?? "0") ?? 0.0
+        
+        // Check if any remaining values are greater than zero
+        if (fatRemaining > 0 || proteinRemaining > 0 || carbsRemains > 0) {
+            // Show the additional alert
+            let confirmationAlert = UIAlertController(
+                title: NSLocalizedString("⚠️ Registrering ej slutförd!", comment: "Confirm End Meal"),
+                message: {
+                    var message = NSLocalizedString("\nNedan värden har ännu inte registrerats för denna måltid:\n", comment: "Unregistered items")
+                    
+                    if carbsRemains > 0 {
+                        message += String(format: "\n%.0f g Kh", carbsRemains)
+                    }
+                    if fatRemaining > 0 {
+                        message += String(format: "\n%.0f g Fett", fatRemaining)
+                    }
+                    if proteinRemaining > 0 {
+                        message += String(format: "\n%.0f g Protein", proteinRemaining)
+                    }
+                    
+                    return message
+                }(),
+                preferredStyle: .alert
+            )
+            
+            // "Continue" button to proceed with the regular alert
+            let continueAction = UIAlertAction(title: NSLocalizedString("Fortsätt", comment: "Continue"), style: .destructive) { [weak self] _ in
+                self?.showRegularClearAllAlert()
+            }
+            
+            // "Cancel" button to dismiss this alert
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+            
+            confirmationAlert.addAction(continueAction)
+            confirmationAlert.addAction(cancelAction)
+            
+            present(confirmationAlert, animated: true, completion: nil)
+        } else {
+            // Directly show the regular alert if no conditions are met
+            showRegularClearAllAlert()
+        }
+    }
+
+    // Separate function for the regular alert to clean up code and avoid duplication
+    private func showRegularClearAllAlert() {
         let alertController = UIAlertController(
-            title: NSLocalizedString("Avsluta Måltid", comment: "Avsluta Måltid"),
-            message: NSLocalizedString("Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", comment: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras."),
+            title: NSLocalizedString("Avsluta Måltid", comment: "End Meal"),
+            message: NSLocalizedString("Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", comment: "Confirm clearing all selected food items and entered values for this meal. This action cannot be undone."),
             preferredStyle: .actionSheet
         )
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
-        let yesAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive) { [weak self] _ in
+        
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+        let yesAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Clear"), style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             
             if self.saveMealToHistory {
-                // Run saveMealHistory in an asynchronous task only if needed
                 Task {
                     await self.saveMealHistory()
                 }
             }
             
-            // Perform clearing operations immediately after
+            // Perform clearing operations
             self.clearAllFoodItems()
             self.updateRemainsBolus()
             self.updateTotalNutrients()
@@ -930,10 +983,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.remainingDoseGiven = false
             self.isEditingMeal = false
             self.stopAutoSaveToCSV()
+            
             if UserDefaultsRepository.allowSharingOngoingMeals {
                 self.cleanDuplicateFiles()
                 self.exportBlankCSV()
             }
+            
             self.lateBreakfastTimer?.invalidate()
             self.turnOffLateBreakfastSwitch()
             self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")

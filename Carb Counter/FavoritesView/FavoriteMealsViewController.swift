@@ -430,9 +430,9 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     
     @objc private func clearButtonTapped() {
         let alertController = UIAlertController(
-            title: NSLocalizedString("Rensa", comment: "Rensa"),
-            message: NSLocalizedString("Är du säker på att du vill radera alla favoriter?", comment: "Är du säker på att du vill radera alla favoriter?"),
-            preferredStyle: .actionSheet
+            title: NSLocalizedString("⚠️ Rensa", comment: "Rensa"),
+            message: NSLocalizedString("\nÄr du säker på att du vill radera alla favoriter?", comment: "Är du säker på att du vill radera alla favoriter?"),
+            preferredStyle: .alert
         )
 
         let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { [weak self] _ in

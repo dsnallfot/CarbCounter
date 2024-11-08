@@ -252,9 +252,9 @@ class DataSharingViewController: UITableViewController {
     
     @objc private func clearHistoryTapped() {
         let alert = UIAlertController(
-            title: NSLocalizedString("Rensa måltidshistorik", comment: "Clear meal history"),
-            message: NSLocalizedString("Vill du radera all måltidshistorik äldre än 365 dagar?", comment: "Delete all meal history older than 365 days"),
-            preferredStyle: .actionSheet
+            title: NSLocalizedString("⚠️ Rensa måltidshistorik", comment: "Clear meal history"),
+            message: NSLocalizedString("\nVill du radera all måltidshistorik äldre än 365 dagar?", comment: "Delete all meal history older than 365 days"),
+            preferredStyle: .alert
         )
         
         let deleteAction = UIAlertAction(title: NSLocalizedString("Radera", comment: "Delete"), style: .destructive) { _ in

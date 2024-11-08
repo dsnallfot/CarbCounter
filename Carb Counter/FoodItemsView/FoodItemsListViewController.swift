@@ -211,7 +211,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     @objc private func clearButtonTapped() {
-        let firstAlertController = UIAlertController(title: NSLocalizedString("Rensa allt", comment: "Rensa allt"), message: NSLocalizedString("Vill du radera alla livsmedel från databasen?", comment: "Vill du radera alla livsmedel från databasen?"), preferredStyle: .actionSheet)
+        let firstAlertController = UIAlertController(title: NSLocalizedString("⚠️ Rensa allt", comment: "Rensa allt"), message: NSLocalizedString("\nVill du radera alla livsmedel från databasen?", comment: "Vill du radera alla livsmedel från databasen?"), preferredStyle: .alert)
         let continueAction = UIAlertAction(title: NSLocalizedString("Fortsätt", comment: "Fortsätt"), style: .destructive) { _ in
             self.showSecondClearAlert()
         }
@@ -224,7 +224,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func showSecondClearAlert() {
-        let secondAlertController = UIAlertController(title: NSLocalizedString("Rensa allt", comment: "Rensa allt"), message: NSLocalizedString("Är du helt säker? Åtgärden går inte att ångra.", comment: "Är du helt säker? Åtgärden går inte att ångra."), preferredStyle: .actionSheet)
+        let secondAlertController = UIAlertController(title: NSLocalizedString("⚠️ Rensa allt", comment: "Rensa allt"), message: NSLocalizedString("\nÄr du helt säker? Åtgärden går inte att ångra.", comment: "Är du helt säker? Åtgärden går inte att ångra."), preferredStyle: .alert)
         let clearAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive) { _ in
             self.clearAllFoodItems()
         }

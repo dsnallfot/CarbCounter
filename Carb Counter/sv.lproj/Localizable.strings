@@ -322,6 +322,10 @@
 "\nProtein: %.1f g / 100 g" = "\nProtein: %.1f g / 100 g ";
 "Vikt per styck: %d g" = "Vikt per styck: %d g";
 "Vikt per styck: %.1f g" = "Vikt per styck: %.1f g";
+"⚠️ Rensa allt" = "⚠️ Rensa allt";
+"\nVill du radera alla livsmedel från databasen?" = "\nVill du radera alla livsmedel från databasen?";
+"\nÄr du helt säker? Åtgärden går inte att ångra." = "\nÄr du helt säker? Åtgärden går inte att ångra.";
+
 
 /* Add Food Items VC */
 "Lägg till livsmedel" = "Lägg till livsmedel";
@@ -550,7 +554,7 @@
 "OK" = "OK";
 "Rensa gammal måltidshistorik" = "Rensa gammal måltidshistorik";
 "Rensa måltidshistorik" = "Rensa måltidshistorik";
-"Vill du radera all måltidshistorik äldre än 365 dagar?" = "Vill du radera all måltidshistorik äldre än 365 dagar?";
+"\nVill du radera all måltidshistorik äldre än 365 dagar?" = "\nVill du radera all måltidshistorik äldre än 365 dagar?";
 "Exportera data" = "Exportera data";
 "Importera data" = "Importera data";
 
@@ -559,7 +563,7 @@
 "Carb Ratio" = "Insulinkvoter";
 "Klar" = "Klar";
 "Rensa" = "Rensa";
-"Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
+"\nÄr du säker på att du vill rensa all data?" = "\nÄr du säker på att du vill rensa all data?";
 "Ja" = "Ja";
 "Nej" = "Nej";
 "Nightscout import" = "Nightscout import";
@@ -575,7 +579,8 @@
 "Startdoser" = "Startdoser";
 "Klar" = "Klar";
 "Rensa" = "Rensa";
-"Är du säker på att du vill rensa all data?" = "Är du säker på att du vill rensa all data?";
+"⚠️ Rensa" = "⚠️ Rensa";
+"\nÄr du säker på att du vill rensa all data?" = "\nÄr du säker på att du vill rensa all data?";
 "Ja" = "Ja";
 "Nej" = "Nej";
 "Nästa" = "Nästa";
