@@ -182,30 +182,31 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - UITextFieldDelegate
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-            sanitizeInput(textField)
+        sanitizeInput(textField)
+        
+        if let cell = textField.superview?.superview as? StartDoseCell,
+           let indexPath = tableView.indexPath(for: cell) {
+            let text = textField.text ?? ""
+            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
             
-            if let cell = textField.superview?.superview as? StartDoseCell,
-               let indexPath = tableView.indexPath(for: cell) {
-                let text = textField.text ?? ""
-                let value = Double(text) ?? 0.0  // Treat empty string as 0.0
-                
-                if value == 0.0 {
-                    // Delete the start dose if value is 0.0
-                    CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
-                    startDoses[indexPath.row] = nil
-                } else {
-                    // Save or update the start dose
-                    CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
-                    startDoses[indexPath.row] = value
-                }
-                
-                // Set hasChanges to true since we've made a modification
-                hasChanges = true
-                
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-                print("Saved start dose \(value) for hour \(indexPath.row)")
+            if value == 0.0 {
+                // Delete the start dose if value is 0.0
+                CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
+                startDoses[indexPath.row] = nil
+            } else {
+                // Save or update the start dose with lastEdited set to current date
+                let currentDate = Date()
+                CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value, lastEdited: currentDate)
+                startDoses[indexPath.row] = value
+                print("Saved start dose \(value) for hour \(indexPath.row), lastEdited set to \(currentDate)")
             }
+            
+            // Set hasChanges to true since we've made a modification
+            hasChanges = true
+            
+            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
+    }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         moveToNextTextField(from: textField)

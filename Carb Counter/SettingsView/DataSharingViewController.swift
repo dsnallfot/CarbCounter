@@ -405,35 +405,34 @@ class DataSharingViewController: UIViewController {
     }
     
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
-        var csvString = "hour;carbRatio\n"
-        var scheduleDict = [Int16: Double]()
+        var csvString = "hour;carbRatio;lastEdited\n"
+        let dateFormatter = ISO8601DateFormatter()
         
         for schedule in carbRatioSchedules {
-            scheduleDict[schedule.hour] = schedule.carbRatio
-        }
-        
-        for hour in 0..<24 {
-            let carbRatio = scheduleDict[Int16(hour)] ?? 0.0
-            csvString += "\(hour);\(carbRatio)\n"
+            let hour = schedule.hour
+            let carbRatio = schedule.carbRatio
+            let lastEdited = dateFormatter.string(from: schedule.lastEdited ?? Date())
+            
+            csvString += "\(hour);\(carbRatio);\(lastEdited)\n"
         }
         return csvString
     }
+
     
     private func createCSV(from startDoseSchedules: [StartDoseSchedule]) -> String {
-        var csvString = "hour;startDose\n"
-        var scheduleDict = [Int16: Double]()
+        var csvString = "hour;startDose;lastEdited\n"
+        let dateFormatter = ISO8601DateFormatter()
         
         for schedule in startDoseSchedules {
-            scheduleDict[schedule.hour] = schedule.startDose
+            let hour = schedule.hour
+            let startDose = schedule.startDose
+            let lastEdited = dateFormatter.string(from: schedule.lastEdited ?? Date())
+            
+            csvString += "\(hour);\(startDose);\(lastEdited)\n"
         }
-        
-        for hour in 0..<24 {
-            let startDose = scheduleDict[Int16(hour)] ?? 0.0
-            csvString += "\(hour);\(startDose)\n"
-        }
-        
         return csvString
     }
+
     
     private func cleanString(_ input: String) -> String {
         // Remove invisible characters, trim whitespace, and remove commas
@@ -700,36 +699,39 @@ class DataSharingViewController: UIViewController {
     // Parse Carb Ratio Schedule CSV
     public func parseCarbRatioScheduleCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 2 else {
+        guard columns.count == 3 else {
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
-        // Delete existing schedules
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CarbRatioSchedule.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        do {
-            try context.execute(deleteRequest)
-        } catch {
-            print("Failed to delete existing CarbRatioSchedules: \(error)")
-        }
+        // Fetch existing schedules and create a dictionary for quick lookup
+        let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
+        let existingSchedules = try? context.fetch(fetchRequest)
+        let existingSchedulesDict = Dictionary(uniqueKeysWithValues: existingSchedules?.map { ($0.hour, $0) } ?? [])
         
-        // Import new schedules
-        var scheduleDict = [Int16: Double]()
+        let dateFormatter = ISO8601DateFormatter()
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 2,
+            if values.count == 3,
                let hour = Int16(values[0]),
                let carbRatio = Double(values[1]),
-               hour >= 0, hour < 24 { // Ensure hour is between 0 and 23
-                scheduleDict[hour] = carbRatio
+               let lastEdited = dateFormatter.date(from: values[2]),
+               hour >= 0, hour < 24 {
+                
+                let existingSchedule = existingSchedulesDict[hour]
+                
+                // Check if the current row has a newer lastEdited date than the existing schedule
+                if let existingLastEdited = existingSchedule?.lastEdited, existingLastEdited >= lastEdited {
+                    continue
+                }
+                
+                // Create a new schedule or update the existing one
+                let carbRatioSchedule = existingSchedule ?? CarbRatioSchedule(context: context)
+                carbRatioSchedule.hour = hour
+                carbRatioSchedule.carbRatio = carbRatio
+                carbRatioSchedule.lastEdited = lastEdited
             }
-        }
-        
-        for (hour, carbRatio) in scheduleDict {
-            let carbRatioSchedule = CarbRatioSchedule(context: context)
-            carbRatioSchedule.hour = hour
-            carbRatioSchedule.carbRatio = carbRatio
         }
         
         do {
@@ -738,39 +740,43 @@ class DataSharingViewController: UIViewController {
             print("Save Failed: Failed to save Carb Ratio Schedules: \(error)")
         }
     }
+
     // Parse Start Dose Schedule CSV
     public func parseStartDoseScheduleCSV(_ rows: [String], context: NSManagedObjectContext) async {
         let columns = rows[0].components(separatedBy: ";")
-        guard columns.count == 2 else {
+        guard columns.count == 3 else {
             print("Import Failed: CSV file was not correctly formatted")
             return
         }
         
-        // Delete existing schedules
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = StartDoseSchedule.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        do {
-            try context.execute(deleteRequest)
-        } catch {
-            print("Failed to delete existing StartDoseSchedules: \(error)")
-        }
+        // Fetch existing schedules and create a dictionary for quick lookup
+        let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+        let existingSchedules = try? context.fetch(fetchRequest)
+        let existingSchedulesDict = Dictionary(uniqueKeysWithValues: existingSchedules?.map { ($0.hour, $0) } ?? [])
         
-        // Import new schedules
-        var scheduleDict = [Int16: Double]()
+        let dateFormatter = ISO8601DateFormatter()
+        
         for row in rows[1...] {
             let values = row.components(separatedBy: ";")
-            if values.count == 2,
+            if values.count == 3,
                let hour = Int16(values[0]),
                let startDose = Double(values[1]),
-               hour >= 0, hour < 24 { // Ensure hour is between 0 and 23
-                scheduleDict[hour] = startDose
+               let lastEdited = dateFormatter.date(from: values[2]),
+               hour >= 0, hour < 24 {
+                
+                let existingSchedule = existingSchedulesDict[hour]
+                
+                // Check if the current row has a newer lastEdited date than the existing schedule
+                if let existingLastEdited = existingSchedule?.lastEdited, existingLastEdited >= lastEdited {
+                    continue
+                }
+                
+                // Create a new schedule or update the existing one
+                let startDoseSchedule = existingSchedule ?? StartDoseSchedule(context: context)
+                startDoseSchedule.hour = hour
+                startDoseSchedule.startDose = startDose
+                startDoseSchedule.lastEdited = lastEdited
             }
-        }
-        
-        for (hour, startDose) in scheduleDict {
-            let startDoseSchedule = StartDoseSchedule(context: context)
-            startDoseSchedule.hour = hour
-            startDoseSchedule.startDose = startDose
         }
         
         do {
@@ -779,6 +785,7 @@ class DataSharingViewController: UIViewController {
             print("Save Failed: Failed to save Start Dose Schedules: \(error)")
         }
     }
+
     
     // Parse Meal History CSV
     private func cleanCSVValue(_ value: String) -> String {

@@ -49,21 +49,21 @@ class CoreDataHelper {
 
     // Fetch Start Dose for all hours
     func fetchStartDoses() -> [Int: Double] {
-        let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
-        do {
-            let results = try context.fetch(fetchRequest)
-            var startDoses = [Int: Double]()
-            for result in results {
-                if result.startDose > 0 {
-                    startDoses[Int(result.hour)] = result.startDose
+            let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+            do {
+                let results = try context.fetch(fetchRequest)
+                var startDoses = [Int: Double]()
+                for result in results {
+                    if result.startDose > 0 {
+                        startDoses[Int(result.hour)] = result.startDose
+                    }
                 }
+                return startDoses
+            } catch {
+                print("Failed to fetch start doses: \(error)")
+                return [:]
             }
-            return startDoses
-        } catch {
-            print("Failed to fetch start doses: \(error)")
-            return [:]
         }
-    }
 
     // Fetch Start Dose for a specific hour
     func fetchStartDose(for hour: Int) -> Double? {
@@ -92,50 +92,58 @@ class CoreDataHelper {
     }
 
     // Save or update Carb Ratio
-    func saveCarbRatio(hour: Int, ratio: Double) {
+    func saveCarbRatio(hour: Int, ratio: Double, lastEdited: Date = Date()) {
         let fetchRequest: NSFetchRequest<CarbRatioSchedule> = CarbRatioSchedule.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
 
         do {
             let results = try context.fetch(fetchRequest)
             let carbRatio = results.first ?? CarbRatioSchedule(context: context)
+            
             carbRatio.hour = Int16(hour)
             carbRatio.carbRatio = ratio
+            carbRatio.lastEdited = lastEdited
+            
             try context.save()
         } catch {
             print("Failed to save carb ratio: \(error)")
         }
     }
 
+
     // Save or update Start Dose
-    func saveStartDose(hour: Int, dose: Double) {
-        let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
-        do {
-            let results = try context.fetch(fetchRequest)
-            if dose == 0 {
-                if let startDose = results.first {
-                    context.delete(startDose)
+    func saveStartDose(hour: Int, dose: Double, lastEdited: Date = Date()) {
+            let fetchRequest: NSFetchRequest<StartDoseSchedule> = StartDoseSchedule.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "hour == %d", hour)
+
+            do {
+                let results = try context.fetch(fetchRequest)
+                if dose == 0 {
+                    if let startDose = results.first {
+                        context.delete(startDose)
+                        try context.save()
+                        print("Start dose deleted for hour \(hour)")
+                    }
+                } else {
+                    let startDose = results.first ?? StartDoseSchedule(context: context)
+                    startDose.hour = Int16(hour)
+                    startDose.startDose = dose
+                    startDose.lastEdited = lastEdited
                     try context.save()
+                    print("Start dose saved for hour \(hour) with lastEdited \(lastEdited)")
                 }
-            } else {
-                let startDose = results.first ?? StartDoseSchedule(context: context)
-                startDose.hour = Int16(hour)
-                startDose.startDose = dose
-                try context.save()
+            } catch {
+                print("Failed to save start dose: \(error)")
             }
-        } catch {
-            print("Failed to save start dose: \(error)")
         }
-    }
 
     // Update Carb Ratios with hourly mapping
     func updateCarbRatios(with hourlyCarbRatios: [Int: Double]) {
         for (hour, ratio) in hourlyCarbRatios {
-            saveCarbRatio(hour: hour, ratio: ratio)
+            saveCarbRatio(hour: hour, ratio: ratio, lastEdited: Date())
         }
     }
-
+    
     // Clear all Carb Ratio entries
     func clearAllCarbRatios() {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CarbRatioSchedule.fetchRequest()
@@ -157,12 +165,13 @@ class CoreDataHelper {
             if let startDose = results.first {
                 context.delete(startDose)
                 try context.save()
+                print("Start dose deleted for hour \(hour)")
             }
         } catch {
             print("Failed to delete start dose: \(error)")
         }
     }
-
+    
     // Clear all Start Dose entries
     func clearAllStartDoses() {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = StartDoseSchedule.fetchRequest()

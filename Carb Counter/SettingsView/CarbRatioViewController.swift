@@ -122,8 +122,19 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
 
     @objc private func doneButtonTapped() {
+        // Trigger export if there were changes
+        if hasChanges, let dataSharingVC = dataSharingVC {
+            Task {
+                print("Export triggered by Done button")
+                await dataSharingVC.exportCarbRatioScheduleToCSV()
+                hasChanges = false  // Reset changes flag after export
+            }
+        }
+        
+        // Navigate back
         navigationController?.popViewController(animated: true)
     }
+
 
     @objc private func clearButtonTapped() {
         let alertController = UIAlertController(title: NSLocalizedString("Rensa", comment: "Rensa"), message: NSLocalizedString("Är du säker på att du vill rensa all data?", comment: "Är du säker på att du vill rensa all data?"), preferredStyle: .actionSheet)
@@ -221,24 +232,26 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - UITextFieldDelegate
 
     func textFieldDidEndEditing(_ textField: UITextField) {
-            sanitizeInput(textField)
+        sanitizeInput(textField)
+        
+        if let cell = textField.superview?.superview as? CarbRatioCell,
+           let indexPath = tableView.indexPath(for: cell),
+           let text = textField.text {
+            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
             
-            if let cell = textField.superview?.superview as? CarbRatioCell,
-               let indexPath = tableView.indexPath(for: cell),
-               let text = textField.text {
-                let value = Double(text) ?? 0.0  // Treat empty string as 0.0
-                
-                // Save the carb ratio and update the carbRatios dictionary
-                CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
-                carbRatios[indexPath.row] = value
+            // Save the carb ratio and update the carbRatios dictionary
+            let currentDate = Date()
+            CoreDataHelper.shared.saveCarbRatio(hour: Int(Int16(indexPath.row)), ratio: value, lastEdited: currentDate)
+            carbRatios[indexPath.row] = value
 
-                // Set hasChanges to true since we've made a modification
-                hasChanges = true
-                
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-                print("Saved carb ratio \(value) for hour \(indexPath.row)")
-            }
+            // Set hasChanges to true since we've made a modification
+            hasChanges = true
+            
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+            print("Saved carb ratio \(value) for hour \(indexPath.row), lastEdited set to \(currentDate)")
         }
+    }
+
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         moveToNextTextField(from: textField)
