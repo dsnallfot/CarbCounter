@@ -7,6 +7,7 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     var downloadButton: UIBarButtonItem!
     
     var dataSharingVC: DataSharingViewController?
+    private var hasChanges = false  // Track changes
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -102,16 +103,18 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
-        
-        // Call the desired function
-        Task {
-            print("Carb ratios export triggered")
-            await dataSharingVC.exportCarbRatioScheduleToCSV()
-
+            super.viewWillDisappear(animated)
+            
+            // Ensure dataSharingVC is instantiated and only export if there were changes
+            guard let dataSharingVC = dataSharingVC, hasChanges else { return }
+            
+            // Trigger export if there are changes, then reset hasChanges
+            Task {
+                print("Carb ratios export triggered due to changes")
+                await dataSharingVC.exportCarbRatioScheduleToCSV()
+                hasChanges = false  // Reset changes flag after export
+            }
         }
-    }
 
     private func loadCarbRatios() {
         carbRatios = CoreDataHelper.shared.fetchCarbRatios()
@@ -218,19 +221,24 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - UITextFieldDelegate
 
     func textFieldDidEndEditing(_ textField: UITextField) {
-        sanitizeInput(textField)
-        if let cell = textField.superview?.superview as? CarbRatioCell,
-           let indexPath = tableView.indexPath(for: cell),
-           let text = textField.text {
-            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+            sanitizeInput(textField)
+            
+            if let cell = textField.superview?.superview as? CarbRatioCell,
+               let indexPath = tableView.indexPath(for: cell),
+               let text = textField.text {
+                let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+                
+                // Save the carb ratio and update the carbRatios dictionary
+                CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
+                carbRatios[indexPath.row] = value
 
-            // Save the carb ratio and update the carbRatios dictionary
-            CoreDataHelper.shared.saveCarbRatio(hour: indexPath.row, ratio: value)
-            carbRatios[indexPath.row] = value
-
-            print("Saved CR \(value) for hour \(indexPath.row)")
+                // Set hasChanges to true since we've made a modification
+                hasChanges = true
+                
+                tableView.reloadRows(at: [indexPath], with: .automatic)
+                print("Saved carb ratio \(value) for hour \(indexPath.row)")
+            }
         }
-    }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         moveToNextTextField(from: textField)

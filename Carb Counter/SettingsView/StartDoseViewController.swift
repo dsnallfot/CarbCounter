@@ -6,6 +6,7 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     var doneButton: UIBarButtonItem!
     
     var dataSharingVC: DataSharingViewController?
+    private var hasChanges = false  // Track changes
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -100,14 +101,14 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        // Ensure dataSharingVC is instantiated
-        guard let dataSharingVC = dataSharingVC else { return }
+        // Ensure dataSharingVC is instantiated and only export if there were changes
+        guard let dataSharingVC = dataSharingVC, hasChanges else { return }
         
         // Call the desired function
         Task {
-            print("Startdoses export triggered")
+            print("Start doses export triggered due to changes")
             await dataSharingVC.exportStartDoseScheduleToCSV()
-
+            hasChanges = false  // Reset changes flag after export
         }
     }
     
@@ -181,24 +182,30 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - UITextFieldDelegate
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        sanitizeInput(textField)
-        if let cell = textField.superview?.superview as? StartDoseCell,
-           let indexPath = tableView.indexPath(for: cell) {
-            let text = textField.text ?? ""
-            let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+            sanitizeInput(textField)
             
-            if value == 0.0 {
-                CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
-                startDoses[indexPath.row] = nil
-            } else {
-                CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
-                startDoses[indexPath.row] = value
+            if let cell = textField.superview?.superview as? StartDoseCell,
+               let indexPath = tableView.indexPath(for: cell) {
+                let text = textField.text ?? ""
+                let value = Double(text) ?? 0.0  // Treat empty string as 0.0
+                
+                if value == 0.0 {
+                    // Delete the start dose if value is 0.0
+                    CoreDataHelper.shared.deleteStartDose(hour: indexPath.row)
+                    startDoses[indexPath.row] = nil
+                } else {
+                    // Save or update the start dose
+                    CoreDataHelper.shared.saveStartDose(hour: indexPath.row, dose: value)
+                    startDoses[indexPath.row] = value
+                }
+                
+                // Set hasChanges to true since we've made a modification
+                hasChanges = true
+                
+                tableView.reloadRows(at: [indexPath], with: .automatic)
+                print("Saved start dose \(value) for hour \(indexPath.row)")
             }
-            
-            tableView.reloadRows(at: [indexPath], with: .automatic)
-            print("Saved start dose \(value) for hour \(indexPath.row)")
         }
-    }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         moveToNextTextField(from: textField)
