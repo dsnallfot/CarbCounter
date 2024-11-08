@@ -513,6 +513,13 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     private func deleteMealHistory(at indexPath: IndexPath) async {
+        guard let dataSharingVC = dataSharingVC else { return }
+
+        // Import only the MealHistory CSV file
+        print("Starting data import for Meal History before deletion")
+        await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+        print("Data import complete for Meal History")
+
         let mealHistory = filteredMealHistories[indexPath.row]
         
         // Step 1: Set the delete flag to true
@@ -520,7 +527,6 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         mealHistory.lastEdited = Date() // Update lastEdited date to current date
 
         // Step 2: Export the updated list of meal histories
-        guard let dataSharingVC = dataSharingVC else { return }
         print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
         await dataSharingVC.exportMealHistoryToCSV()
 
@@ -696,28 +702,33 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         customAlertVC.modalPresentationStyle = .overFullScreen
         customAlertVC.modalTransitionStyle = .crossDissolve
         customAlertVC.onSave = { [weak self] newDate in
-            // Update the meal date and lastEdited in the meal history
-            mealHistory.mealDate = newDate
-            mealHistory.lastEdited = Date()  // Update lastEdited to current date and time
+            guard let self = self, let dataSharingVC = self.dataSharingVC else { return }
+            
+            Task {
+                // Import only the MealHistory CSV file before saving
+                print("Starting data import for Meal History before updating date")
+                await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+                print("Data import complete for Meal History")
+                
+                // Update the meal date and lastEdited in the meal history
+                mealHistory.mealDate = newDate
+                mealHistory.lastEdited = Date()  // Update lastEdited to current date and time
 
-            // Save to Core Data
-            let context = CoreDataStack.shared.context
-            do {
-                try context.save()
-            } catch {
-                print("Failed to save updated meal date: \(error.localizedDescription)")
-            }
-
-            // Run the export function after saving the updated date
-            if let dataSharingVC = self?.dataSharingVC {
-                Task {
-                    await dataSharingVC.exportMealHistoryToCSV()
-                    print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                // Save to Core Data
+                let context = CoreDataStack.shared.context
+                do {
+                    try context.save()
+                } catch {
+                    print("Failed to save updated meal date: \(error.localizedDescription)")
                 }
-            }
 
-            // Reload table
-            self?.tableView.reloadRows(at: [indexPath], with: .automatic)
+                // Run the export function after saving the updated date
+                await dataSharingVC.exportMealHistoryToCSV()
+                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+
+                // Reload table
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
         }
 
         present(customAlertVC, animated: true, completion: nil)
@@ -731,34 +742,38 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     @objc private func saveDatePickerValue(sender: UIButton) {
         guard let editVC = sender.superview?.viewController,
               let indexPath = objc_getAssociatedObject(editVC, &AssociatedKeys.indexPath) as? IndexPath,
-              let datePicker = objc_getAssociatedObject(editVC, &AssociatedKeys.datePicker) as? UIDatePicker else { return }
-        
-        // Update the meal date in the meal history
-        let mealHistory = filteredMealHistories[indexPath.row]
-        mealHistory.mealDate = datePicker.date
-        
-        // Save to Core Data
-        let context = CoreDataStack.shared.context
-        do {
-            try context.save()
-        } catch {
-            print("Failed to save updated meal date: \(error.localizedDescription)")
-        }
-        
-        // Run the export function after saving the updated date
-        if let dataSharingVC = self.dataSharingVC {
-            Task {
-                await dataSharingVC.exportMealHistoryToCSV()
-                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+              let datePicker = objc_getAssociatedObject(editVC, &AssociatedKeys.datePicker) as? UIDatePicker,
+              let dataSharingVC = dataSharingVC else { return }
+
+        Task {
+            // Import only the MealHistory CSV file before updating
+            print("Starting data import for Meal History before saving date picker value")
+            await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+            print("Data import complete for Meal History")
+
+            // Update the meal date in the meal history
+            let mealHistory = filteredMealHistories[indexPath.row]
+            mealHistory.mealDate = datePicker.date
+            
+            // Save to Core Data
+            let context = CoreDataStack.shared.context
+            do {
+                try context.save()
+            } catch {
+                print("Failed to save updated meal date: \(error.localizedDescription)")
+            }
+            
+            // Run the export function after saving the updated date
+            await dataSharingVC.exportMealHistoryToCSV()
+            print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+            
+            // Dismiss the popover and reload table
+            dismiss(animated: true) {
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
         }
-        
-        // Dismiss the popover and reload table
-        dismiss(animated: true) {
-            self.tableView.reloadRows(at: [indexPath], with: .automatic)
-        }
     }
-    
+
     @objc private func clearButtonTapped() {
         let alertController = UIAlertController(
             title: NSLocalizedString("Rensa", comment: "Rensa"),
@@ -767,21 +782,24 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         )
 
         let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { [weak self] _ in
-            guard let self = self else { return }
-            
-            // Clear all meal history
-            CoreDataHelper.shared.clearAllMealHistory()
-            
-            // Clear local data and refresh the table view
-            self.mealHistories.removeAll()
-            self.filteredMealHistories.removeAll()
-            self.tableView.reloadData()
-
-            // Export meal history to CSV
-            guard let dataSharingVC = self.dataSharingVC else { return }
-            print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
+            guard let self = self, let dataSharingVC = self.dataSharingVC else { return }
             
             Task {
+                // Import only the MealHistory CSV file before clearing
+                print("Starting data import for Meal History before clearing all records")
+                await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+                print("Data import complete for Meal History")
+
+                // Clear all meal history
+                CoreDataHelper.shared.clearAllMealHistory()
+                
+                // Clear local data and refresh the table view
+                self.mealHistories.removeAll()
+                self.filteredMealHistories.removeAll()
+                self.tableView.reloadData()
+
+                // Export meal history to CSV
+                print(NSLocalizedString("Meal history export triggered", comment: "Favorite meals export triggered"))
                 await dataSharingVC.exportMealHistoryToCSV()
             }
         }
@@ -793,6 +811,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
 
         present(alertController, animated: true, completion: nil)
     }
+
 }
 
 extension UIView {

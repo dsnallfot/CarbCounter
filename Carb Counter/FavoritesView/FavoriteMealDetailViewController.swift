@@ -121,23 +121,29 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     }
     
     @objc private func saveChanges() {
-        favoriteMeal.name = nameTextField.text
-        favoriteMeal.lastEdited = Date()
-        CoreDataStack.shared.saveContext()
-        
-        guard let dataSharingVC = self.dataSharingVC else {
+        guard let dataSharingVC = dataSharingVC else {
             dismiss(animated: true, completion: nil)
             return
         }
         
         Task {
+            // Import only the FavoriteMeals CSV file before saving changes
+            print("Starting data import for Favorite Meals before saving changes")
+            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+            print("Data import complete for Favorite Meals")
+            
+            favoriteMeal.name = nameTextField.text
+            favoriteMeal.lastEdited = Date()
+            CoreDataStack.shared.saveContext()
+
             print("Favorite meals export triggered")
             await dataSharingVC.exportFavoriteMealsToCSV()
+
+            delegate?.favoriteMealDetailViewControllerDidSave(self)
+            dismiss(animated: true, completion: nil)
         }
-        
-        delegate?.favoriteMealDetailViewControllerDidSave(self)
-        dismiss(animated: true, completion: nil)
     }
+
     
     private func addDoneButtonOnKeyboard() {
         let doneToolbar: UIToolbar = UIToolbar()
@@ -204,48 +210,58 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let itemsSet = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> else { return }
-        let items = Array(itemsSet).sorted { $0.name ?? "" < $1.name ?? "" }
-        let item = items[indexPath.row]
-        
-        let editAlert = UIAlertController(title: NSLocalizedString("Ändra mängd", comment: "Edit amount"), message: String(format: NSLocalizedString("Ange en ny mängd för %@:", comment: "Enter a new amount for %@:"), item.name ?? ""), preferredStyle: .alert)
-        editAlert.addTextField { textField in
-            let portionServed = item.portionServed
-            if portionServed.truncatingRemainder(dividingBy: 1) == 0 {
-                textField.text = String(format: "%.0f", portionServed)
-            } else {
-                textField.text = String(format: "%.1f", portionServed)
+        Task {
+            guard let dataSharingVC = dataSharingVC else { return }
+            
+            // Import only the FavoriteMeals CSV file before editing
+            print("Starting data import for Favorite Meals before editing portion")
+            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+            print("Data import complete for Favorite Meals")
+
+            guard let itemsSet = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> else { return }
+            let items = Array(itemsSet).sorted { $0.name ?? "" < $1.name ?? "" }
+            let item = items[indexPath.row]
+            
+            let editAlert = UIAlertController(title: NSLocalizedString("Ändra mängd", comment: "Edit amount"), message: String(format: NSLocalizedString("Ange en ny mängd för %@:", comment: "Enter a new amount for %@:"), item.name ?? ""), preferredStyle: .alert)
+            editAlert.addTextField { textField in
+                let portionServed = item.portionServed
+                if portionServed.truncatingRemainder(dividingBy: 1) == 0 {
+                    textField.text = String(format: "%.0f", portionServed)
+                } else {
+                    textField.text = String(format: "%.1f", portionServed)
+                }
+                
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+                self.addDoneButtonOnKeyboard(to: textField)
             }
             
-            textField.autocorrectionType = .no
-            textField.spellCheckingType = .no
-            self.addDoneButtonOnKeyboard(to: textField)
-        }
-        let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Save"), style: .default) { [weak self] _ in
-            guard let self = self,
-                  let newPortionText = editAlert.textFields?.first?.text,
-                  let newPortion = Double(newPortionText) else { return }
-            
-            item.portionServed = newPortion
-            self.favoriteMeal.lastEdited = Date()
-            CoreDataStack.shared.saveContext()
-            
-            guard let dataSharingVC = self.dataSharingVC else { return }
-            
-            Task {
+            let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Save"), style: .default) { [weak self] _ in
+                guard let self = self,
+                      let newPortionText = editAlert.textFields?.first?.text,
+                      let newPortion = Double(newPortionText) else { return }
+                
+                item.portionServed = newPortion
+                self.favoriteMeal.lastEdited = Date()
+                CoreDataStack.shared.saveContext()
+                
                 print("Favorite meals export triggered")
-                await dataSharingVC.exportFavoriteMealsToCSV()
+                Task {
+                    await dataSharingVC.exportFavoriteMealsToCSV()
+                }
+                
+                self.tableView.reloadData()
             }
             
-            self.tableView.reloadData()
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+            
+            editAlert.addAction(saveAction)
+            editAlert.addAction(cancelAction)
+            
+            present(editAlert, animated: true, completion: nil)
         }
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
-        
-        editAlert.addAction(saveAction)
-        editAlert.addAction(cancelAction)
-        
-        present(editAlert, animated: true, completion: nil)
     }
+
     
     private func addDoneButtonOnKeyboard(to textField: UITextField) {
         let doneToolbar: UIToolbar = UIToolbar()

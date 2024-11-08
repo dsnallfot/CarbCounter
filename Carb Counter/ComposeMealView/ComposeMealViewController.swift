@@ -904,12 +904,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         view.endEditing(true)
         
-        let alertController = UIAlertController(title: NSLocalizedString("Avsluta Måltid", comment: "Avsluta Måltid"), message: NSLocalizedString("Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", comment: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras."), preferredStyle: .actionSheet)
+        let alertController = UIAlertController(
+            title: NSLocalizedString("Avsluta Måltid", comment: "Avsluta Måltid"),
+            message: NSLocalizedString("Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras.", comment: "Bekräfta att du vill rensa alla valda livsmedel och inmatade värden för denna måltid. \nÅtgärden kan inte ångras."),
+            preferredStyle: .actionSheet
+        )
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
-        let yesAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive) { _ in
+        let yesAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            
             if self.saveMealToHistory {
-                self.saveMealHistory() // Save MealHistory if the flag is true
+                // Run saveMealHistory in an asynchronous task only if needed
+                Task {
+                    await self.saveMealHistory()
+                }
             }
+            
+            // Perform clearing operations immediately after
             self.clearAllFoodItems()
             self.updateRemainsBolus()
             self.updateTotalNutrients()
@@ -929,10 +940,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.startAmountContainer.backgroundColor = .systemBlue
             UserDefaultsRepository.savedHistorySearchText = ""
         }
+        
         alertController.addAction(cancelAction)
         alertController.addAction(yesAction)
         present(alertController, animated: true, completion: nil)
     }
+
+
+
     
     private func clearAllFoodItems() {
         for row in foodItemRows {
@@ -2333,12 +2348,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
 
     
-    private func saveMealHistory() {
+    private func saveMealHistory() async {
         guard !foodItemRows.isEmpty else {
             mealDate = nil // Reset mealDate to nil after exiting without saving
             print("No food items to save.")
             return
         }
+        
+        // Trigger data import before saving the new MealHistory entry
+        print("Starting data import for Meal History before saving")
+        guard let dataSharingVC = dataSharingVC else {
+            print("DataSharingVC could not be instantiated.")
+            return
+        }
+        
+        // Import only the MealHistory CSV file
+        await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+        print("Data import complete for Meal History")
 
         let context = CoreDataStack.shared.context
         let mealHistory = MealHistory(context: context)
@@ -2389,9 +2415,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         do {
             try context.save()
             print("MealHistory saved successfully!")
-
+            
             // Trigger the export after saving
-            guard let dataSharingVC = dataSharingVC else { return }
             Task {
                 print("Meal history export triggered")
                 await dataSharingVC.exportMealHistoryToCSV()
@@ -2405,88 +2430,95 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         saveMealToHistory = false
         mealDate = nil
     }
+
     
     @objc private func saveFavoriteMeals() {
-        guard saveFavoriteButton != nil else {
-            return
-        }
-        guard !foodItemRows.isEmpty else {
-            let alert = UIAlertController(
-                title: NSLocalizedString("Inga livsmedel", comment: "Inga livsmedel"),
-                message: NSLocalizedString("Välj minst ett livsmedel för att spara en favorit.", comment: "Välj minst ett livsmedel för att spara en favorit."),
+        guard saveFavoriteButton != nil, let dataSharingVC = dataSharingVC else { return }
+        
+        Task {
+            // Import only the FavoriteMeals CSV file before saving
+            print("Starting data import for Favorite Meals")
+            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+            print("Data import complete for Favorite Meals")
+            
+            guard !foodItemRows.isEmpty else {
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Inga livsmedel", comment: "Inga livsmedel"),
+                    message: NSLocalizedString("Välj minst ett livsmedel för att spara en favorit.", comment: "Välj minst ett livsmedel för att spara en favorit."),
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
+                self.present(alert, animated: true)
+                return
+            }
+            
+            let nameAlert = UIAlertController(
+                title: NSLocalizedString("Spara som favoritmåltid", comment: "Spara som favoritmåltid"),
+                message: NSLocalizedString("Ange ett namn på måltiden:", comment: "Ange ett namn på måltiden:"),
                 preferredStyle: .alert
             )
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
-            present(alert, animated: true)
-            return
-        }
-        
-        let nameAlert = UIAlertController(
-            title: NSLocalizedString("Spara som favoritmåltid", comment: "Spara som favoritmåltid"),
-            message: NSLocalizedString("Ange ett namn på måltiden:", comment: "Ange ett namn på måltiden:"),
-            preferredStyle: .alert
-        )
-        nameAlert.addTextField { textField in
-            textField.placeholder = NSLocalizedString("Namn", comment: "Namn")
-            textField.autocorrectionType = .no
-            textField.spellCheckingType = .no
-            textField.autocapitalizationType = .sentences
-            textField.textContentType = .none
-            
-            if #available(iOS 11.0, *) {
-                textField.inputAssistantItem.leadingBarButtonGroups = []
-                textField.inputAssistantItem.trailingBarButtonGroups = []
-            }
-        }
-        
-        let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Spara"), style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            let mealName = nameAlert.textFields?.first?.text ?? NSLocalizedString("Min favoritmåltid", comment: "Min favoritmåltid")
-            
-            // Create the NewFavoriteMeals entity
-            let favoriteMeal = NewFavoriteMeals(context: CoreDataStack.shared.context)
-            favoriteMeal.name = mealName
-            favoriteMeal.id = UUID()
-            favoriteMeal.delete = false
-            favoriteMeal.lastEdited = Date()
-            
-            // Populate the relationship with FoodItemFavorite entries
-            for row in self.foodItemRows {
-                if let foodItem = row.selectedFoodItem {
-                    let foodItemFavorite = FoodItemFavorite(context: CoreDataStack.shared.context)
-                    foodItemFavorite.id = foodItem.id ?? UUID()
-                    foodItemFavorite.name = foodItem.name ?? ""
-                    foodItemFavorite.portionServed = Double(row.portionServedTextField.text ?? "0") ?? 0.0
-                    foodItemFavorite.perPiece = foodItem.perPiece
-                    
-                    // Add FoodItemFavorite to favoriteMeal relationship
-                    favoriteMeal.addToFavoriteEntries(foodItemFavorite)
+            nameAlert.addTextField { textField in
+                textField.placeholder = NSLocalizedString("Namn", comment: "Namn")
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+                textField.autocapitalizationType = .sentences
+                textField.textContentType = .none
+                
+                if #available(iOS 11.0, *) {
+                    textField.inputAssistantItem.leadingBarButtonGroups = []
+                    textField.inputAssistantItem.trailingBarButtonGroups = []
                 }
             }
             
-            CoreDataStack.shared.saveContext()
-
-            guard let dataSharingVC = self.dataSharingVC else { return }
-            Task {
-                print("Favorite meals export triggered")
-                await dataSharingVC.exportFavoriteMealsToCSV()
+            let saveAction = UIAlertAction(title: NSLocalizedString("Spara", comment: "Spara"), style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                let mealName = nameAlert.textFields?.first?.text ?? NSLocalizedString("Min favoritmåltid", comment: "Min favoritmåltid")
+                
+                // Create the NewFavoriteMeals entity
+                let favoriteMeal = NewFavoriteMeals(context: CoreDataStack.shared.context)
+                favoriteMeal.name = mealName
+                favoriteMeal.id = UUID()
+                favoriteMeal.delete = false
+                favoriteMeal.lastEdited = Date()
+                
+                // Populate the relationship with FoodItemFavorite entries
+                for row in self.foodItemRows {
+                    if let foodItem = row.selectedFoodItem {
+                        let foodItemFavorite = FoodItemFavorite(context: CoreDataStack.shared.context)
+                        foodItemFavorite.id = foodItem.id ?? UUID()
+                        foodItemFavorite.name = foodItem.name ?? ""
+                        foodItemFavorite.portionServed = Double(row.portionServedTextField.text ?? "0") ?? 0.0
+                        foodItemFavorite.perPiece = foodItem.perPiece
+                        
+                        // Add FoodItemFavorite to favoriteMeal relationship
+                        favoriteMeal.addToFavoriteEntries(foodItemFavorite)
+                    }
+                }
+                
+                CoreDataStack.shared.saveContext()
+                
+                Task {
+                    print("Favorite meals export triggered")
+                    await dataSharingVC.exportFavoriteMealsToCSV()
+                }
+                
+                let confirmAlert = UIAlertController(
+                    title: NSLocalizedString("Lyckades", comment: "Lyckades"),
+                    message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."),
+                    preferredStyle: .alert
+                )
+                confirmAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
+                self.present(confirmAlert, animated: true)
             }
             
-            let confirmAlert = UIAlertController(
-                title: NSLocalizedString("Lyckades", comment: "Lyckades"),
-                message: NSLocalizedString("Måltiden har sparats som favorit.", comment: "Måltiden har sparats som favorit."),
-                preferredStyle: .alert
-            )
-            confirmAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default))
-            self.present(confirmAlert, animated: true)
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+            
+            nameAlert.addAction(saveAction)
+            nameAlert.addAction(cancelAction)
+            present(nameAlert, animated: true)
         }
-        
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
-        
-        nameAlert.addAction(saveAction)
-        nameAlert.addAction(cancelAction)
-        present(nameAlert, animated: true)
     }
+
     
     private func clearAllFoodItemRowsFromCoreData() {
         let context = CoreDataStack.shared.context

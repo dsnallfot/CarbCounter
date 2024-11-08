@@ -384,6 +384,13 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     }
 
     private func deleteFavoriteMeal(at indexPath: IndexPath) async {
+        guard let dataSharingVC = dataSharingVC else { return }
+
+        // Import only the FavoriteMeals CSV file before deletion
+        print("Starting data import for Favorite Meals before deletion")
+        await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+        print("Data import complete for Favorite Meals")
+        
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         
         // Step 1: Set the delete flag to true and update lastEdited
@@ -391,7 +398,6 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         favoriteMeal.lastEdited = Date() // Update lastEdited date to current date
 
         // Step 2: Export the updated list of favorite meals
-        guard let dataSharingVC = dataSharingVC else { return }
         print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
         await dataSharingVC.exportFavoriteMealsToCSV()
 
@@ -402,6 +408,7 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         filteredFavoriteMeals.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
+
 
     // MARK: - UISearchBarDelegate
 
@@ -429,17 +436,22 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         )
 
         let yesAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { [weak self] _ in
-            // Clear all favorites
-            CoreDataHelper.shared.clearAllFavorites()
-            
-            // Refresh the table view
-            self?.fetchFavoriteMeals()
-
-            // Export favorite meals to CSV
-            guard let dataSharingVC = self?.dataSharingVC else { return }
-            print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
+            guard let self = self, let dataSharingVC = self.dataSharingVC else { return }
             
             Task {
+                // Import only the FavoriteMeals CSV file before clearing
+                print("Starting data import for Favorite Meals before clearing all records")
+                await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+                print("Data import complete for Favorite Meals")
+
+                // Clear all favorites
+                CoreDataHelper.shared.clearAllFavorites()
+                
+                // Refresh the table view
+                self.fetchFavoriteMeals()
+
+                // Export favorite meals to CSV
+                print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
                 await dataSharingVC.exportFavoriteMealsToCSV()
             }
         }

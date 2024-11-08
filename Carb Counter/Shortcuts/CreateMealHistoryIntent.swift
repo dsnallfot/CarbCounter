@@ -30,11 +30,11 @@ struct CreateMealHistoryIntent: AppIntent {
             return .result()
         }
         
-        // Trigger data import before saving the new MealHistory entry
-        print("Starting data import before MealHistory save")
-        await dataSharingVC.importCSVFiles()
-        //print("Data import complete")
-        
+        // Trigger data import for Meal History only before saving the new MealHistory entry
+        print("Starting data import for Meal History")
+        await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+        print("Data import complete for Meal History")
+
         // Perform the save operation
         try await saveMealHistory(
             foodItem: foodItem.foodItem,
@@ -53,6 +53,7 @@ struct CreateMealHistoryIntent: AppIntent {
 
         return .result()
     }
+
 
     private func saveMealHistory(foodItem: FoodItem, portionServed: Double, bolus: Double, mealDate: Date) async throws {
         let context = CoreDataStack.shared.context
