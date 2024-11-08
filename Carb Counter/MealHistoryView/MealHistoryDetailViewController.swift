@@ -1,4 +1,5 @@
 import UIKit
+import CoreData
 import WebKit
 
 class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, WKNavigationDelegate {
@@ -59,6 +60,9 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         setupActionButton()
         setupNightscoutChartView()
         setupTableView()
+        
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+            tableView.addGestureRecognizer(longPressRecognizer)
         
         // Check if Nightscout URL and token are available
         if let nightscoutURL = UserDefaultsRepository.nightscoutURL, !nightscoutURL.isEmpty,
@@ -411,17 +415,96 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
         return cell
     }
 
-    // Handle row selection to present MealInsightsViewController
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] else {
-            return
+    @objc private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        guard gestureRecognizer.state == .began else { return }
+        
+        let location = gestureRecognizer.location(in: tableView)
+        if let indexPath = tableView.indexPathForRow(at: location),
+           let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] {
+            
+            let foodEntry = foodEntries[indexPath.row]
+            
+            // Fetch the corresponding FoodItem from Core Data using the entryId
+            guard let context = foodEntry.managedObjectContext else { return }
+            let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+            
+            if let entryId = foodEntry.entryId {
+                fetchRequest.predicate = NSPredicate(format: "id == %@", entryId as CVarArg)
+            } else {
+                print("Error: foodEntry.entryId is nil.")
+                return
+            }
+            
+            do {
+                if let foodItem = try context.fetch(fetchRequest).first {
+                    // Use FoodItem attributes to create the alert content
+                    var emoji = foodItem.emoji ?? ""
+                    emoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
+                    emoji = emoji.precomposedStringWithCanonicalMapping  // Normalize emoji
+                    
+                    let title = "\(emoji) \(foodItem.name ?? "")"
+                    var message = ""
+                    
+                    // Add notes if available
+                    if let notes = foodItem.notes, !notes.isEmpty {
+                        message += String(format: NSLocalizedString("\nⓘ %@\n", comment: "\nNote: %@\n"), notes)
+                    }
+                    
+                    // Display nutritional values per piece or per 100g
+                    if foodItem.perPiece {
+                        let carbsPP = foodItem.carbsPP
+                        let fatPP = foodItem.fatPP
+                        let proteinPP = foodItem.proteinPP
+                        
+                        if carbsPP > 0 {
+                            message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / st", comment: "\nCarbohydrates: %.1f g / piece"), carbsPP)
+                        }
+                        if fatPP > 0 {
+                            message += String(format: NSLocalizedString("\nFett: %.1f g / st", comment: "\nFat: %.1f g / piece"), fatPP)
+                        }
+                        if proteinPP > 0 {
+                            message += String(format: NSLocalizedString("\nProtein: %.1f g / st", comment: "\nProtein: %.1f g / piece"), proteinPP)
+                        }
+                    } else {
+                        let carbohydrates = foodItem.carbohydrates
+                        let fat = foodItem.fat
+                        let protein = foodItem.protein
+                        
+                        if carbohydrates > 0 {
+                            message += String(format: NSLocalizedString("\nKolhydrater: %.1f g / 100 g", comment: "\nCarbohydrates: %.1f g / 100 g"), carbohydrates)
+                        }
+                        if fat > 0 {
+                            message += String(format: NSLocalizedString("\nFett: %.1f g / 100 g", comment: "\nFat: %.1f g / 100 g"), fat)
+                        }
+                        if protein > 0 {
+                            message += String(format: NSLocalizedString("\nProtein: %.1f g / 100 g", comment: "\nProtein: %.1f g / 100 g"), protein)
+                        }
+                    }
+                    
+                    // Display the alert
+                    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+                    
+                    present(alert, animated: true, completion: nil)
+                } else {
+                    print("FoodItem with id \(foodEntry.entryId?.uuidString ?? "unknown") not found.")
+                }
+            } catch {
+                print("Failed to fetch FoodItem: \(error)")
+            }
         }
-        let foodEntry = foodEntries[indexPath.row]
-        
-        presentMealInsightsViewController(with: foodEntry)
-        
-        tableView.deselectRow(at: indexPath, animated: true)
     }
+        
+        func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+            guard let foodEntries = mealHistory?.foodEntries?.allObjects as? [FoodItemEntry] else {
+                return
+            }
+            
+            let foodEntry = foodEntries[indexPath.row]
+            presentMealInsightsViewController(with: foodEntry)
+            
+            tableView.deselectRow(at: indexPath, animated: true)
+        }
 
 
     // Present MealInsightsViewController
