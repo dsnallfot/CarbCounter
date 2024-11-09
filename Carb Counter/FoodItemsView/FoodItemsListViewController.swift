@@ -473,10 +473,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     return entryIds.contains(id)
                 }
             } else if swedishSearchText == "filter:favoriter" {
-                let foodItemIds = Set(foodItems.compactMap { $0.id })
-                let favoriteIds = Set(favoriteMeals.flatMap { favorites in
+                // Filter NewFavoriteMeals where delete is false
+                let validFavorites = favoriteMeals.filter { $0.delete == false }
+                let favoriteIds = Set(validFavorites.flatMap { favorites in
                     (favorites.favoriteEntries?.allObjects as? [FoodItemFavorite] ?? []).compactMap { $0.id }
                 })
+                
+                // Filter food items based on valid favorite IDs
                 filteredFoodItems = foodItems.filter { foodItem in
                     guard let id = foodItem.id else { return false }
                     return favoriteIds.contains(id)
