@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UISearchBarDelegate, AddFoodItemDelegate, ScannerViewControllerDelegate {
     private var lastSearchTime: Date?
     private var isUsingDabas: Bool = true
+    private var filterButton: UIBarButtonItem!
+    private var isFilterApplied: Bool = false
     
     private let searchTextField: UITextField = {
         let textField = UITextField()
@@ -256,26 +258,21 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     private func setupNavigationBarButtons() {
         // Create the filter button
-        let filterButton = UIBarButtonItem(
+        filterButton = UIBarButtonItem(
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             style: .plain,
             target: self,
             action: #selector(showFilterOptions)
         )
         
-        // Set up other buttons
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItemPlain))
         let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode.viewfinder"), style: .plain, target: self, action: #selector(navigateToScanner))
         
-        // Set up clear button
         clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Clear"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
         
-        // Assign left and right bar buttons
         navigationItem.leftBarButtonItems = [clearButton, filterButton]
         navigationItem.rightBarButtonItems = [barcodeButton, addButton]
-        
-        // Make sure clear button visibility is updated
         updateClearButtonVisibility()
     }
     
@@ -357,7 +354,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func searchModeChanged(_ sender: UISegmentedControl) {
         searchMode = sender.selectedSegmentIndex == 0 ? .local : .online
         updateSearchBarPlaceholder()
-
+        
+        // Update filter button appearance based on the search mode
+        updateFilterButtonAppearance()
+        
         // Perform the search with the current search text
         if let searchText = searchBar.text, !searchText.isEmpty {
             searchBarSearchButtonClicked(searchBar)
@@ -399,46 +399,38 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         UserDefaultsRepository.savedSearchText = searchText // Save search text
 
+        // Update filter button appearance based on whether search text contains a filter
+        isFilterApplied = ["filter:emojis", "filter:noteringar", "filter:historik", "filter:perstyck", "filter:skolmat"].contains(searchText.lowercased())
+        updateFilterButtonAppearance()
+        
         if searchMode == .local {
             if searchText.isEmpty {
-                // Show all items when the search text is empty
                 filteredFoodItems = foodItems
-            } else if searchText.lowercased() == "filter:emoji" {
-                // Secret search: Filter out items where FoodItem.emoji is nil or empty
+            } else if searchText.lowercased() == "filter:emojis" {
                 filteredFoodItems = foodItems.filter { $0.emoji == nil || $0.emoji!.isEmpty }
-            } else if searchText.lowercased() == "filter:notes" {
-                // Secret search: Filter items where FoodItem.notes is not nil
+            } else if searchText.lowercased() == "filter:noteringar" {
                 filteredFoodItems = foodItems.filter { $0.notes != nil && !$0.notes!.isEmpty }
-            } else if searchText.lowercased() == "filter:history" {
-                // Secret search: Filter out items that do not have a match in FoodItemEntry entries
+            } else if searchText.lowercased() == "filter:historik" {
                 let foodItemIds = Set(foodItems.compactMap { $0.id })
                 let entryIds = Set(mealHistories.flatMap { history in
                     (history.foodEntries?.allObjects as? [FoodItemEntry] ?? []).compactMap { $0.entryId }
                 })
-                
-                // Filter only those FoodItems with a matching entry in FoodItemEntry
                 filteredFoodItems = foodItems.filter { foodItem in
                     guard let id = foodItem.id else { return false }
                     return entryIds.contains(id)
                 }
-            } else if searchText.lowercased() == "filter:perpiece" {
-                // Secret search: Filter items where .perPiece is true
+            } else if searchText.lowercased() == "filter:perstyck" {
                 filteredFoodItems = foodItems.filter { $0.perPiece }
-            } else if searchText.lowercased() == "filter:schoolfood" {
-                // Secret search: Filter items with names prefixed by "Ⓢ"
+            } else if searchText.lowercased() == "filter:skolmat" {
                 filteredFoodItems = foodItems.filter { $0.name?.hasPrefix("Ⓢ") == true }
             } else {
-                // Split the search text by "." and trim whitespace
                 let searchTerms = searchText.lowercased()
                     .split(separator: ".")
                     .map { $0.trimmingCharacters(in: .whitespaces) }
-                    .filter { !$0.isEmpty } // Ensure no empty terms
+                    .filter { !$0.isEmpty }
                 
-                // Filter food items based on the search terms
                 filteredFoodItems = foodItems.filter { foodItem in
                     let combinedText = "\(foodItem.name ?? "") \(foodItem.emoji ?? "")".lowercased()
-
-                    // Check if **any** search term matches
                     return searchTerms.contains(where: { term in
                         combinedText.contains(term)
                     })
@@ -448,7 +440,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             sortFoodItems()
             tableView.reloadData()
         } else {
-            // Online search mode
             if searchText.isEmpty {
                 articles = []
                 tableView.reloadData()
@@ -456,45 +447,56 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    // Action for the filter button
-    @objc private func showFilterOptions() {
-        let alertController = UIAlertController(
-            title: NSLocalizedString("Visa endast livsmedel som...", comment: "Filter Food Items"),
-            message: nil,
-            preferredStyle: .actionSheet
-        )
-        
-        let historyAction = UIAlertAction(title: NSLocalizedString("finns i historiken", comment: "In history"), style: .default) { _ in
-            self.applySecretSearch("filter:history")
+    private func updateFilterButtonAppearance() {
+        if searchMode == .online {
+            filterButton.isEnabled = false
+            filterButton.tintColor = .systemGray // Dim the filter button to indicate it's disabled
+        } else {
+            filterButton.isEnabled = true
+            filterButton.image = UIImage(systemName: isFilterApplied ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            filterButton.tintColor = isFilterApplied ? .systemBlue : .label
         }
-        
-        let notesAction = UIAlertAction(title: NSLocalizedString("har en notering", comment: "With notes"), style: .default) { _ in
-            self.applySecretSearch("filter:notes")
-        }
-        
-        let emojiAction = UIAlertAction(title: NSLocalizedString("saknar emoji", comment: "Missing emoji"), style: .default) { _ in
-            self.applySecretSearch("filter:emoji")
-        }
-        
-        let schoolAction = UIAlertAction(title: NSLocalizedString("är skolmat", comment: "School food"), style: .default) { _ in
-            self.applySecretSearch("filter:schoolfood")
-        }
-        
-        let perPieceAction = UIAlertAction(title: NSLocalizedString("är angivna per styck", comment: "Per piece"), style: .default) { _ in
-            self.applySecretSearch("filter:perpiece")
-        }
-        
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
-        
-        alertController.addAction(historyAction)
-        alertController.addAction(notesAction)
-        alertController.addAction(emojiAction)
-        alertController.addAction(schoolAction)
-        alertController.addAction(perPieceAction)
-        alertController.addAction(cancelAction)
-        
-        present(alertController, animated: true, completion: nil)
     }
+    
+    // Action for the filter button
+        @objc private func showFilterOptions() {
+            let alertController = UIAlertController(
+                title: NSLocalizedString("Visa endast livsmedel som...", comment: "Filter Food Items"),
+                message: nil,
+                preferredStyle: .actionSheet
+            )
+            
+            let historyAction = UIAlertAction(title: NSLocalizedString("...finns i historiken", comment: "In history"), style: .default) { _ in
+                self.applySecretSearch("filter:historik")
+            }
+            
+            let notesAction = UIAlertAction(title: NSLocalizedString("...har en notering", comment: "With notes"), style: .default) { _ in
+                self.applySecretSearch("filter:noteringar")
+            }
+            
+            let emojiAction = UIAlertAction(title: NSLocalizedString("...saknar emoji", comment: "Missing emoji"), style: .default) { _ in
+                self.applySecretSearch("filter:emojis")
+            }
+            
+            let schoolAction = UIAlertAction(title: NSLocalizedString("...är skolmat", comment: "School food"), style: .default) { _ in
+                self.applySecretSearch("filter:skolmat")
+            }
+            
+            let perPieceAction = UIAlertAction(title: NSLocalizedString("...är angivna per styck", comment: "Per piece"), style: .default) { _ in
+                self.applySecretSearch("filter:perstyck")
+            }
+            
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+            
+            alertController.addAction(historyAction)
+            alertController.addAction(notesAction)
+            alertController.addAction(emojiAction)
+            alertController.addAction(schoolAction)
+            alertController.addAction(perPieceAction)
+            alertController.addAction(cancelAction)
+            
+            present(alertController, animated: true, completion: nil)
+        }
 
     // Method to handle secret search options
     private func applySecretSearch(_ secretSearch: String) {
