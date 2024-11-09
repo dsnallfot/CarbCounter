@@ -8,6 +8,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private var isUsingDabas: Bool = true
     private var filterButton: UIBarButtonItem!
     private var isFilterApplied: Bool = false
+    private var filteredItemCount: Int = 0
     
     private let searchTextField: UITextField = {
         let textField = UITextField()
@@ -257,20 +258,58 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupNavigationBarButtons() {
-        // Create the filter button
-        filterButton = UIBarButtonItem(
-            image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+        // Create the icon image with a larger configuration
+        let iconImage = UIImage(systemName: "line.3.horizontal.decrease.circle")?
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 21, weight: .regular))  // Adjust point size as desired
+
+        // Create the icon image view and apply the adjusted image
+        let iconImageView = UIImageView(image: iconImage)
+        iconImageView.tintColor = .label
+
+        // Create the count label
+        let countLabel = UILabel()
+        let foodItemCount = String(foodItems.count)
+        countLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        countLabel.textColor = .label
+        countLabel.text = foodItemCount  // Start with an empty label
+        
+        // Stack view to hold the icon and count label side-by-side
+        let stackView = UIStackView(arrangedSubviews: [iconImageView, countLabel])
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        
+        // Create a tap gesture recognizer for the stack view
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showFilterOptions))
+        stackView.addGestureRecognizer(tapGesture)
+        stackView.isUserInteractionEnabled = true
+        
+        // Wrap the stack view in a UIBarButtonItem
+        filterButton = UIBarButtonItem(customView: stackView)
+        
+        // Define other navigation bar buttons
+        let addButton = UIBarButtonItem(
+            image: UIImage(systemName: "plus.circle"),
             style: .plain,
             target: self,
-            action: #selector(showFilterOptions)
+            action: #selector(navigateToAddFoodItemPlain)
         )
         
-        let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItemPlain))
-        let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode.viewfinder"), style: .plain, target: self, action: #selector(navigateToScanner))
+        let barcodeButton = UIBarButtonItem(
+            image: UIImage(systemName: "barcode.viewfinder"),
+            style: .plain,
+            target: self,
+            action: #selector(navigateToScanner)
+        )
         
-        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Clear"), style: .plain, target: self, action: #selector(clearButtonTapped))
+        clearButton = UIBarButtonItem(
+            title: NSLocalizedString("Rensa", comment: "Clear"),
+            style: .plain,
+            target: self,
+            action: #selector(clearButtonTapped)
+        )
         clearButton.tintColor = .red
         
+        // Assign left and right bar buttons
         navigationItem.leftBarButtonItems = [clearButton, filterButton]
         navigationItem.rightBarButtonItems = [barcodeButton, addButton]
         updateClearButtonVisibility()
@@ -399,9 +438,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         UserDefaultsRepository.savedSearchText = searchText // Save search text
 
-        // Update filter button appearance based on whether search text contains a filter
+        // Check if a filter is applied and update the flag
         isFilterApplied = ["filter:emojis", "filter:noteringar", "filter:historik", "filter:perstyck", "filter:skolmat"].contains(searchText.lowercased())
-        updateFilterButtonAppearance()
         
         if searchMode == .local {
             if searchText.isEmpty {
@@ -437,6 +475,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
             }
             
+            // Update filtered item count
+            filteredItemCount = filteredFoodItems.count
+            
+            // Update the filter button appearance with the count
+            updateFilterButtonAppearance()
+            
+            // Sort and reload data
             sortFoodItems()
             tableView.reloadData()
         } else {
@@ -448,13 +493,27 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func updateFilterButtonAppearance() {
+        guard let stackView = filterButton.customView as? UIStackView,
+              let iconImageView = stackView.arrangedSubviews[0] as? UIImageView,
+              let countLabel = stackView.arrangedSubviews[1] as? UILabel else { return }
+
         if searchMode == .online {
             filterButton.isEnabled = false
-            filterButton.tintColor = .systemGray // Dim the filter button to indicate it's disabled
+            iconImageView.tintColor = .systemGray // Dim the icon to indicate it's disabled
+            countLabel.text = ""
         } else {
             filterButton.isEnabled = true
-            filterButton.image = UIImage(systemName: isFilterApplied ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-            filterButton.tintColor = isFilterApplied ? .systemBlue : .label
+            
+            // Apply size configuration to the icon image
+            let iconName = isFilterApplied ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"
+            iconImageView.image = UIImage(systemName: iconName)?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 21, weight: .regular)) // Adjust point size as needed
+            
+            iconImageView.tintColor = isFilterApplied ? .systemBlue : .label
+            countLabel.textColor = isFilterApplied ? .systemBlue : .label
+            
+            // Set the count text if a filter is applied, otherwise hide it
+            let foodItemCount = String(foodItems.count)
+            countLabel.text = isFilterApplied ? "\(filteredItemCount)" : "\(foodItemCount)"
         }
     }
     
