@@ -324,6 +324,12 @@
 "⚠️ Rensa allt" = "⚠️ Clear all";
 "\nVill du radera alla livsmedel från databasen?" = "\nDo you want to delete all food items from the database?";
 "\nÄr du helt säker? Åtgärden går inte att ångra." = "\nAre you sure? The action cannot be undone.";
+"Visa endast livsmedel som..." = "Only show food items that...";
+"finns i historiken" = "exist in history";
+"har en notering" = "includes a note";
+"saknar emoji" = "dont have an emoji";
+"är skolmat" = "is school food items Ⓢ";
+"är angivna per styck" = "is saved as per portion ①";
 
 /* Add Food Items VC */
 "Lägg till livsmedel" = "Add food item";

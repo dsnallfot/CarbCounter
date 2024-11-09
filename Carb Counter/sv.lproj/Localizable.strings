@@ -325,6 +325,12 @@
 "⚠️ Rensa allt" = "⚠️ Rensa allt";
 "\nVill du radera alla livsmedel från databasen?" = "\nVill du radera alla livsmedel från databasen?";
 "\nÄr du helt säker? Åtgärden går inte att ångra." = "\nÄr du helt säker? Åtgärden går inte att ångra.";
+"Visa endast livsmedel som..." = "Visa endast livsmedel som...";
+"finns i historiken" = "finns i historiken";
+"har en notering" = "har en notering";
+"saknar emoji" = "saknar emoji";
+"är skolmat" = "är skolmat Ⓢ";
+"är angivna per styck" = "är angivna per styck ①";
 
 
 /* Add Food Items VC */

@@ -271,7 +271,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         let foodItemCount = String(foodItems.count)
         countLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
         countLabel.textColor = .label
-        countLabel.text = foodItemCount  // Start with an empty label
+        countLabel.text = ""//foodItemCount  // Start with an empty label
         
         // Stack view to hold the icon and count label side-by-side
         let stackView = UIStackView(arrangedSubviews: [iconImageView, countLabel])
@@ -438,17 +438,30 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         UserDefaultsRepository.savedSearchText = searchText // Save search text
 
-        // Check if a filter is applied and update the flag
-        isFilterApplied = ["filter:emojis", "filter:noteringar", "filter:historik", "filter:perstyck", "filter:skolmat"].contains(searchText.lowercased())
+        // Define the Swedish terms and corresponding localized versions
+        let filterTerms = [
+            "filter:emojis": NSLocalizedString("filter:emoji", comment: "Filter items missing emoji"),
+            "filter:noteringar": NSLocalizedString("filter:notes", comment: "Filter items with notes"),
+            "filter:historik": NSLocalizedString("filter:history", comment: "Filter items in history"),
+            "filter:perstyck": NSLocalizedString("filter:perpiece", comment: "Filter items per piece"),
+            "filter:skolmat": NSLocalizedString("filter:schoolfood", comment: "Filter school food items")
+        ]
         
+        // Map localized term to Swedish term used in the code
+        let swedishSearchText = filterTerms.first(where: { $0.value.lowercased() == searchText.lowercased() })?.key ?? searchText.lowercased()
+        
+        // Check if a filter is applied and update the flag
+        isFilterApplied = filterTerms.keys.contains(swedishSearchText)
+        updateFilterButtonAppearance()
+
         if searchMode == .local {
             if searchText.isEmpty {
                 filteredFoodItems = foodItems
-            } else if searchText.lowercased() == "filter:emojis" {
+            } else if swedishSearchText == "filter:emojis" {
                 filteredFoodItems = foodItems.filter { $0.emoji == nil || $0.emoji!.isEmpty }
-            } else if searchText.lowercased() == "filter:noteringar" {
+            } else if swedishSearchText == "filter:noteringar" {
                 filteredFoodItems = foodItems.filter { $0.notes != nil && !$0.notes!.isEmpty }
-            } else if searchText.lowercased() == "filter:historik" {
+            } else if swedishSearchText == "filter:historik" {
                 let foodItemIds = Set(foodItems.compactMap { $0.id })
                 let entryIds = Set(mealHistories.flatMap { history in
                     (history.foodEntries?.allObjects as? [FoodItemEntry] ?? []).compactMap { $0.entryId }
@@ -457,9 +470,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     guard let id = foodItem.id else { return false }
                     return entryIds.contains(id)
                 }
-            } else if searchText.lowercased() == "filter:perstyck" {
+            } else if swedishSearchText == "filter:perstyck" {
                 filteredFoodItems = foodItems.filter { $0.perPiece }
-            } else if searchText.lowercased() == "filter:skolmat" {
+            } else if swedishSearchText == "filter:skolmat" {
                 filteredFoodItems = foodItems.filter { $0.name?.hasPrefix("Ⓢ") == true }
             } else {
                 let searchTerms = searchText.lowercased()
@@ -474,12 +487,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     })
                 }
             }
-            
+
             // Update filtered item count
             filteredItemCount = filteredFoodItems.count
-            
-            // Update the filter button appearance with the count
-            updateFilterButtonAppearance()
             
             // Sort and reload data
             sortFoodItems()
@@ -513,7 +523,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             
             // Set the count text if a filter is applied, otherwise hide it
             let foodItemCount = String(foodItems.count)
-            countLabel.text = isFilterApplied ? "\(filteredItemCount)" : "\(foodItemCount)"
+            countLabel.text = isFilterApplied ? "\(filteredItemCount)" : ""//\(foodItemCount)"
         }
     }
     
@@ -525,23 +535,23 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 preferredStyle: .actionSheet
             )
             
-            let historyAction = UIAlertAction(title: NSLocalizedString("...finns i historiken", comment: "In history"), style: .default) { _ in
+            let historyAction = UIAlertAction(title: NSLocalizedString("finns i historiken", comment: "In history"), style: .default) { _ in
                 self.applySecretSearch("filter:historik")
             }
             
-            let notesAction = UIAlertAction(title: NSLocalizedString("...har en notering", comment: "With notes"), style: .default) { _ in
+            let notesAction = UIAlertAction(title: NSLocalizedString("har en notering", comment: "With notes"), style: .default) { _ in
                 self.applySecretSearch("filter:noteringar")
             }
             
-            let emojiAction = UIAlertAction(title: NSLocalizedString("...saknar emoji", comment: "Missing emoji"), style: .default) { _ in
+            let emojiAction = UIAlertAction(title: NSLocalizedString("saknar emoji", comment: "Missing emoji"), style: .default) { _ in
                 self.applySecretSearch("filter:emojis")
             }
             
-            let schoolAction = UIAlertAction(title: NSLocalizedString("...är skolmat", comment: "School food"), style: .default) { _ in
+            let schoolAction = UIAlertAction(title: NSLocalizedString("är skolmat", comment: "School food"), style: .default) { _ in
                 self.applySecretSearch("filter:skolmat")
             }
             
-            let perPieceAction = UIAlertAction(title: NSLocalizedString("...är angivna per styck", comment: "Per piece"), style: .default) { _ in
+            let perPieceAction = UIAlertAction(title: NSLocalizedString("är angivna per styck", comment: "Per piece"), style: .default) { _ in
                 self.applySecretSearch("filter:perstyck")
             }
             
