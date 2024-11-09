@@ -794,7 +794,7 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         
         // Date preset segmented control
-        datePresetsSegmentedControl.selectedSegmentIndex = 2 //UISegmentedControl.noSegment
+        datePresetsSegmentedControl.selectedSegmentIndex = 4 //UISegmentedControl.noSegment
         datePresetsSegmentedControl.addTarget(self, action: #selector(datePresetChanged(_:)), for: .valueChanged)
         datePresetsSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
         
@@ -1251,14 +1251,15 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
     private func loadDefaultDates() {
         let now = Date()
         
-        // Set the default to 30d
-        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: now) ?? now
+        // Set the default to infinity
+        //let fromDate = Calendar.current.date(byAdding: .day, value: -90, to: now) ?? now
+        let fromDate = mealHistories.map { $0.mealDate ?? now }.min() ?? now
         
         fromDatePicker.date = fromDate
         toDatePicker.date = now
         
         // Now, trigger the date change logic
-        datePresetChanged(UISegmentedControl()) // Simulate the preset change to "30d"
+        datePresetChanged(UISegmentedControl()) // Simulate the preset change to "infinity"
     }
     
     private func fetchMealHistories() {
@@ -1624,15 +1625,15 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
             return
         }
         
-        // Original logic for handling the action button, if applicable
-        let medianPortion = calculateMedianPortion(for: entryName)
-        
-        if let onAveragePortionSelected = self.onAveragePortionSelected {
-            onAveragePortionSelected(medianPortion)
-        }
-        
-        self.dismiss(animated: true, completion: nil)
-        self.isComingFromFoodItemRow = false
+        // Attempt to calculate median portion using entry name and fallback to UUID if no match found by name
+            let medianPortion = calculateMedianPortion(for: entryName, fallbackId: prepopulatedSearchTextId)
+            
+            if let onAveragePortionSelected = self.onAveragePortionSelected {
+                onAveragePortionSelected(medianPortion)
+            }
+            
+            self.dismiss(animated: true, completion: nil)
+            self.isComingFromFoodItemRow = false
     }
     
     // Helper function to save the FoodItemTemporary entry with only entryId
@@ -1679,18 +1680,28 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
         }
     }
     
-    private func calculateMedianPortion(for entryName: String) -> Double {
-        // Filter matching entries where the entryName matches and entryPortionServed is greater than 0
+    private func calculateMedianPortion(for entryName: String, fallbackId: UUID?) -> Double {
+        // Filter entries where the entryName matches and entryPortionServed is greater than 0
         let matchingEntries = allFilteredFoodEntries.filter {
             $0.entryName?.lowercased() == entryName.lowercased() && $0.entryPortionServed > 0
         }
         
-        // Map the portion sizes (served - not eaten) for the matching entries
-        let portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
+        // Map portion sizes (served - not eaten) for the matching entries
+        var portions = matchingEntries.map { $0.entryPortionServed - $0.entryNotEaten }
+        
+        // If no entries are found by name, attempt to find entries using the fallback UUID
+        if portions.isEmpty, let fallbackId = fallbackId {
+            let fallbackEntries = allFilteredFoodEntries.filter {
+                $0.entryId == fallbackId && $0.entryPortionServed > 0
+            }
+            
+            // Map portion sizes for fallback entries
+            portions = fallbackEntries.map { $0.entryPortionServed - $0.entryNotEaten }
+        }
         
         // Handle cases where no portions are available
         guard !portions.isEmpty else {
-            return 0 // No entries, return 0 or any suitable default value
+            return 0 // No entries found by name or UUID, return 0 or any suitable default value
         }
         
         // If only one portion is available, return it as the median
