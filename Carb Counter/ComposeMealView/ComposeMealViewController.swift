@@ -967,33 +967,34 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let yesAction = UIAlertAction(title: NSLocalizedString("Rensa", comment: "Clear"), style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             
-            if self.saveMealToHistory {
-                Task {
+            Task {
+                // Save the meal history before clearing data, if required
+                if self.saveMealToHistory {
                     await self.saveMealHistory()
                 }
+                
+                // Perform clearing operations after save is complete
+                self.clearAllFoodItems()
+                self.updateRemainsBolus()
+                self.updateTotalNutrients()
+                self.clearAllButton.isEnabled = false
+                self.clearAllFoodItemRowsFromCoreData()
+                self.startDoseGiven = false
+                self.remainingDoseGiven = false
+                self.isEditingMeal = false
+                self.stopAutoSaveToCSV()
+                
+                if UserDefaultsRepository.allowSharingOngoingMeals {
+                    self.cleanDuplicateFiles()
+                    self.exportBlankCSV()
+                }
+                
+                self.lateBreakfastTimer?.invalidate()
+                self.turnOffLateBreakfastSwitch()
+                self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
+                self.startAmountContainer.backgroundColor = .systemBlue
+                UserDefaultsRepository.savedHistorySearchText = ""
             }
-            
-            // Perform clearing operations
-            self.clearAllFoodItems()
-            self.updateRemainsBolus()
-            self.updateTotalNutrients()
-            self.clearAllButton.isEnabled = false
-            self.clearAllFoodItemRowsFromCoreData()
-            self.startDoseGiven = false
-            self.remainingDoseGiven = false
-            self.isEditingMeal = false
-            self.stopAutoSaveToCSV()
-            
-            if UserDefaultsRepository.allowSharingOngoingMeals {
-                self.cleanDuplicateFiles()
-                self.exportBlankCSV()
-            }
-            
-            self.lateBreakfastTimer?.invalidate()
-            self.turnOffLateBreakfastSwitch()
-            self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
-            self.startAmountContainer.backgroundColor = .systemBlue
-            UserDefaultsRepository.savedHistorySearchText = ""
         }
         
         alertController.addAction(cancelAction)
