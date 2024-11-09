@@ -51,7 +51,7 @@ class FinishMealManager {
         content.title = NSLocalizedString("Ej avslutad måltid", comment: "Title for finish meal reminder notification")
         
         let bodyFormat = NSLocalizedString(
-            "Kom ihåg att slutföra måltidsregistreringen som påbörjades kl: %@",
+            "Kom ihåg att slutföra måltidsregistreringen som påbörjades kl %@",
             comment: "Body format for finish meal reminder notification"
         )
         
