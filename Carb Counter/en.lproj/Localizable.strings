@@ -420,7 +420,7 @@
 "Åt upp %@ g [Serverades %@ g - Lämnade %@ g]" = "Ate %@ g  [Served %@ g - Left %@ g]";
 "Åt upp %@ st" = "Ate %@ serv";
 "Åt upp %@ g" = "Ate %@ g";
-"Filter: Liknande" = "Filter: Similar";
+"Filter: Liknande" = "filter:similar";
 
 
 /* Meal insights VC*/

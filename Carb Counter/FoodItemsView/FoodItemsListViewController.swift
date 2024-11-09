@@ -255,13 +255,27 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     private func setupNavigationBarButtons() {
+        // Create the filter button
+        let filterButton = UIBarButtonItem(
+            image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(showFilterOptions)
+        )
+        
+        // Set up other buttons
         let addButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(navigateToAddFoodItemPlain))
         let barcodeButton = UIBarButtonItem(image: UIImage(systemName: "barcode.viewfinder"), style: .plain, target: self, action: #selector(navigateToScanner))
-        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .plain, target: self, action: #selector(clearButtonTapped))
+        
+        // Set up clear button
+        clearButton = UIBarButtonItem(title: NSLocalizedString("Rensa", comment: "Clear"), style: .plain, target: self, action: #selector(clearButtonTapped))
         clearButton.tintColor = .red
         
+        // Assign left and right bar buttons
+        navigationItem.leftBarButtonItems = [clearButton, filterButton]
         navigationItem.rightBarButtonItems = [barcodeButton, addButton]
-        navigationItem.leftBarButtonItems = [clearButton]
+        
+        // Make sure clear button visibility is updated
         updateClearButtonVisibility()
     }
     
@@ -389,13 +403,13 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             if searchText.isEmpty {
                 // Show all items when the search text is empty
                 filteredFoodItems = foodItems
-            } else if searchText.lowercased() == "emoji" {
+            } else if searchText.lowercased() == "filter:emoji" {
                 // Secret search: Filter out items where FoodItem.emoji is nil or empty
                 filteredFoodItems = foodItems.filter { $0.emoji == nil || $0.emoji!.isEmpty }
-            } else if searchText.lowercased() == "notes" {
+            } else if searchText.lowercased() == "filter:notes" {
                 // Secret search: Filter items where FoodItem.notes is not nil
                 filteredFoodItems = foodItems.filter { $0.notes != nil && !$0.notes!.isEmpty }
-            } else if searchText.lowercased() == "history" {
+            } else if searchText.lowercased() == "filter:history" {
                 // Secret search: Filter out items that do not have a match in FoodItemEntry entries
                 let foodItemIds = Set(foodItems.compactMap { $0.id })
                 let entryIds = Set(mealHistories.flatMap { history in
@@ -407,6 +421,12 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     guard let id = foodItem.id else { return false }
                     return entryIds.contains(id)
                 }
+            } else if searchText.lowercased() == "filter:perpiece" {
+                // Secret search: Filter items where .perPiece is true
+                filteredFoodItems = foodItems.filter { $0.perPiece }
+            } else if searchText.lowercased() == "filter:schoolfood" {
+                // Secret search: Filter items with names prefixed by "Ⓢ"
+                filteredFoodItems = foodItems.filter { $0.name?.hasPrefix("Ⓢ") == true }
             } else {
                 // Split the search text by "." and trim whitespace
                 let searchTerms = searchText.lowercased()
@@ -434,6 +454,52 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 tableView.reloadData()
             }
         }
+    }
+    
+    // Action for the filter button
+    @objc private func showFilterOptions() {
+        let alertController = UIAlertController(
+            title: NSLocalizedString("Visa endast livsmedel som...", comment: "Filter Food Items"),
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let historyAction = UIAlertAction(title: NSLocalizedString("finns i historiken", comment: "In history"), style: .default) { _ in
+            self.applySecretSearch("filter:history")
+        }
+        
+        let notesAction = UIAlertAction(title: NSLocalizedString("har en notering", comment: "With notes"), style: .default) { _ in
+            self.applySecretSearch("filter:notes")
+        }
+        
+        let emojiAction = UIAlertAction(title: NSLocalizedString("saknar emoji", comment: "Missing emoji"), style: .default) { _ in
+            self.applySecretSearch("filter:emoji")
+        }
+        
+        let schoolAction = UIAlertAction(title: NSLocalizedString("är skolmat", comment: "School food"), style: .default) { _ in
+            self.applySecretSearch("filter:schoolfood")
+        }
+        
+        let perPieceAction = UIAlertAction(title: NSLocalizedString("är angivna per styck", comment: "Per piece"), style: .default) { _ in
+            self.applySecretSearch("filter:perpiece")
+        }
+        
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+        
+        alertController.addAction(historyAction)
+        alertController.addAction(notesAction)
+        alertController.addAction(emojiAction)
+        alertController.addAction(schoolAction)
+        alertController.addAction(perPieceAction)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true, completion: nil)
+    }
+
+    // Method to handle secret search options
+    private func applySecretSearch(_ secretSearch: String) {
+        searchBar.text = secretSearch  // Set the search bar text to trigger the secret search
+        searchBar(searchBar, textDidChange: secretSearch)  // Perform the search based on the secret keyword
     }
     
     func scannerViewController(_ controller: ScannerViewController, didFindProduct productInfo: ProductInfo) {
