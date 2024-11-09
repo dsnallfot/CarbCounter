@@ -31,6 +31,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
     private var mealHistories: [MealHistory] = []
+    private var favoriteMeals: [NewFavoriteMeals] = []
     var articles: [Article] = []
     var searchMode: SearchMode = .local
     var sortOption: SortOption = .name
@@ -119,6 +120,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Fetch the food items and meal history from Core Data
         self.fetchFoodItems()
         mealHistories = fetchMealHistories()
+        favoriteMeals = fetchFavoriteMeals()
         
         // Update the clear button visibility
         updateClearButtonVisibility()
@@ -260,7 +262,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func setupNavigationBarButtons() {
         // Create the icon image with a larger configuration
         let iconImage = UIImage(systemName: "line.3.horizontal.decrease.circle")?
-            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 21, weight: .regular))  // Adjust point size as desired
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 21.5, weight: .regular))  // Adjust point size as desired
 
         // Create the icon image view and apply the adjusted image
         let iconImageView = UIImageView(image: iconImage)
@@ -444,7 +446,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             "filter:noteringar": NSLocalizedString("filter:notes", comment: "Filter items with notes"),
             "filter:historik": NSLocalizedString("filter:history", comment: "Filter items in history"),
             "filter:perstyck": NSLocalizedString("filter:perpiece", comment: "Filter items per piece"),
-            "filter:skolmat": NSLocalizedString("filter:schoolfood", comment: "Filter school food items")
+            "filter:skolmat": NSLocalizedString("filter:schoolfood", comment: "Filter school food items"),
+            "filter:favoriter": NSLocalizedString("filter:favorites", comment: "Filter favorite items")
         ]
         
         // Map localized term to Swedish term used in the code
@@ -452,7 +455,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         // Check if a filter is applied and update the flag
         isFilterApplied = filterTerms.keys.contains(swedishSearchText)
-        updateFilterButtonAppearance()
 
         if searchMode == .local {
             if searchText.isEmpty {
@@ -469,6 +471,15 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 filteredFoodItems = foodItems.filter { foodItem in
                     guard let id = foodItem.id else { return false }
                     return entryIds.contains(id)
+                }
+            } else if swedishSearchText == "filter:favoriter" {
+                let foodItemIds = Set(foodItems.compactMap { $0.id })
+                let favoriteIds = Set(favoriteMeals.flatMap { favorites in
+                    (favorites.favoriteEntries?.allObjects as? [FoodItemFavorite] ?? []).compactMap { $0.id }
+                })
+                filteredFoodItems = foodItems.filter { foodItem in
+                    guard let id = foodItem.id else { return false }
+                    return favoriteIds.contains(id)
                 }
             } else if swedishSearchText == "filter:perstyck" {
                 filteredFoodItems = foodItems.filter { $0.perPiece }
@@ -488,8 +499,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 }
             }
 
-            // Update filtered item count
+            // Update filtered item count and button appearance
             filteredItemCount = filteredFoodItems.count
+            updateFilterButtonAppearance() // Ensure UI reflects updated count
             
             // Sort and reload data
             sortFoodItems()
@@ -516,7 +528,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             
             // Apply size configuration to the icon image
             let iconName = isFilterApplied ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"
-            iconImageView.image = UIImage(systemName: iconName)?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 21, weight: .regular)) // Adjust point size as needed
+            iconImageView.image = UIImage(systemName: iconName)?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 21.5, weight: .regular)) // Adjust point size as needed
             
             iconImageView.tintColor = isFilterApplied ? .systemBlue : .label
             countLabel.textColor = isFilterApplied ? .systemBlue : .label
@@ -539,6 +551,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 self.applySecretSearch("filter:historik")
             }
             
+            let favoritesAction = UIAlertAction(title: NSLocalizedString("finns i favoriter", comment: "In favorites"), style: .default) { _ in
+                self.applySecretSearch("filter:favoriter")
+            }
+            
             let notesAction = UIAlertAction(title: NSLocalizedString("har en notering", comment: "With notes"), style: .default) { _ in
                 self.applySecretSearch("filter:noteringar")
             }
@@ -558,6 +574,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
             
             alertController.addAction(historyAction)
+            alertController.addAction(favoritesAction)
             alertController.addAction(notesAction)
             alertController.addAction(emojiAction)
             alertController.addAction(schoolAction)
@@ -801,6 +818,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             return try context.fetch(fetchRequest)
         } catch {
             print("Error fetching meal histories: \(error)")
+            return []
+        }
+    }
+    
+    private func fetchFavoriteMeals() -> [NewFavoriteMeals] {
+        // Assuming Core Data context setup
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<NewFavoriteMeals> = NewFavoriteMeals.fetchRequest()
+        
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Error fetching favorite meals: \(error)")
             return []
         }
     }
