@@ -27,6 +27,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     @IBOutlet weak var tableView: UITableView!
     var foodItems: [FoodItem] = []
     var filteredFoodItems: [FoodItem] = []
+    private var mealHistories: [MealHistory] = []
     var articles: [Article] = []
     var searchMode: SearchMode = .local
     var sortOption: SortOption = .name
@@ -49,6 +50,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         super.viewDidLoad()
         
         self.fetchFoodItems()
+        
+        //mealHistories = fetchMealHistories()
         
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
@@ -110,8 +113,9 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Fetch the food items from Core Data
+        // Fetch the food items and meal history from Core Data
         self.fetchFoodItems()
+        mealHistories = fetchMealHistories()
         
         // Update the clear button visibility
         updateClearButtonVisibility()
@@ -391,6 +395,18 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             } else if searchText.lowercased() == "notes" {
                 // Secret search: Filter items where FoodItem.notes is not nil
                 filteredFoodItems = foodItems.filter { $0.notes != nil && !$0.notes!.isEmpty }
+            } else if searchText.lowercased() == "history" {
+                // Secret search: Filter out items that do not have a match in FoodItemEntry entries
+                let foodItemIds = Set(foodItems.compactMap { $0.id })
+                let entryIds = Set(mealHistories.flatMap { history in
+                    (history.foodEntries?.allObjects as? [FoodItemEntry] ?? []).compactMap { $0.entryId }
+                })
+                
+                // Filter only those FoodItems with a matching entry in FoodItemEntry
+                filteredFoodItems = foodItems.filter { foodItem in
+                    guard let id = foodItem.id else { return false }
+                    return entryIds.contains(id)
+                }
             } else {
                 // Split the search text by "." and trim whitespace
                 let searchTerms = searchText.lowercased()
@@ -408,6 +424,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                     })
                 }
             }
+            
             sortFoodItems()
             tableView.reloadData()
         } else {
@@ -636,6 +653,19 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             filteredFoodItems.sort { $0.count > $1.count }
         }
         tableView.reloadData()
+    }
+    
+    private func fetchMealHistories() -> [MealHistory] {
+        // Assuming Core Data context setup
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<MealHistory> = MealHistory.fetchRequest()
+        
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Error fetching meal histories: \(error)")
+            return []
+        }
     }
     
     // MARK: - UITableViewDelegate

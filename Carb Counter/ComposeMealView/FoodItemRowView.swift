@@ -353,8 +353,9 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         // Create an instance of MealHistoryViewController
         let mealHistoryVC = MealHistoryViewController()
         
-        // Set the selectedFoodItem name as the initial search text
+        // Set the selectedFoodItem's name and ID for the initial search
         mealHistoryVC.initialSearchText = selectedFoodItem.name
+        mealHistoryVC.initialSearchTextId = selectedFoodItem.id
         
         // Present the MealHistoryViewController
         viewController.navigationController?.pushViewController(mealHistoryVC, animated: true)

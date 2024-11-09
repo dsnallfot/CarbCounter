@@ -9,6 +9,7 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     var filteredMealHistories: [MealHistory] = []
     var isComingFromBestMatches = false
     var initialSearchText: String?
+    var initialSearchTextId: UUID?
     var bestMatchButton: UIBarButtonItem!
     var infoButton: UIBarButtonItem!
     var clearButton: UIBarButtonItem!
@@ -379,15 +380,15 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let sortDescriptor = NSSortDescriptor(key: "mealDate", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        // Add a predicate to filter out items where the delete flag is true
+        // Predicate to exclude deleted items
         fetchRequest.predicate = NSPredicate(format: "delete == NO OR delete == nil")
         
         do {
             let mealHistories = try context.fetch(fetchRequest)
             DispatchQueue.main.async {
-                self.mealHistories = mealHistories // Update the mealHistories array
+                self.mealHistories = mealHistories
                 
-                // Use initialSearchText if available, otherwise fallback to savedSearchText
+                // Use initialSearchText if available, otherwise fallback to savedHistorySearchText
                 let searchText = self.initialSearchText ?? UserDefaultsRepository.savedHistorySearchText
                 self.filterMealHistories(searchText: searchText, by: self.datePicker.date)
             }
@@ -558,20 +559,28 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         filteredMealHistories = mealHistories.filter { mealHistory in
             // First, filter by search terms (if provided)
+            var matchesSearch = true
             if !searchTerms.isEmpty {
                 let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName?.lowercased() } ?? []
                 
-                // Check if any of the search terms match the food item names
-                let matchesSearch = searchTerms.allSatisfy { term in
+                // Check if all search terms match any of the food item names
+                matchesSearch = searchTerms.allSatisfy { term in
                     foodItemNames.contains { $0.contains(term) }
-                }
-                
-                if !matchesSearch {
-                    return false // Exclude this item if it doesn't match all search terms
                 }
             }
             
-            // If the date picker hasn't been altered, ignore the date filter
+            // Fallback: If no match by name, check if `initialSearchTextId` matches any `entryId`
+            if !matchesSearch, let fallbackId = initialSearchTextId {
+                let entryIds = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryId } ?? []
+                matchesSearch = entryIds.contains(fallbackId)
+            }
+            
+            // Exclude this meal history if it doesn't match the search criteria
+            if !matchesSearch {
+                return false
+            }
+            
+            // Date filter: Only apply if the date picker has been altered
             if isDatePickerUnaltered {
                 return true // Don't apply date filtering if date picker is unaltered
             }
@@ -688,6 +697,9 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
 
         // Pass the search text from the MealHistoryVC's search bar to MealInsightsVC
         mealInsightsVC.prepopulatedSearchText = searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Pass the fallback ID as well
+        mealInsightsVC.prepopulatedSearchTextId = initialSearchTextId
 
         // Push the MealInsightsViewController to the navigation stack
         navigationController?.pushViewController(mealInsightsVC, animated: true)
