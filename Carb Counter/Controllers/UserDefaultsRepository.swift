@@ -314,6 +314,18 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "preBolusNotificationsAllowed")
         }
     }
+    
+    static var finishMealNotificationsAllowed: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: "finishMealNotificationsAllowed") == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: "finishMealNotificationsAllowed")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "finishMealNotificationsAllowed")
+        }
+    }
 }
 
 extension Notification.Name {

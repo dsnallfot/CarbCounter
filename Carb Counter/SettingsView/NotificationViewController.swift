@@ -13,7 +13,11 @@ class NotificationViewController: UITableViewController {
         
         (NSLocalizedString("Prebolus 20 min varning", comment: "Allow pre-bolus notifications"),
          { UserDefaultsRepository.preBolusNotificationsAllowed },
-         #selector(togglePreBolusNotifications(_:)))
+         #selector(togglePreBolusNotifications(_:))),
+        
+        (NSLocalizedString("Ej avslutad måltid 45 min varning", comment: "Allow finish meal notifications"),
+         { UserDefaultsRepository.finishMealNotificationsAllowed },
+         #selector(toggleFinishMealNotifications(_:)))
     ]
     
     override func viewDidLoad() {
@@ -113,5 +117,9 @@ class NotificationViewController: UITableViewController {
     
     @objc private func togglePreBolusNotifications(_ sender: UISwitch) {
         UserDefaultsRepository.preBolusNotificationsAllowed = sender.isOn
+    }
+    
+    @objc private func toggleFinishMealNotifications(_ sender: UISwitch) {
+        UserDefaultsRepository.finishMealNotificationsAllowed = sender.isOn
     }
 }

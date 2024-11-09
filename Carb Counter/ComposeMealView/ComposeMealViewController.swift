@@ -118,6 +118,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 UserDefaultsRepository.allowViewingOngoingMeals = true
                 stopAutoSaveToCSV()
+                FinishMealManager.shared.stopFinishMealCountdown()
             }
         }
     }
@@ -983,6 +984,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 self.remainingDoseGiven = false
                 self.isEditingMeal = false
                 self.stopAutoSaveToCSV()
+                FinishMealManager.shared.stopFinishMealCountdown()
                 
                 if UserDefaultsRepository.allowSharingOngoingMeals {
                     self.cleanDuplicateFiles()
@@ -1845,6 +1847,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
             if !isEditingMeal {
                 stopAutoSaveToCSV()
+                FinishMealManager.shared.stopFinishMealCountdown()
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
@@ -2735,6 +2738,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             PreBolusManager.shared.stopPreBolusCountdown()
         }
+        
+        FinishMealManager.shared.startFinishMealCountdown()
 
         // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
@@ -2812,6 +2817,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         hideAllDeleteButtons()
         createEmojiString()
+        
+        FinishMealManager.shared.startFinishMealCountdown()
 
         // Replace "--" with "0" in totalRemainsLabel and totalRemainsBolusLabel
         let remainsValue = Double(totalRemainsLabel.text?

@@ -186,6 +186,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             
             if dismissedWithoutAction {
                 PreBolusManager.shared.stopPreBolusCountdown()
+                FinishMealManager.shared.stopFinishMealCountdown()
             }
         }
     
