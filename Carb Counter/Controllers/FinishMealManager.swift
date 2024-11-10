@@ -69,6 +69,6 @@ class FinishMealManager {
             }
         }
         
-        stopFinishMealCountdown() // Clear timer after completion
+        startFinishMealCountdown() // restart timer after completion
     }
 }
