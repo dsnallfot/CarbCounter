@@ -118,7 +118,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             } else {
                 UserDefaultsRepository.allowViewingOngoingMeals = true
                 stopAutoSaveToCSV()
-                FinishMealManager.shared.stopFinishMealCountdown()
             }
         }
     }
@@ -1305,6 +1304,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateTotalNutrients()
         clearAllButton.isEnabled = true
         
+        
         // Check if any of the values (carbs, fat, protein, bolus) are greater than 0
         if let textValue = totalRegisteredCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0"),
            let numberValue = Double(textValue.replacingOccurrences(of: ",", with: "")),
@@ -1847,7 +1847,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("Checked if editing. isEditingMeal set to \(isEditingMeal) with \(foodItemRows.count) food item rows.")
             if !isEditingMeal {
                 stopAutoSaveToCSV()
-                FinishMealManager.shared.stopFinishMealCountdown()
             }
         } catch {
             print("Failed to fetch food item rows: \(error)")
@@ -1855,6 +1854,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func saveValuesToUserDefaults() {
+        // Save values to UserDefaults
         UserDefaults.standard.set(registeredFatSoFar, forKey: "registeredFatSoFar")
         UserDefaults.standard.set(registeredProteinSoFar, forKey: "registeredProteinSoFar")
         UserDefaults.standard.set(registeredBolusSoFar, forKey: "registeredBolusSoFar")
@@ -1862,11 +1862,23 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         if let mealDate = mealDate {
             UserDefaults.standard.set(mealDate, forKey: "mealDate") // Save Date if available
+            print("Meal date saved to UserDefaults: \(mealDate)")
         } else {
             UserDefaults.standard.removeObject(forKey: "mealDate") // Remove if nil
+            print("Meal date removed from UserDefaults.")
         }
         
-        UserDefaults.standard.synchronize() // Ensure the values are written to disk immediately
+        UserDefaults.standard.synchronize() // Ensure immediate write to disk
+
+        // Check if any of the registered values are non-zero before starting the countdown
+        if registeredFatSoFar > 0 || registeredProteinSoFar > 0 || registeredBolusSoFar > 0 || registeredCarbsSoFar > 0 {
+            // Add a short delay to give time for UserDefaults to save before starting the timer
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                FinishMealManager.shared.startFinishMealCountdown()
+            }
+        } else {
+            print("No values to register, timer not started.")
+        }
     }
     
     func loadValuesFromUserDefaults() {
@@ -2739,7 +2751,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             PreBolusManager.shared.stopPreBolusCountdown()
         }
         
-        FinishMealManager.shared.startFinishMealCountdown()
+        //FinishMealManager.shared.startFinishMealCountdown()
 
         // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
         let khValue = formatValue(totalStartAmountLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0")
@@ -2818,7 +2830,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         hideAllDeleteButtons()
         createEmojiString()
         
-        FinishMealManager.shared.startFinishMealCountdown()
+        //FinishMealManager.shared.startFinishMealCountdown()
 
         // Replace "--" with "0" in totalRemainsLabel and totalRemainsBolusLabel
         let remainsValue = Double(totalRemainsLabel.text?
