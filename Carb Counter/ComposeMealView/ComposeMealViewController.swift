@@ -1884,7 +1884,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             FinishMealManager.shared.stopFinishMealCountdown()
             PreBolusManager.shared.stopPreBolusCountdown()
-            print("No values to register, timer not started.")
+            print("No values to register, notification timers stopped/not started.")
         }
     }
     
