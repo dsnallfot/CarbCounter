@@ -215,7 +215,7 @@
 "Genvägen avbröts pga fel lösenkod. Du kan försöka igen." = "The shortcut was cancelled due to wrong passcode. You may try again.";
 
 "🔂 Upprepa registrering" = "🔂 Repeat Registration";
-"Info!" = "Info!";
+"Info!" = "⚠️ Info!";
 "Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. Den senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen" = "If the previous meal registration via Twilio SMS or iOS shortcuts failed for any reason (typically because the bolus could not be performed in iAPS/Trio due to a busy pump or pump connection issues), you can send the same command again from this 'repeat view'. \n\nThe latest bolus sent (and failed) is prefilled. Anything sent from this view is excluded from the meal history in the app.\n\nNOTE! Make sure the previous bolus actually failed before sending the same dose again";
 
 //popup

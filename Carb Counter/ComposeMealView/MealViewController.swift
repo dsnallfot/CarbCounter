@@ -35,25 +35,44 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     @IBOutlet weak var bolusLabel: UILabel!
     @IBOutlet weak var bolusUnits: UITextField!
     @IBOutlet weak var bolusStack: UIStackView!
-    @IBOutlet weak var method: UITextField!
+    @IBOutlet weak var methodUI: UITextField!
     @IBOutlet weak var plusSign: UIImageView!
     
     private var dateChangedManually = false
     private var dismissedWithoutAction = true
     
+    var khValue: String?
+    var fatValue: String?
+    var proteinValue: String?
+    var bolusValue: String?
+    var emojis: String?
+    var bolusSoFar: String?
+    var bolusTotal: String?
+    var carbsSoFar: String?
+    var carbsTotal: String?
+    var fatSoFar: String?
+    var fatTotal: String?
+    var proteinSoFar: String?
+    var proteinTotal: String?
+    var method: String?
     var startDose: Bool = false
+    var remainDose: Bool = false
+    var cr: String?
     var retry: Bool = false
+    
+    //var startDose: Bool = false
+    //var retry: Bool = false
     
     var CR: Decimal = 0.0
     
-    var bolusSoFar = ""
-    var bolusTotal = ""
-    var carbsSoFar = ""
-    var carbsTotal = ""
-    var fatSoFar = ""
-    var fatTotal = ""
-    var proteinSoFar = ""
-    var proteinTotal = ""
+    //var bolusSoFar = ""
+    //var bolusTotal = ""
+    //var carbsSoFar = ""
+    //var carbsTotal = ""
+    //var fatSoFar = ""
+    //var fatTotal = ""
+    //var proteinSoFar = ""
+    //var proteinTotal = ""
     
     let maxCarbs = UserDefaultsRepository.maxCarbs as Double?
     let maxFatProtein = UserDefaultsRepository.maxCarbs as Double?
@@ -95,8 +114,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // In light mode, set a solid background
             view.backgroundColor = .systemGray6
         }
-
-            self.title = NSLocalizedString("Registrera Måltid", comment: "Registrera Måltid")
+        
+            //self.title = NSLocalizedString("Registrera Måltid", comment: "Registrera Måltid")
         
         setupCloseButton()
         setupInfoButton()
@@ -159,6 +178,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         let numberFormatter = NumberFormatter()
         numberFormatter.minimumFractionDigits = 0
         numberFormatter.maximumFractionDigits = 1
+        
+        populateMealViewController()
 
     }
     
@@ -174,9 +195,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         // Update the method UITextField based on the stored value in UserDefaults
         if UserDefaultsRepository.method == "iOS Shortcuts" {
-            method.text = NSLocalizedString("ⓘ  iOS Genväg", comment: "ⓘ  iOS Genväg")
+            methodUI.text = NSLocalizedString("ⓘ  iOS Genväg", comment: "ⓘ  iOS Genväg")
         } else {
-            method.text = NSLocalizedString("ⓘ  Twilio SMS", comment: "ⓘ  Twilio SMS")
+            methodUI.text = NSLocalizedString("ⓘ  Twilio SMS", comment: "ⓘ  Twilio SMS")
         }
 
         updateSendMealButtonText(sendMealButton.currentTitle ?? NSLocalizedString("Skicka Måltid", comment: "Skicka Måltid"))
@@ -678,7 +699,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     }
 
     
-    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String, retry: Bool) {
+    /*public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String, retry: Bool) {
         
         // Convert values to Double and replace negative values with 0
         let khValueSafe = max(Double(khValue) ?? 0, 0)
@@ -734,6 +755,66 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
 
         } else {
             self.title = NSLocalizedString("Registrera startdos", comment: "Registrera startdos")
+            if NightscoutManager.shared.evBGWarning || NightscoutManager.shared.minBGWarning {
+                print("BG warning - bolus not pre-populated")
+            } else {
+                bolusStackTapped()
+            }
+        }
+    }*/
+    
+    public func populateMealViewController() {
+        // Safely convert values to Double and replace negative values with 0
+        let khValueSafe = max(Double(khValue ?? "") ?? 0, 0)
+        let fatValueSafe = max(Double(fatValue ?? "") ?? 0, 0)
+        let proteinValueSafe = max(Double(proteinValue ?? "") ?? 0, 0)
+        let bolusValueSafe = max(Double(bolusValue ?? "") ?? 0, 0)
+        
+        // Format values to remove trailing .0 if present
+        let khValueString = formatNumber(khValueSafe)
+        let fatValueString = formatNumber(fatValueSafe)
+        let proteinValueString = formatNumber(proteinValueSafe)
+        let bolusValueString = String(bolusValueSafe)
+
+        // Populate UI elements with formatted values
+        self.carbsEntryField.text = khValueString
+        self.fatEntryField.text = fatValueString
+        self.proteinEntryField.text = proteinValueString
+        self.bolusCalculated.text = bolusValueString
+
+        // Optionally populate the notes entry field with emojis or any default text
+        self.notesEntryField.text = emojis ?? ""
+
+        // Set properties for startDose and retry
+        //self.startDose = startDose
+        //self.retry = retry
+
+        // Set additional tracking values
+        self.bolusSoFar = bolusSoFar ?? ""
+        self.bolusTotal = bolusTotal ?? ""
+        self.carbsSoFar = carbsSoFar ?? ""
+        self.carbsTotal = carbsTotal ?? ""
+        self.fatSoFar = fatSoFar ?? ""
+        self.fatTotal = fatTotal ?? ""
+        self.proteinSoFar = proteinSoFar ?? ""
+        self.proteinTotal = proteinTotal ?? ""
+
+        // Convert cr to Decimal if possible, otherwise set a default
+        if let crDecimal = Decimal(string: cr ?? "") {
+            self.CR = crDecimal
+        } else {
+            print("Failed to convert CR to Decimal")
+            // Handle any necessary error action here, like a default CR value
+        }
+
+        // Set title based on conditions and update bolus if appropriate
+        if remainDose {
+            self.title = NSLocalizedString("Registrera hela måltiden", comment: "Register the entire meal")
+        } else if retry {
+            self.title = NSLocalizedString("🔂 Upprepa registrering", comment: "Repeat registration")
+            bolusStackTapped()
+        } else {
+            self.title = NSLocalizedString("Registrera startdos", comment: "Register start dose")
             if NightscoutManager.shared.evBGWarning || NightscoutManager.shared.minBGWarning {
                 print("BG warning - bolus not pre-populated")
             } else {

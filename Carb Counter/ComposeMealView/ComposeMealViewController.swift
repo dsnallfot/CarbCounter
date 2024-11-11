@@ -2763,81 +2763,109 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     // MARK: Methods (Meal registration)
-    @objc private func registeredContainerLongPressed() {
-        print("Long press detected on registeredContainer")
+        @objc private func registeredContainerLongPressed() {
+            print("Long press detected on registeredContainer")
 
-        hideAllDeleteButtons()
+            hideAllDeleteButtons()
 
-        let emojis = ""
+            let emojis = ""
 
-        // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
-        let khValue = "0"
-        let fatValue = "0"
-        let proteinValue = "0"
-        let bolusValue = String(latestBolusSent)
-        
-        let method: String
-        if UserDefaultsRepository.method == "iOS Shortcuts" {
-            method = "iOS Shortcuts"
-        } else {
-            method = "SMS API"
-        }
-        let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
-        
-        // Replace "--" with "0" in totalBolusAmountLabel
-        let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
-        
-        let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
-        // Replace "--" with "0" in totalNetCarbsLabel
-        let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
-        
-        let fatSoFar = String(format: "%.0f", registeredFatSoFar)
-        // Replace "--" with "0" in totalNetFatLabel
-        let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
-        
-        let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
-        // Replace "--" with "0" in totalNetProteinLabel
-        let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
-        
-        let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"
-        
-        let startDose = false
-        let remainDose = false
-        
-        if !allowShortcuts {
-            // Use alert when manually registering
-            let alertController = UIAlertController(
-                title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
-                message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio", comment: "Prompt to register the specified start dose for the meal in iAPS/Trio"), khValue, bolusValue),
-                preferredStyle: .alert
-            )
-            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
-            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
-                print("Manual bolus retry ok")
+            // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
+            let khValue = "0"
+            let fatValue = "0"
+            let proteinValue = "0"
+            let bolusValue = String(latestBolusSent)
+            
+            let method: String
+            if UserDefaultsRepository.method == "iOS Shortcuts" {
+                method = "iOS Shortcuts"
+            } else {
+                method = "SMS API"
             }
-            alertController.addAction(cancelAction)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-        } else {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
-                mealVC.delegate = self
-                let navigationController = UINavigationController(rootViewController: mealVC)
-                navigationController.modalPresentationStyle = .pageSheet
-                
-                present(navigationController, animated: true, completion: {
-                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: true)
-                })
+            let bolusSoFar = String(format: "%.2f", registeredBolusSoFar)
+            
+            // Replace "--" with "0" in totalBolusAmountLabel
+            let bolusTotal = totalBolusAmountLabel.text?.replacingOccurrences(of: NSLocalizedString(" E", comment: " E"), with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+            
+            let carbsSoFar = String(format: "%.0f", registeredCarbsSoFar)
+            // Replace "--" with "0" in totalNetCarbsLabel
+            let carbsTotal = totalNetCarbsLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+            
+            let fatSoFar = String(format: "%.0f", registeredFatSoFar)
+            // Replace "--" with "0" in totalNetFatLabel
+            let fatTotal = totalNetFatLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+            
+            let proteinSoFar = String(format: "%.0f", registeredProteinSoFar)
+            // Replace "--" with "0" in totalNetProteinLabel
+            let proteinTotal = totalNetProteinLabel.text?.replacingOccurrences(of: " g", with: "").replacingOccurrences(of: "--", with: "0") ?? "0"
+            
+            let cr = nowCRLabel.text?.replacingOccurrences(of: NSLocalizedString(" g/E", comment: " g/E"), with: "") ?? "0"
+            
+            let startDose = false
+            let remainDose = false
+            
+            if !allowShortcuts {
+                // Use alert when manually registering
+                let alertController = UIAlertController(
+                    title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
+                    message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio", comment: "Prompt to register the specified start dose for the meal in iAPS/Trio"), khValue, bolusValue),
+                    preferredStyle: .alert
+                )
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
+                let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
+                    print("Manual bolus retry ok")
+                }
+                alertController.addAction(cancelAction)
+                alertController.addAction(okAction)
+                present(alertController, animated: true, completion: nil)
+            } else {
+                /*
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                    mealVC.delegate = self
+                    let navigationController = UINavigationController(rootViewController: mealVC)
+                    navigationController.modalPresentationStyle = .pageSheet
+                    
+                    present(navigationController, animated: true, completion: {
+                        mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: true)
+                    })
+                }*/
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                        mealVC.delegate = self
+                        mealVC.khValue = khValue
+                        mealVC.fatValue = fatValue
+                        mealVC.proteinValue = proteinValue
+                        mealVC.bolusValue = bolusValue
+                        mealVC.emojis = emojis
+                        mealVC.bolusSoFar = bolusSoFar
+                        mealVC.bolusTotal = bolusTotal
+                        mealVC.carbsSoFar = carbsSoFar
+                        mealVC.carbsTotal = carbsTotal
+                        mealVC.fatSoFar = fatSoFar
+                        mealVC.fatTotal = fatTotal
+                        mealVC.proteinSoFar = proteinSoFar
+                        mealVC.proteinTotal = proteinTotal
+                        mealVC.method = method
+                        mealVC.startDose = startDose
+                        mealVC.remainDose = remainDose
+                        mealVC.cr = cr
+                        mealVC.retry = true
+
+                        let navigationController = UINavigationController(rootViewController: mealVC)
+                        navigationController.modalPresentationStyle = .pageSheet
+                        
+                        present(navigationController, animated: true)
+                    }
+            }
+            
+            // Fetch device status from Nightscout after all UI actions
+            NightscoutManager.shared.fetchDeviceStatus {
+                DispatchQueue.main.async {
+                    print("Device status has been updated.")
+                }
             }
         }
-        
-        // Fetch device status from Nightscout after all UI actions
-        NightscoutManager.shared.fetchDeviceStatus {
-            DispatchQueue.main.async {
-                print("Device status has been updated.")
-            }
-        }
-    }
     
     @objc private func startAmountContainerTapped() {
         if registeredCarbsSoFar == 0 && registeredFatSoFar == 0 && registeredProteinSoFar == 0 {
@@ -2899,7 +2927,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
         } else {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
             if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
                 mealVC.delegate = self
                 let navigationController = UINavigationController(rootViewController: mealVC)
@@ -2908,7 +2936,34 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(navigationController, animated: true, completion: {
                     mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: false)
                 })
-            }
+            }*/
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                    mealVC.delegate = self
+                    mealVC.khValue = khValue
+                    mealVC.fatValue = fatValue
+                    mealVC.proteinValue = proteinValue
+                    mealVC.bolusValue = bolusValue
+                    mealVC.emojis = emojis
+                    mealVC.bolusSoFar = bolusSoFar
+                    mealVC.bolusTotal = bolusTotal
+                    mealVC.carbsSoFar = carbsSoFar
+                    mealVC.carbsTotal = carbsTotal
+                    mealVC.fatSoFar = fatSoFar
+                    mealVC.fatTotal = fatTotal
+                    mealVC.proteinSoFar = proteinSoFar
+                    mealVC.proteinTotal = proteinTotal
+                    mealVC.method = method
+                    mealVC.startDose = startDose
+                    mealVC.remainDose = remainDose
+                    mealVC.cr = cr
+                    mealVC.retry = false
+
+                    let navigationController = UINavigationController(rootViewController: mealVC)
+                    navigationController.modalPresentationStyle = .pageSheet
+                    
+                    present(navigationController, animated: true)
+                }
         }
         
         // Fetch device status from Nightscout after all UI actions
@@ -3083,7 +3138,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             present(alertController, animated: true, completion: nil)
 
         } else {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
             if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
                 mealVC.delegate = self
                 let navigationController = UINavigationController(rootViewController: mealVC)
@@ -3092,7 +3147,34 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 present(navigationController, animated: true, completion: {
                     mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: false)
                 })
-            }
+            }*/
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
+                    mealVC.delegate = self
+                    mealVC.khValue = khValue
+                    mealVC.fatValue = fatValue
+                    mealVC.proteinValue = proteinValue
+                    mealVC.bolusValue = bolusValue
+                    mealVC.emojis = emojis
+                    mealVC.bolusSoFar = bolusSoFar
+                    mealVC.bolusTotal = bolusTotal
+                    mealVC.carbsSoFar = carbsSoFar
+                    mealVC.carbsTotal = carbsTotal
+                    mealVC.fatSoFar = fatSoFar
+                    mealVC.fatTotal = fatTotal
+                    mealVC.proteinSoFar = proteinSoFar
+                    mealVC.proteinTotal = proteinTotal
+                    mealVC.method = method
+                    mealVC.startDose = startDose
+                    mealVC.remainDose = remainDose
+                    mealVC.cr = cr
+                    mealVC.retry = false
+
+                    let navigationController = UINavigationController(rootViewController: mealVC)
+                    navigationController.modalPresentationStyle = .pageSheet
+                    
+                    present(navigationController, animated: true)
+                }
         }
 
         // Fetch device status from Nightscout after all UI actions
