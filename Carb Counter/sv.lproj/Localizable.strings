@@ -215,6 +215,10 @@
 "Fel lösenkod" = "Fel lösenkod";
 "Genvägen avbröts pga fel lösenkod. Du kan försöka igen." = "Genvägen avbröts pga fel lösenkod. Du kan försöka igen.";
 
+"🔂 Upprepa registrering" = "🔂 Upprepa registrering";
+"Info!" = "Info!";
+"Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. Den senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen" = "Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. \n\nDen senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen";
+
 //popup
 "Blodsocker" = "Blodsocker";
 "Min / Max BG" = "Min / Max BG";

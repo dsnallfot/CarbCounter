@@ -42,6 +42,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     private var dismissedWithoutAction = true
     
     var startDose: Bool = false
+    var retry: Bool = false
     
     var CR: Decimal = 0.0
     
@@ -675,12 +676,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         return formattedString
     }
+
     
-    //func focusCarbsEntryField() {
-    //    self.carbsEntryField.becomeFirstResponder()
-    //}
-    
-    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String) {
+    public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String, retry: Bool) {
         
         // Convert values to Double and replace negative values with 0
         let khValueSafe = max(Double(khValue) ?? 0, 0)
@@ -706,6 +704,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Set the startDose property
         self.startDose = startDose
         
+        // Set the retry property
+        self.retry = retry
+        
         self.bolusSoFar = bolusSoFar
         self.bolusTotal = bolusTotal
         self.carbsSoFar = carbsSoFar
@@ -723,9 +724,14 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Handle the error as needed, e.g., show an alert to the user or set a default value
         }
 
-        // Set the title based on the remainDose value and always populate bolus field for startdose
+        // Set the title based on the remainDose or retry value and always populate bolus field for startdose and retry
         if remainDose {
             self.title = NSLocalizedString("Registrera hela måltiden", comment: "Registrera hela måltiden")
+
+        } else if retry {
+            self.title = NSLocalizedString("🔂 Upprepa registrering", comment: "Nytt försök att registrera")
+            bolusStackTapped()
+
         } else {
             self.title = NSLocalizedString("Registrera startdos", comment: "Registrera startdos")
             if NightscoutManager.shared.evBGWarning || NightscoutManager.shared.minBGWarning {
@@ -818,7 +824,19 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     
     // Action method to handle tap on bolusStack
     @objc func bolusStackTapped() {
-        if NightscoutManager.shared.evBGWarning && bolusEntryField.text == "" {
+        if retry {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Info!", comment: "Info"),
+                message: NSLocalizedString("Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. Den senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen", comment: "Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. Den senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen"),
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                self.toggleBolusEntryField()
+            }))
+            self.present(alert, animated: true, completion: nil)
+        }
+        else if NightscoutManager.shared.evBGWarning && bolusEntryField.text == "" {
             // Show a warning alert specific to evBGWarning
             let alert = UIAlertController(
                 title: NSLocalizedString("Blodsockervarning!", comment: "Blodsockervarning!"),
@@ -1222,13 +1240,15 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         dismissedWithoutAction = false
         
         // Only now call the delegate method after successful completion
-        delegate?.didUpdateMealValues(
-            khValue: carbsEntryField.text ?? "",
-            fatValue: fatEntryField.text ?? "",
-            proteinValue: proteinEntryField.text ?? "",
-            bolusValue: bolusEntryField.text ?? "",
-            startDose: self.startDose
-        )
+        if !retry {
+            delegate?.didUpdateMealValues(
+                khValue: carbsEntryField.text ?? "",
+                fatValue: fatEntryField.text ?? "",
+                proteinValue: proteinEntryField.text ?? "",
+                bolusValue: bolusEntryField.text ?? "",
+                startDose: self.startDose
+            )
+        }
         
         // Display the success view instead of an alert
         let successView = SuccessView()
@@ -1296,13 +1316,15 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
 
                 // Wait for the success view animation to finish before dismissing the view controller
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    self.delegate?.didUpdateMealValues(
-                        khValue: carbs,
-                        fatValue: fats,
-                        proteinValue: proteins,
-                        bolusValue: bolus,
-                        startDose: self.startDose
-                    )
+                    if !self.retry {
+                        self.delegate?.didUpdateMealValues(
+                            khValue: carbs,
+                            fatValue: fats,
+                            proteinValue: proteins,
+                            bolusValue: bolus,
+                            startDose: self.startDose
+                        )
+                    }
                     print("Dismissing MealViewController after successful SMS API call")
                     self.dismiss(animated: true, completion: nil)
                 }
