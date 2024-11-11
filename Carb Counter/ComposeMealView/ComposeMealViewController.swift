@@ -737,6 +737,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         treatmentView.addSubview(remainsContainer)
         let remainsTapGesture = UITapGestureRecognizer(target: self, action: #selector(remainContainerTapped))
         remainsContainer.addGestureRecognizer(remainsTapGesture)
+        // Long press gesture recognizer for additional action
+        let longPressRemainsGesture = UILongPressGestureRecognizer(target: self, action: #selector(remainContainerTapped))
+        remainsContainer.addGestureRecognizer(longPressRemainsGesture)
         remainsContainer.isUserInteractionEnabled = true
         
         remainsLabel = createLabel(text: NSLocalizedString("HELA DOSEN", comment: "HELA DOSEN"), fontSize: 9, weight: .bold, color: .white)
@@ -757,6 +760,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         treatmentView.addSubview(startAmountContainer)
         let startAmountTapGesture = UITapGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
         startAmountContainer.addGestureRecognizer(startAmountTapGesture)
+        // Long press gesture recognizer for additional action
+        let longPressStartAmountGesture = UILongPressGestureRecognizer(target: self, action: #selector(startAmountContainerTapped))
+        startAmountContainer.addGestureRecognizer(longPressStartAmountGesture)
         startAmountContainer.isUserInteractionEnabled = true
         
         let startDoseTextString = self.startDoseGiven ? NSLocalizedString("+ DOS", comment: "+ DOS") : NSLocalizedString("+ STARTDOS", comment: "+ STARTDOS")
