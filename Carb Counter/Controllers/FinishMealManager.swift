@@ -1,16 +1,26 @@
+//
+//  FinishMealManager.swift
+//  Carb Counter
+//
+//  Created by Daniel Snällfot on 2024-11-09.
+//
+
 import Foundation
 import UserNotifications
 import AudioToolbox
 
 class FinishMealManager {
     static let shared = FinishMealManager()
-    private let notificationIdentifier = "finishMealReminder"
+    private let baseIdentifier = "finishMealReminder"
     private var mealStartDate: Date?
+    
+    // Define intervals in minutes for notifications
+    private let intervals = [45, 90, 135, 180, 225]
     
     private init() {}
     
     func startFinishMealCountdown() {
-        // Cancel any existing notification
+        // Cancel any existing notifications
         cancelScheduledNotification()
         
         // Retrieve meal start date from UserDefaults
@@ -22,19 +32,19 @@ class FinishMealManager {
             return
         }
         
-        // Schedule notification immediately for 45 minutes from now
-        scheduleNotification()
+        // Schedule all notifications
+        scheduleNotifications()
     }
     
     func stopFinishMealCountdown() {
         cancelScheduledNotification()
         mealStartDate = nil
-        print("Finish Meal notification cancelled.")
+        print("Finish Meal notifications cancelled.")
     }
     
-    private func scheduleNotification() {
+    private func scheduleNotifications() {
         guard let startTime = mealStartDate else {
-            print("Error: mealStartDate is nil, cannot schedule notification.")
+            print("Error: mealStartDate is nil, cannot schedule notifications.")
             return
         }
         
@@ -43,33 +53,37 @@ class FinishMealManager {
             return
         }
         
-        let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("Ej avslutad måltid", comment: "Title for finish meal reminder notification")
-        
-        let bodyFormat = NSLocalizedString(
-            "Kom ihåg att slutföra måltidsregistreringen som påbörjades kl %@",
-            comment: "Body format for finish meal reminder notification"
-        )
-        
-        let formattedTime = DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .short)
-        content.body = String(format: bodyFormat, formattedTime)
-        content.sound = .default
-        
-        // Schedule for 45 minutes from now
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 45 * 60, repeats: false)
-        let request = UNNotificationRequest(identifier: notificationIdentifier, content: content, trigger: trigger)
-        
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Failed to schedule notification: \(error)")
-            } else {
-                print("Finish Meal notification successfully scheduled for 45 minutes from now.")
+        for (index, interval) in intervals.enumerated() {
+            let content = UNMutableNotificationContent()
+            content.title = NSLocalizedString("Ej avslutad måltid", comment: "Title for finish meal reminder notification")
+            
+            let bodyFormat = NSLocalizedString(
+                "Kom ihåg att slutföra måltidsregistreringen som påbörjades kl %@",
+                comment: "Body format for finish meal reminder notification"
+            )
+            
+            let formattedTime = DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .short)
+            content.body = String(format: bodyFormat, formattedTime)
+            content.sound = .default
+            
+            // Schedule for the specified interval
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Double(interval * 60), repeats: false)
+            let identifier = "\(baseIdentifier)_\(index)"  // Fixed: Using index instead of $0
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("Failed to schedule notification for \(interval) minutes: \(error)")
+                } else {
+                    print("Finish Meal notification successfully scheduled for \(interval) minutes from now.")
+                }
             }
         }
     }
     
     private func cancelScheduledNotification() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationIdentifier])
-        print("Cancelled pending finish meal notification")
+        let identifiers = intervals.indices.map { "\(baseIdentifier)_\($0)" }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+        print("Cancelled all pending finish meal notifications")
     }
 }
