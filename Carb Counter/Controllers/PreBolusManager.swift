@@ -11,47 +11,39 @@ import AudioToolbox
 
 class PreBolusManager {
     static let shared = PreBolusManager()
-    
-    private var preBolusTimer: Timer?
+    private let notificationIdentifier = "preBolusReminder"
     private var preBolusStartTime: Date?
-
+    
     private init() {}
     
     func startPreBolusCountdown() {
-        stopPreBolusCountdown() // Stop any existing timer
+        // Cancel any existing notification
+        cancelScheduledNotification()
         
-        // Fetch the bolus amount from UserDefaults
+        // Get current bolus amount and start time
         let bolus = UserDefaults.standard.double(forKey: "registeredBolusSoFar")
         self.preBolusStartTime = Date()
         
-        preBolusTimer = Timer.scheduledTimer(timeInterval: 20 * 60, target: self, selector: #selector(preBolusTimerCompleted), userInfo: bolus, repeats: false)
-        print("Prebolus timer started")
+        // Schedule notification immediately
+        scheduleNotification(bolus: bolus)
+        print("Prebolus notification scheduled")
     }
     
     func stopPreBolusCountdown() {
-        preBolusTimer?.invalidate()
-        preBolusTimer = nil
+        cancelScheduledNotification()
         preBolusStartTime = nil
-        print("Prebolus timer stopped")
+        print("Prebolus notification cancelled")
     }
     
-    @objc private func preBolusTimerCompleted() {
+    private func scheduleNotification(bolus: Double) {
         guard let startTime = preBolusStartTime else { return }
         
-        // Check if pre-bolus notifications are allowed
         guard UserDefaultsRepository.preBolusNotificationsAllowed else {
             print("Pre-bolus notifications are disabled in settings.")
-            stopPreBolusCountdown() // Stop the timer if notifications are not allowed
             return
         }
-
-        // Fetch the bolus amount from UserDefaults to ensure it's the latest
-        let bolus = UserDefaults.standard.double(forKey: "registeredBolusSoFar")
         
-        // Schedule the notification
         let content = UNMutableNotificationContent()
-        
-        // Localize title and body
         content.title = NSLocalizedString("Kom ihåg att äta", comment: "Title for pre-bolus reminder notification")
         
         let bodyFormat = NSLocalizedString(
@@ -65,15 +57,21 @@ class PreBolusManager {
         )
         content.sound = .default
         
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: "preBolusReminder", content: content, trigger: trigger)
+        // Schedule for 20 minutes from now
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 20 * 60, repeats: false)
+        let request = UNNotificationRequest(identifier: notificationIdentifier, content: content, trigger: trigger)
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Failed to schedule notification: \(error)")
+            } else {
+                print("Pre-bolus notification successfully scheduled for 20 minutes from now.")
             }
         }
-        
-        stopPreBolusCountdown() // Clear timer after completion
+    }
+    
+    private func cancelScheduledNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationIdentifier])
+        print("Cancelled pending pre-bolus notification")
     }
 }

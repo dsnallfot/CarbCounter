@@ -1875,8 +1875,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Add a short delay to give time for UserDefaults to save before starting the timer
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 FinishMealManager.shared.startFinishMealCountdown()
+                if self.preBolus {
+                    PreBolusManager.shared.startPreBolusCountdown()
+                } else {
+                    PreBolusManager.shared.stopPreBolusCountdown()
+                }
             }
         } else {
+            FinishMealManager.shared.stopFinishMealCountdown()
+            PreBolusManager.shared.stopPreBolusCountdown()
             print("No values to register, timer not started.")
         }
     }
@@ -2745,11 +2752,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         self.preBolus = self.foodItemRows.isEmpty
         let emojis = self.preBolus ? "⏱️" : self.getMealEmojis()
 
-        if self.preBolus {
+       /* if self.preBolus {
             PreBolusManager.shared.startPreBolusCountdown()
         } else {
             PreBolusManager.shared.stopPreBolusCountdown()
-        }
+        }*/
         
         //FinishMealManager.shared.startFinishMealCountdown()
 
