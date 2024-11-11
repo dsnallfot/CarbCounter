@@ -2774,7 +2774,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             hideAllDeleteButtons()
 
-            let emojis = ""
+            let emojis = "🔂"
 
             // Replace "--" with "0" in totalStartAmountLabel and totalStartBolusLabel
             let khValue = "0"
