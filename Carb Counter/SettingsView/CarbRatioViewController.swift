@@ -150,6 +150,9 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
         let confirmAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .destructive) { _ in
             self.downloadCarbRatiosFromNightscout()
+            // Set hasChanges to true since we've made a modification
+            self.hasChanges = true
+
         }
 
         alertController.addAction(cancelAction)
