@@ -1051,13 +1051,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         alert.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: foodItem)
         }))
-        
-        if UserDefaultsRepository.allowDataClearing {
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Nollställ räknare", comment: "Reset counter button"), style: .destructive, handler: { _ in
-                foodItem.count = 0
-                self.saveFoodItemChanges(for: foodItem)
-            }))
-        }
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
 

@@ -247,7 +247,7 @@ class MealInsightsViewController: UIViewController, ChartViewDelegate {
             title = NSLocalizedString("Portionshistorik", comment: "Title for MealInsights screen when coming from fooditemrow")
             actionButton.setTitle(NSLocalizedString("Använd genomsnittlig portion", comment: "Default button label"), for: .normal)
         } else if isComingFromDetailView {
-            title = NSLocalizedString("Insikter", comment: "Title for MealInsights screen")
+            title = NSLocalizedString("Portionshistorik", comment: "Title for MealInsights screen when coming from Meal History")
             actionButton.setTitle(NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button label"), for: .normal)
         } else {
             // Fallback or default title, if neither condition is met

@@ -483,8 +483,17 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
                     
                     // Display the alert
                     let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("+ Lägg till i måltid", comment: "Add to meal button"), style: .default, handler: { _ in
+                        self.saveSingleFoodItemTemporary(foodEntry: foodEntry)
+                    }))
                     
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Mer insikter", comment: "Insights button"), style: .default, handler: { _ in
+                        self.presentMealInsightsViewControllerBig(with: foodEntry)
+                    }))
+
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel button"), style: .cancel, handler: nil))
+
                     present(alert, animated: true, completion: nil)
                 } else {
                     print("FoodItem with id \(foodEntry.entryId?.uuidString ?? "unknown") not found.")
@@ -527,6 +536,22 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             sheet.largestUndimmedDetentIdentifier = .medium
             sheet.preferredCornerRadius = 24
         }
+
+        present(navController, animated: true, completion: nil)
+    }
+    
+    private func presentMealInsightsViewControllerBig(with foodEntry: FoodItemEntry) {
+        let mealInsightsVC = MealInsightsViewController()
+
+        // Pass the foodEntry to MealInsightsViewController
+        mealInsightsVC.prepopulatedSearchText = foodEntry.entryName ?? ""
+        mealInsightsVC.prepopulatedSearchTextId = foodEntry.entryId ?? nil
+        mealInsightsVC.isComingFromDetailView = false
+        mealInsightsVC.selectedFoodEntry = foodEntry  // Pass the foodEntry with entryId
+
+        // Present MealInsightsViewController in a sheet
+        let navController = UINavigationController(rootViewController: mealInsightsVC)
+        navController.modalPresentationStyle = .pageSheet
 
         present(navController, animated: true, completion: nil)
     }
@@ -688,26 +713,27 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             
         } else {
             // Handle the flow when not presented modally
-            if let navigationController = navigationController,
-               let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
-                
-                composeMealVC.checkAndHandleExistingMeal(
-                    replacementAction: {
-                        composeMealVC.addMealHistory(mealHistory)
-                    },
-                    additionAction: {
-                        composeMealVC.addMealHistory(mealHistory)
-                    },
-                    completion: {
-                        navigationController.popToViewController(composeMealVC, animated: true)
-                    }
-                )
-            } else {
-                // If no existing instance found, instantiate a new one
-                let composeMealVC = ComposeMealViewController()
-                composeMealVC.addMealHistory(mealHistory)
-                navigationController?.pushViewController(composeMealVC, animated: true)
-            }
+
+                if let navigationController = self.navigationController,
+                   let composeMealVC = navigationController.viewControllers.first(where: { $0 is ComposeMealViewController }) as? ComposeMealViewController {
+                    
+                    composeMealVC.checkAndHandleExistingMeal(
+                        replacementAction: {
+                            composeMealVC.addMealHistory(mealHistory)
+                        },
+                        additionAction: {
+                            composeMealVC.addMealHistory(mealHistory)
+                        },
+                        completion: {
+                            navigationController.popToViewController(composeMealVC, animated: true)
+                        }
+                    )
+                } else {
+                    // If no existing instance found, instantiate a new one
+                    let composeMealVC = ComposeMealViewController()
+                    composeMealVC.addMealHistory(mealHistory)
+                    self.navigationController?.pushViewController(composeMealVC, animated: true)
+                }
         }
     }
     
@@ -730,6 +756,30 @@ class MealHistoryDetailViewController: UIViewController, UITableViewDelegate, UI
             print("FoodItemTemporary entries saved successfully")
         } catch {
             print("Failed to save FoodItemRow entries: \(error)")
+        }
+    }
+    
+    // New function to save a single food item to FoodItemTemporary
+    private func saveSingleFoodItemTemporary(foodEntry: FoodItemEntry) {
+        guard let context = foodEntry.managedObjectContext else { return }
+        
+        let newFoodItemTemporary = FoodItemTemporary(context: context)
+        newFoodItemTemporary.entryId = foodEntry.entryId
+        newFoodItemTemporary.entryPortionServed = foodEntry.entryPortionServed
+        // Set additional properties as needed
+        
+        do {
+            try context.save()
+            print("Single FoodItemTemporary entry saved successfully")
+            // Show the success view after saving the food items
+            let successView = SuccessView()
+            
+            // Use the key window for showing the success view
+            if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                successView.showInView(keyWindow)
+            }
+        } catch {
+            print("Failed to save FoodItemTemporary entry: \(error)")
         }
     }
     
