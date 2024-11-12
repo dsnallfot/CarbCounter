@@ -262,18 +262,17 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     private func setupNavigationBarButtons() {
         // Create the icon image with a larger configuration
         let iconImage = UIImage(systemName: "line.3.horizontal.decrease.circle")?
-            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 21.5, weight: .regular))  // Adjust point size as desired
-
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 21.5, weight: .regular))
+        
         // Create the icon image view and apply the adjusted image
         let iconImageView = UIImageView(image: iconImage)
         iconImageView.tintColor = .label
-
+        
         // Create the count label
         let countLabel = UILabel()
-        let foodItemCount = String(foodItems.count)
         countLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
         countLabel.textColor = .label
-        countLabel.text = ""//foodItemCount  // Start with an empty label
+        countLabel.text = ""
         
         // Stack view to hold the icon and count label side-by-side
         let stackView = UIStackView(arrangedSubviews: [iconImageView, countLabel])
@@ -281,7 +280,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         stackView.spacing = 4
         
         // Create a tap gesture recognizer for the stack view
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showFilterOptions))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleFilter))
         stackView.addGestureRecognizer(tapGesture)
         stackView.isUserInteractionEnabled = true
         
@@ -586,6 +585,28 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             
             present(alertController, animated: true, completion: nil)
         }
+    
+    // Toggle filter state
+    @objc private func toggleFilter() {
+        if isFilterApplied {
+            resetFilter()
+        } else {
+            showFilterOptions()
+        }
+    }
+    
+    // Reset the filter
+    private func resetFilter() {
+        searchBar.text = ""
+        UserDefaultsRepository.savedSearchText = nil
+        if searchMode == .local {
+            filteredFoodItems = foodItems
+            sortFoodItems()
+        }
+        searchBar.resignFirstResponder()
+        isFilterApplied = false
+        updateFilterButtonAppearance()
+    }
 
     // Method to handle secret search options
     private func applySecretSearch(_ secretSearch: String) {
