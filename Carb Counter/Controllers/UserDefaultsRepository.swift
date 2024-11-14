@@ -326,6 +326,30 @@ class UserDefaultsRepository {
             UserDefaults.standard.set(newValue, forKey: "finishMealNotificationsAllowed")
         }
     }
+    static var sharedSecretString: String {
+        get {
+            return UserDefaults.standard.string(forKey: "sharedSecretString") ?? ""
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "sharedSecretString")
+        }
+    }
+    static var APNSKeyIdString: String {
+        get {
+            return UserDefaults.standard.string(forKey: "APNSKeyIdString") ?? ""
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "APNSKeyIdString")
+        }
+    }
+    static var APNSKeyString: String {
+        get {
+            return UserDefaults.standard.string(forKey: "APNSKeyString") ?? ""
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "APNSKeyString")
+        }
+    }
 }
 
 extension Notification.Name {
