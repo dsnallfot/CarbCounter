@@ -101,6 +101,9 @@ class RemoteSettingsViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section == 1 && method == "iOS Shortcuts" {
+            return nil // Return nil to hide the header
+        }
         return sectionHeaders[section]
     }
 
@@ -167,8 +170,18 @@ class RemoteSettingsViewController: UITableViewController {
     }
 
     @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
+        let previousMethod = method
         method = sender.selectedSegmentIndex == 0 ? "iOS Shortcuts" : "SMS API"
-        tableView.reloadData()
+
+        // Determine which sections need to be reloaded
+        var sectionsToReload: [Int] = []
+        if previousMethod != method {
+            sectionsToReload = [1, 2]
+        }
+
+        tableView.beginUpdates()
+        tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
+        tableView.endUpdates()
     }
 
     @objc private func limitTextFieldLength(_ textField: UITextField) {
