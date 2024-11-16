@@ -34,6 +34,7 @@ class RemoteSettingsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        //tableView.separatorStyle = .none
     }
 
     private func setupTableView() {
@@ -116,13 +117,16 @@ class RemoteSettingsViewController: UITableViewController {
         }
         return sectionHeaders[section]
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SegmentedControlCell", for: indexPath)
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
-
+            
+            // Remove separator lines for this cell
+            cell.separatorInset = UIEdgeInsets(top: 0, left: UIScreen.main.bounds.width, bottom: 0, right: 0)
+            
             let segmentedControl = UISegmentedControl(items: [
                 NSLocalizedString("Välj genvägar", comment: "Använd genvägar"),
                 NSLocalizedString("Välj Twilio", comment: "Använd Twilio SMS API"),
@@ -131,13 +135,14 @@ class RemoteSettingsViewController: UITableViewController {
             segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : (method == "Trio APNS") ? 2 : 0
             segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
             segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-
+            
             cell.contentView.addSubview(segmentedControl)
+            
             NSLayoutConstraint.activate([
                 segmentedControl.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 15),
                 segmentedControl.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -15),
-                segmentedControl.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 10),
-                segmentedControl.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -10)
+                segmentedControl.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 5),
+                segmentedControl.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -5),
             ])
             return cell
         } else {
@@ -333,15 +338,22 @@ class CustomTableViewCell: UITableViewCell {
         super.init(coder: coder)
         setupViews()
     }
-
+    
     private func setupViews() {
         label.translatesAutoresizingMaskIntoConstraints = false
         textField.translatesAutoresizingMaskIntoConstraints = false
         textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.isHidden = true // Initially hidden until multiline is required
+        textView.isHidden = true
         
         textView.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
-        textView.isScrollEnabled = false // Allow it to expand with content
+        textView.isScrollEnabled = false
+        
+        // Enhance TextView appearance
+        textView.layer.borderWidth = 1.0
+        textView.layer.borderColor = UIColor.systemGray4.cgColor
+        textView.layer.cornerRadius = 8
+        textView.clipsToBounds = true
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
         
         contentView.addSubview(label)
         contentView.addSubview(textField)
@@ -352,7 +364,7 @@ class CustomTableViewCell: UITableViewCell {
             label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             label.widthAnchor.constraint(equalToConstant: 120),
-
+            
             textField.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
             textField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             textField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -375,15 +387,10 @@ class CustomTableViewCell: UITableViewCell {
             textView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             textView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
-            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 100) // Minimum height for APNS key
+            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 100)
         ]
         
-        // Activate standard constraints by default
         NSLayoutConstraint.activate(standardConstraints)
-        
-        textView.layer.borderWidth = 0.5
-        textView.layer.borderColor = UIColor.systemGray4.cgColor
-        textView.layer.cornerRadius = 5
     }
 
     func configureForMultiline(isMultiline: Bool, isAPNSKey: Bool = false) {
