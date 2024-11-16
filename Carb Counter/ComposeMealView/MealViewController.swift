@@ -8,9 +8,11 @@
 import UIKit
 import LocalAuthentication
 import AudioToolbox
+import HealthKit
 
 class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestable  {
     weak var delegate: MealViewControllerDelegate?
+    private let pushNotificationManager = PushNotificationManager()
     
     @IBOutlet weak var carbsEntryField: UITextField!
     @IBOutlet weak var fatEntryField: UITextField!
@@ -81,6 +83,19 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
     var isAlertShowing = false // Property to track if alerts are currently showing
     var isButtonDisabled = false // Property to track if the button is currently disabled
     var isBolusEntryFieldPopulated = false
+    
+    private var statusMessage: String? = nil
+    private var alertType: AlertType? = nil
+    private var showAlert: Bool = false
+    private var isScheduling: Bool = false
+    private var selectedTime: Date? = nil
+    
+    enum AlertType {
+        case confirmMeal
+        case statusSuccess
+        case statusFailure
+        case validationError
+    }
     
     var popupView: UIView?
     
@@ -196,6 +211,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         // Update the method UITextField based on the stored value in UserDefaults
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             methodUI.text = NSLocalizedString("ⓘ  iOS Genväg", comment: "ⓘ  iOS Genväg")
+        } else if UserDefaultsRepository.method == "Trio APNS" {
+            methodUI.text = NSLocalizedString("ⓘ  Trio APNS", comment: "ⓘ  Trio APNS")
         } else {
             methodUI.text = NSLocalizedString("ⓘ  Twilio SMS", comment: "ⓘ  Twilio SMS")
         }
@@ -1111,9 +1128,17 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         // Show confirmation alert
         if bolusValue != 0 {
-            showMealBolusConfirmationAlert(combinedString: combinedString)
+            if method == "Trio APNS" {
+                showAPNSMealBolusConfirmationAlert(carbs: carbsValue, fats: fatsValue, proteins: proteinsValue, bolus: bolusValue)
+            } else {
+                showMealBolusConfirmationAlert(combinedString: combinedString)
+            }
         } else {
-            showMealConfirmationAlert(combinedString: combinedString)
+            if method == "Trio APNS" {
+            showAPNSMealConfirmationAlert(carbs: carbsValue, fats: fatsValue, proteins: proteinsValue, bolus: bolusValue)
+            } else {
+                showMealConfirmationAlert(combinedString: combinedString)
+            }
         }
 
         // Function to format date to ISO 8601 without seconds and milliseconds
@@ -1166,6 +1191,25 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             
             present(confirmationAlert, animated: true, completion: nil)
         }
+        
+        func showAPNSMealConfirmationAlert(carbs: Double, fats: Double, proteins: Double, bolus: Double) {
+            // Set isAlertShowing to true before showing the alert
+            isAlertShowing = true
+            // Confirmation alert before sending the request
+            let confirmationAlert = UIAlertController(title: NSLocalizedString("Bekräfta måltid", comment: "Bekräfta måltid"), message: NSLocalizedString("Vill du registrera denna måltid?", comment: "Vill du registrera denna måltid?"), preferredStyle: .alert)
+            
+            confirmationAlert.addAction(UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default, handler: { (action: UIAlertAction!) in
+                // Proceed with sending the request
+                self.sendMealRequest(combinedString: combinedString) //TODO: uppdatera med dubbelvärden
+            }))
+            
+            confirmationAlert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: { (action: UIAlertAction!) in
+                // Handle dismissal when "Cancel" is selected
+                self.handleAlertDismissal()
+            }))
+            
+            present(confirmationAlert, animated: true, completion: nil)
+        }
                 
         func showMealBolusConfirmationAlert(combinedString: String) {
             let method = UserDefaultsRepository.method
@@ -1187,6 +1231,36 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
                     }
                 }
             }
+            
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { _ in
+                self.handleAlertDismissal()
+            }
+            
+            confirmationAlert.addAction(confirmAction)
+            confirmationAlert.addAction(cancelAction)
+            
+            present(confirmationAlert, animated: true, completion: nil)
+        }
+        
+        func showAPNSMealBolusConfirmationAlert(carbs: Double, fats: Double, proteins: Double, bolus: Double) {
+            let method = UserDefaultsRepository.method
+            isAlertShowing = true
+            
+            let confirmationAlert = UIAlertController(title: NSLocalizedString("Bekräfta måltid och bolus", comment: "Bekräfta måltid och bolus"), message: String(format: NSLocalizedString("Vill du registrera denna måltid och ge %.2f E bolus?", comment: "Vill du registrera denna måltid och ge %.2f E bolus?"), bolusValue), preferredStyle: .alert)
+            
+            let confirmAction: UIAlertAction
+            
+            let carbs = carbs
+            let fats = fats
+            let proteins = proteins
+            let bolus = bolus
+            
+            // Authenticate with biometrics
+                confirmAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in
+                    self.authenticateWithBiometrics {
+                        self.handleAPNSCommand(carbs: carbs, fats: fats, proteins: proteins, bolus: bolus)
+                    }
+                }
             
             let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { _ in
                 self.handleAlertDismissal()
@@ -1278,6 +1352,72 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             handleShortcutsRequest(combinedString: combinedString, carbs: carbs, fats: fats, proteins: proteins, bolus: bolus, startDose: self.startDose)
         } else {
             handleTwilioRequest(combinedString: combinedString, carbs: carbs, fats: fats, proteins: proteins, bolus: bolus, startDose: self.startDose)
+        }
+    }
+    
+    //APNS Request
+    private func handleAPNSCommand(carbs: Double, fats: Double, proteins: Double, bolus: Double) {
+
+        // Convert the Double values to HKQuantity
+        let carbsQuantity = HKQuantity(unit: .gram(), doubleValue: carbs)
+        let fatsQuantity = HKQuantity(unit: .gram(), doubleValue: fats)
+        let proteinsQuantity = HKQuantity(unit: .gram(), doubleValue: proteins)
+        let bolusQuantity = HKQuantity(unit: .internationalUnit(), doubleValue: bolus)
+
+        // Pass the HKQuantity values to the pushNotificationManager
+        pushNotificationManager.sendMealPushNotification(
+            carbs: carbsQuantity,
+            protein: proteinsQuantity,
+            fat: fatsQuantity,
+            bolusAmount: bolusQuantity,
+            notes: mealNotes.text,
+            scheduledTime: nil//mealDateTime.date
+        ) { success, errorMessage in
+            DispatchQueue.main.async {
+                if success {
+                    
+                    // Play a success sound
+                    AudioServicesPlaySystemSound(SystemSoundID(1322))
+                    
+                    // Mark that the dismissal is due to successful action
+                    self.dismissedWithoutAction = false
+                    
+                    // Only now call the delegate method after successful completion
+                    if !self.retry {
+                        self.delegate?.didUpdateMealValues(
+                            khValue: self.carbsEntryField.text ?? "",
+                            fatValue: self.fatEntryField.text ?? "",
+                            proteinValue: self.proteinEntryField.text ?? "",
+                            bolusValue: self.bolusEntryField.text ?? "",
+                            startDose: self.startDose
+                        )
+                    }
+                    
+                    // Display the success view instead of an alert
+                    let successView = SuccessView()
+                    if let window = self.view.window {
+                        successView.showInView(window) // Show the success view in the window
+                    }
+
+                    // Dismiss the view controller after showing the success view
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { // Wait for the success view animation to complete
+                        self.dismiss(animated: true, completion: nil)
+                    }
+
+                } else {
+                    AudioServicesPlaySystemSound(SystemSoundID(1053))
+                    
+                    let alertController = UIAlertController(
+                        title: NSLocalizedString("Fel", comment: "Error"),
+                        message: errorMessage,
+                        preferredStyle: .alert
+                    )
+                    alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default, handler: nil))
+                    self.present(alertController, animated: true, completion: nil)
+                    
+                }
+                //self.showAlert = true
+            }
         }
     }
 

@@ -59,6 +59,43 @@
 		65D185722CB13B2D00E82D51 /* SuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D185712CB13B2D00E82D51 /* SuccessView.swift */; };
 		65D185752CB27AB900E82D51 /* DGCharts in Frameworks */ = {isa = PBXBuildFile; productRef = 65D185742CB27AB900E82D51 /* DGCharts */; };
 		65D2B06C2CA9760000C0AF80 /* MealInsightsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D2B06B2CA9760000C0AF80 /* MealInsightsViewController.swift */; };
+		65D508C42CE73FD90023E29B /* PushMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508C32CE73FD60023E29B /* PushMessage.swift */; };
+		65D508C62CE7400B0023E29B /* PushNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508C52CE740080023E29B /* PushNotificationManager.swift */; };
+		65D508D02CE77C250023E29B /* SwiftJWT in Frameworks */ = {isa = PBXBuildFile; productRef = 65D508CF2CE77C250023E29B /* SwiftJWT */; };
+		65D508D22CE77C8E0023E29B /* NSProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508D12CE77C8C0023E29B /* NSProfile.swift */; };
+		65D508D42CE77CC00023E29B /* ProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508D32CE77CBF0023E29B /* ProfileManager.swift */; };
+		65D508D62CE77D1D0023E29B /* TRCCommandType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508D52CE77D1B0023E29B /* TRCCommandType.swift */; };
+		65D508D82CE77D450023E29B /* OverrideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508D72CE77D430023E29B /* OverrideView.swift */; };
+		65D508DA2CE77D6C0023E29B /* MealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508D92CE77D6A0023E29B /* MealView.swift */; };
+		65D508DC2CE77E260023E29B /* TrioNightscoutRemoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508DB2CE77E240023E29B /* TrioNightscoutRemoteView.swift */; };
+		65D508DE2CE77E5E0023E29B /* RemoteSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508DD2CE77E5C0023E29B /* RemoteSettingsViewModel.swift */; };
+		65D508E02CE77EAA0023E29B /* HKUnit+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508DF2CE77EA80023E29B /* HKUnit+Extensions.swift */; };
+		65D508E22CE77F5B0023E29B /* SecureStorageValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508E12CE77F590023E29B /* SecureStorageValue.swift */; };
+		65D508E42CE77F8C0023E29B /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508E32CE77F8A0023E29B /* Storage.swift */; };
+		65D508E62CE77FBC0023E29B /* StorageValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508E52CE77FBB0023E29B /* StorageValue.swift */; };
+		65D508E82CE79C0C0023E29B /* RemoteSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508E72CE79C040023E29B /* RemoteSettingsView.swift */; };
+		65D508EA2CE79C5D0023E29B /* TextFieldWithToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508E92CE79C5C0023E29B /* TextFieldWithToolBar.swift */; };
+		65D508EC2CE79CDF0023E29B /* ErrorMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508EB2CE79CDD0023E29B /* ErrorMessageView.swift */; };
+		65D508EE2CE79D2D0023E29B /* ObservableUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508ED2CE79D2B0023E29B /* ObservableUserDefaults.swift */; };
+		65D508F02CE79D490023E29B /* ObservableUserDefaultsValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508EF2CE79D470023E29B /* ObservableUserDefaultsValue.swift */; };
+		65D508F22CE79D920023E29B /* UserDefaultsValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508F12CE79D900023E29B /* UserDefaultsValue.swift */; };
+		65D508F42CE79DE40023E29B /* AnyConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508F32CE79DDC0023E29B /* AnyConvertible.swift */; };
+		65D508F62CE79E090023E29B /* UserDefaultsValueGroups.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508F52CE79E080023E29B /* UserDefaultsValueGroups.swift */; };
+		65D508F82CE79E400023E29B /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508F72CE79E3E0023E29B /* AppConstants.swift */; };
+		65D508FA2CE79E720023E29B /* ObservationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508F92CE79E700023E29B /* ObservationToken.swift */; };
+		65D508FC2CE79EBF0023E29B /* TempTargetPresetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508FB2CE79EBE0023E29B /* TempTargetPresetManager.swift */; };
+		65D508FE2CE79EE00023E29B /* TempTargetPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508FD2CE79EDF0023E29B /* TempTargetPreset.swift */; };
+		65D509002CE79F490023E29B /* Observable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D508FF2CE79F470023E29B /* Observable.swift */; };
+		65D509022CE79F730023E29B /* ObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509012CE79F710023E29B /* ObservableValue.swift */; };
+		65D509042CE79FCC0023E29B /* Units.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509032CE79FCB0023E29B /* Units.swift */; };
+		65D509062CE7A0FF0023E29B /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509052CE7A0FD0023E29B /* UserDefaults.swift */; };
+		65D509082CE7A2050023E29B /* GlucoseConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509072CE7A2030023E29B /* GlucoseConversion.swift */; };
+		65D5090A2CE7A26E0023E29B /* TrioNightscoutRemoteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509092CE7A26C0023E29B /* TrioNightscoutRemoteController.swift */; };
+		65D5090C2CE7A29E0023E29B /* TreatmentResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D5090B2CE7A2970023E29B /* TreatmentResponse.swift */; };
+		65D5090E2CE7A2F30023E29B /* NightscoutUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D5090D2CE7A2F20023E29B /* NightscoutUtils.swift */; };
+		65D509102CE7A3A60023E29B /* HKQuantityInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D5090F2CE7A3A50023E29B /* HKQuantityInputView.swift */; };
+		65D509122CE7A3CE0023E29B /* LoadingButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509112CE7A3CD0023E29B /* LoadingButtonView.swift */; };
+		65D509142CE8BFB10023E29B /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D509132CE8BFAF0023E29B /* Profile.swift */; };
 		65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */; };
 		65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */; };
 /* End PBXBuildFile section */
@@ -122,6 +159,42 @@
 		65D138AA2C43DEBD00FAE6BF /* LoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewController.swift; sourceTree = "<group>"; };
 		65D185712CB13B2D00E82D51 /* SuccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessView.swift; sourceTree = "<group>"; };
 		65D2B06B2CA9760000C0AF80 /* MealInsightsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealInsightsViewController.swift; sourceTree = "<group>"; };
+		65D508C32CE73FD60023E29B /* PushMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushMessage.swift; sourceTree = "<group>"; };
+		65D508C52CE740080023E29B /* PushNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
+		65D508D12CE77C8C0023E29B /* NSProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSProfile.swift; sourceTree = "<group>"; };
+		65D508D32CE77CBF0023E29B /* ProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileManager.swift; sourceTree = "<group>"; };
+		65D508D52CE77D1B0023E29B /* TRCCommandType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TRCCommandType.swift; sourceTree = "<group>"; };
+		65D508D72CE77D430023E29B /* OverrideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideView.swift; sourceTree = "<group>"; };
+		65D508D92CE77D6A0023E29B /* MealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealView.swift; sourceTree = "<group>"; };
+		65D508DB2CE77E240023E29B /* TrioNightscoutRemoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrioNightscoutRemoteView.swift; sourceTree = "<group>"; };
+		65D508DD2CE77E5C0023E29B /* RemoteSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSettingsViewModel.swift; sourceTree = "<group>"; };
+		65D508DF2CE77EA80023E29B /* HKUnit+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HKUnit+Extensions.swift"; sourceTree = "<group>"; };
+		65D508E12CE77F590023E29B /* SecureStorageValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureStorageValue.swift; sourceTree = "<group>"; };
+		65D508E32CE77F8A0023E29B /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		65D508E52CE77FBB0023E29B /* StorageValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageValue.swift; sourceTree = "<group>"; };
+		65D508E72CE79C040023E29B /* RemoteSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSettingsView.swift; sourceTree = "<group>"; };
+		65D508E92CE79C5C0023E29B /* TextFieldWithToolBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldWithToolBar.swift; sourceTree = "<group>"; };
+		65D508EB2CE79CDD0023E29B /* ErrorMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageView.swift; sourceTree = "<group>"; };
+		65D508ED2CE79D2B0023E29B /* ObservableUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableUserDefaults.swift; sourceTree = "<group>"; };
+		65D508EF2CE79D470023E29B /* ObservableUserDefaultsValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableUserDefaultsValue.swift; sourceTree = "<group>"; };
+		65D508F12CE79D900023E29B /* UserDefaultsValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsValue.swift; sourceTree = "<group>"; };
+		65D508F32CE79DDC0023E29B /* AnyConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyConvertible.swift; sourceTree = "<group>"; };
+		65D508F52CE79E080023E29B /* UserDefaultsValueGroups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsValueGroups.swift; sourceTree = "<group>"; };
+		65D508F72CE79E3E0023E29B /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		65D508F92CE79E700023E29B /* ObservationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationToken.swift; sourceTree = "<group>"; };
+		65D508FB2CE79EBE0023E29B /* TempTargetPresetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempTargetPresetManager.swift; sourceTree = "<group>"; };
+		65D508FD2CE79EDF0023E29B /* TempTargetPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempTargetPreset.swift; sourceTree = "<group>"; };
+		65D508FF2CE79F470023E29B /* Observable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observable.swift; sourceTree = "<group>"; };
+		65D509012CE79F710023E29B /* ObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValue.swift; sourceTree = "<group>"; };
+		65D509032CE79FCB0023E29B /* Units.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Units.swift; sourceTree = "<group>"; };
+		65D509052CE7A0FD0023E29B /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
+		65D509072CE7A2030023E29B /* GlucoseConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlucoseConversion.swift; sourceTree = "<group>"; };
+		65D509092CE7A26C0023E29B /* TrioNightscoutRemoteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrioNightscoutRemoteController.swift; sourceTree = "<group>"; };
+		65D5090B2CE7A2970023E29B /* TreatmentResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreatmentResponse.swift; sourceTree = "<group>"; };
+		65D5090D2CE7A2F20023E29B /* NightscoutUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NightscoutUtils.swift; sourceTree = "<group>"; };
+		65D5090F2CE7A3A50023E29B /* HKQuantityInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HKQuantityInputView.swift; sourceTree = "<group>"; };
+		65D509112CE7A3CD0023E29B /* LoadingButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingButtonView.swift; sourceTree = "<group>"; };
+		65D509132CE8BFAF0023E29B /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		65F217082C34BF3E00AEC8CB /* NightscoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NightscoutManager.swift; path = "Carb Counter/Controllers/NightscoutManager.swift"; sourceTree = SOURCE_ROOT; };
 		65F8E8D32C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRegisteredAmountIntent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -133,6 +206,7 @@
 			files = (
 				65D185752CB27AB900E82D51 /* DGCharts in Frameworks */,
 				5ACF73432CAFEAF700C48000 /* ISEmojiView in Frameworks */,
+				65D508D02CE77C250023E29B /* SwiftJWT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,6 +328,7 @@
 				6553EDFE2C20DA9200B0FDF5 /* Main.storyboard */,
 				656C64A32C6C007000431374 /* Localizable.strings */,
 				65599D632C50F9CE00EFE7C4 /* CoreData */,
+				65D508C22CE73FB70023E29B /* APNS */,
 				6502A9D72C2B1BCB00414DC0 /* HomeView */,
 				6502A9D12C2B1A5300414DC0 /* SettingsView */,
 				6502A9D22C2B1A7C00414DC0 /* FoodItemsView */,
@@ -278,6 +353,65 @@
 			);
 			name = CoreData;
 			path = ..;
+			sourceTree = "<group>";
+		};
+		65D508C22CE73FB70023E29B /* APNS */ = {
+			isa = PBXGroup;
+			children = (
+				65D509132CE8BFAF0023E29B /* Profile.swift */,
+				65D508D12CE77C8C0023E29B /* NSProfile.swift */,
+				65D508D32CE77CBF0023E29B /* ProfileManager.swift */,
+				65D5090D2CE7A2F20023E29B /* NightscoutUtils.swift */,
+				65D508D52CE77D1B0023E29B /* TRCCommandType.swift */,
+				65D508C32CE73FD60023E29B /* PushMessage.swift */,
+				65D508C52CE740080023E29B /* PushNotificationManager.swift */,
+				65D508E32CE77F8A0023E29B /* Storage.swift */,
+				65D508E52CE77FBB0023E29B /* StorageValue.swift */,
+				65D508E12CE77F590023E29B /* SecureStorageValue.swift */,
+				65D509052CE7A0FD0023E29B /* UserDefaults.swift */,
+				65D508ED2CE79D2B0023E29B /* ObservableUserDefaults.swift */,
+				65D508EF2CE79D470023E29B /* ObservableUserDefaultsValue.swift */,
+				65D508F12CE79D900023E29B /* UserDefaultsValue.swift */,
+				65D509172CE8FF3F0023E29B /* Extra */,
+				65D509162CE8FED40023E29B /* Migrated */,
+			);
+			path = APNS;
+			sourceTree = "<group>";
+		};
+		65D509162CE8FED40023E29B /* Migrated */ = {
+			isa = PBXGroup;
+			children = (
+				65D508D92CE77D6A0023E29B /* MealView.swift */,
+			);
+			path = Migrated;
+			sourceTree = "<group>";
+		};
+		65D509172CE8FF3F0023E29B /* Extra */ = {
+			isa = PBXGroup;
+			children = (
+				65D509112CE7A3CD0023E29B /* LoadingButtonView.swift */,
+				65D5090F2CE7A3A50023E29B /* HKQuantityInputView.swift */,
+				65D5090B2CE7A2970023E29B /* TreatmentResponse.swift */,
+				65D509092CE7A26C0023E29B /* TrioNightscoutRemoteController.swift */,
+				65D509072CE7A2030023E29B /* GlucoseConversion.swift */,
+				65D509032CE79FCB0023E29B /* Units.swift */,
+				65D509012CE79F710023E29B /* ObservableValue.swift */,
+				65D508FF2CE79F470023E29B /* Observable.swift */,
+				65D508FD2CE79EDF0023E29B /* TempTargetPreset.swift */,
+				65D508FB2CE79EBE0023E29B /* TempTargetPresetManager.swift */,
+				65D508F92CE79E700023E29B /* ObservationToken.swift */,
+				65D508F72CE79E3E0023E29B /* AppConstants.swift */,
+				65D508F52CE79E080023E29B /* UserDefaultsValueGroups.swift */,
+				65D508F32CE79DDC0023E29B /* AnyConvertible.swift */,
+				65D508EB2CE79CDD0023E29B /* ErrorMessageView.swift */,
+				65D508E92CE79C5C0023E29B /* TextFieldWithToolBar.swift */,
+				65D508E72CE79C040023E29B /* RemoteSettingsView.swift */,
+				65D508DF2CE77EA80023E29B /* HKUnit+Extensions.swift */,
+				65D508DD2CE77E5C0023E29B /* RemoteSettingsViewModel.swift */,
+				65D508DB2CE77E240023E29B /* TrioNightscoutRemoteView.swift */,
+				65D508D72CE77D430023E29B /* OverrideView.swift */,
+			);
+			path = Extra;
 			sourceTree = "<group>";
 		};
 		65F8E8D22C6775C600FDCF05 /* Shortcuts */ = {
@@ -308,6 +442,7 @@
 			packageProductDependencies = (
 				5ACF73422CAFEAF700C48000 /* ISEmojiView */,
 				65D185742CB27AB900E82D51 /* DGCharts */,
+				65D508CF2CE77C250023E29B /* SwiftJWT */,
 			);
 			productName = "Carb Counter";
 			productReference = 6553EDF52C20DA9200B0FDF5 /* Carb Counter.app */;
@@ -341,6 +476,7 @@
 			packageReferences = (
 				5ACF73412CAFEAF700C48000 /* XCRemoteSwiftPackageReference "ISEmojiView" */,
 				65D185732CB27AB900E82D51 /* XCRemoteSwiftPackageReference "Charts" */,
+				65D508CE2CE77C250023E29B /* XCRemoteSwiftPackageReference "Swift-JWT" */,
 			);
 			productRefGroup = 6553EDF62C20DA9200B0FDF5 /* Products */;
 			projectDirPath = "";
@@ -373,51 +509,87 @@
 			buildActionMask = 2147483647;
 			files = (
 				65C75D002C25967C00114BD3 /* StartDoseViewController.swift in Sources */,
+				65D508D42CE77CC00023E29B /* ProfileManager.swift in Sources */,
+				65D508DE2CE77E5E0023E29B /* RemoteSettingsViewModel.swift in Sources */,
 				65D2B06C2CA9760000C0AF80 /* MealInsightsViewController.swift in Sources */,
 				6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */,
 				5A24B6422CB5061C00A8786D /* NightscoutWebViewController.swift in Sources */,
 				6553EE032C20DA9200B0FDF5 /* CarbsCounter.xcdatamodeld in Sources */,
+				65D508FC2CE79EBF0023E29B /* TempTargetPresetManager.swift in Sources */,
 				654EAF992CDA5D8600C5D87A /* NotificationViewController.swift in Sources */,
+				65D508FE2CE79EE00023E29B /* TempTargetPreset.swift in Sources */,
 				6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */,
 				6583021B2CDB9054000BC0AD /* UpdateView.swift in Sources */,
 				65F8E8D42C6775E100FDCF05 /* UpdateRegisteredAmountIntent.swift in Sources */,
+				65D508DC2CE77E260023E29B /* TrioNightscoutRemoteView.swift in Sources */,
+				65D509122CE7A3CE0023E29B /* LoadingButtonView.swift in Sources */,
 				65BAB4EE2C5AE76C0055638D /* RSSHelper.swift in Sources */,
 				653DE7A42C278F7700A639D1 /* Twilio.swift in Sources */,
+				65D508F42CE79DE40023E29B /* AnyConvertible.swift in Sources */,
+				65D508EE2CE79D2D0023E29B /* ObservableUserDefaults.swift in Sources */,
 				65C75D022C2597FC00114BD3 /* CoreDataHelper.swift in Sources */,
+				65D509042CE79FCC0023E29B /* Units.swift in Sources */,
 				65F217092C34BF3E00AEC8CB /* NightscoutManager.swift in Sources */,
 				654EAF972CDA48A400C5D87A /* PreBolusManager.swift in Sources */,
+				65D5090A2CE7A26E0023E29B /* TrioNightscoutRemoteController.swift in Sources */,
+				65D509082CE7A2050023E29B /* GlucoseConversion.swift in Sources */,
+				65D509142CE8BFB10023E29B /* Profile.swift in Sources */,
 				65D138AB2C43DEBD00FAE6BF /* LoadingViewController.swift in Sources */,
 				65BE764F2CA2C54E005EAFE2 /* Formatters.swift in Sources */,
 				65C75CF82C255D6900114BD3 /* FavoriteMealsViewController.swift in Sources */,
+				65D5090C2CE7A29E0023E29B /* TreatmentResponse.swift in Sources */,
 				653DE7A02C27520700A639D1 /* DataSharingViewController.swift in Sources */,
 				6522DDC02C9AB6C300C0BF49 /* EditRegistrationPopoverView.swift in Sources */,
+				65D508D82CE77D450023E29B /* OverrideView.swift in Sources */,
+				65D508E82CE79C0C0023E29B /* RemoteSettingsView.swift in Sources */,
 				65BAB4E82C5A95650055638D /* RSSFeedViewController.swift in Sources */,
+				65D508F22CE79D920023E29B /* UserDefaultsValue.swift in Sources */,
 				65380D2F2CB284CF00BF635E /* TooltipMarkerView.swift in Sources */,
 				65C75CFA2C256FA700114BD3 /* FavoriteMealDetailViewController.swift in Sources */,
+				65D508EC2CE79CDF0023E29B /* ErrorMessageView.swift in Sources */,
 				650EF4142C3CA05800ADF8B0 /* CustomTabBarController.swift in Sources */,
+				65D508E42CE77F8C0023E29B /* Storage.swift in Sources */,
 				6502A99D2C29681E00414DC0 /* MealHistoryViewController.swift in Sources */,
+				65D508D62CE77D1D0023E29B /* TRCCommandType.swift in Sources */,
+				65D508F82CE79E400023E29B /* AppConstants.swift in Sources */,
 				65C75CFE2C25966200114BD3 /* CarbRatioViewController.swift in Sources */,
 				658302192CDAD461000BC0AD /* ConnectionsViewController.swift in Sources */,
+				65D509002CE79F490023E29B /* Observable.swift in Sources */,
 				652891CB2C33FF2C008B8BCA /* ScannerViewController.swift in Sources */,
 				65D138A92C4017E400FAE6BF /* OngoingMealViewController.swift in Sources */,
+				65D5090E2CE7A2F30023E29B /* NightscoutUtils.swift in Sources */,
+				65D508E22CE77F5B0023E29B /* SecureStorageValue.swift in Sources */,
 				5AF082AC2CD0E8E4000BAD75 /* CreateMealHistoryIntent.swift in Sources */,
 				6522DDC22C9AB6E700C0BF49 /* UIHostingController.swift in Sources */,
 				6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */,
+				65D508F62CE79E090023E29B /* UserDefaultsValueGroups.swift in Sources */,
 				6553EDF92C20DA9200B0FDF5 /* AppDelegate.swift in Sources */,
+				65D508EA2CE79C5D0023E29B /* TextFieldWithToolBar.swift in Sources */,
 				653DE7A62C27930F00A639D1 /* RemoteSettingsViewController.swift in Sources */,
+				65D508DA2CE77D6C0023E29B /* MealView.swift in Sources */,
+				65D508C42CE73FD90023E29B /* PushMessage.swift in Sources */,
+				65D508FA2CE79E720023E29B /* ObservationToken.swift in Sources */,
+				65D508E62CE77FBC0023E29B /* StorageValue.swift in Sources */,
+				65D509062CE7A0FF0023E29B /* UserDefaults.swift in Sources */,
+				65D508E02CE77EAA0023E29B /* HKUnit+Extensions.swift in Sources */,
 				65C75CF62C255C8F00114BD3 /* CoreDataStack.swift in Sources */,
 				65C75CFC2C25962E00114BD3 /* SettingsViewController.swift in Sources */,
 				65D185722CB13B2D00E82D51 /* SuccessView.swift in Sources */,
+				65D509102CE7A3A60023E29B /* HKQuantityInputView.swift in Sources */,
 				6553EE302C20DEA600B0FDF5 /* FoodItemsListViewController.swift in Sources */,
 				651B57B02CDFCA7700F6ABD2 /* FinishMealManager.swift in Sources */,
 				6553EE322C20DF4B00B0FDF5 /* ComposeMealViewController.swift in Sources */,
 				653DE7A82C27937B00A639D1 /* UserDefaultsRepository.swift in Sources */,
+				65D508D22CE77C8E0023E29B /* NSProfile.swift in Sources */,
 				6553EE342C20E58B00B0FDF5 /* HomeViewController.swift in Sources */,
+				65D508C62CE7400B0023E29B /* PushNotificationManager.swift in Sources */,
 				6502A99F2C29754D00414DC0 /* MealHistoryDetailViewController.swift in Sources */,
 				6553EDFB2C20DA9200B0FDF5 /* SceneDelegate.swift in Sources */,
 				65BE764B2CA2C134005EAFE2 /* GradientView.swift in Sources */,
+				65D509022CE79F730023E29B /* ObservableValue.swift in Sources */,
 				65BAB4E62C5947A80055638D /* SearchableDropdownViewController.swift in Sources */,
 				6520898B2C661EBD00B85643 /* MealViewController.swift in Sources */,
+				65D508F02CE79D490023E29B /* ObservableUserDefaultsValue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -693,6 +865,14 @@
 				minimumVersion = 5.1.0;
 			};
 		};
+		65D508CE2CE77C250023E29B /* XCRemoteSwiftPackageReference "Swift-JWT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kitura/Swift-JWT.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -705,6 +885,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 65D185732CB27AB900E82D51 /* XCRemoteSwiftPackageReference "Charts" */;
 			productName = DGCharts;
+		};
+		65D508CF2CE77C250023E29B /* SwiftJWT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 65D508CE2CE77C250023E29B /* XCRemoteSwiftPackageReference "Swift-JWT" */;
+			productName = SwiftJWT;
 		};
 /* End XCSwiftPackageProductDependency section */
 

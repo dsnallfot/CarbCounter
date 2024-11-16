@@ -2,11 +2,11 @@ import UIKit
 
 class RemoteSettingsViewController: UITableViewController {
     let sectionHeaders = [
-            NSLocalizedString("SELECT REMOTE COMMANDS METHOD", comment: "SELECT REMOTE COMMANDS METHOD"),
-            NSLocalizedString("REMOTE CONFIGURATION", comment: "REMOTE CONFIGURATION"),
-            NSLocalizedString("TWILIO SETTINGS", comment: "TWILIO SETTINGS"),
-            NSLocalizedString("APNS SETTINGS", comment: "APNS SETTINGS")
-        ]
+        NSLocalizedString("SELECT REMOTE COMMANDS METHOD", comment: "SELECT REMOTE COMMANDS METHOD"),
+        NSLocalizedString("REMOTE CONFIGURATION", comment: "REMOTE CONFIGURATION"),
+        NSLocalizedString("TWILIO SETTINGS", comment: "TWILIO SETTINGS"),
+        NSLocalizedString("APNS SETTINGS", comment: "APNS SETTINGS")
+    ]
     let twilioSettings = [
         "Twilio SID", "Twilio Secret",
         NSLocalizedString("Twilio From #", comment: "Twilio From #"),
@@ -33,43 +33,36 @@ class RemoteSettingsViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupTableView()
+    }
+
+    private func setupTableView() {
         tableView.backgroundColor = .clear
-            let solidBackgroundView = UIView()
-            solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
-            
-            // Set solid background depending on light or dark mode
-            if traitCollection.userInterfaceStyle == .dark {
-                solidBackgroundView.backgroundColor = .systemBackground // This is the solid background in dark mode
-            } else {
-                solidBackgroundView.backgroundColor = .systemGray6 // Solid background in light mode
-            }
+        let solidBackgroundView = UIView()
+        solidBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        solidBackgroundView.backgroundColor = traitCollection.userInterfaceStyle == .dark ? .systemBackground : .systemGray6
 
-            // Create gradient view (used only in dark mode)
-            let colors: [CGColor] = [
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-            ]
-            let gradientView = GradientView(colors: colors)
-            gradientView.translatesAutoresizingMaskIntoConstraints = false
-            
-            let backgroundContainerView = UIView()
-            backgroundContainerView.addSubview(solidBackgroundView)
-            
-            // Only add gradient view in dark mode
-            if traitCollection.userInterfaceStyle == .dark {
-                backgroundContainerView.addSubview(gradientView)
-            }
-            
-            tableView.backgroundView = backgroundContainerView
+        let gradientView = GradientView(colors: [
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+            UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+        ])
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
 
-            NSLayoutConstraint.activate([
-                solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
-                solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
-                solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
-                solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
-            ])
-            
+        let backgroundContainerView = UIView()
+        backgroundContainerView.addSubview(solidBackgroundView)
+        if traitCollection.userInterfaceStyle == .dark {
+            backgroundContainerView.addSubview(gradientView)
+        }
+        tableView.backgroundView = backgroundContainerView
+
+        NSLayoutConstraint.activate([
+            solidBackgroundView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
+            solidBackgroundView.trailingAnchor.constraint(equalTo: backgroundContainerView.trailingAnchor),
+            solidBackgroundView.topAnchor.constraint(equalTo: backgroundContainerView.topAnchor),
+            solidBackgroundView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
+        ])
+
         if traitCollection.userInterfaceStyle == .dark {
             NSLayoutConstraint.activate([
                 gradientView.leadingAnchor.constraint(equalTo: backgroundContainerView.leadingAnchor),
@@ -78,23 +71,22 @@ class RemoteSettingsViewController: UITableViewController {
                 gradientView.bottomAnchor.constraint(equalTo: backgroundContainerView.bottomAnchor)
             ])
         }
-        
+
         title = NSLocalizedString("Fjärrstyrning", comment: "Fjärrstyrning")
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
         tableView.tableFooterView = UIView()
 
         if !UserDefaultsRepository.allowShortcuts {
-                method = "iOS Shortcuts"
-            } else if method.isEmpty {
-                method = "iOS Shortcuts"
-            }
-    
-        // Add Done button to the navigation bar
+            method = "iOS Shortcuts"
+        } else if method.isEmpty {
+            method = "iOS Shortcuts"
+        }
+
         let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = doneButton
     }
-    
+
     @objc private func doneButtonTapped() {
         navigationController?.popViewController(animated: true)
     }
@@ -104,120 +96,151 @@ class RemoteSettingsViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            switch section {
-            case 0:
-                return 1  // Segmented control
-            case 1:
-                return remoteConfig.count  // Remote configuration always shown
-            case 2:
-                return method == "SMS API" ? twilioSettings.count : 0  // Twilio settings
-            case 3:
-                return method == "Trio APNS" ? apnsSettings.count : 0  // APNS settings
-            default:
-                return 0
-            }
+        switch section {
+        case 0:
+            return 1 // Segmented control
+        case 1:
+            return remoteConfig.count
+        case 2:
+            return method == "SMS API" ? twilioSettings.count : 0
+        case 3:
+            return method == "Trio APNS" ? apnsSettings.count : 0
+        default:
+            return 0
         }
+    }
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-            if section == 0 {
-                return nil  // Hide header for segmented control section
-            }
-            if section == 2 && method != "SMS API" {
-                return nil  // Hide TWILIO SETTINGS header
-            }
-            if section == 3 && method != "Trio APNS" {
-                return nil  // Hide APNS SETTINGS header
-            }
-            return sectionHeaders[section]
+        if section == 0 || (section == 2 && method != "SMS API") || (section == 3 && method != "Trio APNS") {
+            return nil
         }
+        return sectionHeaders[section]
+    }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            if indexPath.section == 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "SegmentedControlCell", for: indexPath)
-                cell.selectionStyle = .none
-                cell.backgroundColor = .clear
+        if indexPath.section == 0 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "SegmentedControlCell", for: indexPath)
+            cell.selectionStyle = .none
+            cell.backgroundColor = .clear
 
-                let segmentedControl = UISegmentedControl(items: [
-                    NSLocalizedString("Välj genvägar", comment: "Använd genvägar"),
-                    NSLocalizedString("Välj Twilio", comment: "Använd Twilio SMS API"),
-                    NSLocalizedString("Välj APNS", comment: "Använd Trio APNS")
-                ])
-                segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : (method == "Trio APNS") ? 2 : 0
-                segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
-                segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+            let segmentedControl = UISegmentedControl(items: [
+                NSLocalizedString("Välj genvägar", comment: "Använd genvägar"),
+                NSLocalizedString("Välj Twilio", comment: "Använd Twilio SMS API"),
+                NSLocalizedString("Välj APNS", comment: "Använd Trio APNS")
+            ])
+            segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : (method == "Trio APNS") ? 2 : 0
+            segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
+            segmentedControl.translatesAutoresizingMaskIntoConstraints = false
 
-                cell.contentView.addSubview(segmentedControl)
-                NSLayoutConstraint.activate([
-                    segmentedControl.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 15),
-                    segmentedControl.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -15),
-                    segmentedControl.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 10),
-                    segmentedControl.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -10)
-                ])
+            cell.contentView.addSubview(segmentedControl)
+            NSLayoutConstraint.activate([
+                segmentedControl.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 15),
+                segmentedControl.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -15),
+                segmentedControl.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 10),
+                segmentedControl.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -10)
+            ])
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomTableViewCell
+            cell.selectionStyle = .none
 
-                return cell
-            } else {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomTableViewCell
-                cell.selectionStyle = .none
+            var settingName: String
+            switch indexPath.section {
+            case 1:
+                settingName = remoteConfig[indexPath.row]
+            case 2:
+                settingName = twilioSettings[indexPath.row]
+            case 3:
+                settingName = apnsSettings[indexPath.row]
+            default:
+                settingName = ""
+            }
 
-                var settingName: String
-                switch indexPath.section {
-                case 1:
-                    settingName = remoteConfig[indexPath.row]
-                case 2:
-                    settingName = twilioSettings[indexPath.row]
-                case 3:
-                    settingName = apnsSettings[indexPath.row]
-                default:
-                    settingName = ""
-                }
+            cell.label.text = settingName
+            cell.textField.placeholder = "Enter \(settingName)"
+            cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID") || settingName.contains("Key"))
+            cell.textField.keyboardType = settingName.contains("#") ? .phonePad : .default
+            cell.backgroundColor = .clear
 
-                cell.label.text = settingName
-                cell.textField.placeholder = "Enter \(settingName)"
-                cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID") || settingName.contains("Key"))
-                cell.textField.keyboardType = settingName.contains("#") ? .phonePad : .default
-                cell.backgroundColor = .clear
-
-                switch settingName {
-                case "Twilio SID":
-                    cell.textField.text = UserDefaultsRepository.twilioSIDString
-                case "Twilio Secret":
-                    cell.textField.text = UserDefaultsRepository.twilioSecretString
-                case NSLocalizedString("Twilio From #", comment: "Twilio From #"):
-                    cell.textField.text = UserDefaultsRepository.twilioFromNumberString
-                case NSLocalizedString("Twilio To #", comment: "Twilio To #"):
-                    cell.textField.text = UserDefaultsRepository.twilioToNumberString
-                case NSLocalizedString("Entered By", comment: "Entered By"):
-                    cell.textField.text = UserDefaultsRepository.caregiverName
-                case NSLocalizedString("Secret Code", comment: "Secret Code"):
-                    cell.textField.text = UserDefaultsRepository.remoteSecretCode
-                case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
-                    cell.textField.text = UserDefaultsRepository.sharedSecretString
-                case NSLocalizedString("APNS Key ID", comment: "APNS Key ID"):
-                    cell.textField.text = UserDefaultsRepository.APNSKeyIdString
-                case NSLocalizedString("APNS Key", comment: "APNS Key"):
-                    cell.textField.text = UserDefaultsRepository.APNSKeyString
-                default:
-                    break
-                }
-
-                cell.textField.tag = indexPath.row
+            // Set the stored values based on the setting name
+            switch settingName {
+            case NSLocalizedString("APNS Key", comment: "APNS Key"):
+                cell.configureForMultiline(isMultiline: true)
+                cell.textView.text = apnsKeyStorage.value
+                cell.textView.delegate = self
+                cell.textView.tag = indexPath.row
+                
+            case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = sharedSecretStorage.value
                 cell.textField.delegate = self
-
-                return cell                }
+                cell.textField.tag = indexPath.row
+                
+            case NSLocalizedString("APNS Key ID", comment: "APNS Key ID"):
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = apnsKeyIdStorage.value
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            case "Twilio SID":
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = UserDefaultsRepository.twilioSIDString
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            case "Twilio Secret":
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = UserDefaultsRepository.twilioSecretString
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            case NSLocalizedString("Twilio From #", comment: "Twilio From #"):
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = UserDefaultsRepository.twilioFromNumberString
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            case NSLocalizedString("Twilio To #", comment: "Twilio To #"):
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = UserDefaultsRepository.twilioToNumberString
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            case NSLocalizedString("Entered By", comment: "Entered By"):
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = UserDefaultsRepository.caregiverName
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            case NSLocalizedString("Secret Code", comment: "Secret Code"):
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.text = UserDefaultsRepository.remoteSecretCode
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
+                
+            default:
+                cell.configureForMultiline(isMultiline: false)
+                cell.textField.delegate = self
+                cell.textField.tag = indexPath.row
             }
-    @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
-            let previousMethod = method
-            method = sender.selectedSegmentIndex == 0 ? "iOS Shortcuts" : (sender.selectedSegmentIndex == 1 ? "SMS API" : "Trio APNS")
 
-            var sectionsToReload: [Int] = []
-            if previousMethod != method {
-                sectionsToReload = [1, 2, 3]
-            }
-
-            tableView.beginUpdates()
-            tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
-            tableView.endUpdates()
+            return cell
         }
+    }
+
+    @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
+        let previousMethod = method
+        method = sender.selectedSegmentIndex == 0 ? "iOS Shortcuts" : (sender.selectedSegmentIndex == 1 ? "SMS API" : "Trio APNS")
+
+        var sectionsToReload: [Int] = []
+        if previousMethod != method {
+            sectionsToReload = [1, 2, 3]
+        }
+
+        tableView.beginUpdates()
+        tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
+        tableView.endUpdates()
+    }
 
     @objc private func limitTextFieldLength(_ textField: UITextField) {
         if textField.text?.count ?? 0 > 50 {
@@ -230,7 +253,11 @@ class RemoteSettingsViewController: UITableViewController {
     }
 }
 
-extension RemoteSettingsViewController: UITextFieldDelegate {
+private let sharedSecretStorage = StorageValue<String>(key: "sharedSecret", defaultValue: "")
+private let apnsKeyIdStorage = StorageValue<String>(key: "keyId", defaultValue: "")
+private let apnsKeyStorage = StorageValue<String>(key: "apnsKey", defaultValue: "")
+
+extension RemoteSettingsViewController: UITextFieldDelegate, UITextViewDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         guard let cell = textField.superview?.superview as? CustomTableViewCell,
               let settingName = cell.label.text else {
@@ -251,20 +278,33 @@ extension RemoteSettingsViewController: UITextFieldDelegate {
         case NSLocalizedString("Secret Code", comment: "Secret Code"):
             UserDefaultsRepository.remoteSecretCode = textField.text ?? ""
         case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
-            UserDefaultsRepository.sharedSecretString = textField.text ?? ""
+            sharedSecretStorage.value = textField.text ?? ""
         case NSLocalizedString("APNS Key ID", comment: "APNS Key ID"):
-            UserDefaultsRepository.APNSKeyIdString = textField.text ?? ""
-        case NSLocalizedString("APNS Key", comment: "APNS Key"):
-            UserDefaultsRepository.APNSKeyString = textField.text ?? ""
+            apnsKeyIdStorage.value = textField.text ?? ""
         default:
             break
         }
     }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+            guard let cell = textView.superview?.superview as? CustomTableViewCell,
+                  let settingName = cell.label.text else {
+                return
+            }
+
+            switch settingName {
+            case NSLocalizedString("APNS Key", comment: "APNS Key"):
+                apnsKeyStorage.value = textView.text
+            default:
+                break
+            }
+        }
 }
 
 class CustomTableViewCell: UITableViewCell {
     let label = UILabel()
-    let textField = CustomSecureTextField() // Use CustomSecureTextField
+    let textField = UITextField()
+    let textView = UITextView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -279,9 +319,12 @@ class CustomTableViewCell: UITableViewCell {
     private func setupViews() {
         label.translatesAutoresizingMaskIntoConstraints = false
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.isHidden = true // Initially hidden until multiline is required
 
         contentView.addSubview(label)
         contentView.addSubview(textField)
+        contentView.addSubview(textView)
 
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
@@ -290,8 +333,23 @@ class CustomTableViewCell: UITableViewCell {
 
             textField.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
             textField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            textField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            textField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            
+            textView.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
+            textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            textView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+            textView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5),
+            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 44) // Minimum height
         ])
+        
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor.systemGray4.cgColor
+        textView.layer.cornerRadius = 5
+    }
+
+    func configureForMultiline(isMultiline: Bool) {
+        textField.isHidden = isMultiline
+        textView.isHidden = !isMultiline
     }
 }
 

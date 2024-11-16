@@ -17,6 +17,7 @@ import UserNotifications
 class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITextFieldDelegate, TwilioRequestable, MealViewControllerDelegate, RSSFeedDelegate, MealInsightsDelegate {
     static weak var current: ComposeMealViewController?
     static var shared: ComposeMealViewController?
+    var profileManager = ProfileManager.shared
     
     ///Views
     var foodItemRows: [FoodItemRowView] = []
@@ -127,6 +128,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     override func viewDidLoad() {
         super.viewDidLoad()
         initializeComposeMealViewController()
+        webLoadNSProfile() //TODO: Add to override/latebreakfast switch when implementing remote overrides
     }
     
     private func initializeComposeMealViewController() {
@@ -2785,6 +2787,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let method: String
             if UserDefaultsRepository.method == "iOS Shortcuts" {
                 method = "iOS Shortcuts"
+            } else if UserDefaultsRepository.method == "Trio APNS" {
+                method = "Trio APNS"
             } else {
                 method = "SMS API"
             }
@@ -2892,6 +2896,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             method = "iOS Shortcuts"
+        } else if UserDefaultsRepository.method == "Trio APNS" {
+            method = "Trio APNS"
         } else {
             method = "SMS API"
         }
@@ -3091,6 +3097,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let method: String
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             method = "iOS Shortcuts"
+        } else if UserDefaultsRepository.method == "Trio APNS" {
+            method = "Trio APNS"
         } else {
             method = "SMS API"
         }

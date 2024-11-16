@@ -44,13 +44,22 @@ class NightscoutManager {
     private init() {}
 
     func fetchAndMapCarbRatio(completion: @escaping (Bool) -> Void) {
-        guard let nightscoutURL = UserDefaultsRepository.nightscoutURL,
+        /*guard let nightscoutURL = UserDefaultsRepository.nightscoutURL,
               let nightscoutToken = UserDefaultsRepository.nightscoutToken else {
             print("Nightscout URL or Token is missing")
             completion(false)
             return
-        }
+        }*/
+        
+        let nightscoutURL = ObservableUserDefaults.shared.url.value
+        let nightscoutToken = UserDefaultsRepository.token.value
 
+            // Check if Nightscout URL or Token is empty
+            guard !nightscoutURL.isEmpty, !nightscoutToken.isEmpty else {
+                print("Nightscout URL or Token is missing")
+                completion(false)
+                return
+            }
         let urlString = "\(nightscoutURL)/api/v1/profile?token=\(nightscoutToken)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
