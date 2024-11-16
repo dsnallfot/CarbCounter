@@ -36,6 +36,21 @@ class RemoteSettingsViewController: UITableViewController {
         setupTableView()
         //tableView.separatorStyle = .none
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        refreshData() // Refresh data each time the view appears
+    }
+    
+    private func refreshData() {
+        // Fetch and refresh data from Storage
+        apnsKeyStorage.value = Storage.shared.apnsKey.value
+        sharedSecretStorage.value = Storage.shared.sharedSecret.value
+        apnsKeyIdStorage.value = Storage.shared.keyId.value
+        // Add any additional fields as needed
+
+        tableView.reloadData() // Ensure the table view reflects updated values
+    }
 
     private func setupTableView() {
         tableView.backgroundColor = .clear
@@ -169,11 +184,11 @@ class RemoteSettingsViewController: UITableViewController {
 
             // Set the stored values based on the setting name
             switch settingName {
-                case NSLocalizedString("APNS Key", comment: "APNS Key"):
-                    cell.configureForMultiline(isMultiline: true, isAPNSKey: true)
-                    cell.textView.text = apnsKeyStorage.value
-                    cell.textView.delegate = self
-                    cell.textView.tag = indexPath.row
+            case NSLocalizedString("APNS Key", comment: "APNS Key"):
+                cell.configureForMultiline(isMultiline: true, isAPNSKey: true)
+                cell.textView.text = Storage.shared.apnsKey.value // Load exact stored value
+                cell.textView.delegate = self
+                cell.textView.tag = indexPath.row
                 
             case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
                 cell.configureForMultiline(isMultiline: false)
@@ -307,18 +322,20 @@ extension RemoteSettingsViewController: UITextFieldDelegate, UITextViewDelegate 
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
-            guard let cell = textView.superview?.superview as? CustomTableViewCell,
-                  let settingName = cell.label.text else {
-                return
-            }
-
-            switch settingName {
-            case NSLocalizedString("APNS Key", comment: "APNS Key"):
-                apnsKeyStorage.value = textView.text
-            default:
-                break
-            }
+        guard let cell = textView.superview?.superview as? CustomTableViewCell,
+              let settingName = cell.label.text else {
+            return
         }
+
+        switch settingName {
+        case NSLocalizedString("APNS Key", comment: "APNS Key"):
+            // Store the APNS Key exactly as entered in the UITextView
+            Storage.shared.apnsKey.value = textView.text
+            print("Updated APNS Key in Storage: \(textView.text)")
+        default:
+            break
+        }
+    }
 }
 
 class CustomTableViewCell: UITableViewCell {

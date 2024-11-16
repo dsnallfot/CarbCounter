@@ -1073,7 +1073,6 @@ class DataSharingViewController: UITableViewController {
         userDefaultsData["twilioSIDString"] = UserDefaultsRepository.twilioSIDString
         userDefaultsData["twilioSecretString"] = UserDefaultsRepository.twilioSecretString
         userDefaultsData["twilioFromNumberString"] = UserDefaultsRepository.twilioFromNumberString
-        //userDefaultsData["twilioToNumberString"] = UserDefaultsRepository.twilioToNumberString
         userDefaultsData["remoteSecretCode"] = UserDefaultsRepository.remoteSecretCode
         
         userDefaultsData["useStartDosePercentage"] = UserDefaultsRepository.useStartDosePercentage.description
@@ -1082,112 +1081,133 @@ class DataSharingViewController: UITableViewController {
         userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
         userDefaultsData["lateBreakfastFactor"] = String(UserDefaultsRepository.lateBreakfastFactor)
         userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
-        
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
         userDefaultsData["lateBreakfastFactorUsed"] = UserDefaultsRepository.lateBreakfastFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = ObservableUserDefaults.shared.url.value
         userDefaultsData["nightscoutToken"] = UserDefaultsRepository.token.value
-        
         userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
         userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
         userDefaultsData["topUps"] = UserDefaultsRepository.topUps ?? ""
-        
-        //userDefaultsData["sharedSecret"] = Storage.shared.sharedSecret.value
+
+        // Add keyId and APNS key
         userDefaultsData["keyId"] = Storage.shared.keyId.value
-        userDefaultsData["apnsKey"] = Storage.shared.apnsKey.value
+        let apnsKey = Storage.shared.apnsKey.value
+        if !apnsKey.isEmpty {
+            let escapedKey = apnsKey.replacingOccurrences(of: "\n", with: "\\n")
+            userDefaultsData["apnsKey"] = escapedKey
+        }
         
+        // Convert to CSV
         let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
         
-        // Get the current caregiver name
+        // Generate filename
         let caregiverName = UserDefaultsRepository.caregiverName.replacingOccurrences(of: " ", with: "_")
-        
-        // Create a timestamped filename with caregiver name
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
-        let timestamp = dateFormatter.string(from: Date())
+        let timestamp = ISO8601DateFormatter().string(from: Date())
         let fileName = "UserDefaults_\(caregiverName)_\(timestamp).csv"
         
         await saveUserDefaultsCSV(data: csvString, fileName: fileName)
         showAlert(title: NSLocalizedString("Export lyckades", comment: "Export lyckades"), message: NSLocalizedString("Användarinställningarna har exporterats.", comment: "Användarinställningarna har exporterats."))
     }
-    
-    
-    
-    
+
     @objc private func importUserDefaultsFromCSV() async {
         await presentDocumentPicker(for: "UserDefaults")
     }
-    
+
     private func parseUserDefaultsCSV(_ rows: [String]) {
         for row in rows {
-            let values = row.components(separatedBy: ";")
+            let values = splitCSVLine(row)
             guard values.count == 2 else { continue }
-            
-            switch values[0] {
+
+            let key = values[0]
+            var value = values[1]
+
+            // Handle multiline APNS Key
+            if key == "apnsKey" {
+                let unescapedKey = value.replacingOccurrences(of: "\\n", with: "\n")
+                Storage.shared.apnsKey.value = unescapedKey
+                continue
+            }
+
+            switch key {
             case "twilioSIDString":
-                UserDefaultsRepository.twilioSIDString = values[1]
+                UserDefaultsRepository.twilioSIDString = value
             case "twilioSecretString":
-                UserDefaultsRepository.twilioSecretString = values[1]
+                UserDefaultsRepository.twilioSecretString = value
             case "twilioFromNumberString":
-                UserDefaultsRepository.twilioFromNumberString = values[1]
-                //case "twilioToNumberString":
-                //    UserDefaultsRepository.twilioToNumberString = values[1]
+                UserDefaultsRepository.twilioFromNumberString = value
             case "remoteSecretCode":
-                UserDefaultsRepository.remoteSecretCode = values[1]
+                UserDefaultsRepository.remoteSecretCode = value
             case "useStartDosePercentage":
-                UserDefaultsRepository.useStartDosePercentage = Bool(values[1]) ?? false
+                UserDefaultsRepository.useStartDosePercentage = Bool(value) ?? false
             case "startDoseFactor":
-                UserDefaultsRepository.startDoseFactor = Double(values[1]) ?? 0.5
+                UserDefaultsRepository.startDoseFactor = Double(value) ?? 0.5
             case "maxCarbs":
-                UserDefaultsRepository.maxCarbs = Double(values[1]) ?? 30.0
+                UserDefaultsRepository.maxCarbs = Double(value) ?? 30.0
             case "maxBolus":
-                UserDefaultsRepository.maxBolus = Double(values[1]) ?? 1.0
+                UserDefaultsRepository.maxBolus = Double(value) ?? 1.0
             case "lateBreakfastFactor":
-                UserDefaultsRepository.lateBreakfastFactor = Double(values[1]) ?? 1.0
+                UserDefaultsRepository.lateBreakfastFactor = Double(value) ?? 1.0
             case "lateBreakfastOverrideName":
-                UserDefaultsRepository.lateBreakfastOverrideName = values[1]
+                UserDefaultsRepository.lateBreakfastOverrideName = value
             case "useMmol":
-                UserDefaultsRepository.useMmol = Bool(values[1]) ?? false
+                UserDefaultsRepository.useMmol = Bool(value) ?? false
             case "lateBreakfastStartTime":
-                if let date = ISO8601DateFormatter().date(from: values[1]) {
+                if let date = ISO8601DateFormatter().date(from: value) {
                     UserDefaultsRepository.lateBreakfastStartTime = date
                 }
             case "lateBreakfastFactorUsed":
-                UserDefaultsRepository.lateBreakfastFactorUsed = values[1]
+                UserDefaultsRepository.lateBreakfastFactorUsed = value
             case "dabasAPISecret":
-                UserDefaultsRepository.dabasAPISecret = values[1]
+                UserDefaultsRepository.dabasAPISecret = value
             case "nightscoutURL":
-                UserDefaultsRepository.nightscoutURL = values[1]
+                UserDefaultsRepository.nightscoutURL = value
             case "nightscoutToken":
-                UserDefaultsRepository.nightscoutToken = values[1]
+                UserDefaultsRepository.nightscoutToken = value
             case "allowSharingOngoingMeals":
-                UserDefaultsRepository.allowSharingOngoingMeals = Bool(values[1]) ?? false
+                UserDefaultsRepository.allowSharingOngoingMeals = Bool(value) ?? false
             case "allowViewingOngoingMeals":
-                UserDefaultsRepository.allowViewingOngoingMeals = Bool(values[1]) ?? true
+                UserDefaultsRepository.allowViewingOngoingMeals = Bool(value) ?? true
             case "schoolFoodURL":
-                UserDefaultsRepository.schoolFoodURL = values[1]
+                UserDefaultsRepository.schoolFoodURL = value
             case "excludeWords":
-                UserDefaultsRepository.excludeWords = values[1]
+                UserDefaultsRepository.excludeWords = value
             case "topUps":
-                UserDefaultsRepository.topUps = values[1]
-            //case "sharedSecret":
-                //Storage.shared.sharedSecret.value = values[1]
+                UserDefaultsRepository.topUps = value
             case "keyId":
-                Storage.shared.keyId.value = values[1]
-            case "apnsKey":
-                Storage.shared.apnsKey.value = values[1]
+                Storage.shared.keyId.value = value
             default:
                 break
             }
         }
         NotificationCenter.default.post(name: .didImportUserDefaults, object: nil)
     }
-    
-}
+
+    private func splitCSVLine(_ line: String) -> [String] {
+        var result: [String] = []
+        var currentField = ""
+        var isEscaped = false
+
+        for char in line {
+            if char == "\\" && !isEscaped {
+                isEscaped = true
+                continue
+            }
+            if char == ";" && !isEscaped {
+                result.append(currentField)
+                currentField = ""
+                continue
+            }
+            currentField.append(char)
+            isEscaped = false
+        }
+
+        result.append(currentField)
+        return result
+    }}
 
 // Document Picker Delegate Methods
 extension DataSharingViewController: UIDocumentPickerDelegate {
