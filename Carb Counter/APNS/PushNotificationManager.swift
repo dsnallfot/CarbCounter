@@ -152,10 +152,10 @@ class PushNotificationManager {
     private func validateCredentials() -> [String]? {
         var errors = [String]()
 
-        print("Validating credentials...")
-        print("APNS Key (Raw): \(apnsKey)")
-        print("APNS Key ID: \(keyId)")
-        print("Team ID: \(teamId)")
+        //print("Validating credentials...")
+        //print("APNS Key (Raw): \(apnsKey)")
+        //print("APNS Key ID: \(keyId)")
+        //print("Team ID: \(teamId)")
 
         // Validate keyId (should be 10 alphanumeric characters)
         let keyIdPattern = "^[A-Z0-9]{10}$"
@@ -341,12 +341,12 @@ class PushNotificationManager {
 
 
     private func getOrGenerateJWT() -> String? {
-        print("Generating JWT...")
-        print("APNS Key (Raw): \(apnsKey)")
+        //print("Generating JWT...")
+        //print("APNS Key (Raw): \(apnsKey)")
 
         if let cachedJWT = Storage.shared.cachedJWT.value, let expirationDate = Storage.shared.jwtExpirationDate.value {
             if Date() < expirationDate {
-                print("Using cached JWT.")
+                //print("Using cached JWT.")
                 return cachedJWT
             }
         }
@@ -357,13 +357,13 @@ class PushNotificationManager {
         var jwt = JWT(header: header, claims: claims)
 
         do {
-            print("Converting APNS Key to Data...")
+            //print("Converting APNS Key to Data...")
             let privateKey = Data(apnsKey.utf8)
-            print("APNS Key Data: \(privateKey.prefix(30))...") // Show a snippet of the key for debugging
+            //print("APNS Key Data: \(privateKey.prefix(30))...") // Show a snippet of the key for debugging
 
             let jwtSigner = JWTSigner.es256(privateKey: privateKey)
             let signedJWT = try jwt.sign(using: jwtSigner)
-            print("JWT successfully signed.")
+            //print("JWT successfully signed.")
 
             Storage.shared.cachedJWT.value = signedJWT
             Storage.shared.jwtExpirationDate.value = Date().addingTimeInterval(3600)

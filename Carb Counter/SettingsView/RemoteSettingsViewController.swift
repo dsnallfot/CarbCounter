@@ -158,17 +158,17 @@ class RemoteSettingsViewController: UITableViewController {
 
             cell.label.text = settingName
             cell.textField.placeholder = "Enter \(settingName)"
-            cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID") || settingName.contains("Key"))
+            cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID"))// || settingName.contains("Key"))
             cell.textField.keyboardType = settingName.contains("#") ? .phonePad : .default
             cell.backgroundColor = .clear
 
             // Set the stored values based on the setting name
             switch settingName {
-            case NSLocalizedString("APNS Key", comment: "APNS Key"):
-                cell.configureForMultiline(isMultiline: true)
-                cell.textView.text = apnsKeyStorage.value
-                cell.textView.delegate = self
-                cell.textView.tag = indexPath.row
+                case NSLocalizedString("APNS Key", comment: "APNS Key"):
+                    cell.configureForMultiline(isMultiline: true, isAPNSKey: true)
+                    cell.textView.text = apnsKeyStorage.value
+                    cell.textView.delegate = self
+                    cell.textView.tag = indexPath.row
                 
             case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
                 cell.configureForMultiline(isMultiline: false)
@@ -226,6 +226,21 @@ class RemoteSettingsViewController: UITableViewController {
 
             return cell
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        // Return a larger height for the APNS Key cell
+        if indexPath.section == 3 && indexPath.row == 2 { // Assuming APNS Key is the last row in section 3
+            return UITableView.automaticDimension
+        }
+        return 44
+    }
+    
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 3 && indexPath.row == 2 {
+            return 150 // Estimated height for APNS Key cell
+        }
+        return 44
     }
 
     @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
@@ -305,6 +320,9 @@ class CustomTableViewCell: UITableViewCell {
     let label = UILabel()
     let textField = UITextField()
     let textView = UITextView()
+    
+    private var standardConstraints: [NSLayoutConstraint] = []
+    private var apnsKeyConstraints: [NSLayoutConstraint] = []
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -321,12 +339,16 @@ class CustomTableViewCell: UITableViewCell {
         textField.translatesAutoresizingMaskIntoConstraints = false
         textView.translatesAutoresizingMaskIntoConstraints = false
         textView.isHidden = true // Initially hidden until multiline is required
-
+        
+        textView.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
+        textView.isScrollEnabled = false // Allow it to expand with content
+        
         contentView.addSubview(label)
         contentView.addSubview(textField)
         contentView.addSubview(textView)
-
-        NSLayoutConstraint.activate([
+        
+        // Store standard constraints (side-by-side layout)
+        standardConstraints = [
             label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             label.widthAnchor.constraint(equalToConstant: 120),
@@ -334,22 +356,50 @@ class CustomTableViewCell: UITableViewCell {
             textField.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
             textField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             textField.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            textField.heightAnchor.constraint(equalToConstant: 44),
             
             textView.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 10),
             textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             textView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
             textView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5),
-            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 44) // Minimum height
-        ])
+            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 44)
+        ]
+        
+        // Store APNS Key constraints (stacked layout)
+        apnsKeyConstraints = [
+            label.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            
+            textView.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 5),
+            textView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            textView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 100) // Minimum height for APNS key
+        ]
+        
+        // Activate standard constraints by default
+        NSLayoutConstraint.activate(standardConstraints)
         
         textView.layer.borderWidth = 0.5
         textView.layer.borderColor = UIColor.systemGray4.cgColor
         textView.layer.cornerRadius = 5
     }
 
-    func configureForMultiline(isMultiline: Bool) {
+    func configureForMultiline(isMultiline: Bool, isAPNSKey: Bool = false) {
         textField.isHidden = isMultiline
         textView.isHidden = !isMultiline
+        
+        // Deactivate all constraints first
+        NSLayoutConstraint.deactivate(standardConstraints)
+        NSLayoutConstraint.deactivate(apnsKeyConstraints)
+        
+        // Activate appropriate constraints
+        if isAPNSKey {
+            NSLayoutConstraint.activate(apnsKeyConstraints)
+        } else {
+            NSLayoutConstraint.activate(standardConstraints)
+        }
     }
 }
 

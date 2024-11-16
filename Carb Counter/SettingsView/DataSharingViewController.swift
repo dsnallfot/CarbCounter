@@ -1087,14 +1087,18 @@ class DataSharingViewController: UITableViewController {
         userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
         userDefaultsData["lateBreakfastFactorUsed"] = UserDefaultsRepository.lateBreakfastFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
-        userDefaultsData["nightscoutURL"] = UserDefaultsRepository.nightscoutURL ?? ""
-        userDefaultsData["nightscoutToken"] = UserDefaultsRepository.nightscoutToken ?? ""
+        userDefaultsData["nightscoutURL"] = ObservableUserDefaults.shared.url.value
+        userDefaultsData["nightscoutToken"] = UserDefaultsRepository.token.value
         
         userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
         userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
         userDefaultsData["topUps"] = UserDefaultsRepository.topUps ?? ""
+        
+        //userDefaultsData["sharedSecret"] = Storage.shared.sharedSecret.value
+        userDefaultsData["keyId"] = Storage.shared.keyId.value
+        userDefaultsData["apnsKey"] = Storage.shared.apnsKey.value
         
         let csvString = userDefaultsData.map { "\($0.key);\($0.value)" }.joined(separator: "\n")
         
@@ -1170,6 +1174,12 @@ class DataSharingViewController: UITableViewController {
                 UserDefaultsRepository.excludeWords = values[1]
             case "topUps":
                 UserDefaultsRepository.topUps = values[1]
+            //case "sharedSecret":
+                //Storage.shared.sharedSecret.value = values[1]
+            case "keyId":
+                Storage.shared.keyId.value = values[1]
+            case "apnsKey":
+                Storage.shared.apnsKey.value = values[1]
             default:
                 break
             }
