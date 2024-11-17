@@ -8,6 +8,39 @@
 import SwiftUI
 import HealthKit
 
+struct CustomBackgroundContainer: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+    
+    func body(content: Content) -> some View {
+        ZStack {
+            // Background layer
+            Group {
+                if colorScheme == .dark {
+                    // Gradient background for dark mode
+                    LinearGradient(
+                        colors: [
+                            Color.blue.opacity(0.15),
+                            Color.blue.opacity(0.25),
+                            Color.blue.opacity(0.15)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                } else {
+                    // Light mode background
+                    Color(UIColor.systemGray6)
+                        .ignoresSafeArea()
+                }
+            }
+            
+            // Content layer
+            content
+                .scrollContentBackground(.hidden) // This hides the default Form background
+        }
+    }
+}
+
 protocol OverrideViewDelegate: AnyObject {
     func didActivateOverride(percentage: Double)
     func didCancelOverride()
@@ -126,6 +159,7 @@ struct OverrideView: View {
                             }
                         }
                     }
+                    .modifier(CustomBackgroundContainer())
 
                     if isLoading {
                         ProgressView("Vänta...")
@@ -139,14 +173,14 @@ struct OverrideView: View {
                     // Circle background
                     Image(systemName: "circle.fill")
                         .opacity(0.1)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                         .font(.system(size: 23)) // Adjusted size for the circle
                         .offset(x: -6) // Move the circle slightly to the left
                     
                     // Xmark symbol
                     Image(systemName: "xmark")
                         .opacity(0.5)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                         .font(.system(size: 12, weight: .bold)) // Adjusted size and weight to semibold
                         .offset(x: -6) // Align with the circle
                 }
