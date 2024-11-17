@@ -33,23 +33,34 @@ class RemoteSettingsViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        //print("RemoteSettingsViewController - viewDidLoad")
+        //print("Current sharedSecret value: \(Storage.shared.sharedSecret.value)")
         setupTableView()
-        //tableView.separatorStyle = .none
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        refreshData() // Refresh data each time the view appears
+        //print("RemoteSettingsViewController - viewWillAppear")
+        //print("Current sharedSecret value before refresh: \(Storage.shared.sharedSecret.value)")
+        refreshData()
+        //print("Current sharedSecret value after refresh: \(Storage.shared.sharedSecret.value)")
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        UserDefaults.standard.synchronize()
+        }
+    
     private func refreshData() {
-        // Fetch and refresh data from Storage
-        apnsKeyStorage.value = Storage.shared.apnsKey.value
-        sharedSecretStorage.value = Storage.shared.sharedSecret.value
-        apnsKeyIdStorage.value = Storage.shared.keyId.value
-        // Add any additional fields as needed
+        let sharedSecret = Storage.shared.sharedSecret.value
+        let apnsKey = Storage.shared.apnsKey.value
+        let apnsKeyId = Storage.shared.keyId.value
 
-        tableView.reloadData() // Ensure the table view reflects updated values
+        //print("Loaded Shared Secret from Storage.shared: \(sharedSecret)")
+        //print("Loaded APNS Key: \(apnsKey)")
+        //print("Loaded APNS Key ID: \(apnsKeyId)")
+
+        tableView.reloadData()
     }
 
     private func setupTableView() {
@@ -178,7 +189,7 @@ class RemoteSettingsViewController: UITableViewController {
 
             cell.label.text = settingName
             cell.textField.placeholder = "Enter \(settingName)"
-            cell.textField.isSecureTextEntry = (settingName.contains("Secret") || settingName.contains("SID"))// || settingName.contains("Key"))
+            cell.textField.isSecureTextEntry = (settingName.contains("Twilio Secret") || settingName.contains("SID"))// || settingName.contains("Key"))
             cell.textField.keyboardType = settingName.contains("#") ? .phonePad : .default
             cell.backgroundColor = .clear
 
@@ -192,13 +203,13 @@ class RemoteSettingsViewController: UITableViewController {
                 
             case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
                 cell.configureForMultiline(isMultiline: false)
-                cell.textField.text = sharedSecretStorage.value
+                cell.textField.text = Storage.shared.sharedSecret.value
                 cell.textField.delegate = self
                 cell.textField.tag = indexPath.row
                 
             case NSLocalizedString("APNS Key ID", comment: "APNS Key ID"):
                 cell.configureForMultiline(isMultiline: false)
-                cell.textField.text = apnsKeyIdStorage.value
+                cell.textField.text = Storage.shared.keyId.value
                 cell.textField.delegate = self
                 cell.textField.tag = indexPath.row
                 
@@ -288,11 +299,48 @@ class RemoteSettingsViewController: UITableViewController {
     }
 }
 
-private let sharedSecretStorage = StorageValue<String>(key: "sharedSecret", defaultValue: "")
-private let apnsKeyIdStorage = StorageValue<String>(key: "keyId", defaultValue: "")
-private let apnsKeyStorage = StorageValue<String>(key: "apnsKey", defaultValue: "")
+//private let sharedSecretStorage = StorageValue<String>(key: "sharedSecret", defaultValue: "")
+//private let apnsKeyIdStorage = StorageValue<String>(key: "keyId", defaultValue: "")
+//private let apnsKeyStorage = StorageValue<String>(key: "apnsKey", defaultValue: "")
 
 extension RemoteSettingsViewController: UITextFieldDelegate, UITextViewDelegate {
+    @objc private func textFieldDidChange(_ textField: UITextField) {
+        guard let cell = textField.superview?.superview as? CustomTableViewCell,
+              let settingName = cell.label.text else {
+            print("Failed to map TextField to a setting name.")
+            return
+        }
+
+        let newValue = textField.text ?? ""
+        print("Updating \(settingName) to: \(newValue)")
+
+        switch settingName {
+        case "Twilio SID":
+            UserDefaultsRepository.twilioSIDString = newValue
+        case "Twilio Secret":
+            UserDefaultsRepository.twilioSecretString = newValue
+        case NSLocalizedString("Twilio From #", comment: "Twilio From #"):
+            UserDefaultsRepository.twilioFromNumberString = newValue
+        case NSLocalizedString("Twilio To #", comment: "Twilio To #"):
+            UserDefaultsRepository.twilioToNumberString = newValue
+        case NSLocalizedString("Entered By", comment: "Entered By"):
+            UserDefaultsRepository.caregiverName = newValue
+        case NSLocalizedString("Secret Code", comment: "Secret Code"):
+            UserDefaultsRepository.remoteSecretCode = newValue
+        case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
+                Storage.shared.sharedSecret.value = newValue
+                UserDefaults.standard.synchronize()
+                print("Updated shared secret in Storage.shared: \(newValue)")
+        case NSLocalizedString("APNS Key ID", comment: "APNS Key ID"):
+                Storage.shared.keyId.value = newValue
+                UserDefaults.standard.synchronize()
+                print("Updated APNS Key IDt in Storage.shared: \(newValue)")
+        default:
+            print("Unhandled setting name: \(settingName)")
+            break
+        }
+    }
+    
     func textFieldDidEndEditing(_ textField: UITextField) {
         guard let cell = textField.superview?.superview as? CustomTableViewCell,
               let settingName = cell.label.text else {
@@ -313,9 +361,12 @@ extension RemoteSettingsViewController: UITextFieldDelegate, UITextViewDelegate 
         case NSLocalizedString("Secret Code", comment: "Secret Code"):
             UserDefaultsRepository.remoteSecretCode = textField.text ?? ""
         case NSLocalizedString("Shared Secret", comment: "Shared Secret"):
-            sharedSecretStorage.value = textField.text ?? ""
+            Storage.shared.sharedSecret.value = textField.text ?? ""
+            // Force UserDefaults to synchronize
+                        UserDefaults.standard.synchronize()
+                        print("Forced save of shared secret on end editing: \(textField.text ?? "")")
         case NSLocalizedString("APNS Key ID", comment: "APNS Key ID"):
-            apnsKeyIdStorage.value = textField.text ?? ""
+            Storage.shared.keyId.value = textField.text ?? ""
         default:
             break
         }

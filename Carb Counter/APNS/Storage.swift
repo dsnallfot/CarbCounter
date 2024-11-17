@@ -10,9 +10,13 @@ import Foundation
 import HealthKit
 
 class Storage {
+    private static let sharedSecretKey = "sharedSecret"
     //Daniel: Not needed: var remoteType = StorageValue<RemoteType>(key: "remoteType", defaultValue: .nightscout)
     var deviceToken = StorageValue<String>(key: "deviceToken", defaultValue: "")
-    var sharedSecret = StorageValue<String>(key: "sharedSecret", defaultValue: "")
+    var sharedSecret: StorageValue<String> = {
+            //print("Creating sharedSecret StorageValue")
+            return StorageValue<String>(key: Storage.sharedSecretKey, defaultValue: "")
+        }()
     var productionEnvironment = StorageValue<Bool>(key: "productionEnvironment", defaultValue: true)
     var apnsKey = StorageValue<String>(key: "apnsKey", defaultValue: "")
     var teamId = StorageValue<String?>(key: "teamId", defaultValue: nil)
@@ -33,5 +37,7 @@ class Storage {
 
     static let shared = Storage()
 
-    private init() { }
+    private init() {
+        //print("Initializing Storage singleton")
+    }
 }

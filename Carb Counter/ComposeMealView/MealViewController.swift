@@ -1200,7 +1200,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             
             confirmationAlert.addAction(UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default, handler: { (action: UIAlertAction!) in
                 // Proceed with sending the request
-                self.sendMealRequest(combinedString: combinedString) //TODO: uppdatera med dubbelvärden
+                self.handleAPNSCommand(carbs: carbs, fats: fats, proteins: proteins, bolus: bolus)
             }))
             
             confirmationAlert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: { (action: UIAlertAction!) in
@@ -1249,11 +1249,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let confirmationAlert = UIAlertController(title: NSLocalizedString("Bekräfta måltid och bolus", comment: "Bekräfta måltid och bolus"), message: String(format: NSLocalizedString("Vill du registrera denna måltid och ge %.2f E bolus?", comment: "Vill du registrera denna måltid och ge %.2f E bolus?"), bolusValue), preferredStyle: .alert)
             
             let confirmAction: UIAlertAction
-            
+            /*
             let carbs = carbs
             let fats = fats
             let proteins = proteins
-            let bolus = bolus
+            let bolus = bolus*/
             
             // Authenticate with biometrics
                 confirmAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in
