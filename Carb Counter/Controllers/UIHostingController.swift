@@ -313,6 +313,16 @@ extension ComposeMealViewController {
     }
     
     @objc public func lateBreakfastLabelTapped() {
+        if UserDefaultsRepository.method == "Trio APNS" {
+                WebLoadNSTreatments {
+                    var overrideView = OverrideView()
+                    overrideView.delegate = self // Pass the current instance of ComposeMealViewController as the delegate
+                    let overrideVC = UIHostingController(rootView: overrideView)
+                    overrideVC.modalPresentationStyle = .formSheet
+                    self.present(overrideVC, animated: true, completion: nil)
+                }
+                return
+            }
         if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm"

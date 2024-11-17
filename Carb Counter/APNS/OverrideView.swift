@@ -8,12 +8,19 @@
 import SwiftUI
 import HealthKit
 
+protocol OverrideViewDelegate: AnyObject {
+    func didActivateOverride(percentage: Double)
+    func didCancelOverride()
+}
+
 struct OverrideView: View {
     @Environment(\.presentationMode) private var presentationMode
     private let pushNotificationManager = PushNotificationManager()
 
     @ObservedObject var device = ObservableUserDefaults.shared.device
     @ObservedObject var overrideNote = Observable.shared.override
+    
+    weak var delegate: OverrideViewDelegate?
 
     @State private var showAlert: Bool = false
     @State private var alertType: AlertType? = nil
@@ -27,6 +34,7 @@ struct OverrideView: View {
     @FocusState private var noteFieldIsFocused: Bool
 
     private var profileManager = ProfileManager.shared
+    
 
     enum AlertType {
         case confirmActivation
@@ -39,38 +47,46 @@ struct OverrideView: View {
     var body: some View {
         NavigationView {
             VStack {
-                if device.value != "Trio" {
-                    ErrorMessageView(
-                        message: "Remote commands are currently only available for Trio."
-                    )
-                } else {
                     Form {
                         if let activeNote = overrideNote.value {
-                            Section(header: Text("Active Override")) {
+                            Section(header: Text("Aktiv Override")) {
                                 HStack {
                                     Text("Override")
                                     Spacer()
                                     Text(activeNote)
                                         .foregroundColor(.secondary)
                                 }
+                                .onAppear {
+                                    if let matchedOverride = profileManager.trioOverrides.first(where: { $0.name == activeNote }) {
+                                        if let percentage = matchedOverride.percentage {
+                                            print("Matched override percentage: \(percentage)")
+                                            delegate?.didActivateOverride(percentage: percentage)
+                                        } else {
+                                            print("Matched override has no percentage")
+                                        }
+                                    } else {
+                                        print("No matching override found for activeNote: \(activeNote)")
+                                    }
+                                }
+                                
                                 Button {
                                     alertType = .confirmCancellation
                                     showAlert = true
                                 } label: {
                                     HStack {
-                                        Text("Cancel Override")
+                                        Text("Avbryt Override")
                                         Spacer()
                                         Image(systemName: "xmark.app")
-                                            .font(.title)
+                                            .font(.title2)
                                     }
                                 }
                                 .tint(.red)
                             }
                         }
 
-                        Section(header: Text("Available Overrides")) {
+                        Section(header: Text("Tillgängliga Overrides")) {
                             if profileManager.trioOverrides.isEmpty {
-                                Text("No overrides available.")
+                                Text("Inga tillgängliga overrides.")
                                     .foregroundColor(.secondary)
                             } else {
                                 ForEach(profileManager.trioOverrides, id: \.name) { override in
@@ -84,18 +100,18 @@ struct OverrideView: View {
                                                 Text(override.name)
                                                     .font(.headline)
                                                 if let duration = override.duration {
-                                                    Text("Duration: \(Int(duration)) minutes")
+                                                    Text("Varaktighet: \(Int(duration)) minuter")
                                                         .font(.subheadline)
                                                         .foregroundColor(.secondary)
                                                 }
                                                 if let percentage = override.percentage {
-                                                    Text("Percentage: \(Int(percentage))%")
+                                                    Text("Procent: \(Int(percentage))%")
                                                         .font(.subheadline)
                                                         .foregroundColor(.secondary)
                                                 }
 
                                                 if let target = override.target {
-                                                    Text("Target: \(Localizer.formatQuantity(target)) \(UserDefaultsRepository.getPreferredUnit().localizedShortUnitString)")
+                                                    Text("Mål: \(Localizer.formatQuantity(target)) \(UserDefaultsRepository.getPreferredUnit().localizedShortUnitString)")
                                                         .font(.subheadline)
                                                         .foregroundColor(.secondary)
                                                 }
@@ -103,6 +119,7 @@ struct OverrideView: View {
                                             Spacer()
                                             Image(systemName: "arrow.right.circle")
                                                 .foregroundColor(.blue)
+                                                .font(.title2)
                                         }
                                     }
                                 }
@@ -111,20 +128,36 @@ struct OverrideView: View {
                     }
 
                     if isLoading {
-                        ProgressView("Please wait...")
+                        ProgressView("Vänta...")
                             .padding()
                     }
                 }
-            }
             .navigationTitle("Overrides")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(leading: Button(action: closeButtonTapped) {
+                ZStack {
+                    // Circle background
+                    Image(systemName: "circle.fill")
+                        .opacity(0.1)
+                        .foregroundColor(.white)
+                        .font(.system(size: 23)) // Adjusted size for the circle
+                        .offset(x: -6) // Move the circle slightly to the left
+                    
+                    // Xmark symbol
+                    Image(systemName: "xmark")
+                        .opacity(0.5)
+                        .foregroundColor(.white)
+                        .font(.system(size: 12, weight: .bold)) // Adjusted size and weight to semibold
+                        .offset(x: -6) // Align with the circle
+                }
+            })
             .alert(isPresented: $showAlert) {
                 switch alertType {
                 case .confirmActivation:
                     return Alert(
-                        title: Text("Activate Override"),
-                        message: Text("Do you want to activate the override '\(selectedOverride?.name ?? "")'?"),
-                        primaryButton: .default(Text("Confirm"), action: {
+                        title: Text("Aktivera Override"),
+                        message: Text("Vill du aktivera overriden '\(selectedOverride?.name ?? "")'?"),
+                        primaryButton: .default(Text("Bekräfta"), action: {
                             if let override = selectedOverride {
                                 activateOverride(override)
                             }
@@ -133,16 +166,16 @@ struct OverrideView: View {
                     )
                 case .confirmCancellation:
                     return Alert(
-                        title: Text("Cancel Override"),
-                        message: Text("Are you sure you want to cancel the active override?"),
-                        primaryButton: .default(Text("Confirm"), action: {
+                        title: Text("Avbryt Override"),
+                        message: Text("Är du säker på att du vill avbryta den aktiva overriden?"),
+                        primaryButton: .default(Text("Bekräfta"), action: {
                             cancelOverride()
                         }),
                         secondaryButton: .cancel()
                     )
                 case .statusSuccess:
                     return Alert(
-                        title: Text("Success"),
+                        title: Text("Lyckades"),
                         message: Text(statusMessage ?? ""),
                         dismissButton: .default(Text("OK"), action: {
                             presentationMode.wrappedValue.dismiss()
@@ -150,8 +183,8 @@ struct OverrideView: View {
                     )
                 case .statusFailure:
                     return Alert(
-                        title: Text("Error"),
-                        message: Text(statusMessage ?? "An error occurred."),
+                        title: Text("Fel"),
+                        message: Text(statusMessage ?? "Ett fel uppstod."),
                         dismissButton: .default(Text("OK"))
                     )
                 case .validation:
@@ -169,6 +202,10 @@ struct OverrideView: View {
 
     // MARK: - Functions
 
+    private func closeButtonTapped() {
+        presentationMode.wrappedValue.dismiss()
+    }
+    
     private func activateOverride(_ override: ProfileManager.TrioOverride) {
         isLoading = true
 
@@ -176,10 +213,11 @@ struct OverrideView: View {
             DispatchQueue.main.async {
                 self.isLoading = false
                 if success {
-                    self.statusMessage = "Override command sent successfully."
+                    self.statusMessage = "Overridekommando skickades"
                     self.alertType = .statusSuccess
+                    delegate?.didActivateOverride(percentage: override.percentage ?? 100)
                 } else {
-                    self.statusMessage = errorMessage ?? "Failed to send override command."
+                    self.statusMessage = errorMessage ?? "Overridekommando misslyckades."
                     self.alertType = .statusFailure
                 }
                 self.showAlert = true
@@ -194,10 +232,11 @@ struct OverrideView: View {
             DispatchQueue.main.async {
                 self.isLoading = false
                 if success {
-                    self.statusMessage = "Cancel override command sent successfully."
+                    self.statusMessage = "Avbryt override-kommando lyckades."
                     self.alertType = .statusSuccess
+                    self.delegate?.didCancelOverride()
                 } else {
-                    self.statusMessage = errorMessage ?? "Failed to send cancel override command."
+                    self.statusMessage = errorMessage ?? "Avbryt override-kommando misslyckades."
                     self.alertType = .statusFailure
                 }
                 self.showAlert = true
@@ -205,4 +244,3 @@ struct OverrideView: View {
         }
     }
 }
-

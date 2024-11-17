@@ -1,4 +1,4 @@
-// Daniel: 2800+ lines - To be cleaned
+// Daniel: 3400+ lines - To be cleaned
 //  ComposeMealViewController.swift
 //  Carb Counter
 //
@@ -18,6 +18,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     static weak var current: ComposeMealViewController?
     static var shared: ComposeMealViewController?
     var profileManager = ProfileManager.shared
+    
+    @ObservedObject var overrideNote = Observable.shared.override
     
     ///Views
     var foodItemRows: [FoodItemRowView] = []
@@ -128,7 +130,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     override func viewDidLoad() {
         super.viewDidLoad()
         initializeComposeMealViewController()
-        webLoadNSProfile() //TODO: Add to override/latebreakfast switch when implementing remote overrides
+        
+        if UserDefaultsRepository.method == "Trio APNS" {
+            webLoadNSProfile()
+        }
     }
     
     private func initializeComposeMealViewController() {
@@ -244,7 +249,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         navigationItem.leftBarButtonItem = customBarButtonItem
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
-        addButtonRowView.lateBreakfastLabel.addGestureRecognizer(tapGesture)
+        addButtonRowView.lateBreakfastContainer.addGestureRecognizer(tapGesture)
         
         /// Register for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -307,6 +312,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         fetchFoodItems()
         checkIfEditing()
+        if UserDefaultsRepository.method == "Trio APNS" {
+                WebLoadNSTreatments {
+                    self.handleActiveOverride() // Runs after WebLoadNSTreatments is done
+                }
+            }
     }
     // MARK: View Will Disappear
     override func viewWillDisappear(_ animated: Bool) {
@@ -363,6 +373,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
 
     deinit {
+        NotificationCenter.default.removeObserver(self)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
@@ -970,6 +981,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } else {
             // Directly show the regular alert if no conditions are met
             showRegularClearAllAlert()
+        }
+    }
+    
+    func handleActiveOverride() {
+        guard let activeNote = Observable.shared.override.value else {
+            print("No active override found.")
+            didCancelOverride()
+            return
+        }
+
+        if let matchedOverride = ProfileManager.shared.trioOverrides.first(where: { $0.name == activeNote }) {
+            if let percentage = matchedOverride.percentage {
+                print("Matched override percentage: \(percentage)")
+                didActivateOverride(percentage: percentage)
+            } else {
+                print("Matched override has no percentage.")
+            }
+        } else {
+            print("No matching override found for activeNote: \(activeNote)")
         }
     }
 
@@ -2154,26 +2184,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         let confirmAction = UIAlertAction(title: NSLocalizedString("Använd tillfällig", comment: "Använd tillfällig"), style: .default) { [weak self] _ in
             guard let self = self else { return }
-            let inputText = alertController.textFields?.first?.text?.replacingOccurrences(of: ",", with: ".") ?? ""
-            let percentageFactor = Double(inputText) ?? 100
-            self.temporaryOverrideFactor = percentageFactor / 100.0
-            self.temporaryOverride = true // Set the flag to true
-            self.crContainerBackgroundColor = .systemRed // Change color
-            self.scheduledCarbRatio /= self.temporaryOverrideFactor // Adjust carb ratio
-            self.setLatestOverrideFactor(self.temporaryOverrideFactor)
-            self.updateScheduledValuesUI()
-            self.updateTotalNutrients()
-            UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio
-            
-            if let crContainer = self.crContainer {
-                crContainer.backgroundColor = self.crContainerBackgroundColor
-            }
-            if let addButtonRowView = self.addButtonRowView {
-                let override = self.temporaryOverrideFactor * 100
-                let formattedOverride = String(format: "%.0f", override)
-                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemRed
-                addButtonRowView.lateBreakfastLabel.text = ("\(formattedOverride) %  ")
-            }
+            let inputText = alertController.textFields?.first?.text
+            self.applyTemporaryOverride(from: inputText)
         }
         let presetAction = UIAlertAction(title: String(format: NSLocalizedString("Använd %@", comment: "Använd %@"), overrideName), style: .default) { [weak self] _ in
             guard let self = self else { return }
@@ -2185,7 +2197,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             self.updateTotalNutrients()
             self.handleLateBreakfastSwitchOn()
             UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio
-            
+
             if let crContainer = self.crContainer {
                 crContainer.backgroundColor = self.crContainerBackgroundColor
             }
@@ -2198,12 +2210,35 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { [weak self] _ in
             guard let self = self else { return }
-            turnOffLateBreakfastSwitch()
+            self.turnOffLateBreakfastSwitch()
         }
         alertController.addAction(confirmAction)
         alertController.addAction(presetAction)
         alertController.addAction(cancelAction)
         present(alertController, animated: true, completion: nil)
+    }
+    
+    private func applyTemporaryOverride(from inputText: String?) {
+        let input = inputText?.replacingOccurrences(of: ",", with: ".") ?? ""
+        let percentageFactor = Double(input) ?? 100
+        self.temporaryOverrideFactor = percentageFactor / 100.0
+        self.temporaryOverride = true // Set the flag to true
+        self.crContainerBackgroundColor = .systemPurple // Change color
+        self.scheduledCarbRatio /= self.temporaryOverrideFactor // Adjust carb ratio
+        self.setLatestOverrideFactor(self.temporaryOverrideFactor)
+        self.updateScheduledValuesUI()
+        self.updateTotalNutrients()
+        UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio
+
+        if let crContainer = self.crContainer {
+            crContainer.backgroundColor = self.crContainerBackgroundColor
+        }
+        if let addButtonRowView = self.addButtonRowView {
+            let override = self.temporaryOverrideFactor * 100
+            let formattedOverride = String(format: "%.0f", override)
+            addButtonRowView.lateBreakfastContainer.backgroundColor = .systemPurple
+            addButtonRowView.lateBreakfastLabel.text = ("\(formattedOverride) %  ")
+        }
     }
     
     // MARK: Methods (Core data and csv handling)
@@ -3244,6 +3279,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     // MARK: Class (AddButtonRow)
     class AddButtonRowView: UIView {
+        private var trioAPNSConstraints: [NSLayoutConstraint] = []
+        private var defaultConstraints: [NSLayoutConstraint] = []
         let addButton: UIButton = {
             let button = UIButton(type: .system)
             button.setTitle(NSLocalizedString("+ VÄLJ I LISTA", comment: "+ VÄLJ I LISTA"), for: .normal)
@@ -3319,6 +3356,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         override init(frame: CGRect) {
             super.init(frame: frame)
             setupView()
+            observeMethodChanges()
         }
         
         required init?(coder: NSCoder) {
@@ -3326,14 +3364,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         private func setupView() {
+            let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
+            lateBreakfastSwitch.isHidden = isTrioAPNS
+
             lateBreakfastContainer.addSubview(lateBreakfastLabel)
             lateBreakfastContainer.addSubview(lateBreakfastSwitch)
             lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
-            
+
             var arrangedSubviews: [UIView] = [addButton, lateBreakfastContainer]
             if let schoolFoodURL = UserDefaultsRepository.schoolFoodURL, !schoolFoodURL.isEmpty {
-                arrangedSubviews.insert(rssButton, at: 1) // Insert at index 1 to maintain the order
+                arrangedSubviews.insert(rssButton, at: 1)
             }
+
             let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
             stackView.axis = .horizontal
             stackView.alignment = .fill
@@ -3343,16 +3385,53 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             addSubview(stackView)
 
+            // Shared constraints
             NSLayoutConstraint.activate([
                 stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
                 stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
                 stackView.heightAnchor.constraint(equalToConstant: 44),
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 14),
-                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
                 lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 7),
                 lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
             ])
+
+            // Define constraints for Trio APNS
+            trioAPNSConstraints = [
+                lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor)
+            ]
+
+            // Define constraints for default configuration
+            defaultConstraints = [
+                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: 6),
+                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor)
+            ]
+
+            // Activate the initial set of constraints
+            NSLayoutConstraint.activate(isTrioAPNS ? trioAPNSConstraints : defaultConstraints)
+        }
+        
+        private func observeMethodChanges() {
+            NotificationCenter.default.addObserver(self, selector: #selector(updateLateBreakfastSwitch), name: .methodChanged, object: nil)
+        }
+        
+        @objc private func updateLateBreakfastSwitch() {
+            let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
+            lateBreakfastSwitch.isHidden = isTrioAPNS
+
+            // Deactivate all constraints for the label
+            NSLayoutConstraint.deactivate(trioAPNSConstraints + defaultConstraints)
+
+            // Activate the appropriate set of constraints
+            if isTrioAPNS {
+                NSLayoutConstraint.activate(trioAPNSConstraints)
+            } else {
+                NSLayoutConstraint.activate(defaultConstraints)
+            }
+
+            // Force layout update
+            setNeedsLayout()
+            layoutIfNeeded()
         }
     }
 }
@@ -3420,3 +3499,12 @@ struct InfoPopoverView: View {
     }
 }
 
+extension ComposeMealViewController: OverrideViewDelegate {
+    func didActivateOverride(percentage: Double) {
+        let percentageText = String(percentage)
+        applyTemporaryOverride(from: percentageText)
+    }
+    func didCancelOverride() {
+        turnOffLateBreakfastSwitch()
+    }
+}

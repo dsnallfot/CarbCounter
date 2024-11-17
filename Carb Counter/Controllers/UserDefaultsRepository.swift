@@ -7,6 +7,7 @@ class UserDefaultsRepository {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "method")
+            NotificationCenter.default.post(name: .methodChanged, object: nil)
         }
     }
     
@@ -187,6 +188,12 @@ class UserDefaultsRepository {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "useMmol")
+            // Update the units UserDefaults value based on the new value of useMmol
+            if newValue {
+                UserDefaultsRepository.units.value = "mmol/L"
+            } else {
+                UserDefaultsRepository.units.value = "mg/dL"
+            }
         }
     }
 
@@ -331,4 +338,5 @@ class UserDefaultsRepository {
 extension Notification.Name {
     static let allowViewingOngoingMealsChanged = Notification.Name("allowViewingOngoingMealsChanged")
     static let schoolFoodURLChanged = Notification.Name("schoolFoodURLChanged")
+    static let methodChanged = Notification.Name("methodChanged")
 }
