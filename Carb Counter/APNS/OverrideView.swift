@@ -41,6 +41,13 @@ struct CustomBackgroundContainer: ViewModifier {
     }
 }
 
+struct CustomListRowStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .listRowBackground(Color.primary.opacity(0.08))
+    }
+}
+
 protocol OverrideViewDelegate: AnyObject {
     func didActivateOverride(percentage: Double)
     func didCancelOverride()
@@ -89,6 +96,7 @@ struct OverrideView: View {
                                     Text(activeNote)
                                         .foregroundColor(.secondary)
                                 }
+                                .modifier(CustomListRowStyle())
                                 .onAppear {
                                     if let matchedOverride = profileManager.trioOverrides.first(where: { $0.name == activeNote }) {
                                         if let percentage = matchedOverride.percentage {
@@ -108,12 +116,14 @@ struct OverrideView: View {
                                 } label: {
                                     HStack {
                                         Text("Avbryt Override")
+                                            .font(.headline)
                                         Spacer()
-                                        Image(systemName: "xmark.app")
+                                        Image(systemName: "xmark.square.fill")
                                             .font(.title2)
                                     }
                                 }
                                 .tint(.red)
+                                .modifier(CustomListRowStyle())
                             }
                         }
 
@@ -150,11 +160,12 @@ struct OverrideView: View {
                                                 }
                                             }
                                             Spacer()
-                                            Image(systemName: "arrow.right.circle")
+                                            Image(systemName: "arrow.right.circle.fill")
                                                 .foregroundColor(.blue)
                                                 .font(.title2)
                                         }
                                     }
+                                    .modifier(CustomListRowStyle())
                                 }
                             }
                         }
@@ -172,7 +183,7 @@ struct OverrideView: View {
                 ZStack {
                     // Circle background
                     Image(systemName: "circle.fill")
-                        .opacity(0.1)
+                        .opacity(0.08)
                         .foregroundColor(.primary)
                         .font(.system(size: 23)) // Adjusted size for the circle
                         .offset(x: -6) // Move the circle slightly to the left
@@ -247,11 +258,11 @@ struct OverrideView: View {
             DispatchQueue.main.async {
                 self.isLoading = false
                 if success {
-                    self.statusMessage = "Overridekommando skickades"
+                    self.statusMessage = "Override skickades"
                     self.alertType = .statusSuccess
                     delegate?.didActivateOverride(percentage: override.percentage ?? 100)
                 } else {
-                    self.statusMessage = errorMessage ?? "Overridekommando misslyckades."
+                    self.statusMessage = errorMessage ?? "Override misslyckades."
                     self.alertType = .statusFailure
                 }
                 self.showAlert = true
@@ -266,11 +277,11 @@ struct OverrideView: View {
             DispatchQueue.main.async {
                 self.isLoading = false
                 if success {
-                    self.statusMessage = "Avbryt override-kommando lyckades."
+                    self.statusMessage = "Avbryt override lyckades."
                     self.alertType = .statusSuccess
                     self.delegate?.didCancelOverride()
                 } else {
-                    self.statusMessage = errorMessage ?? "Avbryt override-kommando misslyckades."
+                    self.statusMessage = errorMessage ?? "Avbryt override misslyckades."
                     self.alertType = .statusFailure
                 }
                 self.showAlert = true

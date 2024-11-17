@@ -74,65 +74,70 @@ class DataSharingViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4  // Toggle Sharing, Export, Import, Clear History
+        return 5  // Toggle Sharing, Export, Import, Clear History, NS sync
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "dataCell")
         cell.backgroundColor = .clear
-        
+
         // Create a horizontal stack view for aligning label and icon/switch
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
         stackView.distribution = .equalSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         // Label for row text
         let label = UILabel()
         label.font = .systemFont(ofSize: 17)
         label.textColor = .label
-        
+
         // Configure cell content based on row
         switch indexPath.row {
         case 0:
             label.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Allow ongoing meal sharing")
-            
-            // Add switch as the trailing accessory
             let toggleSwitch = UISwitch()
             toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
             toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(toggleSwitch)
-            
+
         case 1:
             label.text = NSLocalizedString("Exportera data", comment: "Export data")
             let exportIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
             exportIcon.tintColor = .label
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(exportIcon)
-            
+
         case 2:
             label.text = NSLocalizedString("Importera data", comment: "Import data")
             let importIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.down"))
             importIcon.tintColor = .label
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(importIcon)
-            
+
         case 3:
             label.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear old meal history")
             let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
             trashIcon.tintColor = .red
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(trashIcon)
-            
+
+        case 4: // New row
+            label.text = NSLocalizedString("Synka Nightscout profildata", comment: "Sync with Nightscout")
+            let syncIcon = UIImageView(image: UIImage(systemName: "arrow.triangle.2.circlepath.icloud"))
+            syncIcon.tintColor = .label
+            stackView.addArrangedSubview(label)
+            stackView.addArrangedSubview(syncIcon)
+
         default:
             break
         }
-        
+
         // Add stack view to cell content
         cell.contentView.addSubview(stackView)
-        
+
         // Set up constraints for stack view to fit within cell
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
@@ -140,13 +145,13 @@ class DataSharingViewController: UITableViewController {
             stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 10),
             stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -10)
         ])
-        
+
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
+
         switch indexPath.row {
         case 1:
             exportData()
@@ -154,9 +159,15 @@ class DataSharingViewController: UITableViewController {
             importData()
         case 3:
             clearHistoryTapped()
+        case 4:
+            syncWithNightscout()
         default:
             break
         }
+    }
+    
+    private func syncWithNightscout() {
+        NotificationCenter.default.post(name: Notification.Name("SyncWithNightscout"), object: nil)
     }
     
     /*

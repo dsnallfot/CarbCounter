@@ -8,7 +8,7 @@
 import Foundation
 extension ComposeMealViewController {
     // NS Profile Web Call
-    func webLoadNSProfile() {
+    @objc func webLoadNSProfile()  {
         NightscoutUtils.executeRequest(eventType: .profile, parameters: [:]) { (result: Result<NSProfile, Error>) in
             switch result {
             case .success(let profileData):

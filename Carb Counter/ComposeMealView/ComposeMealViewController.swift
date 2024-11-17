@@ -134,6 +134,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if UserDefaultsRepository.method == "Trio APNS" {
             webLoadNSProfile()
         }
+        
     }
     
     private func initializeComposeMealViewController() {
@@ -258,6 +259,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.addObserver(self, selector: #selector(allowViewingOngoingMealsChanged), name: .allowViewingOngoingMealsChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(webLoadNSProfile), name: Notification.Name("SyncWithNightscout"), object: nil)
         addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
         
@@ -377,6 +379,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name("SyncWithNightscout"), object: nil)
         if ComposeMealViewController.current === self {
             ComposeMealViewController.current = nil
         }
