@@ -84,7 +84,7 @@
 "Lyckades" = "Lyckades";
 "Måltiden har sparats som favorit." = "Måltiden har sparats som favorit.";
 "Lyckades!" = "Lyckades!";
-"\nKommandot levererades till iAPS/Trio" = "\nKommandot levererades till iAPS/Trio";
+"\nKommandot levererades till Trio" = "\nKommandot levererades till Trio";
 "Fel" = "Fel";
 "OK" = "OK";
 "Tillfällig eller förinställd override?" = "Tillfällig eller förinställd override?";
@@ -93,9 +93,9 @@
 "Använd tillfällig" = "Använd tillfällig override";
 "Använd %@" = "Använd (%@)";
 "Manuell aktivering" = "Manuell aktivering";
-"\nKom ihåg att aktivera overriden \n%@ i iAPS/Trio" = "\nKom ihåg att aktivera overriden \n%@ i iAPS/Trio";
+"\nKom ihåg att aktivera overriden \n%@ i Trio" = "\nKom ihåg att aktivera overriden \n%@ i Trio";
 "Aktivera override" = "Aktivera override";
-"\nVill du även aktivera overriden \n%@ i iAPS/Trio?" = "\nVill du även aktivera overriden \n%@ i iAPS/Trio?";
+"\nVill du även aktivera overriden \n%@ i Trio?" = "\nVill du även aktivera overriden \n%@ i Trio?";
 "Ja" = "Ja";
 "Avbryt" = "Avbryt";
 "Klar" = "Klar";
@@ -105,8 +105,8 @@
 "Maxgräns överskriden" = "Maxgräns överskriden";
 "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg..." = "\nMåltidsregistreringen på %@ g kolhydrater och %@ E bolus överskrider de angivna maxgränserna: %@ g kolhydrater och/eller %@ E bolus.\n\nDoseringen justeras därför ner till den angivna maxnivån i nästa steg...";
 "Manuell registrering" = "Manuell registrering";
-"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio" = "\nRegistrera nu den angivna startdosen för måltiden i iAPS/Trio:\n\n• %@ g kolhydrater\n• %@ E insulin";
-"\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nSlutför nu registreringen av måltiden i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater";
+"\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i Trio" = "\nRegistrera nu den angivna startdosen för måltiden i Trio:\n\n• %@ g kolhydrater\n• %@ E insulin";
+"\nRegistrera nu de kolhydrater som ännu inte registrerats i Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater" = "\nSlutför nu registreringen av måltiden i Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater";
 "\n• %@ g fett" = "\n• %@ g fett";
 "\n• %@ g protein" = "\n• %@ g protein";
 "\n• %@ E insulin" = "\n• %@ E insulin";
@@ -217,7 +217,7 @@
 
 "🔂 Upprepa registrering" = "🔂 Upprepa registrering";
 "Info!" = "⚠️ Info";
-"Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. Den senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen" = "\nOm den tidigare måltidsregistreringen över Twilio SMS eller iOS Genväg misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i iAPS/Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. \n\nDen senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen";
+"Om den tidigare måltidsregistreringen över Twilio SMS eller iOS shortcuts misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. Den senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen" = "\nOm den tidigare måltidsregistreringen över Twilio SMS eller iOS Genväg misslyckades av någon anledning (vanligtvis att bolusen inte kunde genomföras i Trio pga upptagen pump, eller saknad kontakt med pumpen), så kan du skicka samma kommando en gång till från denna 'upprepa-vy'. \n\nDen senaste bolusen som skickades (och misslyckades) är förifylld. Allt som skickas från denna vy exkluderas från måltidshistoriken i appen.\n\nOBS! Säkerställ att föregående bolus verkligen misslyckades innan du skickar samma dos igen";
 
 //popup
 "Blodsocker" = "Blodsocker";
@@ -518,13 +518,13 @@
 "Exkludera sökord" = "Exkludera sökord";
 "Lägg till top-ups" = "Lägg till top-ups";
 "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Startdoser schema' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan)." = "Välj om du vill vill använda schemalagda startdoser (Ställs in under 'Schema Startdoser' ovan) eller om du vill använda 'Startdos Fraktion' (enligt inställningen nedan).";
-"Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio." = "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio.";
+"Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i Trio." = "Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i Trio.";
 "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, carb ratios och startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy" = "Aktivera denna inställning om/när du snabbt vill kunna radera all data avseende livsmedel, favoriter, historik, insulinkvoter eller startdoser.\n\nNär inställningen är aktiverad dyker 'Rensa'-knappar upp i navigationsfältet i respektive vy";
 "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater." = "Ange den fraktion av den totala mängden kolhydrater i måltiden som ska användas som startdos när Startdos 'Fraktion' är vald.\n\nExempel: Om måltiden innehåller 58 g kolhydrater och startdos fraktionen är inställd på 0.5, kommer startdosen att beräknas utifrån 29 g kolhydrater.";
 "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt kolhydrater som kan registreras vid ett och samma tillfälle. \n\nOm du försöker registrera en större mängd kolhydrater, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
 "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:" = "Ange maxgränsen för hur mkt bolus som kan ges vid ett och samma tillfälle. \n\nOm du försöker ge en större bolus, kommer det värdet automatiskt att justeras ner till denna angivna maxinställning:";
 "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:" = "När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när 'Förinställd Override' aktiveras i måltidsvyn:";
-"Ange exakt namn på den override du vill aktivera i iAPS/Trio" = "Ange exakt namn på den override du vill aktivera i iAPS/Trio";
+"Ange exakt namn på den override du vill aktivera i Trio" = "Ange exakt namn på den override du vill aktivera i Trio";
 "Välj om du vill vill använda mmol eller mg/dl som enhet för blodsockervärden i appen"= "Välj om du vill vill använda mg/dl eller mmol/L som enhet för blodsockervärden i appen";
 "Ange din Nightscout URL:" = "Ange din Nightscout URL:";
 "Ange din Nightscout Token:" = "Ange din Nightscout Token:";

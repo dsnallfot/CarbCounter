@@ -2753,7 +2753,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
             
             let alertTitle = NSLocalizedString("Aktivera override", comment: "Aktivera override")
-            let alertMessage = String(format: NSLocalizedString("\nVill du även aktivera overriden \n%@ i iAPS/Trio?", comment: "Message asking if the user wants to activate the override in iAPS/Trio"), overrideName)
+            let alertMessage = String(format: NSLocalizedString("\nVill du även aktivera overriden \n%@ i Trio?", comment: "Message asking if the user wants to activate the override in Trio"), overrideName)
             
             let alertController = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
             let cancelAction = UIAlertAction(title: NSLocalizedString("Nej", comment: "Nej"), style: .cancel, handler: nil)
@@ -2764,7 +2764,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(yesAction)
             present(alertController, animated: true, completion: nil)
         } else {
-            let alertController = UIAlertController(title: NSLocalizedString("Manuell aktivering", comment: "Manuell aktivering"), message: String(format: NSLocalizedString("\nKom ihåg att aktivera overriden \n\(overrideName) i iAPS/Trio", comment: "\nKom ihåg att aktivera overriden \n'%@' i iAPS/Trio"), overrideName), preferredStyle: .alert)
+            let alertController = UIAlertController(title: NSLocalizedString("Manuell aktivering", comment: "Manuell aktivering"), message: String(format: NSLocalizedString("\nKom ihåg att aktivera overriden \n\(overrideName) i Trio", comment: "\nKom ihåg att aktivera overriden \n'%@' i Trio"), overrideName), preferredStyle: .alert)
             let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
             }
             alertController.addAction(okAction)
@@ -2792,7 +2792,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         switch result {
                         case .success:
                             AudioServicesPlaySystemSound(SystemSoundID(1322))
-                            let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("\nKommandot levererades till iAPS/Trio", comment: "\nKommandot levererades till iAPS/Trio"), preferredStyle: .alert)
+                            let alertController = UIAlertController(title: NSLocalizedString("Lyckades!", comment: "Lyckades!"), message: NSLocalizedString("\nKommandot levererades till Trio", comment: "\nKommandot levererades till Trio"), preferredStyle: .alert)
                             alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: .default) { _ in
                                 self.dismiss(animated: true, completion: nil)
                             })
@@ -2856,7 +2856,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 // Use alert when manually registering
                 let alertController = UIAlertController(
                     title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
-                    message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio", comment: "Prompt to register the specified start dose for the meal in iAPS/Trio"), khValue, bolusValue),
+                    message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i Trio", comment: "Prompt to register the specified start dose for the meal in Trio"), khValue, bolusValue),
                     preferredStyle: .alert
                 )
                 let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
@@ -2965,7 +2965,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Use alert when manually registering
             let alertController = UIAlertController(
                 title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
-                message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i iAPS/Trio", comment: "Prompt to register the specified start dose for the meal in iAPS/Trio"), khValue, bolusValue),
+                message: String(format: NSLocalizedString("\nRegistrera nu den angivna startdosen för måltiden %@ g kh och %@ E insulin i Trio", comment: "Prompt to register the specified start dose for the meal in Trio"), khValue, bolusValue),
                 preferredStyle: .alert
             )
             let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: nil)
@@ -3164,7 +3164,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let remainDose = true
 
         if !allowShortcuts {
-            var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i iAPS/Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegister the unregistered carbs in iAPS/Trio and give a bolus as summarized:\n\n• %@ g carbs"), khValue)
+            var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegister the unregistered carbs in Trio and give a bolus as summarized:\n\n• %@ g carbs"), khValue)
             
             if let fat = Double(fatValue), fat > 0 {
                 alertMessage += String(format: NSLocalizedString("\n• %@ g fett", comment: "\n• %@ g fat"), fatValue)

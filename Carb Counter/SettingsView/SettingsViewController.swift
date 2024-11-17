@@ -250,7 +250,7 @@ class SettingsViewController: UITableViewController {
     
     @objc private func remoteControlLabelTapped() {
         let title = NSLocalizedString("Tillåt fjärrstyrning", comment: "Allow remote control title")
-        let message = NSLocalizedString("Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till iAPS/Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i iAPS/Trio.", comment: "Remote control tooltip message")
+        let message = NSLocalizedString("Välj att tillåta fjärrstyrning om du vill kunna skicka måltidskommandon via iOS genvägar eller Twilio SMS direkt från Carb Counter till Trio på din egen eller en annan iPhone.\n\nOm 'Tillåt fjärrstyrning' är av, så måste du manuellt registrera kolhydrater, fett, protein och insulin i Trio.", comment: "Remote control tooltip message")
         
         showTooltipAlert(title: title, message: message)
     }
@@ -333,7 +333,7 @@ class SettingsViewController: UITableViewController {
                 userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
             case 8:
                 title = NSLocalizedString("Override", comment: "Override name title")
-                message = NSLocalizedString("Ange exakt namn på den override du vill aktivera i iAPS/Trio", comment: "Override name message")
+                message = NSLocalizedString("Ange exakt namn på den override du vill aktivera i Trio", comment: "Override name message")
                 showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.lateBreakfastOverrideName ?? "") { newValue in
                     UserDefaultsRepository.lateBreakfastOverrideName = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
