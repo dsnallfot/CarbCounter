@@ -78,12 +78,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var allowShortcuts: Bool = false
     var saveMealToHistory: Bool = false
     var zeroBolus: Bool = false
-    var lateBreakfast: Bool = false
-    var lateBreakfastFactor = Double(1.5)
+    var override: Bool = false
+    var overrideFactor = Double(1.5)
     var temporaryOverride: Bool = false
     var temporaryOverrideFactor = Double(1.0)
-    private var lateBreakfastTimer: Timer?
-    private let lateBreakfastDuration: TimeInterval = 90 * 60 // 90 minutes in seconds
+    private var overrideTimer: Timer?
+    private let overrideDuration: TimeInterval = 90 * 60 // 90 minutes in seconds
     var startDoseGiven: Bool = false
     var preBolus = false
     var remainingDoseGiven: Bool = false
@@ -112,6 +112,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     var latestBolusSent = Double(0.0)
+    public var needsUIUpdate = true
     
     ///Meal monitoring
     var exportTimer: Timer?
@@ -173,21 +174,21 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             fixedHeaderContainer.heightAnchor.constraint(equalToConstant: 143)
         ])
         
-        /// Reset lateBreakfast to false
-        UserDefaultsRepository.lateBreakfast = false
-        lateBreakfast = false
+        /// Reset override to false
+        UserDefaultsRepository.override = false
+        override = false
         
         /// Ensure addButtonRowView is initialized
         addButtonRowView = AddButtonRowView()
         updatePlaceholderValuesForCurrentHour()
-        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor
-        lateBreakfast = UserDefaultsRepository.lateBreakfast
-        addButtonRowView.lateBreakfastSwitch.isOn = lateBreakfast
-        if lateBreakfast {
+        overrideFactor = UserDefaultsRepository.overrideFactor
+        override = UserDefaultsRepository.override
+        addButtonRowView.overrideSwitch.isOn = override
+        if override {
             if temporaryOverride {
                 scheduledCarbRatio /= temporaryOverrideFactor
             } else {
-                scheduledCarbRatio /= lateBreakfastFactor
+                scheduledCarbRatio /= overrideFactor
             }
             UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         }
@@ -249,8 +250,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let customBarButtonItem = UIBarButtonItem(customView: customView)
         navigationItem.leftBarButtonItem = customBarButtonItem
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(lateBreakfastLabelTapped))
-        addButtonRowView.lateBreakfastContainer.addGestureRecognizer(tapGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(overrideLabelTapped))
+        addButtonRowView.overrideContainer.addGestureRecognizer(tapGesture)
         
         /// Register for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -260,7 +261,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(webLoadNSProfile), name: Notification.Name("SyncWithNightscout"), object: nil)
-        addButtonRowView.lateBreakfastSwitch.addTarget(self, action: #selector(lateBreakfastSwitchChanged(_:)), for: .valueChanged)
+        addButtonRowView.overrideSwitch.addTarget(self, action: #selector(overrideSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
         
         if registeredCarbsSoFar == 0 {
@@ -279,57 +280,60 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
         startHourChangeTimer() // Start timer while in this view to check if its a new hour and update CR/Startdoses if they are changed from the last hour to the new hour
-        lateBreakfastFactor = UserDefaultsRepository.lateBreakfastFactor // Fetch factor for calculating late breakfast CR
-        if lateBreakfast {
+        overrideFactor = UserDefaultsRepository.overrideFactor // Fetch factor for calculating late breakfast CR
+        if override {
             if temporaryOverride {
                 scheduledCarbRatio /= temporaryOverrideFactor
             } else {
-                scheduledCarbRatio /= lateBreakfastFactor // If latebreakfast switch is on, calculate new CR
+                scheduledCarbRatio /= overrideFactor // If override switch is on, calculate new CR
             }
             UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         }
         updateScheduledValuesUI()
         
         // Check if the late breakfast switch should be off
-        if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
+        if let startTime = UserDefaultsRepository.overrideStartTime {
             print("Override CR was activated: \(startTime)")
             let timeInterval = Date().timeIntervalSince(startTime)
-            if timeInterval >= lateBreakfastDuration {
-                addButtonRowView.lateBreakfastSwitch.isOn = false
-                lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
+            if timeInterval >= overrideDuration {
+                addButtonRowView.overrideSwitch.isOn = false
+                overrideSwitchChanged(addButtonRowView.overrideSwitch)
             } else {
-                lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration - timeInterval, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
+                overrideTimer = Timer.scheduledTimer(timeInterval: overrideDuration - timeInterval, target: self, selector: #selector(turnOffOverrideSwitch), userInfo: nil, repeats: false)
             }
         }
-        
-        // Ensure updateTotalNutrients is called after all initializations
+
         updateTotalNutrients()
-        
-        // Ensure dataSharingVC is instantiated
+
         guard let dataSharingVC = dataSharingVC else { return }
         Task {
             print("Data import triggered")
-            await
-            dataSharingVC.importCSVFiles()
+            await dataSharingVC.importCSVFiles()
         }
         fetchFoodItems()
         checkIfEditing()
+
         if UserDefaultsRepository.method == "Trio APNS" {
                 WebLoadNSTreatments {
-                    self.handleActiveOverride() // Runs after WebLoadNSTreatments is done
+                    self.handleActiveOverride() // Ensure UI updates
                 }
+            } else {
+                handleActiveOverride() // Fallback to ensure UI state is updated
             }
     }
     // MARK: View Will Disappear
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        if lateBreakfast {
-            scheduledCarbRatio *= lateBreakfastFactor // Reset scheduledCarbRatio when leaving view
+        if override {
+            scheduledCarbRatio *= overrideFactor // Reset scheduledCarbRatio when leaving view
         }
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         hourChangeTimer?.invalidate()
         hourChangeTimer = nil
+        
+        // Reset the flag to allow UI updates when returning to the view
+        needsUIUpdate = true
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -376,10 +380,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
     deinit {
         NotificationCenter.default.removeObserver(self)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
-        NotificationCenter.default.removeObserver(self, name: Notification.Name("SyncWithNightscout"), object: nil)
         if ComposeMealViewController.current === self {
             ComposeMealViewController.current = nil
         }
@@ -988,21 +988,30 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func handleActiveOverride() {
-        guard let activeNote = Observable.shared.override.value else {
-            print("No active override found.")
-            didCancelOverride()
+        guard needsUIUpdate else {
+            print("UI update already handled.")
             return
         }
+        needsUIUpdate = false
 
-        if let matchedOverride = ProfileManager.shared.trioOverrides.first(where: { $0.name == activeNote }) {
-            if let percentage = matchedOverride.percentage {
-                print("Matched override percentage: \(percentage)")
-                didActivateOverride(percentage: percentage)
-            } else {
-                print("Matched override has no percentage.")
+        DispatchQueue.main.async {
+            guard let activeNote = Observable.shared.override.value else {
+                print("No active override found.")
+                self.didCancelOverride()
+                return
             }
-        } else {
-            print("No matching override found for activeNote: \(activeNote)")
+
+            if let matchedOverride = ProfileManager.shared.trioOverrides.first(where: { $0.name == activeNote }) {
+                        if let percentage = matchedOverride.percentage {
+                            print("Matched override percentage: \(percentage)")
+                            self.didActivateOverride(percentage: percentage)
+                            self.applyTemporaryOverride(from: String(percentage)) // Force the UI to update
+                        } else {
+                            print("Matched override has no percentage.")
+                        }
+                    } else {
+                        print("No matching override found for activeNote: \(activeNote)")
+                    }
         }
     }
 
@@ -1041,8 +1050,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self.exportBlankCSV()
                 }
                 
-                self.lateBreakfastTimer?.invalidate()
-                self.turnOffLateBreakfastSwitch()
+                self.overrideTimer?.invalidate()
+                self.turnOffOverrideSwitch()
                 self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
                 self.startAmountContainer.backgroundColor = .systemBlue
                 UserDefaultsRepository.savedHistorySearchText = ""
@@ -1754,14 +1763,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         hideAllDeleteButtons()
     }
     
-    @objc private func lateBreakfastSwitchChanged(_ sender: UISwitch) {
-        lateBreakfast = sender.isOn
-        UserDefaultsRepository.lateBreakfast = lateBreakfast
+    @objc private func overrideSwitchChanged(_ sender: UISwitch) {
+        override = sender.isOn
+        UserDefaultsRepository.override = override
         
         // Show alert to set temporary override factor
-        if lateBreakfast {
+        if override {
             showTemporaryOverrideAlert()
-            self.startLateBreakfastTimer()
+            self.startOverrideTimer()
         } else {
             crContainerBackgroundColor = .systemGray3
             
@@ -1774,8 +1783,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             }
 
             if let addButtonRowView = self.addButtonRowView {
-                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemGray3
-                addButtonRowView.lateBreakfastLabel.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
+                addButtonRowView.overrideContainer.backgroundColor = .systemGray3
+                addButtonRowView.overrideLabel.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             }
         }
     }
@@ -1976,24 +1985,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         print("Variables reset to 0.0 and mealDate reset to nil, saved to UserDefaults")
     }
     
-    private func startLateBreakfastTimer() {
+    private func startOverrideTimer() {
         let currentDate = Date()
-        UserDefaultsRepository.lateBreakfastStartTime = currentDate
+        UserDefaultsRepository.overrideStartTime = currentDate
         print("Override timer started at: \(currentDate)")
-        lateBreakfastTimer?.invalidate()
-        lateBreakfastTimer = Timer.scheduledTimer(timeInterval: lateBreakfastDuration, target: self, selector: #selector(turnOffLateBreakfastSwitch), userInfo: nil, repeats: false)
+        overrideTimer?.invalidate()
+        overrideTimer = Timer.scheduledTimer(timeInterval: overrideDuration, target: self, selector: #selector(turnOffOverrideSwitch), userInfo: nil, repeats: false)
     }
     
-    @objc private func turnOffLateBreakfastSwitch() {
+    @objc private func turnOffOverrideSwitch() {
+        print("turnOffOverrideSwitch triggered")
+        
+        guard isViewLoaded, let overrideSwitch = addButtonRowView?.overrideSwitch else {
+            print("Error: View is not loaded or addButtonRowView/overrideSwitch is nil")
+            return
+        }
+        
         print("Override timer off")
-        addButtonRowView.lateBreakfastSwitch.isOn = false
-        lateBreakfastSwitchChanged(addButtonRowView.lateBreakfastSwitch)
+        overrideSwitch.isOn = false
+        overrideSwitchChanged(overrideSwitch)
     }
     
     func setLatestOverrideFactor(_ overrideFactor: Double) {
         let multipliedFactor = overrideFactor * 100
         let formattedFactor = String(format: "%.0f %%", multipliedFactor)
-        UserDefaultsRepository.lateBreakfastFactorUsed = formattedFactor
+        UserDefaultsRepository.overrideFactorUsed = formattedFactor
     }
     
     // MARK: Methods (Observers)
@@ -2175,7 +2191,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     private func showTemporaryOverrideAlert() {
-        let overrideName = UserDefaultsRepository.lateBreakfastOverrideName ?? "förinställd"
+        let overrideName = UserDefaultsRepository.overrideName ?? "förinställd"
         let alertController = UIAlertController(
             title: NSLocalizedString("Tillfällig eller förinställd override?", comment: "Tillfällig eller förinställd override?"),
             message: String(format: NSLocalizedString("\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan", comment: "\nVälj om du vill aktivera den förinställda overriden %@, eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan"), overrideName),
@@ -2194,26 +2210,26 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             guard let self = self else { return }
             self.temporaryOverride = false
             self.crContainerBackgroundColor = .systemRed
-            self.scheduledCarbRatio /= self.lateBreakfastFactor
-            self.setLatestOverrideFactor(self.lateBreakfastFactor)
+            self.scheduledCarbRatio /= self.overrideFactor
+            self.setLatestOverrideFactor(self.overrideFactor)
             self.updateScheduledValuesUI()
             self.updateTotalNutrients()
-            self.handleLateBreakfastSwitchOn()
+            self.handleOverrideSwitchOn()
             UserDefaultsRepository.scheduledCarbRatio = self.scheduledCarbRatio
 
             if let crContainer = self.crContainer {
                 crContainer.backgroundColor = self.crContainerBackgroundColor
             }
             if let addButtonRowView = self.addButtonRowView {
-                let override = self.lateBreakfastFactor * 100
+                let override = self.overrideFactor * 100
                 let formattedOverride = String(format: "%.0f", override)
-                addButtonRowView.lateBreakfastContainer.backgroundColor = .systemRed
-                addButtonRowView.lateBreakfastLabel.text = ("\(formattedOverride) %   ")
+                addButtonRowView.overrideContainer.backgroundColor = .systemRed
+                addButtonRowView.overrideLabel.text = ("\(formattedOverride) %   ")
             }
         }
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { [weak self] _ in
             guard let self = self else { return }
-            self.turnOffLateBreakfastSwitch()
+            self.turnOffOverrideSwitch()
         }
         alertController.addAction(confirmAction)
         alertController.addAction(presetAction)
@@ -2239,8 +2255,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let addButtonRowView = self.addButtonRowView {
             let override = self.temporaryOverrideFactor * 100
             let formattedOverride = String(format: "%.0f", override)
-            addButtonRowView.lateBreakfastContainer.backgroundColor = .systemPurple
-            addButtonRowView.lateBreakfastLabel.text = ("\(formattedOverride) %  ")
+            addButtonRowView.overrideContainer.backgroundColor = .systemPurple
+            addButtonRowView.overrideLabel.text = ("\(formattedOverride) %  ")
         }
     }
     
@@ -2742,8 +2758,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     // MARK: Methods (Overrides)
-    private func handleLateBreakfastSwitchOn() {
-        guard let overrideName = UserDefaultsRepository.lateBreakfastOverrideName else {
+    private func handleOverrideSwitchOn() {
+        guard let overrideName = UserDefaultsRepository.overrideName else {
             print("No override name available")
             return
         }
@@ -3323,14 +3339,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return button
         }()
         
-        let lateBreakfastSwitch: UISwitch = {
+        let overrideSwitch: UISwitch = {
             let toggle = UISwitch()
             toggle.onTintColor = .clear
             toggle.translatesAutoresizingMaskIntoConstraints = false
             return toggle
         }()
         
-        let lateBreakfastLabel: UILabel = {
+        let overrideLabel: UILabel = {
             let label = UILabel()
             let systemFont = UIFont.systemFont(ofSize: 12, weight: .bold)
             if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
@@ -3345,7 +3361,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return label
         }()
 
-        let lateBreakfastContainer: UIView = {
+        let overrideContainer: UIView = {
             let view = UIView()
             view.backgroundColor = .systemGray3
             view.layer.cornerRadius = 10
@@ -3368,13 +3384,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         private func setupView() {
             let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
-            lateBreakfastSwitch.isHidden = isTrioAPNS
+            overrideSwitch.isHidden = isTrioAPNS
 
-            lateBreakfastContainer.addSubview(lateBreakfastLabel)
-            lateBreakfastContainer.addSubview(lateBreakfastSwitch)
-            lateBreakfastSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
+            overrideContainer.addSubview(overrideLabel)
+            overrideContainer.addSubview(overrideSwitch)
+            overrideSwitch.transform = CGAffineTransform(scaleX: 0.65, y: 0.65)
 
-            var arrangedSubviews: [UIView] = [addButton, lateBreakfastContainer]
+            var arrangedSubviews: [UIView] = [addButton, overrideContainer]
             if let schoolFoodURL = UserDefaultsRepository.schoolFoodURL, !schoolFoodURL.isEmpty {
                 arrangedSubviews.insert(rssButton, at: 1)
             }
@@ -3394,20 +3410,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
                 stackView.heightAnchor.constraint(equalToConstant: 44),
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-                lateBreakfastSwitch.leadingAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor, constant: 7),
-                lateBreakfastSwitch.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor),
+                overrideSwitch.leadingAnchor.constraint(equalTo: overrideContainer.centerXAnchor, constant: 7),
+                overrideSwitch.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor),
             ])
 
             // Define constraints for Trio APNS
             trioAPNSConstraints = [
-                lateBreakfastLabel.centerXAnchor.constraint(equalTo: lateBreakfastContainer.centerXAnchor),
-                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor)
+                overrideLabel.centerXAnchor.constraint(equalTo: overrideContainer.centerXAnchor),
+                overrideLabel.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor)
             ]
 
             // Define constraints for default configuration
             defaultConstraints = [
-                lateBreakfastLabel.trailingAnchor.constraint(equalTo: lateBreakfastSwitch.leadingAnchor, constant: 6),
-                lateBreakfastLabel.centerYAnchor.constraint(equalTo: lateBreakfastContainer.centerYAnchor)
+                overrideLabel.trailingAnchor.constraint(equalTo: overrideSwitch.leadingAnchor, constant: 6),
+                overrideLabel.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor)
             ]
 
             // Activate the initial set of constraints
@@ -3415,12 +3431,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         private func observeMethodChanges() {
-            NotificationCenter.default.addObserver(self, selector: #selector(updateLateBreakfastSwitch), name: .methodChanged, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .methodChanged, object: nil)
         }
         
-        @objc private func updateLateBreakfastSwitch() {
+        @objc private func updateOverrideSwitch() {
             let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
-            lateBreakfastSwitch.isHidden = isTrioAPNS
+            overrideSwitch.isHidden = isTrioAPNS
 
             // Deactivate all constraints for the label
             NSLayoutConstraint.deactivate(trioAPNSConstraints + defaultConstraints)
@@ -3508,6 +3524,9 @@ extension ComposeMealViewController: OverrideViewDelegate {
         applyTemporaryOverride(from: percentageText)
     }
     func didCancelOverride() {
-        turnOffLateBreakfastSwitch()
+        turnOffOverrideSwitch()
+        
+        // Reset the flag to allow UI updates when necessary
+        needsUIUpdate = true
     }
 }

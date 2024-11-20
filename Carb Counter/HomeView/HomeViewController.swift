@@ -73,7 +73,7 @@ class HomeViewController: UIViewController {
     }
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: .allowViewingOngoingMealsChanged, object: nil)
+        NotificationCenter.default.removeObserver(self)
     }
     
     private func setupUI() {

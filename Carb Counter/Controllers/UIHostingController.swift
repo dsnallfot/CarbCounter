@@ -312,31 +312,36 @@ extension ComposeMealViewController {
         )
     }
     
-    @objc public func lateBreakfastLabelTapped() {
+    @objc public func overrideLabelTapped() {
         if UserDefaultsRepository.method == "Trio APNS" {
-                WebLoadNSTreatments {
-                    var overrideView = OverrideView()
-                    overrideView.delegate = self // Pass the current instance of ComposeMealViewController as the delegate
-                    let overrideVC = UIHostingController(rootView: overrideView)
-                    overrideVC.modalPresentationStyle = .formSheet
-                    self.present(overrideVC, animated: true, completion: nil)
-                }
-                return
+            WebLoadNSTreatments {
+                var overrideView = OverrideView()
+                overrideView.delegate = self // Pass the current instance of ComposeMealViewController as the delegate
+                let overrideVC = UIHostingController(rootView: overrideView)
+                overrideVC.modalPresentationStyle = .formSheet
+                self.present(overrideVC, animated: true, completion: nil)
+                
+                // Reset the flag to allow UI updates after handling override
+                self.needsUIUpdate = true
             }
-        if let startTime = UserDefaultsRepository.lateBreakfastStartTime {
+            return
+        }
+
+        if let startTime = UserDefaultsRepository.overrideStartTime {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm"
             let formattedDate = formatter.string(from: startTime)
-            let latestFactorUsed = UserDefaultsRepository.lateBreakfastFactorUsed
+            let latestFactorUsed = UserDefaultsRepository.overrideFactorUsed
             presentPopover(
                 title: String(format: NSLocalizedString("Senaste override • %@", comment: "Senaste override • %@"), latestFactorUsed),
-                message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"),formattedDate),
+                message: String(format: NSLocalizedString("Aktiverades %@", comment: "Aktiverades %@"), formattedDate),
                 statusTitle: "",
                 statusMessage: "",
                 progress: 0,
                 progressBarColor: Color.clear,
                 showProgressBar: false,
-                sourceView: addButtonRowView.lateBreakfastLabel)
+                sourceView: addButtonRowView.overrideLabel
+            )
         } else {
             presentPopover(
                 title: NSLocalizedString("Senaste override", comment: "Senaste override"),
@@ -346,8 +351,12 @@ extension ComposeMealViewController {
                 progress: 0,
                 progressBarColor: Color.clear,
                 showProgressBar: false,
-                sourceView: addButtonRowView.lateBreakfastLabel)
+                sourceView: addButtonRowView.overrideLabel
+            )
         }
+
+        // Reset the flag in case no treatments were loaded
+        needsUIUpdate = true
     }
     
     @objc public func editCurrentRegistration() {

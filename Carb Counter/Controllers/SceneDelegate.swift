@@ -225,7 +225,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         print("sceneWillEnterForeground triggered")
         
-        // Existing code
         if shouldOpenScanner {
             openScannerViewController()
             shouldOpenScanner = false
@@ -236,26 +235,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             shouldOpenAddFood = false
         }
         
-        // Ensure the window and rootViewController exist
         guard let window = window,
-                  let rootViewController = window.rootViewController else {
-                print("Root view controller not found")
-                return
-            }
+              let rootViewController = window.rootViewController else {
+            print("Root view controller not found")
+            return
+        }
 
-            if let composeMealVC = findComposeMealViewController(in: rootViewController) {
-                //print("ComposeMealViewController detected, updating treatments...")
-                composeMealVC.WebLoadNSTreatments {
-                    print("Nightscout treatments updated after entering foreground.")
-                }
-            } else if let sharedVC = ComposeMealViewController.shared {
-                print("Fallback to ComposeMealViewController.shared")
-                sharedVC.WebLoadNSTreatments {
-                    print("Nightscout treatments updated using shared instance.")
-                }
-            } else {
-                print("ComposeMealViewController not found in the current view hierarchy.")
+        if let composeMealVC = findComposeMealViewController(in: rootViewController) {
+            print("ComposeMealViewController detected, updating treatments...")
+            composeMealVC.WebLoadNSTreatments {
+                print("Nightscout treatments updated after entering foreground.")
+                composeMealVC.handleActiveOverride() // Update UI after treatments
             }
+        } else if let sharedVC = ComposeMealViewController.shared {
+            print("Fallback: Using shared ComposeMealViewController")
+            sharedVC.WebLoadNSTreatments {
+                print("Nightscout treatments updated using shared instance.")
+                sharedVC.handleActiveOverride() // Update UI after treatments
+            }
+        } else {
+            print("ComposeMealViewController not found in the current view hierarchy.")
+        }
     }
     
     private func findComposeMealViewController(in rootViewController: UIViewController) -> ComposeMealViewController? {
@@ -298,14 +298,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        // Called as the scene transitions from the foreground to the background.
-        // Use this method to save data, release shared resources, and store enough scene-specific state information
-        // to restore the scene back to its current state.
+        print("sceneDidEnterBackground triggered")
 
-        // Save the time when the app enters the background
-        //backgroundEnterTime = Date()
+        guard let window = window,
+              let rootViewController = window.rootViewController else {
+            print("Root view controller not found")
+            return
+        }
 
-        // Save changes in the application's managed object context when the application transitions to the background.
+        if let composeMealVC = findComposeMealViewController(in: rootViewController) {
+            print("Resetting needsUIUpdate flag for ComposeMealViewController")
+            composeMealVC.needsUIUpdate = true
+        } else if let sharedVC = ComposeMealViewController.shared {
+            print("Fallback: Resetting needsUIUpdate flag for shared ComposeMealViewController")
+            sharedVC.needsUIUpdate = true
+        }
+
+        // Save Core Data context
         (UIApplication.shared.delegate as? CoreDataStack)?.saveContext()
     }
 
@@ -324,6 +333,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }*/
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ProductFound"), object: nil)
+        NotificationCenter.default.removeObserver(self)
     }
 }

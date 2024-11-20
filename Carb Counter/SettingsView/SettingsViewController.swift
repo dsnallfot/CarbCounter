@@ -89,7 +89,7 @@ class SettingsViewController: UITableViewController {
     }
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: .didImportUserDefaults, object: nil)
+        NotificationCenter.default.removeObserver(self)
     }
     
     @objc private func cancelButtonTapped() {
@@ -237,10 +237,10 @@ class SettingsViewController: UITableViewController {
                 cell.detailTextLabel?.text = "\(formatValue(UserDefaultsRepository.maxBolus)) E"
             case 7:
                 cell.textLabel?.text = NSLocalizedString("Override-faktor", comment: "Override factor label")
-                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.lateBreakfastFactor)
+                cell.detailTextLabel?.text = formatValue(UserDefaultsRepository.overrideFactor)
             case 8:
                 cell.textLabel?.text = NSLocalizedString("Override", comment: "Override label")
-                cell.detailTextLabel?.text = UserDefaultsRepository.lateBreakfastOverrideName
+                cell.detailTextLabel?.text = UserDefaultsRepository.overrideName
             default:
                 break
             }
@@ -329,13 +329,13 @@ class SettingsViewController: UITableViewController {
             case 7:
                 title = NSLocalizedString("Override-faktor", comment: "Override factor title")
                 message = NSLocalizedString("När exvis frukost äts senare än normalt, efter att de schemalagda insulinkvoterna växlat över från frukostkvoter till dagskvoter, så behöver kvoterna tillfälligt göras starkare. \n\nDenna inställning anger hur mycket den aktuella insulinkvoten ska justeras när knappen 'Override' aktiveras i måltidsvyn:", comment: "Override factor message")
-                value = UserDefaultsRepository.lateBreakfastFactor
-                userDefaultSetter = { UserDefaultsRepository.lateBreakfastFactor = $0 }
+                value = UserDefaultsRepository.overrideFactor
+                userDefaultSetter = { UserDefaultsRepository.overrideFactor = $0 }
             case 8:
                 title = NSLocalizedString("Override", comment: "Override name title")
                 message = NSLocalizedString("Ange exakt namn på den override du vill aktivera i Trio", comment: "Override name message")
-                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.lateBreakfastOverrideName ?? "") { newValue in
-                    UserDefaultsRepository.lateBreakfastOverrideName = newValue
+                showEditAlert(title: title, message: message, currentValue: UserDefaultsRepository.overrideName ?? "") { newValue in
+                    UserDefaultsRepository.overrideName = newValue
                     self.tableView.reloadRows(at: [indexPath], with: .none)
                 }
                 return

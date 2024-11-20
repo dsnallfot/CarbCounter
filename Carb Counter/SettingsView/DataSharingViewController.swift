@@ -1090,11 +1090,11 @@ class DataSharingViewController: UITableViewController {
         userDefaultsData["startDoseFactor"] = String(UserDefaultsRepository.startDoseFactor)
         userDefaultsData["maxCarbs"] = String(UserDefaultsRepository.maxCarbs)
         userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
-        userDefaultsData["lateBreakfastFactor"] = String(UserDefaultsRepository.lateBreakfastFactor)
-        userDefaultsData["lateBreakfastOverrideName"] = UserDefaultsRepository.lateBreakfastOverrideName ?? ""
+        userDefaultsData["overrideFactor"] = String(UserDefaultsRepository.overrideFactor)
+        userDefaultsData["overrideName"] = UserDefaultsRepository.overrideName ?? ""
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
-        userDefaultsData["lateBreakfastStartTime"] = UserDefaultsRepository.lateBreakfastStartTime?.description ?? ""
-        userDefaultsData["lateBreakfastFactorUsed"] = UserDefaultsRepository.lateBreakfastFactorUsed
+        userDefaultsData["overrideStartTime"] = UserDefaultsRepository.overrideStartTime?.description ?? ""
+        userDefaultsData["overrideFactorUsed"] = UserDefaultsRepository.overrideFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = ObservableUserDefaults.shared.url.value
         userDefaultsData["nightscoutToken"] = UserDefaultsRepository.token.value
@@ -1160,18 +1160,18 @@ class DataSharingViewController: UITableViewController {
                 UserDefaultsRepository.maxCarbs = Double(value) ?? 30.0
             case "maxBolus":
                 UserDefaultsRepository.maxBolus = Double(value) ?? 1.0
-            case "lateBreakfastFactor":
-                UserDefaultsRepository.lateBreakfastFactor = Double(value) ?? 1.0
-            case "lateBreakfastOverrideName":
-                UserDefaultsRepository.lateBreakfastOverrideName = value
+            case "overrideFactor":
+                UserDefaultsRepository.overrideFactor = Double(value) ?? 1.0
+            case "overrideName":
+                UserDefaultsRepository.overrideName = value
             case "useMmol":
                 UserDefaultsRepository.useMmol = Bool(value) ?? false
-            case "lateBreakfastStartTime":
+            case "overrideStartTime":
                 if let date = ISO8601DateFormatter().date(from: value) {
-                    UserDefaultsRepository.lateBreakfastStartTime = date
+                    UserDefaultsRepository.overrideStartTime = date
                 }
-            case "lateBreakfastFactorUsed":
-                UserDefaultsRepository.lateBreakfastFactorUsed = value
+            case "overrideFactorUsed":
+                UserDefaultsRepository.overrideFactorUsed = value
             case "dabasAPISecret":
                 UserDefaultsRepository.dabasAPISecret = value
             case "nightscoutURL":

@@ -119,12 +119,12 @@ class UserDefaultsRepository {
         }
     }
     
-    static var lateBreakfastFactor: Double {
+    static var overrideFactor: Double {
         get {
-            return UserDefaults.standard.double(forKey: "lateBreakfastFactor")
+            return UserDefaults.standard.double(forKey: "overrideFactor")
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "lateBreakfastFactor")
+            UserDefaults.standard.set(newValue, forKey: "overrideFactor")
         }
     }
     
@@ -137,39 +137,39 @@ class UserDefaultsRepository {
         }
     }
     
-    static var lateBreakfast: Bool {
+    static var override: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: "lateBreakfast")
+            return UserDefaults.standard.bool(forKey: "override")
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "lateBreakfast")
+            UserDefaults.standard.set(newValue, forKey: "override")
         }
     }
         
-    static var lateBreakfastOverrideName: String? {
+    static var overrideName: String? {
         get {
-            return UserDefaults.standard.string(forKey: "lateBreakfastOverrideName")
+            return UserDefaults.standard.string(forKey: "overrideName")
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "lateBreakfastOverrideName")
+            UserDefaults.standard.set(newValue, forKey: "overrideName")
         }
     }
 
-    static var lateBreakfastStartTime: Date? {
+    static var overrideStartTime: Date? {
         get {
-            return UserDefaults.standard.object(forKey: "lateBreakfastStartTime") as? Date
+            return UserDefaults.standard.object(forKey: "overrideStartTime") as? Date
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "lateBreakfastStartTime")
+            UserDefaults.standard.set(newValue, forKey: "overrideStartTime")
         }
     }
     
-    static var lateBreakfastFactorUsed: String {
+    static var overrideFactorUsed: String {
             get {
-                return UserDefaults.standard.string(forKey: "lateBreakfastFactorUsed") ?? "100 %"
+                return UserDefaults.standard.string(forKey: "overrideFactorUsed") ?? "100 %"
             }
             set {
-                UserDefaults.standard.set(newValue, forKey: "lateBreakfastFactorUsed")
+                UserDefaults.standard.set(newValue, forKey: "overrideFactorUsed")
             }
         }
         
