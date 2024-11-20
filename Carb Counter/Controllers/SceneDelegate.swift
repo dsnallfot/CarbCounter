@@ -223,10 +223,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        // Called as the scene transitions from the background to the foreground.
-        // Use this method to undo the changes made on entering the background.
+        print("sceneWillEnterForeground triggered")
         
-        // Check if we should open the scanner when returning from background
+        // Existing code
         if shouldOpenScanner {
             openScannerViewController()
             shouldOpenScanner = false
@@ -236,6 +235,66 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             openAddFoodItemViewController()
             shouldOpenAddFood = false
         }
+        
+        // Ensure the window and rootViewController exist
+        guard let window = window,
+                  let rootViewController = window.rootViewController else {
+                print("Root view controller not found")
+                return
+            }
+
+            if let composeMealVC = findComposeMealViewController(in: rootViewController) {
+                //print("ComposeMealViewController detected, updating treatments...")
+                composeMealVC.WebLoadNSTreatments {
+                    print("Nightscout treatments updated after entering foreground.")
+                }
+            } else if let sharedVC = ComposeMealViewController.shared {
+                print("Fallback to ComposeMealViewController.shared")
+                sharedVC.WebLoadNSTreatments {
+                    print("Nightscout treatments updated using shared instance.")
+                }
+            } else {
+                print("ComposeMealViewController not found in the current view hierarchy.")
+            }
+    }
+    
+    private func findComposeMealViewController(in rootViewController: UIViewController) -> ComposeMealViewController? {
+        //print("Checking rootViewController: \(type(of: rootViewController))") // Log root type
+
+        if let composeMealVC = rootViewController as? ComposeMealViewController {
+            //print("ComposeMealViewController found directly as root.")
+            return composeMealVC
+        }
+
+        if let navController = rootViewController as? UINavigationController {
+            //print("Found UINavigationController, checking its viewControllers.")
+            for vc in navController.viewControllers {
+                //print("Contained viewController: \(type(of: vc))")
+                if let composeMealVC = vc as? ComposeMealViewController {
+                    //print("ComposeMealViewController found in UINavigationController.")
+                    return composeMealVC
+                }
+            }
+        }
+
+        if let tabBarController = rootViewController as? UITabBarController {
+            //print("Found UITabBarController, checking its viewControllers.")
+            for vc in tabBarController.viewControllers ?? [] {
+                //print("Contained viewController: \(type(of: vc))")
+                // Recursively search within the view controllers of each UINavigationController
+                if let composeMealVC = findComposeMealViewController(in: vc) {
+                    return composeMealVC
+                }
+            }
+        }
+
+        if let presentedVC = rootViewController.presentedViewController {
+            //print("Found presented viewController: \(type(of: presentedVC))")
+            return findComposeMealViewController(in: presentedVC)
+        }
+
+        print("ComposeMealViewController not found in the current hierarchy.")
+        return nil
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
