@@ -131,9 +131,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         super.viewDidLoad()
         initializeComposeMealViewController()
         
-        /*if UserDefaultsRepository.method == "Trio APNS" {
+        if UserDefaultsRepository.method == "Trio APNS" {
             webLoadNSProfile()
-        }*/
+        }
         
     }
     
