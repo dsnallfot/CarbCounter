@@ -91,10 +91,17 @@ struct OverrideView: View {
                         if let activeNote = overrideNote.value {
                             Section(header: Text("Aktiv Override")) {
                                 HStack {
-                                    Text("Override")
-                                    Spacer()
                                     Text(activeNote)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Button {
+                                        alertType = .confirmCancellation
+                                        showAlert = true
+                                    } label: {
+                                        Image(systemName: "xmark.square.fill")
+                                            .font(.title2)
+                                    }
+                                    .tint(.red)
                                 }
                                 .modifier(CustomListRowStyle())
                                 .onAppear {
@@ -109,21 +116,6 @@ struct OverrideView: View {
                                         print("No matching override found for activeNote: \(activeNote)")
                                     }
                                 }
-                                
-                                Button {
-                                    alertType = .confirmCancellation
-                                    showAlert = true
-                                } label: {
-                                    HStack {
-                                        Text("Avbryt Override")
-                                            .font(.headline)
-                                        Spacer()
-                                        Image(systemName: "xmark.square.fill")
-                                            .font(.title2)
-                                    }
-                                }
-                                .tint(.red)
-                                .modifier(CustomListRowStyle())
                             }
                         }
 
@@ -211,8 +203,8 @@ struct OverrideView: View {
                     )
                 case .confirmCancellation:
                     return Alert(
-                        title: Text("Avbryt Override"),
-                        message: Text("Är du säker på att du vill avbryta den aktiva overriden?"),
+                        title: Text("Avsluta Override"),
+                        message: Text("Är du säker på att du vill avsluta den aktiva overriden?"),
                         primaryButton: .default(Text("Bekräfta"), action: {
                             cancelOverride()
                         }),
