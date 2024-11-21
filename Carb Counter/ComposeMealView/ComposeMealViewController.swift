@@ -3524,15 +3524,15 @@ struct InfoPopoverView: View {
 
 extension ComposeMealViewController: OverrideViewDelegate {
     func didActivateOverride(percentage: Double) {
-        // Check if temporaryOverride is true and the factor matches the new percentage
+        /*// Check if temporaryOverride is true and the factor matches the new percentage
         if temporaryOverride && (temporaryOverrideFactor * 100 == percentage) {
             print("Temporary override is already active with the same percentage (\(percentage)). No action taken.")
             return
-        }
+        }*/
 
-        // Reset relevant variables and UI if temporaryOverride is true but percentage doesn't match
+        // Reset relevant variables and UI if temporaryOverride is true to avoid looping calculations
         if temporaryOverride {
-            print("Temporary override is active with a different percentage. Resetting before applying new override.")
+            print("Temporary override is active. Resetting before applying new override.")
             updatePlaceholderValuesForCurrentHour()
             updateScheduledValuesUI()
         }
