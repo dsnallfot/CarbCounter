@@ -234,28 +234,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             openAddFoodItemViewController()
             shouldOpenAddFood = false
         }
-        
-        guard let window = window,
-              let rootViewController = window.rootViewController else {
-            print("Root view controller not found")
-            return
-        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // Add slight delay to ensure resources are ready
+                guard let window = self.window,
+                      let rootViewController = window.rootViewController else {
+                    print("Root view controller not found")
+                    return
+                }
 
-        if let composeMealVC = findComposeMealViewController(in: rootViewController) {
-            print("ComposeMealViewController detected, updating treatments...")
-            composeMealVC.WebLoadNSTreatments {
-                print("Nightscout treatments updated after entering foreground.")
-                composeMealVC.handleActiveOverride() // Update UI after treatments
+                if let composeMealVC = self.findComposeMealViewController(in: rootViewController) {
+                    print("ComposeMealViewController detected, reinitializing view...")
+                    composeMealVC.initializeView()
+                } else {
+                    print("ComposeMealViewController not found in the current view hierarchy.")
+                }
             }
-        } else if let sharedVC = ComposeMealViewController.shared {
-            print("Fallback: Using shared ComposeMealViewController")
-            sharedVC.WebLoadNSTreatments {
-                print("Nightscout treatments updated using shared instance.")
-                sharedVC.handleActiveOverride() // Update UI after treatments
-            }
-        } else {
-            print("ComposeMealViewController not found in the current view hierarchy.")
-        }
     }
     
     private func findComposeMealViewController(in rootViewController: UIViewController) -> ComposeMealViewController? {
@@ -299,20 +291,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidEnterBackground(_ scene: UIScene) {
         print("sceneDidEnterBackground triggered")
-
-        guard let window = window,
-              let rootViewController = window.rootViewController else {
-            print("Root view controller not found")
-            return
-        }
-
-        if let composeMealVC = findComposeMealViewController(in: rootViewController) {
-            print("Resetting needsUIUpdate flag for ComposeMealViewController")
-            composeMealVC.needsUIUpdate = true
-        } else if let sharedVC = ComposeMealViewController.shared {
-            print("Fallback: Resetting needsUIUpdate flag for shared ComposeMealViewController")
-            sharedVC.needsUIUpdate = true
-        }
 
         // Save Core Data context
         (UIApplication.shared.delegate as? CoreDataStack)?.saveContext()

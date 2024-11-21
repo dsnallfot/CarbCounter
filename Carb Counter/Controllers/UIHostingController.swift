@@ -320,9 +320,6 @@ extension ComposeMealViewController {
                 let overrideVC = UIHostingController(rootView: overrideView)
                 overrideVC.modalPresentationStyle = .formSheet
                 self.present(overrideVC, animated: true, completion: nil)
-                
-                // Reset the flag to allow UI updates after handling override
-                self.needsUIUpdate = true
             }
             return
         }
@@ -354,9 +351,6 @@ extension ComposeMealViewController {
                 sourceView: addButtonRowView.overrideLabel
             )
         }
-
-        // Reset the flag in case no treatments were loaded
-        needsUIUpdate = true
     }
     
     @objc public func editCurrentRegistration() {

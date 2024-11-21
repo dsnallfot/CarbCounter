@@ -112,7 +112,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
     var latestBolusSent = Double(0.0)
-    public var needsUIUpdate = true
     
     ///Meal monitoring
     var exportTimer: Timer?
@@ -132,9 +131,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         super.viewDidLoad()
         initializeComposeMealViewController()
         
-        if UserDefaultsRepository.method == "Trio APNS" {
+        /*if UserDefaultsRepository.method == "Trio APNS" {
             webLoadNSProfile()
-        }
+        }*/
         
     }
     
@@ -274,24 +273,31 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     // MARK: View Will Appear
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        initializeView()
+    }
+    
+    internal func initializeView() {
         view.endEditing(true)
         loadTemporaryFoodItemsFromCoreData()
         loadValuesFromUserDefaults()
-        
-        updatePlaceholderValuesForCurrentHour() //Make sure carb ratio and start dose schedules are updated
-        startHourChangeTimer() // Start timer while in this view to check if its a new hour and update CR/Startdoses if they are changed from the last hour to the new hour
-        overrideFactor = UserDefaultsRepository.overrideFactor // Fetch factor for calculating late breakfast CR
+
+        // Update placeholder values and start hour change timer
+        updatePlaceholderValuesForCurrentHour()
+        startHourChangeTimer()
+
+        // Fetch override factor and adjust scheduled carb ratio
+        overrideFactor = UserDefaultsRepository.overrideFactor
         if override {
             if temporaryOverride {
                 scheduledCarbRatio /= temporaryOverrideFactor
             } else {
-                scheduledCarbRatio /= overrideFactor // If override switch is on, calculate new CR
+                scheduledCarbRatio /= overrideFactor
             }
             UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         }
         updateScheduledValuesUI()
-        
-        // Check if the late breakfast switch should be off
+
+        // Handle override switch timing
         if let startTime = UserDefaultsRepository.overrideStartTime {
             print("Override CR was activated: \(startTime)")
             let timeInterval = Date().timeIntervalSince(startTime)
@@ -299,27 +305,35 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 addButtonRowView.overrideSwitch.isOn = false
                 overrideSwitchChanged(addButtonRowView.overrideSwitch)
             } else {
-                overrideTimer = Timer.scheduledTimer(timeInterval: overrideDuration - timeInterval, target: self, selector: #selector(turnOffOverrideSwitch), userInfo: nil, repeats: false)
+                overrideTimer = Timer.scheduledTimer(
+                    timeInterval: overrideDuration - timeInterval,
+                    target: self,
+                    selector: #selector(turnOffOverrideSwitch),
+                    userInfo: nil,
+                    repeats: false
+                )
             }
         }
 
+        // Update total nutrients
         updateTotalNutrients()
 
+        // Import CSV files if needed
         guard let dataSharingVC = dataSharingVC else { return }
         Task {
             print("Data import triggered")
             await dataSharingVC.importCSVFiles()
         }
+
         fetchFoodItems()
         checkIfEditing()
 
+        // Handle Trio APNS method
         if UserDefaultsRepository.method == "Trio APNS" {
-                WebLoadNSTreatments {
-                    self.handleActiveOverride() // Ensure UI updates
-                }
-            } else {
-                handleActiveOverride() // Fallback to ensure UI state is updated
+            WebLoadNSTreatments {
+                self.handleActiveOverride()
             }
+        }
     }
     // MARK: View Will Disappear
     override func viewWillDisappear(_ animated: Bool) {
@@ -331,9 +345,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         UserDefaultsRepository.scheduledCarbRatio = scheduledCarbRatio
         hourChangeTimer?.invalidate()
         hourChangeTimer = nil
-        
-        // Reset the flag to allow UI updates when returning to the view
-        needsUIUpdate = true
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -988,12 +999,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     func handleActiveOverride() {
-        guard needsUIUpdate else {
-            print("UI update already handled.")
-            return
-        }
-        needsUIUpdate = false
-
         DispatchQueue.main.async {
             guard let activeNote = Observable.shared.override.value else {
                 print("No active override found.")
@@ -1005,7 +1010,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                         if let percentage = matchedOverride.percentage {
                             print("Matched override percentage: \(percentage)")
                             self.didActivateOverride(percentage: percentage)
-                            self.applyTemporaryOverride(from: String(percentage)) // Force the UI to update
                         } else {
                             print("Matched override has no percentage.")
                         }
@@ -3520,13 +3524,17 @@ struct InfoPopoverView: View {
 
 extension ComposeMealViewController: OverrideViewDelegate {
     func didActivateOverride(percentage: Double) {
+        // Check if temporaryOverride is true and the factor matches the new percentage
+        if temporaryOverride && (temporaryOverrideFactor * 100 == percentage) {
+            print("Temporary override is already active with the same percentage (\(percentage)). No action taken.")
+            return
+        }
+
+        // Otherwise, apply the new temporary override
         let percentageText = String(percentage)
         applyTemporaryOverride(from: percentageText)
     }
     func didCancelOverride() {
         turnOffOverrideSwitch()
-        
-        // Reset the flag to allow UI updates when necessary
-        needsUIUpdate = true
     }
 }
