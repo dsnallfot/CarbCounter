@@ -3530,7 +3530,14 @@ extension ComposeMealViewController: OverrideViewDelegate {
             return
         }
 
-        // Otherwise, apply the new temporary override
+        // Reset relevant variables and UI if temporaryOverride is true but percentage doesn't match
+        if temporaryOverride {
+            print("Temporary override is active with a different percentage. Resetting before applying new override.")
+            updatePlaceholderValuesForCurrentHour()
+            updateScheduledValuesUI()
+        }
+
+        // Apply the new temporary override
         let percentageText = String(percentage)
         applyTemporaryOverride(from: percentageText)
     }
