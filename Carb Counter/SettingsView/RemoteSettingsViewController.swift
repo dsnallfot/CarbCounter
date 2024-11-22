@@ -113,6 +113,25 @@ class RemoteSettingsViewController: UITableViewController {
         let doneButton = UIBarButtonItem(title: NSLocalizedString("Klar", comment: "Klar"), style: .done, target: self, action: #selector(doneButtonTapped))
         navigationItem.rightBarButtonItem = doneButton
     }
+    
+    @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
+        let previousMethod = method
+        method = sender.selectedSegmentIndex == 0 ? "iOS Shortcuts" : (sender.selectedSegmentIndex == 1 ? "SMS API" : "Trio APNS")
+
+        var sectionsToReload: [Int] = []
+        if previousMethod != method {
+            sectionsToReload = [1, 2, 3]
+        }
+
+        if method == "Trio APNS" {
+            // Post a notification for "Trio APNS" selection
+            NotificationCenter.default.post(name: .didSelectTrioAPNS, object: nil)
+        }
+
+        tableView.beginUpdates()
+        tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
+        tableView.endUpdates()
+    }
 
     @objc private func doneButtonTapped() {
         navigationController?.popViewController(animated: true)
@@ -272,20 +291,6 @@ class RemoteSettingsViewController: UITableViewController {
             return 150 // Estimated height for APNS Key cell
         }
         return 44
-    }
-
-    @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
-        let previousMethod = method
-        method = sender.selectedSegmentIndex == 0 ? "iOS Shortcuts" : (sender.selectedSegmentIndex == 1 ? "SMS API" : "Trio APNS")
-
-        var sectionsToReload: [Int] = []
-        if previousMethod != method {
-            sectionsToReload = [1, 2, 3]
-        }
-
-        tableView.beginUpdates()
-        tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
-        tableView.endUpdates()
     }
 
     @objc private func limitTextFieldLength(_ textField: UITextField) {
@@ -509,4 +514,8 @@ extension CustomSecureTextField: UITextFieldDelegate {
         // Re-enable secure entry after editing
         isSecureTextEntry = true
     }
+}
+
+extension Notification.Name {
+    static let didSelectTrioAPNS = Notification.Name("didSelectTrioAPNS")
 }

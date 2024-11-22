@@ -216,8 +216,11 @@ class NightscoutManager {
                         return String(format: "%.\(decimalPlaces)f", value)
                     }
 
-                    let latestBG = round((latestOpenaps["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
-                    let previousBG = round((previousOpenaps["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+                    let rawLatestBG = latestOpenaps["bg"] as? Double ?? 0
+                    let rawPreviousBG = previousOpenaps["bg"] as? Double ?? 0
+
+                    let latestBG = rawLatestBG > 22 ? round(rawLatestBG * conversionFactor * 10) / 10.0 : rawLatestBG
+                    let previousBG = rawPreviousBG > 22 ? round(rawPreviousBG * conversionFactor * 10) / 10.0 : rawPreviousBG
 
                     // Calculate and store the delta
                     self.latestDelta = round((latestBG - previousBG) * 10) / 10.0

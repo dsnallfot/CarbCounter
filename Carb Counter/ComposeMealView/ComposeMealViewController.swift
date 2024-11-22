@@ -211,7 +211,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         /// Inital fetch
         self.fetchFoodItems()
         loadFoodItemsFromCoreData()
-        NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
         allowShortcuts = UserDefaultsRepository.allowShortcuts
         
         /// Create buttons
@@ -252,7 +251,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(overrideLabelTapped))
         addButtonRowView.overrideContainer.addGestureRecognizer(tapGesture)
         
-        /// Register for keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         
@@ -260,6 +258,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(webLoadNSProfile), name: Notification.Name("SyncWithNightscout"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
+        NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleTrioAPNSSelected),
+                name: .didSelectTrioAPNS,
+                object: nil
+            )
+        
         addButtonRowView.overrideSwitch.addTarget(self, action: #selector(overrideSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
         
@@ -1789,6 +1795,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             if let addButtonRowView = self.addButtonRowView {
                 addButtonRowView.overrideContainer.backgroundColor = .systemGray3
+                addButtonRowView.overrideLabel.textAlignment = .left
                 addButtonRowView.overrideLabel.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             }
         }
@@ -1890,6 +1897,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if let startDose = CoreDataHelper.shared.fetchStartDose(for: currentHour) {
             scheduledStartDose = startDose
         }
+    }
+    
+    @objc private func handleTrioAPNSSelected() {
+        // Call webLoadNSProfile when Trio APNS is selected
+        webLoadNSProfile()
     }
     
     ///OngoingMeal monitoring
@@ -2229,6 +2241,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 let override = self.overrideFactor * 100
                 let formattedOverride = String(format: "%.0f", override)
                 addButtonRowView.overrideContainer.backgroundColor = .systemRed
+                addButtonRowView.overrideLabel.textAlignment = .left
                 addButtonRowView.overrideLabel.text = ("\(formattedOverride) %   ")
             }
         }
@@ -2259,9 +2272,17 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         if let addButtonRowView = self.addButtonRowView {
             let override = self.temporaryOverrideFactor * 100
-            let formattedOverride = String(format: "%.0f", override)
+            var formattedOverride: String
+            
+            if let activeNote = overrideNote.value {
+                formattedOverride = activeNote + "\n" + String(format: "%.0f", override) + " %"
+            } else {
+                formattedOverride = String(format: "%.0f", override) + " %"
+            }
+            
             addButtonRowView.overrideContainer.backgroundColor = .systemPurple
-            addButtonRowView.overrideLabel.text = ("\(formattedOverride) %  ")
+            addButtonRowView.overrideLabel.textAlignment = .center
+            addButtonRowView.overrideLabel.text = ("\(formattedOverride)")
         }
     }
     
@@ -3363,6 +3384,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             label.isUserInteractionEnabled = true
+
+            label.numberOfLines = 0
+            label.lineBreakMode = .byWordWrapping
+            
+            label.adjustsFontSizeToFitWidth = true
+            label.minimumScaleFactor = 0.5
+            
             return label
         }()
 
