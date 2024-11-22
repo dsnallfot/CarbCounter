@@ -144,7 +144,7 @@ class NightscoutManager {
             return
         }
 
-        let urlString = "\(nightscoutURL)/api/v1/devicestatus?token=\(nightscoutToken)&count=2"
+        let urlString = "\(nightscoutURL)/api/v1/devicestatus?token=\(nightscoutToken)&count=3"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             completion()
@@ -169,36 +169,75 @@ class NightscoutManager {
 
             do {
                 if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]],
-                   jsonArray.count >= 2,
-                   let latestStatus = jsonArray.first,
-                   let previousStatus = jsonArray.dropFirst().first, // Find the second most recent status
-                   let latestOpenaps = latestStatus["openaps"] as? [String: Any],
-                   let latestSuggested = latestOpenaps["suggested"] as? [String: Any],
-                   let previousOpenaps = previousStatus["openaps"] as? [String: Any],
-                   let previousSuggested = previousOpenaps["suggested"] as? [String: Any] {
+                   jsonArray.count >= 3 {
+                    
+                    // Extract the three most recent statuses
+                    let latestStatus = jsonArray[0]
+                    let secondStatus = jsonArray[1]
+                    let thirdStatus = jsonArray[2]
 
-                    // Check if we need to convert to mmol/L
+                    // Cast openaps to dictionaries
+                    guard let latestOpenaps = latestStatus["openaps"] as? [String: Any],
+                          let secondOpenaps = secondStatus["openaps"] as? [String: Any],
+                          let thirdOpenaps = thirdStatus["openaps"] as? [String: Any],
+                          let latestSuggested = latestOpenaps["suggested"] as? [String: Any],
+                          let secondSuggested = secondOpenaps["suggested"] as? [String: Any],
+                          let thirdSuggested = thirdOpenaps["suggested"] as? [String: Any] else {
+                        print("Missing or invalid `openaps.suggested`")
+                        completion()
+                        return
+                    }
+
+                    // Extract and debug timestamp strings
+                    func cleanTimestamp(_ timestamp: Any?) -> String? {
+                        guard let timestampString = timestamp as? String else { return nil }
+                        return timestampString.trimmingCharacters(in: .whitespacesAndNewlines)
+                    }
+
+                    guard let latestTimestampString = cleanTimestamp(latestSuggested["timestamp"]),
+                          let secondTimestampString = cleanTimestamp(secondSuggested["timestamp"]),
+                          let thirdTimestampString = cleanTimestamp(thirdSuggested["timestamp"]) else {
+                        print("Missing or invalid `suggested.timestamp`")
+                        completion()
+                        return
+                    }
+
+                    // Parse timestamps
+                    let isoFormatter = ISO8601DateFormatter()
+                    isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                    guard let latestTimestamp = isoFormatter.date(from: latestTimestampString),
+                          let secondTimestamp = isoFormatter.date(from: secondTimestampString),
+                          let thirdTimestamp = isoFormatter.date(from: thirdTimestampString) else {
+                        print("Invalid `suggested.timestamp` format after cleaning")
+                        completion()
+                        return
+                    }
+
+                    // Determine whether to use the second or third status
+                    let now = Date()
+                    let fourMinutesAgo = now.addingTimeInterval(-240) // 4 minutes ago
+                    let previousSuggested = secondTimestamp <= fourMinutesAgo ? secondSuggested : thirdSuggested
+
+                    // Extract BG values
                     let useMmol = UserDefaultsRepository.useMmol
                     let conversionFactor = useMmol ? 0.0555 : 1.0
                     let decimalPlaces = useMmol ? 1 : 0
 
-                    // Format the value as a string with the appropriate number of decimal places
                     func formatValue(_ value: Double) -> String {
                         return String(format: "%.\(decimalPlaces)f", value)
                     }
 
-                    // Extract and convert the latest and previous BG values
                     let latestBG = round((latestSuggested["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
                     let previousBG = round((previousSuggested["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
 
-                    // Calculate the latestDelta
+                    // Calculate and store the delta
                     self.latestDelta = round((latestBG - previousBG) * 10) / 10.0
-
-                    // Set the latestBG to the instance variable and format the string
                     self.latestBG = latestBG
                     self.latestBGString = formatValue(latestBG)
-
                     self.latestDeltaString = formatValue(self.latestDelta)
+
+                    // Logging for debugging
+                    print("latestBG: \(latestBG), previousBG: \(previousBG), latestDelta: \(self.latestDelta)")
 
                     // Continue with the existing code for other calculations
                     self.latestMinGuardBG = round((latestSuggested["minGuardBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
