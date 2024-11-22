@@ -1011,7 +1011,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                             print("Matched override percentage: \(percentage)")
                             self.didActivateOverride(percentage: percentage)
                         } else {
-                            print("Matched override has no percentage.")
+                            print("Matched override has no percentage, activating override but setting override % to 100")
+                            self.didActivateOverride(percentage: 100)
                         }
                     } else {
                         print("No matching override found for activeNote: \(activeNote)")
