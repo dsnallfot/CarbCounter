@@ -10,8 +10,6 @@ extension ComposeMealViewController {
     // NS Treatments Web Call
     // Downloads Basal, Bolus, Carbs, BG Check, Notes, Overrides
     func WebLoadNSTreatments(completion: @escaping () -> Void) {
-        //if UserDefaultsRepository.debugLog.value { self.writeDebugLog(value: "Download: Treatments") }
-        //if !UserDefaultsRepository.downloadTreatments.value { return }
         
         let startTimeString = dateTimeUtils.getDateTimeString(addingDays: -1)
         let currentTimeString = dateTimeUtils.getDateTimeString(addingHours: 6)
@@ -51,9 +49,21 @@ extension ComposeMealViewController {
         var bgCheck: [[String:AnyObject]] = []
         var suspendPump: [[String:AnyObject]] = []
         var resumePump: [[String:AnyObject]] = []
-        //var pumpSiteChange: [cageData] = []
-        //var cgmSensorStart: [sageData] = []
-        //var insulinCartridge: [iageData] = []
+        var pumpSiteChange: [cageData] = []
+        var cgmSensorStart: [sageData] = []
+        var insulinCartridge: [iageData] = []
+        
+        struct cageData: Codable {
+            var created_at: String
+        }
+
+        struct sageData: Codable {
+            var created_at: String
+        }
+
+        struct iageData: Codable {
+            var created_at: String
+        }
 
         for entry in entries {
             guard let eventType = entry["eventType"] as? String else {
@@ -88,7 +98,7 @@ extension ComposeMealViewController {
                 suspendPump.append(entry)
             case "Resume Pump":
                 resumePump.append(entry)
-            /*case "Pump Site Change", "Site Change":
+            case "Pump Site Change", "Site Change":
                 if let createdAt = entry["created_at"] as? String {
                     let newEntry = cageData(created_at: createdAt)
                     pumpSiteChange.append(newEntry)
@@ -102,93 +112,13 @@ extension ComposeMealViewController {
                 if let createdAt = entry["created_at"] as? String {
                     let newEntry = iageData(created_at: createdAt)
                     insulinCartridge.append(newEntry)
-                }*/
+                }
             default:
                 print("No Match: \(String(describing: entry))")
             }
         }
-        /*
-        if tempBasal.count > 0 {
-            processNSBasals(entries: tempBasal)
-        } else {
-            if basalData.count > 0 {
-                clearOldTempBasal()
-            }
-        }
-        if bolus.count > 0 {
-            processNSBolus(entries: bolus)
-        } else {
-            if bolusData.count > 0 {
-                clearOldBolus()
-            }
-        }
-        if smb.count > 0 {
-            processNSSmb(entries: smb)
-        } else {
-            if smbData.count > 0 {
-                clearOldSmb()
-            }
-        }
-        updateTodaysCarbsFromEntries(entries: carbs)
-        if carbs.count > 0 {
-            processNSCarbs(entries: carbs)
-        } else {
-            if carbData.count > 0 {
-                clearOldCarb()
-            }
-        }
-        if bgCheck.count > 0 {
-            processNSBGCheck(entries: bgCheck)
-        } else {
-            if bgCheckData.count > 0 {
-                clearOldBGCheck()
-            }
-        }
-        if temporaryOverride.count == 0 && overrideGraphData.count > 0 {
-            clearOldOverride()
-        }*/
         if temporaryOverride.count > 0 {
             processNSOverrides(entries: temporaryOverride)
         }
-/*
-        if temporaryTarget.count == 0 && tempTargetGraphData.count > 0 {
-            clearOldTempTarget()
-        }
-        if temporaryTarget.count > 0 {
-            processNSTemporaryTarget(entries: temporaryTarget)
-        }
-        if suspendPump.count > 0 {
-            processSuspendPump(entries: suspendPump)
-        } else {
-            if suspendGraphData.count > 0 {
-                clearOldSuspend()
-            }
-        }
-        if resumePump.count > 0 {
-            processResumePump(entries: resumePump)
-        } else {
-            if resumeGraphData.count > 0 {
-                clearOldResume()
-            }
-        }
-        processSage(entries: cgmSensorStart)
-        if cgmSensorStart.count > 0 {
-            processSensorStart(entries: cgmSensorStart)
-        } else {
-            if sensorStartGraphData.count > 0 {
-                clearOldSensor()
-            }
-        }
-
-        processIage(entries: insulinCartridge)
-
-        if note.count > 0 {
-            processNotes(entries: note)
-        } else {
-            if noteGraphData.count > 0 {
-                clearOldNotes()
-            }
-        }
-        processCage(entries: pumpSiteChange)*/
     }
 }

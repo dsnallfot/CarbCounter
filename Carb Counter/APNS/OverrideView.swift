@@ -110,7 +110,8 @@ struct OverrideView: View {
                                             print("Matched override percentage: \(percentage)")
                                             delegate?.didActivateOverride(percentage: percentage)
                                         } else {
-                                            print("Matched override has no percentage")
+                                            print("Matched override has no percentage, activating override in composemealVC but setting override % to 100")
+                                            delegate?.didActivateOverride(percentage: 100)
                                         }
                                     } else {
                                         print("No matching override found for activeNote: \(activeNote)")
@@ -118,11 +119,15 @@ struct OverrideView: View {
                                 }
                             }
                         }
-
+                        
                         Section(header: Text("Tillgängliga Overrides")) {
                             if profileManager.trioOverrides.isEmpty {
                                 Text("Inga tillgängliga overrides.")
                                     .foregroundColor(.secondary)
+                                    .onAppear {
+                                        print("No available overrides found, cancelling.")
+                                        delegate?.didCancelOverride()
+                                    }
                             } else {
                                 ForEach(profileManager.trioOverrides, id: \.name) { override in
                                     Button(action: {
@@ -234,6 +239,12 @@ struct OverrideView: View {
                     return Alert(title: Text("Unknown Alert"))
                 }
             }
+            .onAppear {
+                        if overrideNote.value == nil {
+                            print("No active override found, cancelling.")
+                            delegate?.didCancelOverride()
+                        }
+                    }
         }
     }
 
