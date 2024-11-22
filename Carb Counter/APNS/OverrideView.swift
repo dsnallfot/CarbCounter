@@ -92,7 +92,8 @@ struct OverrideView: View {
                             Section(header: Text("Aktiv Override")) {
                                 HStack {
                                     Text(activeNote)
-                                        .foregroundColor(.primary)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
                                     Spacer()
                                     Button {
                                         alertType = .confirmCancellation
@@ -101,9 +102,9 @@ struct OverrideView: View {
                                         Image(systemName: "xmark.square.fill")
                                             .font(.title2)
                                     }
-                                    .tint(.red)
+                                    .tint(.white)
                                 }
-                                .modifier(CustomListRowStyle())
+                                //.modifier(CustomListRowStyle())
                                 .onAppear {
                                     if let matchedOverride = profileManager.trioOverrides.first(where: { $0.name == activeNote }) {
                                         if let percentage = matchedOverride.percentage {
@@ -118,6 +119,7 @@ struct OverrideView: View {
                                     }
                                 }
                             }
+                            .listRowBackground(Color.purple.opacity(0.8))
                         }
                         
                         Section(header: Text("Tillgängliga Overrides")) {
@@ -158,7 +160,7 @@ struct OverrideView: View {
                                             }
                                             Spacer()
                                             Image(systemName: "arrow.right.circle.fill")
-                                                .foregroundColor(.blue)
+                                                .foregroundColor(.purple.opacity(0.7))
                                                 .font(.title2)
                                         }
                                     }
