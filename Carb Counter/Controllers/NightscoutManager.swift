@@ -170,53 +170,42 @@ class NightscoutManager {
             do {
                 if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]],
                    jsonArray.count >= 3 {
-                    
-                    // Extract the three most recent statuses
+
+                    // Extract three most recent entries
                     let latestStatus = jsonArray[0]
                     let secondStatus = jsonArray[1]
                     let thirdStatus = jsonArray[2]
 
-                    // Cast openaps to dictionaries
-                    guard let latestOpenaps = latestStatus["openaps"] as? [String: Any],
-                          let secondOpenaps = secondStatus["openaps"] as? [String: Any],
-                          let thirdOpenaps = thirdStatus["openaps"] as? [String: Any],
-                          let latestSuggested = latestOpenaps["suggested"] as? [String: Any],
-                          let secondSuggested = secondOpenaps["suggested"] as? [String: Any],
-                          let thirdSuggested = thirdOpenaps["suggested"] as? [String: Any] else {
-                        print("Missing or invalid `openaps.suggested`")
-                        completion()
-                        return
-                    }
-
-                    // Extract and debug timestamp strings
-                    func cleanTimestamp(_ timestamp: Any?) -> String? {
-                        guard let timestampString = timestamp as? String else { return nil }
-                        return timestampString.trimmingCharacters(in: .whitespacesAndNewlines)
-                    }
-
-                    guard let latestTimestampString = cleanTimestamp(latestSuggested["timestamp"]),
-                          let secondTimestampString = cleanTimestamp(secondSuggested["timestamp"]),
-                          let thirdTimestampString = cleanTimestamp(thirdSuggested["timestamp"]) else {
-                        print("Missing or invalid `suggested.timestamp`")
-                        completion()
-                        return
-                    }
-
-                    // Parse timestamps
                     let isoFormatter = ISO8601DateFormatter()
                     isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                    guard let latestTimestamp = isoFormatter.date(from: latestTimestampString),
+
+                    // Helper to extract suggested or enacted
+                    func extractRelevantOpenAPS(_ entry: [String: Any]) -> [String: Any]? {
+                        if let openaps = entry["openaps"] as? [String: Any] {
+                            return openaps["suggested"] as? [String: Any] ?? openaps["enacted"] as? [String: Any]
+                        }
+                        return nil
+                    }
+
+                    // Extract relevant data
+                    guard let latestOpenaps = extractRelevantOpenAPS(latestStatus),
+                          let secondOpenaps = extractRelevantOpenAPS(secondStatus),
+                          let thirdOpenaps = extractRelevantOpenAPS(thirdStatus),
+                          let latestTimestampString = latestOpenaps["timestamp"] as? String,
+                          let secondTimestampString = secondOpenaps["timestamp"] as? String,
+                          let thirdTimestampString = thirdOpenaps["timestamp"] as? String,
+                          let latestTimestamp = isoFormatter.date(from: latestTimestampString),
                           let secondTimestamp = isoFormatter.date(from: secondTimestampString),
                           let thirdTimestamp = isoFormatter.date(from: thirdTimestampString) else {
-                        print("Invalid `suggested.timestamp` format after cleaning")
+                        print("Missing or invalid `openaps.suggested` or `openaps.enacted`")
                         completion()
                         return
                     }
 
-                    // Determine whether to use the second or third status
+                    // Determine whether to use the second or third entry
                     let now = Date()
-                    let fourMinutesAgo = now.addingTimeInterval(-240) // 4 minutes ago
-                    let previousSuggested = secondTimestamp <= fourMinutesAgo ? secondSuggested : thirdSuggested
+                    let fourMinutesAgo = now.addingTimeInterval(-240)
+                    let previousOpenaps = secondTimestamp <= fourMinutesAgo ? secondOpenaps : thirdOpenaps
 
                     // Extract BG values
                     let useMmol = UserDefaultsRepository.useMmol
@@ -227,8 +216,8 @@ class NightscoutManager {
                         return String(format: "%.\(decimalPlaces)f", value)
                     }
 
-                    let latestBG = round((latestSuggested["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
-                    let previousBG = round((previousSuggested["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+                    let latestBG = round((latestOpenaps["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+                    let previousBG = round((previousOpenaps["bg"] as? Double ?? 0) * conversionFactor * 10) / 10.0
 
                     // Calculate and store the delta
                     self.latestDelta = round((latestBG - previousBG) * 10) / 10.0
@@ -240,20 +229,20 @@ class NightscoutManager {
                     print("latestBG: \(latestBG), previousBG: \(previousBG), latestDelta: \(self.latestDelta)")
 
                     // Continue with the existing code for other calculations
-                    self.latestMinGuardBG = round((latestSuggested["minGuardBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
-                    self.latestEventualBG = round((latestSuggested["eventualBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+                    self.latestMinGuardBG = round((latestOpenaps["minGuardBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
+                    self.latestEventualBG = round((latestOpenaps["eventualBG"] as? Double ?? 0) * conversionFactor * 10) / 10.0
 
                     self.latestMinGuardBGString = formatValue(self.latestMinGuardBG)
                     self.latestEventualBGString = formatValue(self.latestEventualBG)
 
-                    self.latestCOB = latestSuggested["COB"] as? Double ?? 0
+                    self.latestCOB = latestOpenaps["COB"] as? Double ?? 0
                     self.latestCOBString = String(format: "%.0f", self.latestCOB)
-                    self.latestIOB = round((latestSuggested["IOB"] as? Double ?? 0) * 100) / 100.0
+                    self.latestIOB = round((latestOpenaps["IOB"] as? Double ?? 0) * 100) / 100.0
 
-                    self.latestThreshold = round((latestSuggested["threshold"] as? Double ?? 0) * 10) / 10.0
+                    self.latestThreshold = round((latestOpenaps["threshold"] as? Double ?? 0) * conversionFactor * 10) / 10.0
 
                     // Extracting PredBGs to calculate min and max BG, and rounding them
-                    if let predBGs = latestSuggested["predBGs"] as? [String: [Double]] {
+                    if let predBGs = latestOpenaps["predBGs"] as? [String: [Double]] {
                         var allBGs: [Double] = []
 
                         for (_, values) in predBGs {
@@ -272,9 +261,9 @@ class NightscoutManager {
                     self.latestLowestBGString = formatValue(self.latestLowestBG)
 
                     // Convert and format the timestamp to local time
-                    self.latestTimestamp = latestSuggested["timestamp"] as? String ?? ""
+                    self.latestTimestamp = latestOpenaps["timestamp"] as? String ?? ""
                     
-                    if let timestamp = latestSuggested["timestamp"] as? String {
+                    if let timestamp = latestOpenaps["timestamp"] as? String {
                         self.latestLocalTimestamp = self.convertToLocalTime(timestamp)
                     } else {
                         self.latestLocalTimestamp = "---"
