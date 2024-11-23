@@ -2961,6 +2961,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if registeredCarbsSoFar == 0 && registeredFatSoFar == 0 && registeredProteinSoFar == 0 {
             mealDate = Date()
         }
+        if UserDefaultsRepository.method == "Trio APNS" {
+            WebLoadNSTreatments {
+                self.handleActiveOverride()
+            }
+        }
         hideAllDeleteButtons()
         createEmojiString()
         
@@ -3070,6 +3075,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if mealDate == nil {
             mealDate = Date()
         }
+        
+        if UserDefaultsRepository.method == "Trio APNS" {
+            WebLoadNSTreatments {
+                self.handleActiveOverride()
+            }
+        }
+        
         hideAllDeleteButtons()
         createEmojiString()
         
