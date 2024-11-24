@@ -26,7 +26,7 @@
     <array>
         <string>fetch</string>
         <string>processing</string>
-    </array>    
+    </array>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
@@ -43,6 +43,12 @@
     <key>NSBiometricUsageDescription</key>
     <string>This app requires biometric authentication to securely authenticate your identity for sending meal requests.</string>
     
+    <!-- Permissions for camera and photo library access -->
+    <key>NSCameraUsageDescription</key>
+    <string>This app requires access to the camera to capture meal photos.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to the photo library to select meal images.</string>
+
     <!-- iCloud configuration -->
     <key>NSUbiquitousContainers</key>
     <dict>

@@ -200,9 +200,25 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         setupAddButtonRowView()
         
         /// Initializing
-        clearAllButton = UIBarButtonItem(title: NSLocalizedString("Avsluta måltid", comment: "Avsluta måltid"), style: .plain, target: self, action: #selector(clearAllButtonTapped))
-        clearAllButton.tintColor = .red
-        navigationItem.rightBarButtonItem = clearAllButton
+        // Create the clear all button (text only)
+            let clearAllButton = UIBarButtonItem(
+                title: NSLocalizedString("Avsluta måltid", comment: "Avsluta måltid"),
+                style: .plain,
+                target: self,
+                action: #selector(clearAllButtonTapped)
+            )
+            clearAllButton.tintColor = .red
+
+            // Create the AI button with the SF Symbol
+            let aiButton = UIBarButtonItem(
+                image: UIImage(systemName: "person.icloud.fill"),
+                style: .plain,
+                target: self,
+                action: #selector(openAIViewController)
+            )
+
+            // Combine both buttons into a right bar button array
+            navigationItem.rightBarButtonItems = [clearAllButton, aiButton]
         
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -1002,6 +1018,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             // Directly show the regular alert if no conditions are met
             showRegularClearAllAlert()
         }
+    }
+    
+    @objc private func openAIViewController() {
+        let aiViewController = AIViewController()
+        aiViewController.modalPresentationStyle = .formSheet
+        present(aiViewController, animated: true, completion: nil)
     }
     
     func handleActiveOverride() {

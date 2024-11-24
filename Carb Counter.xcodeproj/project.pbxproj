@@ -37,6 +37,7 @@
 		6553EE362C20EF2600B0FDF5 /* AddFoodItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */; };
 		6553EE4A2C22E85400B0FDF5 /* FoodItemRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */; };
 		6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */; };
+		655ED1792CF3593C00FD8667 /* AIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655ED1782CF3592E00FD8667 /* AIViewController.swift */; };
 		656C64A52C6C007000431374 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 656C64A32C6C007000431374 /* Localizable.strings */; };
 		658302172CDABFA3000BC0AD /* commit_hash.txt in Resources */ = {isa = PBXBuildFile; fileRef = 658302162CDABFA3000BC0AD /* commit_hash.txt */; };
 		658302192CDAD461000BC0AD /* ConnectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658302182CDAD456000BC0AD /* ConnectionsViewController.swift */; };
@@ -138,6 +139,7 @@
 		6553EE352C20EF2600B0FDF5 /* AddFoodItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFoodItemViewController.swift; sourceTree = "<group>"; };
 		6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemRowView.swift; sourceTree = "<group>"; };
 		6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemTableViewCell.swift; sourceTree = "<group>"; };
+		655ED1782CF3592E00FD8667 /* AIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIViewController.swift; sourceTree = "<group>"; };
 		656C64A42C6C007000431374 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		656C64A62C6C008400431374 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		658302162CDABFA3000BC0AD /* commit_hash.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = commit_hash.txt; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 		6502A9D32C2B1A9600414DC0 /* ComposeMealView */ = {
 			isa = PBXGroup;
 			children = (
+				655ED1782CF3592E00FD8667 /* AIViewController.swift */,
 				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
 				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
 				65BAB4E52C5947A80055638D /* SearchableDropdownViewController.swift */,
@@ -579,6 +582,7 @@
 				653DE7A62C27930F00A639D1 /* RemoteSettingsViewController.swift in Sources */,
 				65D508DA2CE77D6C0023E29B /* MealView.swift in Sources */,
 				65D508C42CE73FD90023E29B /* PushMessage.swift in Sources */,
+				655ED1792CF3593C00FD8667 /* AIViewController.swift in Sources */,
 				65D508FA2CE79E720023E29B /* ObservationToken.swift in Sources */,
 				65D508E62CE77FBC0023E29B /* StorageValue.swift in Sources */,
 				65D509062CE7A0FF0023E29B /* UserDefaults.swift in Sources */,
