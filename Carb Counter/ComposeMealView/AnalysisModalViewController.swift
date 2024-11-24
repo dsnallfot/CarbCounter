@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 class AnalysisModalViewController: UIViewController {
     
@@ -58,53 +59,53 @@ class AnalysisModalViewController: UIViewController {
         stackView.spacing = 20
         stackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(stackView)
-
+        
         // Meal section
         let mealContainer = UIView()
         mealContainer.backgroundColor = UIColor.label.withAlphaComponent(0.1)
         mealContainer.layer.cornerRadius = 12
         mealContainer.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let mealTitleLabel = UILabel()
         mealTitleLabel.text = "Analyserad måltid"
         mealTitleLabel.font = .boldSystemFont(ofSize: 18)
         mealTitleLabel.textAlignment = .center
-
+        
         let carbsLabel = UILabel()
         carbsLabel.text = "Kolhydrater: \(gptCarbs) g"
         carbsLabel.tag = 100
-
+        
         let fatLabel = UILabel()
         fatLabel.text = "Fett: \(gptFat) g"
         fatLabel.tag = 101
-
+        
         let proteinLabel = UILabel()
         proteinLabel.text = "Protein: \(gptProtein) g"
         proteinLabel.tag = 102
-
+        
         let originalWeightLabel = UILabel()
         originalWeightLabel.text = "Ursprunglig uppskattad vikt: \(gptTotalWeight) g"
         originalWeightLabel.textColor = .gray
         originalWeightLabel.tag = 103
-
+        
         let mealStack = UIStackView(arrangedSubviews: [carbsLabel, fatLabel, proteinLabel, originalWeightLabel])
         mealStack.axis = .vertical
         mealStack.spacing = 10
         mealStack.translatesAutoresizingMaskIntoConstraints = false
-
+        
         mealContainer.addSubview(mealStack)
-
+        
         NSLayoutConstraint.activate([
             mealStack.leadingAnchor.constraint(equalTo: mealContainer.leadingAnchor, constant: 16),
             mealStack.trailingAnchor.constraint(equalTo: mealContainer.trailingAnchor, constant: -16),
             mealStack.topAnchor.constraint(equalTo: mealContainer.topAnchor, constant: 16),
             mealStack.bottomAnchor.constraint(equalTo: mealContainer.bottomAnchor, constant: -16),
         ])
-
+        
         // Weight slider
         weightLabel.text = "Ursprunglig uppskattad vikt: \(gptTotalWeight) g"
         weightLabel.textAlignment = .center
-
+        
         slider.minimumValue = 0
         slider.maximumValue = 200
         slider.value = 100
@@ -112,12 +113,12 @@ class AnalysisModalViewController: UIViewController {
         
         // Add button
         addButton.addTarget(self, action: #selector(addToMeal), for: .touchUpInside)
-
+        
         stackView.addArrangedSubview(mealContainer)
         stackView.addArrangedSubview(weightLabel)
         stackView.addArrangedSubview(slider)
         stackView.addArrangedSubview(addButton)
-
+        
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -210,7 +211,126 @@ class AnalysisModalViewController: UIViewController {
     }
     
     @objc private func addToMeal() {
-        // Logic to handle "Lägg till i måltid" action
-        dismiss(animated: true)
+        print("DEBUG: addToMeal button tapped")
+        
+        let context = CoreDataStack.shared.context
+        let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
+        
+        do {
+            let existingTemporaryItems = try context.fetch(fetchRequest)
+            
+            if !existingTemporaryItems.isEmpty {
+                print("DEBUG: Found existing FoodItemTemporary entries")
+                showReplaceOrAddAlert(existingItems: existingTemporaryItems)
+            } else {
+                print("DEBUG: No existing FoodItemTemporary entries")
+                saveNewTemporaryFoodItems(replacing: true)
+            }
+        } catch {
+            print("DEBUG: Error fetching FoodItemTemporary entries: \(error.localizedDescription)")
+        }
+    }
+    private func showReplaceOrAddAlert(existingItems: [FoodItemTemporary]) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Lägg till eller ersätt?", comment: "Lägg till eller ersätt?"),
+            message: NSLocalizedString("\nObs! Det finns redan temporära måltidsdata i Core Data.\n\nVill du addera de nya matvarorna till de befintliga, eller vill du ersätta de befintliga med de nya?", comment: "\nObs! Det finns redan temporära måltidsdata i Core Data.\n\nVill du addera de nya matvarorna till de befintliga, eller vill du ersätta de befintliga med de nya?"),
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Ersätt", comment: "Ersätt"), style: .destructive, handler: { [weak self] _ in
+            print("DEBUG: User chose to replace existing FoodItemTemporary entries")
+            self?.saveNewTemporaryFoodItems(replacing: true)
+        }))
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Addera", comment: "Addera"), style: .default, handler: { [weak self] _ in
+            print("DEBUG: User chose to add to existing FoodItemTemporary entries")
+            self?.saveNewTemporaryFoodItems(replacing: false)
+        }))
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: { _ in
+            print("DEBUG: User canceled the action")
+        }))
+        
+        present(alert, animated: true)
+    }
+    private func saveNewTemporaryFoodItems(replacing: Bool) {
+        let context = CoreDataStack.shared.context
+        
+        if replacing {
+            // Remove existing entries
+            let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
+            do {
+                let existingItems = try context.fetch(fetchRequest)
+                for item in existingItems {
+                    context.delete(item)
+                }
+                print("DEBUG: Cleared existing FoodItemTemporary entries")
+            } catch {
+                print("DEBUG: Error clearing existing FoodItemTemporary entries: \(error.localizedDescription)")
+            }
+        }
+        
+        // Fetch FoodItems to create new FoodItemTemporary entries
+        let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name IN %@", ["🤖 Fett", "🤖 Kolhydrater", "🤖 Protein"])
+        
+        do {
+            let selectedFoodItems = try context.fetch(fetchRequest)
+            print("DEBUG: Fetched \(selectedFoodItems.count) FoodItems for new entries")
+            
+            for item in selectedFoodItems {
+                guard let foodItemId = item.id else {
+                    print("DEBUG: Skipping FoodItem with missing ID")
+                    continue
+                }
+                
+                let portionServed: Double
+                switch item.name {
+                case "🤖 Kolhydrater":
+                    portionServed = Double(adjustedCarbs)
+                    print("DEBUG: Setting portion for Kolhydrater: \(portionServed)")
+                case "🤖 Fett":
+                    portionServed = Double(adjustedFat)
+                    print("DEBUG: Setting portion for Fett: \(portionServed)")
+                case "🤖 Protein":
+                    portionServed = Double(adjustedProtein)
+                    print("DEBUG: Setting portion for Protein: \(portionServed)")
+                default:
+                    print("DEBUG: Unhandled FoodItem name: \(item.name ?? "Unknown")")
+                    continue
+                }
+                
+                let temporaryItem = FoodItemTemporary(context: context)
+                temporaryItem.entryId = foodItemId
+                temporaryItem.entryPortionServed = portionServed
+                
+                print("DEBUG: Created FoodItemTemporary with ID: \(foodItemId) and portion served: \(portionServed)")
+            }
+            
+            try context.save()
+            print("DEBUG: New FoodItemTemporary entries saved successfully")
+            
+            // Notify ComposeMealViewController
+            NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+            
+            // Show the success view after adding the food item
+            showSuccessView()
+            
+            dismiss(animated: true)
+            print("DEBUG: Dismissed AnalysisModalViewController")
+        } catch {
+            print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
+        }
+    }
+    private func showSuccessView() {
+        let successView = SuccessView()
+        
+        // Use the key window to display the success view
+        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+            successView.showInView(keyWindow)
+            print("DEBUG: SuccessView displayed")
+        } else {
+            print("DEBUG: Key window not found for displaying SuccessView")
+        }
     }
 }

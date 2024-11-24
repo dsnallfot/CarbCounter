@@ -280,6 +280,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 name: .didSelectTrioAPNS,
                 object: nil
             )
+        NotificationCenter.default.addObserver(self, selector: #selector(handleTemporaryFoodItemsAdded), name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
         
         addButtonRowView.overrideSwitch.addTarget(self, action: #selector(overrideSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
@@ -1625,7 +1626,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         netCarbsLabel?.isHidden = isHidden
     }
     
-    private func handleSelectedFoodItems(_ items: [FoodItem]) {
+    internal func handleSelectedFoodItems(_ items: [FoodItem]) {
         for item in items {
             addFoodItemRow(with: item)
         }
@@ -2435,6 +2436,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         } catch {
             print("Debug - Failed to fetch FoodItemRows: \(error)")
         }
+    }
+    
+    @objc private func handleTemporaryFoodItemsAdded() {
+        print("DEBUG: Notification received for TemporaryFoodItemsAdded")
+        loadTemporaryFoodItemsFromCoreData()
     }
     
     private func loadTemporaryFoodItemsFromCoreData() {
