@@ -200,25 +200,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         setupAddButtonRowView()
         
         /// Initializing
-        // Create the clear all button (text only)
-            let clearAllButton = UIBarButtonItem(
-                title: NSLocalizedString("Avsluta måltid", comment: "Avsluta måltid"),
-                style: .plain,
-                target: self,
-                action: #selector(clearAllButtonTapped)
-            )
-            clearAllButton.tintColor = .red
-
-            // Create the AI button with the SF Symbol
-            let aiButton = UIBarButtonItem(
-                image: UIImage(systemName: "person.icloud.fill"),
-                style: .plain,
-                target: self,
-                action: #selector(openAIViewController)
-            )
-
-            // Combine both buttons into a right bar button array
-            navigationItem.rightBarButtonItems = [clearAllButton, aiButton]
         
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
@@ -230,6 +211,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         allowShortcuts = UserDefaultsRepository.allowShortcuts
         
         /// Create buttons
+        clearAllButton = UIBarButtonItem(
+            image: UIImage(systemName: "xmark.circle.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(clearAllButtonTapped)
+        )
+        clearAllButton.tintColor = .red
+
+        // Create the AI button with the SF Symbol
+        let aiButton = UIBarButtonItem(
+            image: UIImage(systemName: "person.icloud.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(openAIViewController)
+        )
+
+        // Combine both buttons into a right bar button array
+        navigationItem.rightBarButtonItems = [clearAllButton, aiButton]
         let calendarImage = UIImage(systemName: "calendar")
         let historyButton = UIButton(type: .system)
         historyButton.setImage(calendarImage, for: .normal)
@@ -1023,7 +1022,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     @objc private func openAIViewController() {
         let aiViewController = AIViewController()
         aiViewController.modalPresentationStyle = .formSheet
-        present(aiViewController, animated: true, completion: nil)
+        
+        // Set up a navigation controller with the AIViewController as its root
+        let navController = UINavigationController(rootViewController: aiViewController)
+        
+        // Present the navigation controller
+        present(navController, animated: true, completion: nil)
     }
     
     func handleActiveOverride() {
