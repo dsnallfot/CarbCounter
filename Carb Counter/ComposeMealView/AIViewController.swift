@@ -477,8 +477,10 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         
         guard let apiKey = UserDefaults.standard.string(forKey: "gptAPIKey") else {
             handleError(message: "Missing API key. Please configure it in the settings.")
+            print("DEBUG: API key is missing.")
             return
         }
+        print("DEBUG: API key found: \(apiKey)")
         
         let prompt = isSwedish
         ? """
