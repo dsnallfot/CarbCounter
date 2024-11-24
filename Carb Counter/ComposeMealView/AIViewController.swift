@@ -6,6 +6,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private var gptCarbs: String? = "0"
     private var gptFat: String? = "0"
     private var gptProtein: String? = "0"
+    private var gptTotalWeight: String? = "0"
     
     private let imageView = UIImageView()
     private let analyzeButton = UIButton(type: .system)
@@ -58,7 +59,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.filled()
-            config.title = isSwedish ? "Analysera måltid" : "Analyze Meal"
+            config.title = isSwedish ? "Analysera bild" : "Analyze Picture"
             config.baseBackgroundColor = .systemBlue
             config.baseForegroundColor = .white
             config.cornerStyle = .medium
@@ -69,7 +70,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             analyzeButton.translatesAutoresizingMaskIntoConstraints = false
         } else {
             // Fallback for earlier iOS versions
-            analyzeButton.setTitle(isSwedish ? "Analysera måltid" : "Analyze Meal", for: .normal)
+            analyzeButton.setTitle(isSwedish ? "Analysera bild" : "Analyze Picture", for: .normal)
             analyzeButton.setTitleColor(.white, for: .normal)
             analyzeButton.backgroundColor = .systemBlue
             analyzeButton.layer.cornerRadius = 10
@@ -227,7 +228,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         selectImageButton.isEnabled = true
         
         guard error == nil, let data = data, let httpResponse = response, httpResponse.statusCode == 200 else {
-            handleError(message: "Request failed or no data received.")
+            handleError(message: "Förfrågan misslyckades, eller ingen data togs emot.")
             return
         }
         
@@ -274,18 +275,20 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     }
     
     private func formatMarkdownToAttributedString(_ markdown: String) -> NSAttributedString {
-        // Remove ** markers
-        let cleanedMarkdown = markdown.replacingOccurrences(of: "\\*\\*", with: "", options: .regularExpression)
-        
+        // Remove ** markers and replace [ ] with empty strings
+        let cleanedMarkdown = markdown
+            .replacingOccurrences(of: "\\*\\*", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "\\[|\\]", with: "", options: .regularExpression)
+
         let attributedString = NSMutableAttributedString(string: cleanedMarkdown)
         let fullRange = NSRange(location: 0, length: cleanedMarkdown.count)
-        
-        // Define regex patterns
-        let headerRegex = try! NSRegularExpression(pattern: "### (.*?)\\n")
-        
+
+        // Regex pattern for headers in the updated prompt
+        let headerRegex = try! NSRegularExpression(pattern: "^\\d+\\. .*?:$", options: [.anchorsMatchLines])
+
         // Process headers (apply specific formatting)
         for match in headerRegex.matches(in: cleanedMarkdown, range: fullRange).reversed() {
-            if let range = Range(match.range(at: 1), in: cleanedMarkdown) {
+            if let range = Range(match.range, in: cleanedMarkdown) {
                 let headerText = String(cleanedMarkdown[range])
                 let attributes: [NSAttributedString.Key: Any] = [
                     .font: UIFont.boldSystemFont(ofSize: 16),
@@ -295,72 +298,83 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 attributedString.replaceCharacters(in: match.range, with: newAttributedString)
             }
         }
-        
+
         // Additional headline formatting for specific Swedish headlines
         let lines = cleanedMarkdown.components(separatedBy: "\n")
         var currentPosition = 0
-        
+
         for line in lines {
             let lineLength = line.count + 1 // +1 for newline
             let lineRange = NSRange(location: currentPosition, length: lineLength)
-            
+
             if line.matches(pattern: "^[A-Za-zÀ-ÖØ-öø-ÿ ]+ näringsinnehåll$") ||
-                line.matches(pattern: "^Synliga matvaror$") ||
-                line.matches(pattern: "^Uppskattning av portionsstorlek$") {
+                line.matches(pattern: "^Uppskattad vikt eller portionsstorlek$") ||
+                line.matches(pattern: "^Beräknat näringsinnehåll per matvara$") {
                 let attributes: [NSAttributedString.Key: Any] = [
                     .font: UIFont.boldSystemFont(ofSize: 16),
                     .foregroundColor: UIColor.systemGray
                 ]
                 attributedString.addAttributes(attributes, range: lineRange)
             }
-            
+
             currentPosition += lineLength
         }
-        
+
         // Extract nutritional values
         extractTotals(from: cleanedMarkdown)
-        
+
         return attributedString
     }
-    
+
     private func extractTotals(from text: String) {
         // Pattern that handles "Ca", "ca", "~", "Cirka", "cirka" before the number
         let approximatePattern = "(ca |Ca |~|Cirka |cirka )?\\s*"
-        
+
         let carbsRegex = try! NSRegularExpression(
-            pattern: "Kolhydrater.*?\(approximatePattern)(\\d+)\\s*g",
+            pattern: "Kolhydrater totalt:.*?\(approximatePattern)(\\d+)\\s*g",
             options: .caseInsensitive
         )
         let fatRegex = try! NSRegularExpression(
-            pattern: "Fett.*?\(approximatePattern)(\\d+)\\s*g",
+            pattern: "Fett totalt:.*?\(approximatePattern)(\\d+)\\s*g",
             options: .caseInsensitive
         )
         let proteinRegex = try! NSRegularExpression(
-            pattern: "Protein.*?\(approximatePattern)(\\d+)\\s*g",
+            pattern: "Protein totalt:.*?\(approximatePattern)(\\d+)\\s*g",
             options: .caseInsensitive
         )
-        
+        let weightRegex = try! NSRegularExpression(
+            pattern: "Vikt hela måltiden:.*?\(approximatePattern)(\\d+)\\s*g",
+            options: .caseInsensitive
+        )
+
         let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
-        
+
         // Extract and set carbs
         if let match = carbsRegex.firstMatch(in: text, range: fullRange),
            let carbsRange = Range(match.range(at: 2), in: text) {
             gptCarbs = String(text[carbsRange])
             print("DEBUG: Carbs set to: \(gptCarbs ?? "nil")")
         }
-        
+
         // Extract and set fat
         if let match = fatRegex.firstMatch(in: text, range: fullRange),
            let fatRange = Range(match.range(at: 2), in: text) {
             gptFat = String(text[fatRange])
             print("DEBUG: Fat set to: \(gptFat ?? "nil")")
         }
-        
+
         // Extract and set protein
         if let match = proteinRegex.firstMatch(in: text, range: fullRange),
            let proteinRange = Range(match.range(at: 2), in: text) {
             gptProtein = String(text[proteinRange])
             print("DEBUG: Protein set to: \(gptProtein ?? "nil")")
+        }
+
+        // Extract and set total weight
+        if let match = weightRegex.firstMatch(in: text, range: fullRange),
+           let weightRange = Range(match.range(at: 2), in: text) {
+            gptTotalWeight = String(text[weightRange])
+            print("DEBUG: Total Weight set to: \(gptTotalWeight ?? "nil")")
         }
     }
     
@@ -425,19 +439,31 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         
         let prompt = isSwedish
         ? """
-            Analysera bilden av måltiden och uppskatta följande information i angiven ordning på rubrikerna 1-4:
-            1. Summering totalt näringsinnehåll för hela måltiden 
-            Använd exakt dessa benämningar och använd enheten gram (g):
-                - Kolhydrater totalt:
-                - Protein totalt:
-                - Fett totalt:
-            2. Lista över alla matvaror som syns i bilden
-            3. Uppskattad vikt eller portionsstorlek för varje matvara
-            4. Beräknat näringsinnehåll per matvara i gram:
-                - Kolhydrater:
-                - Protein:
-                - Fett:
-            Presentera informationen i punktform under varje rubrik
+            Analysera bilden av måltiden och uppskatta följande information i angiven ordning och exakt format nedan. Gör alltid en bästa uppskattning även om bilden är svår att analysera eller om viss information är osäker:
+
+            1. Summering totalt näringsinnehåll för hela måltiden:
+                - Kolhydrater totalt: [XXX] g
+                - Protein totalt: [XXX] g
+                - Fett totalt: [XXX] g
+                - Vikt hela måltiden: [XXX] g
+
+            2. Uppskattad vikt eller portionsstorlek för varje matvara som syns i bilden:
+                - [Matvara 1]: [XXX] g
+                - [Matvara 2]: [XXX] g
+                - [Matvara 3]: [XXX] g
+
+            3. Beräknat näringsinnehåll per matvara:
+                [Matvara 1]:
+                 - Kolhydrater: [XXX] g
+                 - Protein: [XXX] g
+                 - Fett: [XXX] g
+                [Matvara 2]:
+                 - Kolhydrater: [XXX] g
+                 - Protein: [XXX] g
+                 - Fett: [XXX] g
+                (Fortsätt vid behov)
+
+            Viktigt: Om vissa data inte kan beräknas med säkerhet, gör en bästa uppskattning baserat på tillgänglig information. Om något absolut inte kan uppskattas, använd värdet 0. Följ strikt detta format. Använd endast siffror utan decimaler (t.ex. 0, 1, 10).
             """
         : """
             Analyze the meal image and provide the following information:
@@ -486,7 +512,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             return
         }
         
-        debugLabel.text = "Sending request..."
+        debugLabel.text = "Skickar förfrågan..."
         
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
