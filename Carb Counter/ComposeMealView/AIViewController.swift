@@ -1,17 +1,18 @@
 import UIKit
 
 class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
-
+    
     private var isSwedish = true // Determines the response language
     private var gptCarbs: String? = "0"
     private var gptFat: String? = "0"
     private var gptProtein: String? = "0"
-
+    
     private let imageView = UIImageView()
     private let analyzeButton = UIButton(type: .system)
     private let selectImageButton = UIButton(type: .system)
-    private let activityIndicator = UIActivityIndicatorView(style: .medium)
-
+    private let activityIndicator = UIActivityIndicatorView(style: .large)
+    private let overlayLabel = UILabel()
+    
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     private let resultLabel = UILabel()
@@ -19,7 +20,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private let tableView = UITableView()
     
     private var tableData: [[String]] = [] // Parsed table data
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -31,48 +32,77 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     }
     
     private func setupNavigationBar() {
-            title = isSwedish ? "AI Måltidsanalys" : "AI Meal Analysis"
-
-        }
-
+        title = isSwedish ? "AI Måltidsanalys" : "AI Meal Analysis"
+        
+    }
+    
     private func setupUI() {
         imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .secondarySystemBackground
+        imageView.backgroundColor = .label.withAlphaComponent(0.1)
+        imageView.layer.cornerRadius = 20
+        imageView.clipsToBounds = true
+        imageView.isUserInteractionEnabled = true // Enable interaction
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Configure the overlay label
+        overlayLabel.text = isSwedish ? "Välj en bild" : "Select an Image"
+        overlayLabel.textColor = .secondaryLabel
+        overlayLabel.font = .systemFont(ofSize: 18, weight: .medium)
+        overlayLabel.textAlignment = .center
+        overlayLabel.translatesAutoresizingMaskIntoConstraints = false
+        overlayLabel.isHidden = false // Initially visible
+        
+        // Add tap gesture recognizer to the imageView
+        let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(selectImageSource))
+        imageView.addGestureRecognizer(imageTapGesture)
+        
+        if #available(iOS 15.0, *) {
+            var config = UIButton.Configuration.filled()
+            config.title = isSwedish ? "Analysera måltid" : "Analyze Meal"
+            config.baseBackgroundColor = .systemBlue
+            config.baseForegroundColor = .white
+            config.cornerStyle = .medium
+            config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20) // Add padding
 
-        analyzeButton.setTitle(isSwedish ? "Analysera måltid" : "Analyze Meal", for: .normal)
-        analyzeButton.addTarget(self, action: #selector(analyzeMeal), for: .touchUpInside)
-        analyzeButton.translatesAutoresizingMaskIntoConstraints = false
-
-        selectImageButton.setTitle(isSwedish ? "Välj bild" : "Select Image", for: .normal)
-        selectImageButton.addTarget(self, action: #selector(selectImageSource), for: .touchUpInside)
-        selectImageButton.translatesAutoresizingMaskIntoConstraints = false
-
+            analyzeButton.configuration = config
+            analyzeButton.addTarget(self, action: #selector(analyzeMeal), for: .touchUpInside)
+            analyzeButton.translatesAutoresizingMaskIntoConstraints = false
+        } else {
+            // Fallback for earlier iOS versions
+            analyzeButton.setTitle(isSwedish ? "Analysera måltid" : "Analyze Meal", for: .normal)
+            analyzeButton.setTitleColor(.white, for: .normal)
+            analyzeButton.backgroundColor = .systemBlue
+            analyzeButton.layer.cornerRadius = 10
+            analyzeButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
+            analyzeButton.addTarget(self, action: #selector(analyzeMeal), for: .touchUpInside)
+            analyzeButton.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         resultLabel.numberOfLines = 0
         resultLabel.textAlignment = .natural
         resultLabel.font = .systemFont(ofSize: 14)
         resultLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         activityIndicator.hidesWhenStopped = true
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-
+        
         debugLabel.numberOfLines = 0
         debugLabel.textAlignment = .natural
         debugLabel.font = .systemFont(ofSize: 12)
         debugLabel.textColor = .systemGray
         debugLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.isHidden = true
-
+        
         view.addSubview(imageView)
-        view.addSubview(selectImageButton)
+        imageView.addSubview(overlayLabel) // Add overlay label to imageView
         view.addSubview(analyzeButton)
         view.addSubview(activityIndicator)
         view.addSubview(scrollView)
@@ -80,45 +110,49 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         contentView.addSubview(resultLabel)
         contentView.addSubview(debugLabel)
         contentView.addSubview(tableView)
-
+        
         NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            imageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            imageView.heightAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-
-            selectImageButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
-            selectImageButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
-            analyzeButton.topAnchor.constraint(equalTo: selectImageButton.bottomAnchor, constant: 20),
+            imageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9),
+            imageView.heightAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7),
+            
+            // Overlay label constraints
+            overlayLabel.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
+            overlayLabel.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
+            overlayLabel.leadingAnchor.constraint(equalTo: imageView.leadingAnchor, constant: 8),
+            overlayLabel.trailingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: -8),
+            
+            analyzeButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
             analyzeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
+            
             scrollView.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 20),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-
+            
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-
+            
             resultLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
             resultLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             resultLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-
+            
             debugLabel.topAnchor.constraint(equalTo: resultLabel.bottomAnchor, constant: 20),
             debugLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             debugLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-
+            
             tableView.topAnchor.constraint(equalTo: debugLabel.bottomAnchor, constant: 20),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
-
+            
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            activityIndicator.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 20),
+            //activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
     
@@ -126,77 +160,77 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
         navigationItem.leftBarButtonItem = closeButton
     }
-
+    
     @objc private func closeButtonTapped() {
         dismiss(animated: true, completion: nil)
     }
     
     private func updateBackgroundForCurrentMode() {
-            // Remove any existing gradient views before updating
-            view.subviews.filter { $0 is GradientView }.forEach { $0.removeFromSuperview() }
+        // Remove any existing gradient views before updating
+        view.subviews.filter { $0 is GradientView }.forEach { $0.removeFromSuperview() }
+        
+        // Update the background based on the current interface style
+        if traitCollection.userInterfaceStyle == .dark {
+            view.backgroundColor = .systemBackground
+            // Create the gradient view for dark mode
+            let colors: [CGColor] = [
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
+                UIColor.systemBlue.withAlphaComponent(0.15).cgColor
+            ]
+            let gradientView = GradientView(colors: colors)
+            gradientView.translatesAutoresizingMaskIntoConstraints = false
             
-            // Update the background based on the current interface style
-            if traitCollection.userInterfaceStyle == .dark {
-                view.backgroundColor = .systemBackground
-                // Create the gradient view for dark mode
-                let colors: [CGColor] = [
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.25).cgColor,
-                    UIColor.systemBlue.withAlphaComponent(0.15).cgColor
-                ]
-                let gradientView = GradientView(colors: colors)
-                gradientView.translatesAutoresizingMaskIntoConstraints = false
-
-                // Add the gradient view to the main view
-                view.addSubview(gradientView)
-                view.sendSubviewToBack(gradientView)
-
-                // Set up constraints for the gradient view
-                NSLayoutConstraint.activate([
-                    gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                    gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                    gradientView.topAnchor.constraint(equalTo: view.topAnchor),
-                    gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-                ])
-            } else {
-                // In light mode, set a solid background
-                view.backgroundColor = .systemGray6
-            }
+            // Add the gradient view to the main view
+            view.addSubview(gradientView)
+            view.sendSubviewToBack(gradientView)
+            
+            // Set up constraints for the gradient view
+            NSLayoutConstraint.activate([
+                gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gradientView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                gradientView.topAnchor.constraint(equalTo: view.topAnchor),
+                gradientView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        } else {
+            // In light mode, set a solid background
+            view.backgroundColor = .systemGray6
         }
-
-        override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-            super.traitCollectionDidChange(previousTraitCollection)
-            if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-                updateBackgroundForCurrentMode()
-            }
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateBackgroundForCurrentMode()
         }
+    }
     
     @objc private func closeViewController() {
-            dismiss(animated: true, completion: nil)
-        }
-
+        dismiss(animated: true, completion: nil)
+    }
+    
     @objc private func analyzeMeal() {
         guard let image = imageView.image else {
             resultLabel.text = isSwedish ? "Välj en bild först." : "Please select an image first."
             return
         }
-
+        
         activityIndicator.startAnimating()
         analyzeButton.isEnabled = false
         selectImageButton.isEnabled = false
         analyzeImageDirectly(image)
     }
-
+    
     private func handleAnalysisResponse(data: Data?, response: HTTPURLResponse?, error: Error?) {
         activityIndicator.stopAnimating()
         analyzeButton.isEnabled = true
         selectImageButton.isEnabled = true
-
+        
         guard error == nil, let data = data, let httpResponse = response, httpResponse.statusCode == 200 else {
             handleError(message: "Request failed or no data received.")
             return
         }
-
+        
         do {
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
             guard let choices = json?["choices"] as? [[String: Any]],
@@ -205,7 +239,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 handleError(message: "Invalid response structure.")
                 return
             }
-
+            
             tableData = parseTable(content)
             if !tableData.isEmpty {
                 tableView.isHidden = false
@@ -213,14 +247,14 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             } else {
                 tableView.isHidden = true
             }
-
+            
             resultLabel.attributedText = formatMarkdownToAttributedString(content)
             debugLabel.text = "Analys lyckades"
         } catch {
             handleError(message: "JSON parsing error: \(error.localizedDescription)")
         }
     }
-
+    
     private func handleError(message: String) {
         activityIndicator.stopAnimating()
         analyzeButton.isEnabled = true
@@ -228,7 +262,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         resultLabel.text = "Fel: \(message)"
         debugLabel.text = "Feldetaljer: \(message)"
     }
-
+    
     private func parseTable(_ markdown: String) -> [[String]] {
         var rows: [[String]] = []
         let lines = markdown.split(separator: "\n")
@@ -238,11 +272,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         }
         return rows
     }
-
+    
     private func formatMarkdownToAttributedString(_ markdown: String) -> NSAttributedString {
         // Remove ** markers
         let cleanedMarkdown = markdown.replacingOccurrences(of: "\\*\\*", with: "", options: .regularExpression)
-
+        
         let attributedString = NSMutableAttributedString(string: cleanedMarkdown)
         let fullRange = NSRange(location: 0, length: cleanedMarkdown.count)
         
@@ -271,8 +305,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             let lineRange = NSRange(location: currentPosition, length: lineLength)
             
             if line.matches(pattern: "^[A-Za-zÀ-ÖØ-öø-ÿ ]+ näringsinnehåll$") ||
-               line.matches(pattern: "^Synliga matvaror$") ||
-               line.matches(pattern: "^Uppskattning av portionsstorlek$") {
+                line.matches(pattern: "^Synliga matvaror$") ||
+                line.matches(pattern: "^Uppskattning av portionsstorlek$") {
                 let attributes: [NSAttributedString.Key: Any] = [
                     .font: UIFont.boldSystemFont(ofSize: 16),
                     .foregroundColor: UIColor.systemGray
@@ -329,11 +363,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             print("DEBUG: Protein set to: \(gptProtein ?? "nil")")
         }
     }
-
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tableData.count
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let row = tableData[indexPath.row]
@@ -342,7 +376,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         cell.textLabel?.numberOfLines = 0
         return cell
     }
-
+    
     @objc private func selectImageSource() {
         let actionSheet = UIAlertController(title: isSwedish ? "Välj bildkälla" : "Select Image Source",
                                             message: nil,
@@ -356,7 +390,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         actionSheet.addAction(UIAlertAction(title: isSwedish ? "Avbryt" : "Cancel", style: .cancel))
         present(actionSheet, animated: true)
     }
-
+    
     private func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
         guard UIImagePickerController.isSourceTypeAvailable(sourceType) else { return }
         let picker = UIImagePickerController()
@@ -364,32 +398,33 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         picker.sourceType = sourceType
         present(picker, animated: true)
     }
-
-    func imagePickerController(_ picker: UIImagePickerController,
-                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         picker.dismiss(animated: true)
         if let image = info[.originalImage] as? UIImage {
             imageView.image = image
+            overlayLabel.isHidden = true // Hide overlay when image is selected
             resultLabel.text = ""
         }
     }
+    
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
     }
-
+    
     private func analyzeImageDirectly(_ image: UIImage) {
         guard let imageBase64 = image.jpegData(compressionQuality: 0.8)?.base64EncodedString() else {
             handleError(message: "Failed to convert image to Base64.")
             return
         }
-
+        
         guard let apiKey = UserDefaults.standard.string(forKey: "gptAPIKey") else {
             handleError(message: "Missing API key. Please configure it in the settings.")
             return
         }
-
+        
         let prompt = isSwedish
-            ? """
+        ? """
             Analysera bilden av måltiden och uppskatta följande information i angiven ordning på rubrikerna 1-4:
             1. Summering totalt näringsinnehåll för hela måltiden 
             Använd exakt dessa benämningar och använd enheten gram (g):
@@ -404,7 +439,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 - Fett:
             Presentera informationen i punktform under varje rubrik
             """
-            : """
+        : """
             Analyze the meal image and provide the following information:
             1. Sum up the total nutritional content for the entire meal.
                 - Carbohydrates (g)
@@ -416,7 +451,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             4. Sum up the total nutritional content for the entire meal.
             Present the information as bullets under each headline.
             """
-
+        
         let requestBody: [String: Any] = [
             "model": "gpt-4o",
             "messages": [
@@ -438,21 +473,21 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             ],
             "max_tokens": 1000
         ]
-
+        
         var request = URLRequest(url: URL(string: "https://api.openai.com/v1/chat/completions")!)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         } catch {
             handleError(message: "Failed to create request: \(error.localizedDescription)")
             return
         }
-
+        
         debugLabel.text = "Sending request..."
-
+        
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 self?.handleAnalysisResponse(data: data, response: response as? HTTPURLResponse, error: error)
