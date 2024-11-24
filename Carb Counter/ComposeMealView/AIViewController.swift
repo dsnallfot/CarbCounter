@@ -8,6 +8,9 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private var gptProtein: String? = "0"
     private var gptTotalWeight: String? = "0"
     
+    private let savedImageKey = "savedImageKey"
+    private let savedResponseKey = "savedResponseKey"
+    
     private let imageView = UIImageView()
     private let analyzeButton = UIButton(type: .system)
     private let selectImageButton = UIButton(type: .system)
@@ -30,7 +33,30 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
         setupCloseButton()
+        
+        // Load persisted data
+        loadPersistedData()
     }
+    
+    private func loadPersistedData() {
+            if let savedImage = UserDefaults.standard.loadImage(forKey: savedImageKey) {
+                imageView.image = savedImage
+                overlayLabel.isHidden = true
+            }
+
+            if let savedResponse = UserDefaults.standard.loadString(forKey: savedResponseKey) {
+                resultLabel.text = savedResponse
+            }
+        }
+
+        private func savePersistedData(image: UIImage?, response: String?) {
+            if let image = image {
+                UserDefaults.standard.saveImage(image, forKey: savedImageKey)
+            }
+            if let response = response {
+                UserDefaults.standard.saveString(response, forKey: savedResponseKey)
+            }
+        }
     
     private func setupNavigationBar() {
         title = isSwedish ? "AI Måltidsanalys" : "AI Meal Analysis"
@@ -223,38 +249,41 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     }
     
     private func handleAnalysisResponse(data: Data?, response: HTTPURLResponse?, error: Error?) {
-        activityIndicator.stopAnimating()
-        analyzeButton.isEnabled = true
-        selectImageButton.isEnabled = true
-        
-        guard error == nil, let data = data, let httpResponse = response, httpResponse.statusCode == 200 else {
-            handleError(message: "Förfrågan misslyckades, eller ingen data togs emot.")
-            return
-        }
-        
-        do {
-            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-            guard let choices = json?["choices"] as? [[String: Any]],
-                  let message = choices.first?["message"] as? [String: Any],
-                  let content = message["content"] as? String else {
-                handleError(message: "Invalid response structure.")
+            activityIndicator.stopAnimating()
+            analyzeButton.isEnabled = true
+            selectImageButton.isEnabled = true
+
+            guard error == nil, let data = data, let httpResponse = response, httpResponse.statusCode == 200 else {
+                handleError(message: "Förfrågan misslyckades, eller ingen data togs emot.")
                 return
             }
-            
-            tableData = parseTable(content)
-            if !tableData.isEmpty {
-                tableView.isHidden = false
-                tableView.reloadData()
-            } else {
-                tableView.isHidden = true
+
+            do {
+                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                guard let choices = json?["choices"] as? [[String: Any]],
+                      let message = choices.first?["message"] as? [String: Any],
+                      let content = message["content"] as? String else {
+                    handleError(message: "Invalid response structure.")
+                    return
+                }
+
+                tableData = parseTable(content)
+                if !tableData.isEmpty {
+                    tableView.isHidden = false
+                    tableView.reloadData()
+                } else {
+                    tableView.isHidden = true
+                }
+
+                resultLabel.attributedText = formatMarkdownToAttributedString(content)
+                debugLabel.text = "Analys lyckades"
+
+                // Save the image and response persistently
+                savePersistedData(image: imageView.image, response: content)
+            } catch {
+                handleError(message: "JSON parsing error: \(error.localizedDescription)")
             }
-            
-            resultLabel.attributedText = formatMarkdownToAttributedString(content)
-            debugLabel.text = "Analys lyckades"
-        } catch {
-            handleError(message: "JSON parsing error: \(error.localizedDescription)")
         }
-    }
     
     private func handleError(message: String) {
         activityIndicator.stopAnimating()
@@ -417,8 +446,12 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         picker.dismiss(animated: true)
         if let image = info[.originalImage] as? UIImage {
             imageView.image = image
-            overlayLabel.isHidden = true // Hide overlay when image is selected
+            overlayLabel.isHidden = true
             resultLabel.text = ""
+            debugLabel.text = ""
+            
+            // Clear persisted response
+            UserDefaults.standard.removeObject(forKey: savedResponseKey)
         }
     }
     
@@ -529,5 +562,28 @@ extension String {
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return false }
         let range = NSRange(location: 0, length: self.utf16.count)
         return regex.firstMatch(in: self, options: [], range: range) != nil
+    }
+}
+
+extension UserDefaults {
+    func saveImage(_ image: UIImage, forKey key: String) {
+        if let data = image.jpegData(compressionQuality: 0.8) {
+            set(data, forKey: key)
+        }
+    }
+
+    func loadImage(forKey key: String) -> UIImage? {
+        if let data = data(forKey: key) {
+            return UIImage(data: data)
+        }
+        return nil
+    }
+
+    func saveString(_ value: String, forKey key: String) {
+        set(value, forKey: key)
+    }
+
+    func loadString(forKey key: String) -> String? {
+        return string(forKey: key)
     }
 }
