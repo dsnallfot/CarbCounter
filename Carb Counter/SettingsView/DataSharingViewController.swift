@@ -1092,12 +1092,15 @@ class DataSharingViewController: UITableViewController {
         userDefaultsData["maxBolus"] = String(UserDefaultsRepository.maxBolus)
         userDefaultsData["overrideFactor"] = String(UserDefaultsRepository.overrideFactor)
         userDefaultsData["overrideName"] = UserDefaultsRepository.overrideName ?? ""
+        
         userDefaultsData["useMmol"] = UserDefaultsRepository.useMmol.description
         userDefaultsData["overrideStartTime"] = UserDefaultsRepository.overrideStartTime?.description ?? ""
         userDefaultsData["overrideFactorUsed"] = UserDefaultsRepository.overrideFactorUsed
         userDefaultsData["dabasAPISecret"] = UserDefaultsRepository.dabasAPISecret
         userDefaultsData["nightscoutURL"] = ObservableUserDefaults.shared.url.value
         userDefaultsData["nightscoutToken"] = UserDefaultsRepository.token.value
+        userDefaultsData["gptAPIKey"] = UserDefaultsRepository.gptAPIKey
+        
         userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
@@ -1178,6 +1181,8 @@ class DataSharingViewController: UITableViewController {
                 UserDefaultsRepository.nightscoutURL = value
             case "nightscoutToken":
                 UserDefaultsRepository.nightscoutToken = value
+            case "gptAPIKey":
+                UserDefaultsRepository.gptAPIKey = value
             case "allowSharingOngoingMeals":
                 UserDefaultsRepository.allowSharingOngoingMeals = Bool(value) ?? false
             case "allowViewingOngoingMeals":

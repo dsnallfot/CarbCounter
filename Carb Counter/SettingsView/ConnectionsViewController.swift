@@ -76,7 +76,7 @@ class ConnectionsViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 6 // For cases 0 to 5
+        return 7 // For cases 0 to 5
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -104,6 +104,9 @@ class ConnectionsViewController: UITableViewController {
         case 5:
             cell.textLabel?.text = NSLocalizedString("Lägg till top-ups", comment: "Add top-ups")
             cell.detailTextLabel?.text = UserDefaultsRepository.topUps
+        case 6:
+            cell.textLabel?.text = NSLocalizedString("OpenAI API Key", comment: "OpenAI API Key")
+            cell.detailTextLabel?.text = UserDefaultsRepository.gptAPIKey
         default:
             break
         }
@@ -155,6 +158,12 @@ class ConnectionsViewController: UITableViewController {
             message = NSLocalizedString("Ange top-ups, separerade med komma:", comment: "Add top-ups message")
             currentValue = UserDefaultsRepository.topUps ?? ""
             saveAction = { newValue in UserDefaultsRepository.topUps = newValue }
+            
+        case 6:
+            title = NSLocalizedString("OpenAI API Key", comment: "OpenAI API Key")
+            message = NSLocalizedString("Ange din OpenAI API Key", comment: "Ange din OpenAI API Key")
+            currentValue = UserDefaultsRepository.gptAPIKey
+            saveAction = { newValue in UserDefaultsRepository.gptAPIKey = newValue }
             
         default:
             return

@@ -182,6 +182,15 @@ class UserDefaultsRepository {
         }
     }
     
+    static var gptAPIKey: String {
+        get {
+            return UserDefaults.standard.string(forKey: "gptAPIKey") ?? ""
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "gptAPIKey")
+        }
+    }
+    
     static var useMmol: Bool {
         get {
             return UserDefaults.standard.bool(forKey: "useMmol")
