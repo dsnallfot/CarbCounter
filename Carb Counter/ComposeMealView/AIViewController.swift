@@ -39,15 +39,20 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     }
     
     private func loadPersistedData() {
-            if let savedImage = UserDefaults.standard.loadImage(forKey: savedImageKey) {
-                imageView.image = savedImage
-                overlayLabel.isHidden = true
-            }
-
-            if let savedResponse = UserDefaults.standard.loadString(forKey: savedResponseKey) {
-                resultLabel.text = savedResponse
-            }
+        if let savedImage = UserDefaults.standard.loadImage(forKey: savedImageKey) {
+            imageView.image = savedImage
+            overlayLabel.isHidden = true
         }
+
+        if let savedResponse = UserDefaults.standard.loadString(forKey: savedResponseKey) {
+            // Update resultLabel with formatted markdown
+            resultLabel.attributedText = formatMarkdownToAttributedString(savedResponse)
+            debugLabel.text = "Data loaded from UserDefaults"
+            
+            // Optional: Extract totals again from the saved response
+            extractTotals(from: savedResponse)
+        }
+    }
 
         private func savePersistedData(image: UIImage?, response: String?) {
             if let image = image {
@@ -113,6 +118,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         resultLabel.font = .systemFont(ofSize: 14)
         resultLabel.translatesAutoresizingMaskIntoConstraints = false
         
+        // Add tap gesture recognizer to the resultLabel
+            let resultLabelTapGesture = UITapGestureRecognizer(target: self, action: #selector(openAnalysisModal))
+            resultLabel.isUserInteractionEnabled = true
+            resultLabel.addGestureRecognizer(resultLabelTapGesture)
+        
         activityIndicator.hidesWhenStopped = true
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         
@@ -142,7 +152,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             imageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9),
-            imageView.heightAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7),
+            imageView.heightAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.65),
             
             // Overlay label constraints
             overlayLabel.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
@@ -553,6 +563,32 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             }
         }
         task.resume()
+    }
+    
+    @objc private func openAnalysisModal() {
+        guard let gptCarbsInt = Int(gptCarbs ?? "0"),
+              let gptFatInt = Int(gptFat ?? "0"),
+              let gptProteinInt = Int(gptProtein ?? "0"),
+              let gptWeightInt = Int(gptTotalWeight ?? "0") else { return }
+
+        let modalVC = AnalysisModalViewController()
+        modalVC.gptCarbs = gptCarbsInt
+        modalVC.gptFat = gptFatInt
+        modalVC.gptProtein = gptProteinInt
+        modalVC.gptTotalWeight = gptWeightInt
+
+        // Wrap in UINavigationController
+        let navController = UINavigationController(rootViewController: modalVC)
+        navController.modalPresentationStyle = .pageSheet
+
+        // Enable swipe down to dismiss
+        if let sheet = navController.sheetPresentationController {
+            sheet.detents = [.medium()] // Covers half the screen
+            sheet.prefersGrabberVisible = false // Optionally show grabber handle
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = true // Allows swiping down to dismiss
+        }
+
+        present(navController, animated: true)
     }
 }
 

@@ -39,6 +39,7 @@
 		6553EE502C238D2E00B0FDF5 /* FoodItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6553EE4F2C238D2E00B0FDF5 /* FoodItemTableViewCell.swift */; };
 		655ED1792CF3593C00FD8667 /* AIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655ED1782CF3592E00FD8667 /* AIViewController.swift */; };
 		656C64A52C6C007000431374 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 656C64A32C6C007000431374 /* Localizable.strings */; };
+		65815F5A2CF3B96E001EB16D /* AnalysisModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65815F592CF3B96C001EB16D /* AnalysisModalViewController.swift */; };
 		658302172CDABFA3000BC0AD /* commit_hash.txt in Resources */ = {isa = PBXBuildFile; fileRef = 658302162CDABFA3000BC0AD /* commit_hash.txt */; };
 		658302192CDAD461000BC0AD /* ConnectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658302182CDAD456000BC0AD /* ConnectionsViewController.swift */; };
 		6583021B2CDB9054000BC0AD /* UpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6583021A2CDB904F000BC0AD /* UpdateView.swift */; };
@@ -142,6 +143,7 @@
 		655ED1782CF3592E00FD8667 /* AIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIViewController.swift; sourceTree = "<group>"; };
 		656C64A42C6C007000431374 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		656C64A62C6C008400431374 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		65815F592CF3B96C001EB16D /* AnalysisModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisModalViewController.swift; sourceTree = "<group>"; };
 		658302162CDABFA3000BC0AD /* commit_hash.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = commit_hash.txt; sourceTree = "<group>"; };
 		658302182CDAD456000BC0AD /* ConnectionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsViewController.swift; sourceTree = "<group>"; };
 		6583021A2CDB904F000BC0AD /* UpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateView.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 		6502A9D32C2B1A9600414DC0 /* ComposeMealView */ = {
 			isa = PBXGroup;
 			children = (
+				65815F592CF3B96C001EB16D /* AnalysisModalViewController.swift */,
 				655ED1782CF3592E00FD8667 /* AIViewController.swift */,
 				6553EE312C20DF4B00B0FDF5 /* ComposeMealViewController.swift */,
 				6553EE492C22E85400B0FDF5 /* FoodItemRowView.swift */,
@@ -587,6 +590,7 @@
 				65D508E62CE77FBC0023E29B /* StorageValue.swift in Sources */,
 				65D509062CE7A0FF0023E29B /* UserDefaults.swift in Sources */,
 				65D508E02CE77EAA0023E29B /* HKUnit+Extensions.swift in Sources */,
+				65815F5A2CF3B96E001EB16D /* AnalysisModalViewController.swift in Sources */,
 				65C75CF62C255C8F00114BD3 /* CoreDataStack.swift in Sources */,
 				65C75CFC2C25962E00114BD3 /* SettingsViewController.swift in Sources */,
 				65D185722CB13B2D00E82D51 /* SuccessView.swift in Sources */,
