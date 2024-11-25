@@ -169,6 +169,45 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
 
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Get the selected meal
+        let selectedMeal = filteredMeals[indexPath.row]
+
+        // Safely access attributes from the selected meal
+        let totalCarbs = selectedMeal.totalCarbs
+        let totalFat = selectedMeal.totalFat
+        let totalProtein = selectedMeal.totalProtein
+        let totalAdjustedWeight = selectedMeal.totalAdjustedWeight
+
+        // Create and configure the AnalysisModalViewController
+        let modalVC = AnalysisModalViewController()
+        modalVC.gptCarbs = Int(totalCarbs)
+        modalVC.gptFat = Int(totalFat)
+        modalVC.gptProtein = Int(totalProtein)
+        modalVC.gptTotalWeight = Int(totalAdjustedWeight)
+        modalVC.gptName = selectedMeal.name ?? "Analyserad måltid"
+        modalVC.savedResponse = selectedMeal.response ?? ""
+
+        // Wrap in UINavigationController
+        let navController = UINavigationController(rootViewController: modalVC)
+        navController.modalPresentationStyle = .pageSheet
+
+        // Configure sheet presentation
+        if let sheet = navController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = false
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = true
+        }
+
+        // Present the modal view controller
+        present(navController, animated: true)
+
+        // Deselect the row
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+
 
     // MARK: - UITableViewDelegate
 
