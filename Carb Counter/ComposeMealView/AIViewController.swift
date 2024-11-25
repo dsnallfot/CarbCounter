@@ -78,7 +78,18 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             action: #selector(trashButtonTapped)
         )
         trashButton.tintColor = .systemRed
-        navigationItem.rightBarButtonItem = trashButton
+
+            // Calendar button
+            let calendarButton = UIBarButtonItem(
+                image: UIImage(systemName: "calendar"),
+                style: .plain,
+                target: self,
+                action: #selector(openMealLog)
+            )
+            calendarButton.tintColor = .label
+
+            // Add buttons to the right navigation bar
+            navigationItem.rightBarButtonItems = [trashButton, calendarButton]
     }
     
     private func setupUI() {
@@ -224,6 +235,14 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel))
         
         present(alert, animated: true, completion: nil)
+    }
+    
+    @objc private func openMealLog() {
+        let logVC = AIMealLogViewController()
+        let navController = UINavigationController(rootViewController: logVC)
+        navController.modalPresentationStyle = .formSheet // Present as a form sheet
+
+        present(navController, animated: true)
     }
 
     private func clearData() {

@@ -412,7 +412,7 @@
 /* Meal History */
 "Måltidshistorik" = "Måltidshistorik";
 "Historik" = "Historik";
-"KH %.0f g" = "Kh. %.0fg";
+"KH %.0f g" = "Kh %.0fg";
 "Fett %.0f g" = "Fett %.0fg";
 "Protein %.0f g" = "Prot %.0fg";
 "Bolus %.2f E" = "Bolus %.2fE";
