@@ -7,6 +7,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private var gptFat: String? = "0"
     private var gptProtein: String? = "0"
     private var gptTotalWeight: String? = "0"
+    private var gptName: String? = "Analyserad måltid"
     
     private let savedImageKey = "savedImageKey"
     private let savedResponseKey = "savedResponseKey"
@@ -32,7 +33,6 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         setupUI()
         // Check if the app is in dark mode and set the background accordingly
         updateBackgroundForCurrentMode()
-        setupCloseButton()
         
         // Load persisted data
         loadPersistedData()
@@ -47,7 +47,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         if let savedResponse = UserDefaults.standard.loadString(forKey: savedResponseKey) {
             // Update resultLabel with formatted markdown
             resultLabel.attributedText = formatMarkdownToAttributedString(savedResponse)
-            debugLabel.text = "Data loaded from UserDefaults"
+            debugLabel.text = "Senaste analys laddad från minne"
             
             // Optional: Extract totals again from the saved response
             extractTotals(from: savedResponse)
@@ -66,6 +66,19 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private func setupNavigationBar() {
         title = isSwedish ? "AI Måltidsanalys" : "AI Meal Analysis"
         
+        // Close button
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+        
+        // Trash button
+        let trashButton = UIBarButtonItem(
+            image: UIImage(systemName: "trash"),
+            style: .plain,
+            target: self,
+            action: #selector(trashButtonTapped)
+        )
+        trashButton.tintColor = .systemRed
+        navigationItem.rightBarButtonItem = trashButton
     }
     
     private func setupUI() {
@@ -193,13 +206,40 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         ])
     }
     
-    private func setupCloseButton() {
-        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
-        navigationItem.leftBarButtonItem = closeButton
-    }
-    
     @objc private func closeButtonTapped() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func trashButtonTapped() {
+        // Confirm clearing data
+        let alert = UIAlertController(
+            title: NSLocalizedString("Rensa analys?", comment: "Rensa analys?"),
+            message: NSLocalizedString("Är du säker på att du vill rensa bild och text för den senast analyserade måltiden?", comment: "Är du säker på att du vill rensa bild och text för den senast analyserade måltiden?"),
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive, handler: { [weak self] _ in
+            self?.clearData()
+        }))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel))
+        
+        present(alert, animated: true, completion: nil)
+    }
+
+    private func clearData() {
+        // Clear the image and response
+        UserDefaults.standard.removeObject(forKey: savedImageKey)
+        UserDefaults.standard.removeObject(forKey: savedResponseKey)
+        
+        // Reset views
+        imageView.image = nil
+        overlayLabel.isHidden = false
+        resultLabel.text = ""
+        debugLabel.text = ""
+        tableData.removeAll()
+        tableView.isHidden = true
+        
+        print("DEBUG: Cleared all saved data and reset views")
     }
     
     private func updateBackgroundForCurrentMode() {
@@ -331,7 +371,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 let headerText = String(cleanedMarkdown[range])
                 let attributes: [NSAttributedString.Key: Any] = [
                     .font: UIFont.boldSystemFont(ofSize: 16),
-                    .foregroundColor: UIColor.gray
+                    .foregroundColor: UIColor.systemBlue
                 ]
                 let newAttributedString = NSAttributedString(string: headerText + "\n", attributes: attributes)
                 attributedString.replaceCharacters(in: match.range, with: newAttributedString)
@@ -348,10 +388,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
             if line.matches(pattern: "^[A-Za-zÀ-ÖØ-öø-ÿ ]+ näringsinnehåll$") ||
                 line.matches(pattern: "^Uppskattad vikt eller portionsstorlek$") ||
+                line.matches(pattern: "^Identifierad måltid$") ||
                 line.matches(pattern: "^Beräknat näringsinnehåll per matvara$") {
                 let attributes: [NSAttributedString.Key: Any] = [
                     .font: UIFont.boldSystemFont(ofSize: 16),
-                    .foregroundColor: UIColor.systemGray
+                    .foregroundColor: UIColor.systemBlue
                 ]
                 attributedString.addAttributes(attributes, range: lineRange)
             }
@@ -366,6 +407,12 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     }
 
     private func extractTotals(from text: String) {
+        // Pattern to extract "Identifierad måltid"
+        let mealNameRegex = try! NSRegularExpression(
+            pattern: "1\\. Identifierad måltid:\\s*(.*)",
+            options: .caseInsensitive
+        )
+
         // Pattern that handles "Ca", "ca", "~", "Cirka", "cirka" before the number
         let approximatePattern = "(ca |Ca |~|Cirka |cirka )?\\s*"
 
@@ -387,6 +434,13 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         )
 
         let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
+
+        // Extract and set meal name
+        if let match = mealNameRegex.firstMatch(in: text, range: fullRange),
+           let nameRange = Range(match.range(at: 1), in: text) {
+            gptName = String(text[nameRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            print("DEBUG: Meal name set to: \(gptName ?? "Odefinierad måltid")")
+        }
 
         // Extract and set carbs
         if let match = carbsRegex.firstMatch(in: text, range: fullRange),
@@ -485,19 +539,22 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         let prompt = isSwedish
         ? """
             Analysera bilden av måltiden och uppskatta följande information i angiven ordning och exakt format nedan. Gör alltid en bästa uppskattning även om bilden är svår att analysera eller om viss information är osäker:
+            
+            1. Identifierad måltid:
+                [Ange ett lämpligt namn på måltiden]
 
-            1. Summering totalt näringsinnehåll för hela måltiden:
+            2. Summering totalt näringsinnehåll för hela måltiden:
                 - Kolhydrater totalt: [XXX] g
                 - Protein totalt: [XXX] g
                 - Fett totalt: [XXX] g
                 - Vikt hela måltiden: [XXX] g
 
-            2. Uppskattad vikt eller portionsstorlek för varje matvara som syns i bilden:
+            3. Uppskattad vikt eller portionsstorlek för varje matvara som syns i bilden:
                 - [Matvara 1]: [XXX] g
                 - [Matvara 2]: [XXX] g
                 - [Matvara 3]: [XXX] g
 
-            3. Beräknat näringsinnehåll per matvara:
+            4. Beräknat näringsinnehåll per matvara:
                 [Matvara 1]:
                  - Kolhydrater: [XXX] g
                  - Protein: [XXX] g
@@ -578,6 +635,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         modalVC.gptFat = gptFatInt
         modalVC.gptProtein = gptProteinInt
         modalVC.gptTotalWeight = gptWeightInt
+        modalVC.gptName = gptName ?? "Analyserad måltid" // Pass the gptName
 
         // Wrap in UINavigationController
         let navController = UINavigationController(rootViewController: modalVC)
