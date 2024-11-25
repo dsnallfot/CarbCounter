@@ -13,9 +13,9 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private let savedResponseKey = "savedResponseKey"
     
     private let imageView = UIImageView()
-    private let analyzeButton = UIButton(type: .system)
+    private var analyzeButton = UIButton()
     private let selectImageButton = UIButton(type: .system)
-    private let activityIndicator = UIActivityIndicatorView(style: .large)
+    private let activityIndicator = UIActivityIndicatorView(style: .medium)
     private let overlayLabel = UILabel()
     
     private let scrollView = UIScrollView()
@@ -112,27 +112,9 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(selectImageSource))
         imageView.addGestureRecognizer(imageTapGesture)
         
-        if #available(iOS 15.0, *) {
-            var config = UIButton.Configuration.filled()
-            config.title = isSwedish ? "Analysera bild" : "Analyze Picture"
-            config.baseBackgroundColor = .systemBlue
-            config.baseForegroundColor = .white
-            config.cornerStyle = .medium
-            config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20) // Add padding
-
-            analyzeButton.configuration = config
+        // Configure analyzeButton
+            analyzeButton = createStyledButton(title: isSwedish ? "Analysera bild" : "Analyze Picture")
             analyzeButton.addTarget(self, action: #selector(analyzeMeal), for: .touchUpInside)
-            analyzeButton.translatesAutoresizingMaskIntoConstraints = false
-        } else {
-            // Fallback for earlier iOS versions
-            analyzeButton.setTitle(isSwedish ? "Analysera bild" : "Analyze Picture", for: .normal)
-            analyzeButton.setTitleColor(.white, for: .normal)
-            analyzeButton.backgroundColor = .systemBlue
-            analyzeButton.layer.cornerRadius = 10
-            analyzeButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
-            analyzeButton.addTarget(self, action: #selector(analyzeMeal), for: .touchUpInside)
-            analyzeButton.translatesAutoresizingMaskIntoConstraints = false
-        }
         
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -173,7 +155,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         contentView.addSubview(tableView)
         
         NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             imageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9),
             imageView.heightAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.65),
@@ -184,10 +166,10 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             overlayLabel.leadingAnchor.constraint(equalTo: imageView.leadingAnchor, constant: 8),
             overlayLabel.trailingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: -8),
             
-            analyzeButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
+            analyzeButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 15),
             analyzeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            scrollView.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 20),
+            scrollView.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 15),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -211,10 +193,50 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
             
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 20),
-            //activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            //activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.trailingAnchor.constraint(equalTo: analyzeButton.leadingAnchor, constant: 32),
+            //activityIndicator.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 20),
+            activityIndicator.centerYAnchor.constraint(equalTo: analyzeButton.centerYAnchor)
         ])
+    }
+    
+    private func createStyledButton(title: String) -> UIButton {
+        let button = UIButton(type: .system)
+
+        if #available(iOS 15.0, *) {
+            var config = UIButton.Configuration.filled()
+            config.baseBackgroundColor = .systemBlue
+            config.baseForegroundColor = .white
+            config.cornerStyle = .medium
+            config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 40, bottom: 10, trailing: 40) // Add padding
+
+            // Custom font for the title
+            let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+            let font = systemFont.fontDescriptor.withDesign(.rounded).flatMap { UIFont(descriptor: $0, size: 19) } ?? systemFont
+            
+            var attributedTitle = AttributedString(title)
+            attributedTitle.font = font
+            attributedTitle.foregroundColor = UIColor.white
+
+            config.attributedTitle = attributedTitle
+            button.configuration = config
+        } else {
+            // Fallback for earlier iOS versions
+            button.setTitle(title, for: .normal)
+            let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+            if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+                button.titleLabel?.font = UIFont(descriptor: roundedDescriptor, size: 19)
+            } else {
+                button.titleLabel?.font = systemFont
+            }
+            button.backgroundColor = .systemBlue
+            button.setTitleColor(.white, for: .normal)
+            button.layer.cornerRadius = 10
+            button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 40, bottom: 10, right: 40) // Add padding
+        }
+
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }
     
     @objc private func closeButtonTapped() {

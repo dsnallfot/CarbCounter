@@ -21,7 +21,7 @@ class AnalysisModalViewController: UIViewController {
     private let weightLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.text = "Manuell justering portion: 0 g" // Initial placeholder
+        label.text = "100 % av ursprunglig portion: 0 g" // Initial placeholder
         label.textColor = .label
         return label
     }()
@@ -43,6 +43,12 @@ class AnalysisModalViewController: UIViewController {
         return button
     }()
     
+    // References to dynamically updated labels
+    private var portionLabel: UILabel!
+    private var fatLabel: UILabel!
+    private var proteinLabel: UILabel!
+    private var carbsLabel: UILabel!
+    
     private var adjustedCarbs: Int = 0
     private var adjustedFat: Int = 0
     private var adjustedProtein: Int = 0
@@ -54,7 +60,7 @@ class AnalysisModalViewController: UIViewController {
             view.layer.cornerRadius = 16
             setupNavigationBar()
             updateBackgroundForCurrentMode()
-            setupCloseButton()
+            //setupCloseButton()
             setupUI()
             updateAdjustments() // Initialize adjustments
         }
@@ -62,80 +68,133 @@ class AnalysisModalViewController: UIViewController {
         private func setupNavigationBar() {
             title = gptName // Set the title to the meal name
         }
+
+    private func setupContainer(_ container: UIView, title: String, valueLabel: UILabel) {
+        let titleLabel = createLabel(text: NSLocalizedString(title, comment: title), fontSize: 9, weight: .bold, color: .white)
+        
+        let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+        ])
+    }
+
+    private func createContainerView(backgroundColor: UIColor) -> UIView {
+        let container = UIView()
+        container.backgroundColor = backgroundColor
+        container.layer.cornerRadius = 8
+        container.translatesAutoresizingMaskIntoConstraints = false
+        return container
+    }
+
+    private func createLabel(text: String, fontSize: CGFloat = 18, weight: UIFont.Weight = .bold, color: UIColor = .white) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        label.textColor = color
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }
     
     private func setupUI() {
-            let stackView = UIStackView()
-            stackView.axis = .vertical
-            stackView.spacing = 20
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(stackView)
-
-            // Helper function to create a row with leading and trailing alignment
-            func createMealRow(title: String, value: String, tag: Int? = nil, textColor: UIColor = .label) -> UIStackView {
-                let titleLabel = UILabel()
-                titleLabel.text = title
-                titleLabel.textAlignment = .left
-                titleLabel.textColor = textColor
-                titleLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-
-                let valueLabel = UILabel()
-                valueLabel.text = value
-                valueLabel.textAlignment = .right
-                valueLabel.textColor = textColor
-                valueLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-                
-                if let tag = tag {
-                    valueLabel.tag = tag
-                }
-
-                let rowStack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
-                rowStack.axis = .horizontal
-                rowStack.alignment = .fill
-                rowStack.distribution = .fill
-                rowStack.spacing = 8
-                return rowStack
-            }
-
-            // Create meal rows
-            let carbsRow = createMealRow(title: "Kolhydrater:", value: "\(gptCarbs) g", tag: 100)
-            let fatRow = createMealRow(title: "Fett:", value: "\(gptFat) g", tag: 101)
-            let proteinRow = createMealRow(title: "Protein:", value: "\(gptProtein) g", tag: 102)
-            let originalWeightRow = createMealRow(
-                title: "Ursprunglig uppskattad portion:",
-                value: "\(gptTotalWeight) g",
-                textColor: .gray
-            )
-
-            // Meal stack containing rows
-            let mealStack = UIStackView(arrangedSubviews: [carbsRow, fatRow, proteinRow, originalWeightRow])
-            mealStack.axis = .vertical
-            mealStack.spacing = 10
-            mealStack.translatesAutoresizingMaskIntoConstraints = false
-            stackView.addArrangedSubview(mealStack)
-
-            // Weight slider
-            weightLabel.text = "Manuell justering portion: \(gptTotalWeight) g"
-            stackView.addArrangedSubview(weightLabel)
-
-            slider.minimumValue = 0
-            slider.maximumValue = 200
-            slider.value = 100
-            slider.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
-            stackView.addArrangedSubview(slider)
-
-            // Add button
-            addButton.addTarget(self, action: #selector(addToMeal), for: .touchUpInside)
-            stackView.addArrangedSubview(addButton)
-
-            // Layout constraints
-            NSLayoutConstraint.activate([
-                stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-                stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-                stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-                addButton.heightAnchor.constraint(equalToConstant: 50)
-            ])
-        }
-    
+        // Summary Container at the Top
+        let summaryContainer = UIView()
+        summaryContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(summaryContainer)
+        
+        // Create and configure container views
+        let portionContainer = createContainerView(backgroundColor: .systemGray3)
+        portionLabel = createLabel(text: "\(adjustedWeight) g") // Save reference
+        setupContainer(portionContainer, title: "PORTION", valueLabel: portionLabel)
+        
+        let fatContainer = createContainerView(backgroundColor: .systemBrown)
+        fatLabel = createLabel(text: "\(adjustedFat) g") // Save reference
+        setupContainer(fatContainer, title: "FETT", valueLabel: fatLabel)
+        
+        let proteinContainer = createContainerView(backgroundColor: .systemBrown)
+        proteinLabel = createLabel(text: "\(adjustedProtein) g") // Save reference
+        setupContainer(proteinContainer, title: "PROTEIN", valueLabel: proteinLabel)
+        
+        let carbsContainer = createContainerView(backgroundColor: .systemOrange)
+        carbsLabel = createLabel(text: "\(adjustedCarbs) g") // Save reference
+        setupContainer(carbsContainer, title: "KOLHYDRATER", valueLabel: carbsLabel)
+        
+        // Horizontal stack for the containers
+        let hStack = UIStackView(arrangedSubviews: [portionContainer, fatContainer, proteinContainer, carbsContainer])
+        hStack.axis = .horizontal
+        hStack.spacing = 8
+        hStack.distribution = .fillEqually
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        summaryContainer.addSubview(hStack)
+        
+        NSLayoutConstraint.activate([
+            hStack.leadingAnchor.constraint(equalTo: summaryContainer.leadingAnchor),
+            hStack.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor),
+            hStack.topAnchor.constraint(equalTo: summaryContainer.topAnchor),
+            hStack.bottomAnchor.constraint(equalTo: summaryContainer.bottomAnchor),
+            summaryContainer.heightAnchor.constraint(equalToConstant: 45)
+        ])
+        
+        // Add the summary container to the view
+        NSLayoutConstraint.activate([
+            summaryContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            summaryContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            summaryContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10)
+        ])
+        
+        // Weight Label with Tap Gesture
+        weightLabel.text = "\(Int(slider.value)) % av ursprunglig portion: \(gptTotalWeight) g"
+        weightLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(weightLabel)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(weightLabelTapped))
+        weightLabel.isUserInteractionEnabled = true
+        weightLabel.addGestureRecognizer(tapGesture)
+        
+        // Slider
+        slider.minimumValue = 0
+        slider.maximumValue = 200
+        slider.value = 100
+        slider.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
+        slider.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(slider)
+        
+        // Add-to-Meal Button
+        addButton.addTarget(self, action: #selector(addToMeal), for: .touchUpInside)
+        addButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        addButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(addButton)
+        
+        // Layout constraints
+        NSLayoutConstraint.activate([
+            // Weight label above the slider
+            weightLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            weightLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            weightLabel.bottomAnchor.constraint(equalTo: slider.topAnchor, constant: -30),
+            
+            // Slider
+            slider.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            slider.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            slider.bottomAnchor.constraint(equalTo: addButton.topAnchor, constant: -20),
+            
+            // Add-to-Meal Button
+            addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            addButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            addButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        ])
+    }
+    @objc private func weightLabelTapped() {
+        print("DEBUG: Weight label tapped, resetting slider.")
+        slider.value = 100 // Reset slider to 100
+        updateAdjustments() // Update adjusted values
+    }
+    /*
     private func setupCloseButton() {
             let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
             navigationItem.leftBarButtonItem = closeButton
@@ -143,7 +202,7 @@ class AnalysisModalViewController: UIViewController {
         
         @objc private func closeButtonTapped() {
             dismiss(animated: true, completion: nil)
-        }
+        }*/
     
     private func updateBackgroundForCurrentMode() {
         // Remove any existing gradient views before updating
@@ -197,23 +256,14 @@ class AnalysisModalViewController: UIViewController {
         adjustedFat = gptFat * percentage / 100
         adjustedProtein = gptProtein * percentage / 100
 
-        // Update weight label
-        weightLabel.text = "Manuell justering portion: \(adjustedWeight) g"
+        // Update the weight label with percentage and original portion
+        weightLabel.text = "\(percentage) % av ursprunglig portion: \(gptTotalWeight) g"
 
-        // Update carbs label
-        if let carbsLabel = view.viewWithTag(100) as? UILabel {
-            carbsLabel.text = "\(adjustedCarbs) g"
-        }
-
-        // Update fat label
-        if let fatLabel = view.viewWithTag(101) as? UILabel {
-            fatLabel.text = "\(adjustedFat) g"
-        }
-
-        // Update protein label
-        if let proteinLabel = view.viewWithTag(102) as? UILabel {
-            proteinLabel.text = "\(adjustedProtein) g"
-        }
+        // Update container labels directly
+        portionLabel.text = "\(adjustedWeight) g"
+        carbsLabel.text = "\(adjustedCarbs) g"
+        fatLabel.text = "\(adjustedFat) g"
+        proteinLabel.text = "\(adjustedProtein) g"
 
         // Debugging logs
         print("Slider Adjustments Updated:")

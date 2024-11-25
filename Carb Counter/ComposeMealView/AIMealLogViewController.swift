@@ -148,7 +148,7 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
         // Configure detail text
         if let mealDate = meal.mealDate {
             let formatter = DateFormatter()
-            formatter.dateFormat = "d MMM. HH:mm" // Example: 25 nov. 10:17
+            formatter.dateFormat = "d MMM HH:mm" // Example: 25 nov. 10:17
             let dateString = formatter.string(from: mealDate)
 
             let detailText = """
