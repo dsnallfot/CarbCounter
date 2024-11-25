@@ -14,7 +14,8 @@ class AnalysisModalViewController: UIViewController {
     var gptFat: Int = 0
     var gptProtein: Int = 0
     var gptTotalWeight: Int = 0
-    var gptName: String = "Analyserad måltid" // Title of the meal
+    var gptName: String = "Analyserad måltid"
+    var savedResponse: String = ""
 
     // Label for the dynamically updated adjusted weight
     private let weightLabel: UILabel = {
@@ -238,10 +239,41 @@ class AnalysisModalViewController: UIViewController {
                 print("DEBUG: No existing FoodItemTemporary entries")
                 saveNewTemporaryFoodItems(replacing: true)
             }
+            
+            // Add the new AIMeal after processing temporary items
+            saveNewAIMealEntry()
+            
         } catch {
             print("DEBUG: Error fetching FoodItemTemporary entries: \(error.localizedDescription)")
         }
     }
+    
+    private func saveNewAIMealEntry() {
+        let context = CoreDataStack.shared.context
+
+        // Create a new AIMeal entry
+        let newMeal = AIMeal(context: context)
+        newMeal.response = savedResponse
+        newMeal.name = gptName
+        newMeal.totalCarbs = Double(adjustedCarbs)
+        newMeal.totalFat = Double(adjustedFat)
+        newMeal.totalProtein = Double(adjustedProtein)
+        newMeal.totalAdjustedWeight = Double(adjustedWeight)
+        newMeal.totalOriginalWeight = Double(gptTotalWeight)
+        newMeal.delete = false
+        newMeal.lastEdited = Date()
+        newMeal.id = UUID()
+        newMeal.mealDate = Date()
+
+        do {
+            try context.save()
+            print("DEBUG: AIMeal entry saved successfully")
+        } catch {
+            print("DEBUG: Error saving AIMeal entry: \(error.localizedDescription)")
+        }
+    }
+
+
     private func showReplaceOrAddAlert(existingItems: [FoodItemTemporary]) {
         let alert = UIAlertController(
             title: NSLocalizedString("Lägg till eller ersätt?", comment: "Lägg till eller ersätt?"),

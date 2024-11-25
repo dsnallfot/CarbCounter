@@ -630,12 +630,16 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
               let gptProteinInt = Int(gptProtein ?? "0"),
               let gptWeightInt = Int(gptTotalWeight ?? "0") else { return }
 
+        // Load the saved response from UserDefaults
+        let savedResponse = UserDefaults.standard.loadString(forKey: savedResponseKey) ?? ""
+
         let modalVC = AnalysisModalViewController()
         modalVC.gptCarbs = gptCarbsInt
         modalVC.gptFat = gptFatInt
         modalVC.gptProtein = gptProteinInt
         modalVC.gptTotalWeight = gptWeightInt
         modalVC.gptName = gptName ?? "Analyserad måltid" // Pass the gptName
+        modalVC.savedResponse = savedResponse // Pass the saved response
 
         // Wrap in UINavigationController
         let navController = UINavigationController(rootViewController: modalVC)
@@ -650,6 +654,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
         present(navController, animated: true)
     }
+
 }
 
 // Helper extension for regex matching
