@@ -54,7 +54,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
             // Parse the saved CSV string into structured data
             let parsedData = parseCSV(savedResponse)
-            debugLabel.text = "Senaste analys laddad från minne"
+            debugLabel.text = "Senaste analys laddades från minnet"
 
             // Update the header view and table view
             if let mealName = parsedData.mealName, let mealTotalWeight = parsedData.mealTotalWeight {
@@ -124,12 +124,12 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         
         // Configure meal name label
         mealNameLabel.text = gptName
-        mealNameLabel.font = UIFont.boldSystemFont(ofSize: 18)
+        mealNameLabel.font = UIFont.boldSystemFont(ofSize: 20)
         mealNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Configure total weight label
-        totalWeightLabel.text = "Total vikt: \(gptTotalWeight ?? "--") g"
-        totalWeightLabel.font = UIFont.systemFont(ofSize: 16)
+        totalWeightLabel.text = "Total portion: \(gptTotalWeight ?? "--") g"
+        totalWeightLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         totalWeightLabel.textColor = .gray
         totalWeightLabel.translatesAutoresizingMaskIntoConstraints = false
         
@@ -181,7 +181,15 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         // Configure debugLabel
         debugLabel.numberOfLines = 0
         debugLabel.textAlignment = .natural
-        debugLabel.font = .systemFont(ofSize: 12)
+
+        // Create an italic font
+        let baseFont = UIFont.systemFont(ofSize: 10)
+        if let italicDescriptor = baseFont.fontDescriptor.withSymbolicTraits(.traitItalic) {
+            debugLabel.font = UIFont(descriptor: italicDescriptor, size: 10)
+        } else {
+            debugLabel.font = baseFont // Fallback to base font if italic descriptor is unavailable
+        }
+
         debugLabel.textColor = .systemGray
         debugLabel.translatesAutoresizingMaskIntoConstraints = false
         
@@ -433,6 +441,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 updateHeaderView()
                 tableView.reloadData()
                 tableView.isHidden = false
+                debugLabel.text = "Förfrågan lyckades!"
 
                 // Save only the CSV block to UserDefaults
                 savePersistedData(image: imageView.image, csvBlock: parsedData.csvBlock)
@@ -512,7 +521,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         print("DEBUG: Total Weight: \(gptTotalWeight ?? "nil")")
 
         mealNameLabel.text = gptName ?? "Måltid"
-        totalWeightLabel.text = "Total mängd: \(gptTotalWeight ?? "0") g"
+        totalWeightLabel.text = "Total portion: \(gptTotalWeight ?? "0") g"
     }
     
     
@@ -550,12 +559,17 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
         // Main text for the ingredient name
         cell.textLabel?.text = ingredient[0] // Ingredient name
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 15)
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
 
         // Subtitle text for detailed nutritional information
-        cell.detailTextLabel?.text = "Mängd: \(ingredient[1]) g | Kh: \(ingredient[2]) g | Fett: \(ingredient[3]) g | Protein: \(ingredient[4]) g"
-        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 12)
+        cell.detailTextLabel?.text = "Portion: \(ingredient[1]) g | Kh: \(ingredient[2]) g | Fett: \(ingredient[3]) g | Protein: \(ingredient[4]) g"
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         cell.detailTextLabel?.textColor = .gray
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.clear//.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
 
         return cell
     }

@@ -367,9 +367,9 @@ class AnalysisModalViewController: UIViewController {
     }
     private func saveNewTemporaryFoodItems(replacing: Bool) {
         let context = CoreDataStack.shared.context
-        
+
+        // Clear existing FoodItemTemporary entries if replacing
         if replacing {
-            // Remove existing entries
             let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
             do {
                 let existingItems = try context.fetch(fetchRequest)
@@ -381,58 +381,161 @@ class AnalysisModalViewController: UIViewController {
                 print("DEBUG: Error clearing existing FoodItemTemporary entries: \(error.localizedDescription)")
             }
         }
-        
-        // Fetch FoodItems to create new FoodItemTemporary entries
+
+        // Parse CSV data
+        guard !savedResponse.isEmpty else { return }
+        let csvData = parseCSV(savedResponse)
+
+        var totalMatchedCarbs = 0
+        var totalMatchedFat = 0
+        var totalMatchedProtein = 0
+        var allMatched = true // Flag to track if all "Matvaror" are matched
+
+        // Fetch FoodItems from Core Data, excluding those with perPiece == true
         let fetchRequest: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name IN %@", ["🤖 Fett", "🤖 Kolhydrater", "🤖 Protein"])
-        
+        fetchRequest.predicate = NSPredicate(format: "(delete == NO OR delete == nil) AND (perPiece == NO OR perPiece == nil)")
+
         do {
-            let selectedFoodItems = try context.fetch(fetchRequest)
-            print("DEBUG: Fetched \(selectedFoodItems.count) FoodItems for new entries")
-            
-            for item in selectedFoodItems {
-                guard let foodItemId = item.id else {
-                    print("DEBUG: Skipping FoodItem with missing ID")
+            let foodItems = try context.fetch(fetchRequest)
+
+            for ingredient in csvData {
+                guard ingredient.count >= 7 else {
+                    print("DEBUG: Skipping malformed ingredient row: \(ingredient)")
                     continue
                 }
-                
-                let portionServed: Double
-                switch item.name {
-                case "🤖 Kolhydrater":
-                    portionServed = Double(adjustedCarbs)
-                    print("DEBUG: Setting portion for Kolhydrater: \(portionServed)")
-                case "🤖 Fett":
-                    portionServed = Double(adjustedFat)
-                    print("DEBUG: Setting portion for Fett: \(portionServed)")
-                case "🤖 Protein":
-                    portionServed = Double(adjustedProtein)
-                    print("DEBUG: Setting portion for Protein: \(portionServed)")
-                default:
-                    print("DEBUG: Unhandled FoodItem name: \(item.name ?? "Unknown")")
-                    continue
+
+                let matvara = ingredient[2] // Matvara
+                let portionServed = Double(ingredient[3]) ?? 0.0
+                let carbs = Int(ingredient[4]) ?? 0
+                let fat = Int(ingredient[5]) ?? 0
+                let protein = Int(ingredient[6]) ?? 0
+
+                // Attempt to match the Matvara to a FoodItem
+                if let matchedItem = fuzzySearchForCSV(query: matvara, in: foodItems).first {
+                    guard let foodItemId = matchedItem.id else {
+                        print("DEBUG: Skipping matched FoodItem with missing ID for \(matvara)")
+                        continue
+                    }
+
+                    // Create FoodItemTemporary for matched FoodItem
+                    let temporaryItem = FoodItemTemporary(context: context)
+                    temporaryItem.entryId = foodItemId
+                    temporaryItem.entryPortionServed = portionServed
+                    print("DEBUG: Matched \(matvara) to \(matchedItem.name ?? "unknown") with ID \(foodItemId)")
+
+                    totalMatchedCarbs += carbs
+                    totalMatchedFat += fat
+                    totalMatchedProtein += protein
+                } else {
+                    print("DEBUG: No match found for \(matvara)")
+                    allMatched = false // Mark as not all matched
                 }
-                
-                let temporaryItem = FoodItemTemporary(context: context)
-                temporaryItem.entryId = foodItemId
-                temporaryItem.entryPortionServed = portionServed
-                
-                print("DEBUG: Created FoodItemTemporary with ID: \(foodItemId) and portion served: \(portionServed)")
             }
-            
+
+            // Only add fallback entries if not all "Matvaror" are matched
+            if !allMatched {
+                // Calculate remaining nutrient values for unmatched entries
+                let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
+                let adjustedFat = max(0, gptFat - totalMatchedFat)
+                let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
+
+                // Fetch the predefined FoodItems for unmatched nutrients
+                let nutrientNames = ["🤖 Kolhydrater", "🤖 Fett", "🤖 Protein"]
+                let nutrientItemsFetch: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+                nutrientItemsFetch.predicate = NSPredicate(format: "name IN %@", nutrientNames)
+
+                let nutrientItems = try context.fetch(nutrientItemsFetch)
+                let nutrientItemsDict = Dictionary(uniqueKeysWithValues: nutrientItems.compactMap { ($0.name ?? "", $0.id) })
+
+                // Create FoodItemTemporary entries for unmatched nutrients
+                for (name, portionServed) in [("🤖 Kolhydrater", adjustedCarbs),
+                                              ("🤖 Fett", adjustedFat),
+                                              ("🤖 Protein", adjustedProtein)] {
+                    if let nutrientId = nutrientItemsDict[name] {
+                        let temporaryItem = FoodItemTemporary(context: context)
+                        temporaryItem.entryId = nutrientId
+                        temporaryItem.entryPortionServed = Double(portionServed)
+                        print("DEBUG: Added \(name) with portion \(portionServed) and ID \(nutrientId)")
+                    } else {
+                        print("DEBUG: Nutrient \(name) is missing from FoodItems")
+                    }
+                }
+            } else {
+                print("DEBUG: All Matvaror matched; no fallback entries added")
+            }
+
+            // Save changes to Core Data
             try context.save()
             print("DEBUG: New FoodItemTemporary entries saved successfully")
-            
+
             // Notify ComposeMealViewController
             NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
-            
-            // Show the success view after adding the food item
+
+            // Show success view and dismiss
             showSuccessView()
-            
             dismiss(animated: true)
-            print("DEBUG: Dismissed AnalysisModalViewController")
         } catch {
             print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
         }
+    }
+    
+    private func fuzzySearchForCSV(query: String, in items: [FoodItem]) -> [FoodItem] {
+        let threshold = 0.8
+
+        return items.filter {
+            let name = $0.name ?? ""
+
+            // Boost matches that start with the same letters
+            let startsWithScore = name.lowercased().hasPrefix(query.lowercased()) ? 1.0 : 0.0
+            let fuzzyScore = name.fuzzyMatch(query)
+
+            // Calculate a combined score with higher weight for prefix matches
+            let combinedScore = (fuzzyScore * 0.9) + (startsWithScore * 0.1)
+            return combinedScore > threshold || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+        }
+    }
+
+    // Parse CSV function
+    private func parseCSV(_ csvString: String) -> [[String]] {
+        var ingredients: [[String]] = []
+
+        // Debug: Print the raw CSV string
+        print("Raw CSV String:\n\(csvString)")
+
+        // Locate the start of the CSV block by finding the header
+        guard let csvStartIndex = csvString.range(of: "Måltid, MåltidTotalViktGram, Matvara, MatvaraViktGram, MatvaraKolhydraterGram, MatvaraFettGram, MatvaraProteinGram") else {
+            print("No valid CSV header found in response.")
+            return ingredients
+        }
+
+        // Extract the CSV portion starting from the header
+        let csvBlock = csvString[csvStartIndex.lowerBound...]
+            .split(separator: "\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && !$0.starts(with: "This is a basic estimation") } // Exclude unrelated text
+
+        print("Filtered CSV Lines: \(csvBlock)")
+
+        // Skip the header (first line)
+        for (index, line) in csvBlock.enumerated() {
+            if index == 0 { continue } // Skip header row
+
+            // Remove quotes and split by commas
+            let components = line
+                .replacingOccurrences(of: "\"", with: "") // Remove double quotes
+                .split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+
+            print("Line \(index): \(components)")
+
+            if components.count >= 7 {
+                ingredients.append(Array(components))
+                print("Ingredient Added: \(ingredients.last ?? [])")
+            }
+        }
+
+        print("Final Ingredients List: \(ingredients)")
+        return ingredients
     }
     private func showSuccessView() {
         let successView = SuccessView()
