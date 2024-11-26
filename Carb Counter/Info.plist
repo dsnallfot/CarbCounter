@@ -48,6 +48,11 @@
     <string>This app requires access to the camera to capture meal photos.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>This app requires access to the photo library to select meal images.</string>
+    
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need to save meal analysis images to your Photos library.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your Photos library to save meal analysis images.</string>
 
     <!-- iCloud configuration -->
     <key>NSUbiquitousContainers</key>

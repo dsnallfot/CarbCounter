@@ -14,16 +14,20 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
     private var searchBar: UISearchBar!
     private var meals: [AIMeal] = []
     private var filteredMeals: [AIMeal] = []
+    
+    var dataSharingVC: DataSharingViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "AI Måltidslogg"
+        title = "AI Analysslogg"
         updateBackgroundForCurrentMode()
 
         setupSearchBar()
         setupTableView()
         setupNavigationBar()
         fetchMeals()
+        addRefreshControl()
+        dataSharingVC = DataSharingViewController()
     }
 
     private func setupSearchBar() {
@@ -123,9 +127,37 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
             filteredMeals = meals
             tableView.reloadData()
         } catch {
-            print("Failed to fetch meals: \(error.localizedDescription)")
+            print("Failed to fetch AI meal log: \(error.localizedDescription)")
         }
     }
+    
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: NSLocalizedString("Uppdaterar måltidsloggen...", comment: "Message shown while updating meal history"))
+        refreshControl.addTarget(self, action: #selector(refreshMealHistory), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshMealHistory() {
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            tableView.refreshControl?.endRefreshing()
+            return
+        }
+        
+        // Call the desired function
+        print("Data import triggered")
+        Task {
+            await dataSharingVC.importCSVFiles(specificFileName: "AIMealLog.csv")
+            
+            // End refreshing after completion
+            await MainActor.run {
+                tableView.refreshControl?.endRefreshing()
+                fetchMeals() // Reload meal histories after the import
+            }
+        }
+    }
+
 
     // MARK: - UITableViewDataSource
 
@@ -229,7 +261,9 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
             preferredStyle: .actionSheet
         )
         let deleteAction = UIAlertAction(title: "Radera", style: .destructive) { [weak self] _ in
-            self?.deleteMeal(at: indexPath)
+            Task {
+                await self?.deleteMeal(at: indexPath)
+            }
         }
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel, handler: nil)
 
@@ -237,22 +271,30 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
         deleteAlert.addAction(cancelAction)
         present(deleteAlert, animated: true)
     }
+    private func deleteMeal(at indexPath: IndexPath) async {
+        guard let dataSharingVC = dataSharingVC else { return }
 
-    private func deleteMeal(at indexPath: IndexPath) {
+        // Step 1: Import the AIMealLog CSV file before deletion
+        print("Starting data import for AI Meals before deletion")
+        await dataSharingVC.importCSVFiles(specificFileName: "AIMealLog.csv")
+        print("Data import complete for AI Meals")
+
         let meal = filteredMeals[indexPath.row]
-        meal.delete = true // Mark as deleted
+
+        // Step 2: Mark the meal as deleted and update lastEdited
+        meal.delete = true
         meal.lastEdited = Date() // Update the last edited timestamp
 
-        do {
-            try CoreDataStack.shared.context.save() // Save the changes to Core Data
-            print("Meal marked as deleted: \(meal.name ?? "Odefinierad måltid")")
+        // Step 3: Export the updated list of AI meals
+        print(NSLocalizedString("AI meals export triggered", comment: "Message when AI meals export is triggered"))
+        await dataSharingVC.exportAIMealLogToCSV()
 
-            // Remove from UI
-            filteredMeals.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-        } catch {
-            print("Failed to mark meal as deleted: \(error.localizedDescription)")
-        }
+        // Step 4: Save the updated context
+        CoreDataStack.shared.saveContext()
+
+        // Step 5: Update the UI by removing the item from the visible list
+        filteredMeals.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 
     // MARK: - UISearchBarDelegate

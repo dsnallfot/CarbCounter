@@ -317,6 +317,10 @@ class DataSharingViewController: UITableViewController {
             Task { await self.presentDocumentPicker(for: "Meal History") }
         }))
         
+        alert.addAction(UIAlertAction(title: NSLocalizedString("AI Måltidslogg", comment: "AI Måltidslogg"), style: .default, handler: { _ in
+            Task { await self.presentDocumentPicker(for: "AI Meal Log") }
+        }))
+        
         alert.addAction(UIAlertAction(title: NSLocalizedString("Carb ratios schema", comment: "Carb ratios schema"), style: .default, handler: { _ in
             Task { await self.presentDocumentPicker(for: "Carb Ratio Schedule") }
         }))
@@ -341,6 +345,7 @@ class DataSharingViewController: UITableViewController {
         await exportFavoriteMealsToCSV()
         await exportFoodItemsToCSV()
         await exportMealHistoryToCSV()
+        await exportAIMealLogToCSV()
         await exportStartDoseScheduleToCSV()
         
         showAlert(title: "Export Successful", message: "All data has been exported successfully.")
@@ -388,6 +393,7 @@ class DataSharingViewController: UITableViewController {
                 "FoodItems.csv": "Food Items",
                 "FavoriteMeals.csv": "Favorite Meals",
                 "MealHistory.csv": "Meal History",
+                "AIMealLog.csv" : "AI Meal Log",
                 "CarbRatioSchedule.csv": "Carb Ratio Schedule",
                 "StartDoseSchedule.csv": "Start Dose Schedule"
             ]
@@ -479,6 +485,11 @@ class DataSharingViewController: UITableViewController {
         await exportToCSV(fetchRequest: fetchRequest, fileName: "MealHistory.csv", createCSV: createCSV(from:))
     }
     
+    @objc public func exportAIMealLogToCSV() async {
+        let fetchRequest: NSFetchRequest<AIMeal> = AIMeal.fetchRequest()
+        await exportToCSV(fetchRequest: fetchRequest, fileName: "AIMealLog.csv", createCSV: createCSV(from:))
+    }
+    
     public func exportToCSV<T: NSFetchRequestResult>(fetchRequest: NSFetchRequest<T>, fileName: String, createCSV: @escaping ([T]) -> String) async {
         let context = CoreDataStack.shared.context
         
@@ -546,6 +557,35 @@ class DataSharingViewController: UITableViewController {
         }
         
         return csvString
+    }
+    
+    private func createCSV(from aiMeal: [AIMeal]) -> String {
+        var csvString = "id;name;totalCarbs;totalFat;totalProtein;totalOriginalWeight;totalAdjustedWeight;mealDate;lastEdited;delete;response\n"
+        
+        let dateFormatter = ISO8601DateFormatter()  // Using ISO 8601 format for dates
+        
+        for item in aiMeal {
+            let id = item.id?.uuidString ?? ""
+            let name = item.name ?? ""
+            let totalCarbs = item.totalCarbs
+            let totalFat = item.totalFat
+            let totalProtein = item.totalProtein
+            let totalOriginalWeight = item.totalOriginalWeight
+            let totalAdjustedWeight = item.totalAdjustedWeight
+            let mealDate = dateFormatter.string(from: item.mealDate ?? Date())
+            let lastEdited = dateFormatter.string(from: item.lastEdited ?? Date())
+            let delete = item.delete
+            let response = escapeForCSV(item.response ?? "")
+            
+            csvString += "\(id);\(name);\(totalCarbs);\(totalFat);\(totalProtein);\(totalOriginalWeight);\(totalAdjustedWeight);\(mealDate);\(lastEdited);\(delete);\"\(response)\"\n"
+        }
+        
+        return csvString
+    }
+
+    private func escapeForCSV(_ field: String) -> String {
+        // Escape double quotes by doubling them (standard CSV format)
+        return field.replacingOccurrences(of: "\"", with: "\"\"")
     }
     
     private func createCSV(from carbRatioSchedules: [CarbRatioSchedule]) -> String {
@@ -671,6 +711,8 @@ class DataSharingViewController: UITableViewController {
                 await parseStartDoseScheduleCSV(rows, context: context)
             case "Meal History":
                 await parseMealHistoryCSV(rows, context: context)
+            case "AI Meal Log":
+                await parseAIMealLogCSV(rows, context: context)
             case "Ongoing Meal":
                 let importedRows = parseOngoingMealCSV(rows)
                 NotificationCenter.default.post(name: .didImportOngoingMeal, object: nil, userInfo: ["foodItemRows": importedRows])
@@ -838,6 +880,97 @@ class DataSharingViewController: UITableViewController {
         } catch {
             print("Save Failed: Failed to save favorite meals: \(error)")
         }
+    }
+    
+    // Parse AI Meal Log CSV
+    public func parseAIMealLogCSV(_ rows: [String], context: NSManagedObjectContext) async {
+        guard !rows.isEmpty else {
+            print("Import Failed: CSV file is empty")
+            return
+        }
+        
+        let headerColumns = rows[0].components(separatedBy: ";")
+        guard headerColumns.count == 11 else {  // Ensure the count is 11 to include the delete flag
+            print("Import Failed: CSV file was not correctly formatted")
+            return
+        }
+        
+        let fetchRequest: NSFetchRequest<AIMeal> = AIMeal.fetchRequest()
+        let existingAIMeals = try? context.fetch(fetchRequest)
+        let existingAIMealsDict = Dictionary(uniqueKeysWithValues: existingAIMeals?.compactMap { ($0.id, $0) } ?? [])
+        
+        // Shared date formatter for parsing both mealDate and lastEdited
+        let dateFormatter = ISO8601DateFormatter()
+        
+        for row in rows[1...] {
+            let values = parseCSVRow(row)
+            if values.count == 11,  // Ensure the row has 11 columns
+               let id = UUID(uuidString: values[0]),
+               !values.dropFirst().allSatisfy({ $0.isEmpty || $0 == "0" }) { // Ensure no blank or all-zero rows
+                
+                // Retrieve the delete flag from the CSV
+                let deleteFlag = (values[9] as NSString).boolValue
+                
+                // Retrieve existing food item if available
+                let existingItem = existingAIMealsDict[id]
+                
+                // Parse mealDate and lastEdited
+                let mealDateString = values[7]
+                let lastEditedString = values[8]
+                let parsedMealDate = dateFormatter.date(from: mealDateString)
+                let parsedLastEditedDate = dateFormatter.date(from: lastEditedString)
+                
+                if let newLastEditedDate = parsedLastEditedDate {
+                    if let existingLastEdited = existingItem?.lastEdited,
+                       existingLastEdited >= newLastEditedDate {
+                        // Skip if existing item is more recent or same as the one being imported
+                        continue
+                    }
+                    
+                    // Update or create a new AIMeal
+                    let aiMeal = existingItem ?? AIMeal(context: context)
+                    aiMeal.id = id
+                    aiMeal.name = values[1]
+                    aiMeal.totalCarbs = Double(values[2]) ?? 0.0
+                    aiMeal.totalFat = Double(values[3]) ?? 0.0
+                    aiMeal.totalProtein = Double(values[4]) ?? 0.0
+                    aiMeal.totalOriginalWeight = Double(values[5]) ?? 0.0
+                    aiMeal.totalAdjustedWeight = Double(values[6]) ?? 0.0
+                    aiMeal.mealDate = parsedMealDate ?? Date()  // Use current date as fallback if parsing fails
+                    aiMeal.lastEdited = newLastEditedDate
+                    aiMeal.delete = deleteFlag  // Only mark the item as deleted, do not actually delete
+                    aiMeal.response = values[10]
+                }
+            }
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save AI Meal Log: \(error)")
+        }
+    }
+
+    private func parseCSVRow(_ row: String) -> [String] {
+        var values: [String] = []
+        var currentField = ""
+        var insideQuotes = false
+        
+        for char in row {
+            if char == "\"" {
+                insideQuotes.toggle() // Toggle the insideQuotes flag
+            } else if char == ";" && !insideQuotes {
+                // End of a field when not inside quotes
+                values.append(currentField)
+                currentField = ""
+            } else {
+                // Append character to the current field
+                currentField.append(char)
+            }
+        }
+        // Append the last field
+        values.append(currentField)
+        return values.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
     
     // Parse Carb Ratio Schedule CSV

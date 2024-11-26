@@ -54,6 +54,8 @@ class AnalysisModalViewController: UIViewController {
     private var adjustedProtein: Int = 0
     private var adjustedWeight: Int = 0
     
+    var dataSharingVC: DataSharingViewController?
+    
     override func viewDidLoad() {
             super.viewDidLoad()
             view.backgroundColor = .systemBackground
@@ -63,6 +65,7 @@ class AnalysisModalViewController: UIViewController {
             //setupCloseButton()
             setupUI()
             updateAdjustments() // Initialize adjustments
+            dataSharingVC = DataSharingViewController()
         }
         
         private func setupNavigationBar() {
@@ -293,11 +296,16 @@ class AnalysisModalViewController: UIViewController {
             // Add the new AIMeal after processing temporary items
             saveNewAIMealEntry()
             
+            // Trigger the export after saving the new meal
+            Task {
+                await exportAIMealLog()
+            }
+            
         } catch {
             print("DEBUG: Error fetching FoodItemTemporary entries: \(error.localizedDescription)")
         }
     }
-    
+
     private func saveNewAIMealEntry() {
         let context = CoreDataStack.shared.context
 
@@ -321,6 +329,16 @@ class AnalysisModalViewController: UIViewController {
         } catch {
             print("DEBUG: Error saving AIMeal entry: \(error.localizedDescription)")
         }
+    }
+
+    private func exportAIMealLog() async {
+        guard let dataSharingVC = dataSharingVC else {
+            print("DEBUG: dataSharingVC is not available.")
+            return
+        }
+        print("DEBUG: Exporting AI Meals to CSV.")
+        await dataSharingVC.exportAIMealLogToCSV()
+        print("DEBUG: AI Meals export completed.")
     }
 
 
