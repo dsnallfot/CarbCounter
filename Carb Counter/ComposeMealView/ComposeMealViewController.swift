@@ -220,12 +220,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         clearAllButton.tintColor = .red
 
         // Create the AI button with the SF Symbol
-        let aiButton = UIBarButtonItem(
-            image: UIImage(systemName: "person.icloud.fill"),
-            style: .plain,
-            target: self,
-            action: #selector(openAIViewController)
-        )
+
+        let aiImage = UIImage(named: "ai")?.resized(to: CGSize(width: 22, height: 22))
+                    let aiButton = UIBarButtonItem(
+                        image: aiImage,
+                        style: .plain,
+                        target: self,
+                        action: #selector(openAIViewController)
+                    )
 
         // Combine both buttons into a right bar button array
         navigationItem.rightBarButtonItems = [clearAllButton, aiButton]

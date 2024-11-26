@@ -233,7 +233,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             analyzeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // activityIndicator constraints
-            activityIndicator.trailingAnchor.constraint(equalTo: analyzeButton.leadingAnchor, constant: -8),
+            activityIndicator.trailingAnchor.constraint(equalTo: analyzeButton.leadingAnchor, constant: 30),
             activityIndicator.centerYAnchor.constraint(equalTo: analyzeButton.centerYAnchor),
             
             // headerView constraints
