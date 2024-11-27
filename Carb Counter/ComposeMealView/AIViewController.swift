@@ -8,7 +8,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private var gptFat: String? = "0"
     private var gptProtein: String? = "0"
     private var gptTotalWeight: String? = "0"
-    private var gptName: String? = "Analyserad måltid"
+    private var gptName: String? = ""
     
     private let savedImageKey = "savedImageKey"
     private let savedResponseKey = "savedResponseKey"
@@ -54,7 +54,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
             // Parse the saved CSV string into structured data
             let parsedData = parseCSV(savedResponse)
-            debugLabel.text = "Senaste analys laddades från minnet"
+            debugLabel.text = "Senaste analyserade bild laddades från minnet"
 
             // Update the header view and table view
             if let mealName = parsedData.mealName, let mealTotalWeight = parsedData.mealTotalWeight {
@@ -128,7 +128,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         mealNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Configure total weight label
-        totalWeightLabel.text = "  Total portion: \(gptTotalWeight ?? "--") g"
+        if let totalWeight = gptTotalWeight, let totalWeightValue = Int(totalWeight), totalWeightValue > 0 {
+            totalWeightLabel.text = "  Total portion: \(totalWeightValue) g"
+        } else {
+            totalWeightLabel.text = ""
+        }
         totalWeightLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         totalWeightLabel.textColor = .gray
         totalWeightLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -346,10 +350,17 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         overlayLabel.isHidden = false
         resultLabel.text = ""
         debugLabel.text = ""
-        tableData.removeAll()
-        tableView.isHidden = false
         
-        print("DEBUG: Cleared all saved data and reset views")
+        // Reset meal name and total weight
+        mealNameLabel.text = ""
+        totalWeightLabel.text = ""
+        
+        // Clear table data
+        tableData.removeAll()
+        tableView.reloadData()
+        tableView.isHidden = true
+        
+        //print("DEBUG: Cleared all saved data and reset views")
     }
     
     private func updateBackgroundForCurrentMode() {
@@ -520,8 +531,12 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         // Daniel: Keeping for future debugging // print("DEBUG: Meal Name: \(gptName ?? "nil")")
         // Daniel: Keeping for future debugging // print("DEBUG: Total Weight: \(gptTotalWeight ?? "nil")")
 
-        mealNameLabel.text = gptName ?? "Måltid"
-        totalWeightLabel.text = "  Total portion: \(gptTotalWeight ?? "0") g"
+        mealNameLabel.text = gptName ?? ""
+        if let totalWeight = gptTotalWeight, let totalWeightValue = Int(totalWeight), totalWeightValue > 0 {
+            totalWeightLabel.text = "  Total portion: \(totalWeightValue) g"
+        } else {
+            totalWeightLabel.text = ""
+        }
     }
     
     
@@ -608,6 +623,13 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         picker.dismiss(animated: true)
+        
+        // Reset meal name, total weight, and clear table data
+        mealNameLabel.text = ""
+        totalWeightLabel.text = ""
+        tableData.removeAll()
+        tableView.reloadData()
+        
         if let originalImage = info[.originalImage] as? UIImage {
             // Resize the image before further processing
             let resizedImage = originalImage.resized(toWidth: 800) ?? originalImage
@@ -630,7 +652,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         PHPhotoLibrary.requestAuthorization { status in
             guard status == .authorized else {
                 DispatchQueue.main.async {
-                    self.debugLabel.text = "Permission denied to save images to Photos."
+                    self.debugLabel.text = "Åtkomst nekad att spara bilder till bildbiblioteket."
                 }
                 return
             }
@@ -657,7 +679,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                         }
                     } else {
                         DispatchQueue.main.async {
-                            self.debugLabel.text = "Failed to create album: \(error?.localizedDescription ?? "Unknown error")"
+                            self.debugLabel.text = "Kunde inte skapa album: \(error?.localizedDescription ?? "Okänt fel")"
                         }
                     }
                 }
@@ -675,9 +697,9 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         } completionHandler: { success, error in
             DispatchQueue.main.async {
                 if success {
-                    self.debugLabel.text = "Image saved to \(album.localizedTitle ?? "album")."
+                    self.debugLabel.text = "Bild sparades till album \(album.localizedTitle ?? "")."
                 } else {
-                    self.debugLabel.text = "Failed to save image to album: \(error?.localizedDescription ?? "Unknown error")"
+                    self.debugLabel.text = "Kunde inte spara bild till album: \(error?.localizedDescription ?? "Okänt fel")"
                 }
             }
         }
@@ -733,6 +755,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             1. Om vissa data inte kan beräknas med säkerhet, gör en bästa bedömning baserat på tillgänglig information.
             2. Om något absolut inte kan uppskattas, använd värdet 0.
             3. Följ strikt formatet ovan. Inga decimaler används (t.ex. 0, 1, 10).
+            4. Svara alltid med svenska namn på måltiden och matvarorna
             """
         
         let requestBody: [String: Any] = [
