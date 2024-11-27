@@ -54,7 +54,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
             // Parse the saved CSV string into structured data
             let parsedData = parseCSV(savedResponse)
-            debugLabel.text = "Senaste analyserade bild laddades från minnet"
+            debugLabel.text = "ⓘ Senaste analyserade bild laddades från minnet"
+            debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
 
             // Update the header view and table view
             if let mealName = parsedData.mealName, let mealTotalWeight = parsedData.mealTotalWeight {
@@ -124,17 +125,21 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         
         // Configure meal name label
         mealNameLabel.text = gptName
-        mealNameLabel.font = UIFont.boldSystemFont(ofSize: 20)
+        mealNameLabel.font = UIFont.boldSystemFont(ofSize: 30)
+        mealNameLabel.textAlignment = .center
+        mealNameLabel.numberOfLines = 0 // Allow unlimited lines
+        mealNameLabel.lineBreakMode = .byWordWrapping
         mealNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Configure total weight label
         if let totalWeight = gptTotalWeight, let totalWeightValue = Int(totalWeight), totalWeightValue > 0 {
-            totalWeightLabel.text = "  Total portion: \(totalWeightValue) g"
+            totalWeightLabel.text = "Total portion: \(totalWeightValue) g"
         } else {
             totalWeightLabel.text = ""
         }
         totalWeightLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         totalWeightLabel.textColor = .gray
+        totalWeightLabel.textAlignment = .center
         totalWeightLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Add labels to header view
@@ -184,7 +189,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         
         // Configure debugLabel
         debugLabel.numberOfLines = 0
-        debugLabel.textAlignment = .natural
+        debugLabel.textAlignment = .center
 
         // Create an italic font
         let baseFont = UIFont.systemFont(ofSize: 10)
@@ -194,7 +199,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             debugLabel.font = baseFont // Fallback to base font if italic descriptor is unavailable
         }
 
-        debugLabel.textColor = .systemGray
+        debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
         debugLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Configure tableView
@@ -246,13 +251,17 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             // mealNameLabel constraints
-            mealNameLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+           // mealNameLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             mealNameLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            mealNameLabel.centerXAnchor.constraint(equalTo: headerView.centerXAnchor) ,
+            mealNameLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            mealNameLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
             
             // totalWeightLabel constraints
-            totalWeightLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            //totalWeightLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             totalWeightLabel.topAnchor.constraint(equalTo: mealNameLabel.bottomAnchor, constant: 4),
             totalWeightLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
+            totalWeightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // tableView constraints
             tableView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 10),
@@ -452,7 +461,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 updateHeaderView()
                 tableView.reloadData()
                 tableView.isHidden = false
-                debugLabel.text = "Förfrågan lyckades!"
+                debugLabel.text = "ⓘ Förfrågan lyckades!"
+                debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
 
                 // Save only the CSV block to UserDefaults
                 savePersistedData(image: imageView.image, csvBlock: parsedData.csvBlock)
@@ -533,7 +543,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
 
         mealNameLabel.text = gptName ?? ""
         if let totalWeight = gptTotalWeight, let totalWeightValue = Int(totalWeight), totalWeightValue > 0 {
-            totalWeightLabel.text = "  Total portion: \(totalWeightValue) g"
+            totalWeightLabel.text = "Total portion: \(totalWeightValue) g"
         } else {
             totalWeightLabel.text = ""
         }
@@ -545,7 +555,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         analyzeButton.isEnabled = true
         selectImageButton.isEnabled = true
         resultLabel.text = "Fel: \(message)"
-        debugLabel.text = "Feldetaljer: \(message)"
+        debugLabel.text = "⚠ Feldetaljer: \(message)"
+        debugLabel.textColor = .systemRed.withAlphaComponent(0.8)
     }
     
     private func parseTable(_ markdown: String) -> [[String]] {
@@ -652,7 +663,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         PHPhotoLibrary.requestAuthorization { status in
             guard status == .authorized else {
                 DispatchQueue.main.async {
-                    self.debugLabel.text = "Åtkomst nekad att spara bilder till bildbiblioteket."
+                    self.debugLabel.text = "⚠ Åtkomst nekad att spara bilder till bildbiblioteket."
+                    self.debugLabel.textColor = .systemRed.withAlphaComponent(0.8)
                 }
                 return
             }
@@ -679,7 +691,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                         }
                     } else {
                         DispatchQueue.main.async {
-                            self.debugLabel.text = "Kunde inte skapa album: \(error?.localizedDescription ?? "Okänt fel")"
+                            self.debugLabel.text = "⚠ Kunde inte skapa album: \(error?.localizedDescription ?? "Okänt fel")"
+                            self.debugLabel.textColor = .systemRed.withAlphaComponent(0.8)
                         }
                     }
                 }
@@ -697,9 +710,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         } completionHandler: { success, error in
             DispatchQueue.main.async {
                 if success {
-                    self.debugLabel.text = "Bild sparades till album \(album.localizedTitle ?? "")."
+                    self.debugLabel.text = "ⓘ Bild sparades till album \(album.localizedTitle ?? "")."
+                    self.debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
                 } else {
-                    self.debugLabel.text = "Kunde inte spara bild till album: \(error?.localizedDescription ?? "Okänt fel")"
+                    self.debugLabel.text = "⚠ Kunde inte spara bild till album: \(error?.localizedDescription ?? "Okänt fel")"
+                    self.debugLabel.textColor = .systemRed.withAlphaComponent(0.8)
                 }
             }
         }
@@ -792,7 +807,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             return
         }
         
-        debugLabel.text = "Skickar förfrågan..."
+        debugLabel.text = "ⓘ Skickar förfrågan..."
+        debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
         
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
