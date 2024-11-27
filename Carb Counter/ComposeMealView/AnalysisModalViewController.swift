@@ -151,8 +151,47 @@ class AnalysisModalViewController: UIViewController {
             summaryContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10)
         ])
         
+        // Warning Box
+        let warningContainer = UIView()
+        warningContainer.backgroundColor = .systemRed
+        warningContainer.layer.cornerRadius = 8
+        warningContainer.layer.borderWidth = 2
+        warningContainer.layer.borderColor = UIColor.white.cgColor
+        warningContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(warningContainer)
+        
+        let warningLabel = UILabel()
+        warningLabel.text = """
+        ⚠️ Obs! Ingredienser, portioner och näringsvärden 
+        är grova uppskattningar gjorda av ChatGPT. 
+        • Träffsäkerheten i bildanalyserna varierar.
+        • Kontrollera innehållet noga innan bolus. 
+        • Använd reglaget nedan för grova justeringar, 
+          eller gör finjusteringar direkt i måltidsvyn.
+        """
+        warningLabel.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        warningLabel.textColor = .white
+        warningLabel.numberOfLines = 0
+        warningLabel.textAlignment = .center
+        warningLabel.translatesAutoresizingMaskIntoConstraints = false
+        warningContainer.addSubview(warningLabel)
+        
+        NSLayoutConstraint.activate([
+            warningLabel.leadingAnchor.constraint(equalTo: warningContainer.leadingAnchor, constant: 8),
+            warningLabel.trailingAnchor.constraint(equalTo: warningContainer.trailingAnchor, constant: -8),
+            warningLabel.topAnchor.constraint(equalTo: warningContainer.topAnchor, constant: 8),
+            warningLabel.bottomAnchor.constraint(equalTo: warningContainer.bottomAnchor, constant: -8)
+        ])
+        
+        NSLayoutConstraint.activate([
+            warningContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            warningContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            warningContainer.topAnchor.constraint(equalTo: summaryContainer.bottomAnchor, constant: 16)
+        ])
+        
         // Weight Label with Tap Gesture
         weightLabel.text = "\(Int(slider.value)) % av ursprunglig portion: \(gptTotalWeight) g"
+        weightLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         weightLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(weightLabel)
         
@@ -179,7 +218,7 @@ class AnalysisModalViewController: UIViewController {
             // Weight label above the slider
             weightLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             weightLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            weightLabel.bottomAnchor.constraint(equalTo: slider.topAnchor, constant: -30),
+            weightLabel.bottomAnchor.constraint(equalTo: slider.topAnchor, constant: -10),
             
             // Slider
             slider.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -193,7 +232,6 @@ class AnalysisModalViewController: UIViewController {
         ])
     }
     @objc private func weightLabelTapped() {
-        print("DEBUG: Weight label tapped, resetting slider.")
         slider.value = 100 // Reset slider to 100
         updateAdjustments() // Update adjusted values
     }
@@ -269,15 +307,14 @@ class AnalysisModalViewController: UIViewController {
         proteinLabel.text = "\(adjustedProtein) g"
 
         // Debugging logs
-        print("Slider Adjustments Updated:")
-        print("Adjusted Weight: \(adjustedWeight) g")
-        print("Adjusted Carbs: \(adjustedCarbs) g")
-        print("Adjusted Fat: \(adjustedFat) g")
-        print("Adjusted Protein: \(adjustedProtein) g")
+        // Daniel: Keeping for future debugging // print("Slider Adjustments Updated:")
+        // Daniel: Keeping for future debugging // print("Adjusted Weight: \(adjustedWeight) g")
+        // Daniel: Keeping for future debugging // print("Adjusted Carbs: \(adjustedCarbs) g")
+        // Daniel: Keeping for future debugging // print("Adjusted Fat: \(adjustedFat) g")
+        // Daniel: Keeping for future debugging // print("Adjusted Protein: \(adjustedProtein) g")
     }
     
     @objc private func addToMeal() {
-        print("DEBUG: addToMeal button tapped")
         
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
@@ -286,7 +323,7 @@ class AnalysisModalViewController: UIViewController {
             let existingTemporaryItems = try context.fetch(fetchRequest)
             
             if !existingTemporaryItems.isEmpty {
-                print("DEBUG: Found existing FoodItemTemporary entries")
+                // Daniel: Keeping for future debugging // print("DEBUG: Found existing FoodItemTemporary entries")
                 showReplaceOrAddAlert(existingItems: existingTemporaryItems)
             } else {
                 print("DEBUG: No existing FoodItemTemporary entries")
@@ -325,7 +362,7 @@ class AnalysisModalViewController: UIViewController {
 
         do {
             try context.save()
-            print("DEBUG: AIMeal entry saved successfully")
+            // Daniel: Keeping for future debugging // print("DEBUG: AIMeal entry saved successfully")
         } catch {
             print("DEBUG: Error saving AIMeal entry: \(error.localizedDescription)")
         }
@@ -350,24 +387,24 @@ class AnalysisModalViewController: UIViewController {
         )
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Ersätt", comment: "Ersätt"), style: .destructive, handler: { [weak self] _ in
-            print("DEBUG: User chose to replace existing FoodItemTemporary entries")
+            // Daniel: Keeping for future debugging // print("DEBUG: User chose to replace existing FoodItemTemporary entries")
             self?.saveNewTemporaryFoodItems(replacing: true)
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Addera", comment: "Addera"), style: .default, handler: { [weak self] _ in
-            print("DEBUG: User chose to add to existing FoodItemTemporary entries")
+            // Daniel: Keeping for future debugging // print("DEBUG: User chose to add to existing FoodItemTemporary entries")
             self?.saveNewTemporaryFoodItems(replacing: false)
         }))
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel, handler: { _ in
-            print("DEBUG: User canceled the action")
+            // Daniel: Keeping for future debugging // print("DEBUG: User canceled the action")
         }))
         
         present(alert, animated: true)
     }
     private func saveNewTemporaryFoodItems(replacing: Bool) {
         let context = CoreDataStack.shared.context
-
+        
         // Clear existing FoodItemTemporary entries if replacing
         if replacing {
             let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
@@ -376,75 +413,80 @@ class AnalysisModalViewController: UIViewController {
                 for item in existingItems {
                     context.delete(item)
                 }
-                print("DEBUG: Cleared existing FoodItemTemporary entries")
+                // Daniel: Keeping for future debugging // rint("DEBUG: Cleared existing FoodItemTemporary entries")
             } catch {
                 print("DEBUG: Error clearing existing FoodItemTemporary entries: \(error.localizedDescription)")
             }
         }
-
+        
         // Parse CSV data
         guard !savedResponse.isEmpty else { return }
         let csvData = parseCSV(savedResponse)
-
+        
         var totalMatchedCarbs = 0
         var totalMatchedFat = 0
         var totalMatchedProtein = 0
         var allMatched = true // Flag to track if all "Matvaror" are matched
-
+        
         // Fetch only required properties for FoodItems
-            let fetchRequest: NSFetchRequest<NSDictionary> = NSFetchRequest(entityName: "FoodItem")
-            fetchRequest.predicate = NSPredicate(format: "(delete == NO OR delete == nil) AND (perPiece == NO OR perPiece == nil)")
-            fetchRequest.resultType = .dictionaryResultType
-            fetchRequest.propertiesToFetch = ["id", "name"]
-
+        let fetchRequest: NSFetchRequest<NSDictionary> = NSFetchRequest(entityName: "FoodItem")
+        fetchRequest.predicate = NSPredicate(format: "(delete == NO OR delete == nil) AND (perPiece == NO OR perPiece == nil)")
+        fetchRequest.resultType = .dictionaryResultType
+        fetchRequest.propertiesToFetch = ["id", "name"]
+        
         do {
-                // Fetch FoodItems as dictionaries
-                let foodItemDictionaries = try context.fetch(fetchRequest)
-
-                // Convert dictionaries to a more usable format
-                let foodItems: [(id: UUID, name: String)] = foodItemDictionaries.compactMap { dict in
-                    if let id = dict["id"] as? UUID, let name = dict["name"] as? String {
-                        return (id: id, name: name)
-                    }
-                    return nil
+            // Fetch FoodItems as dictionaries
+            let foodItemDictionaries = try context.fetch(fetchRequest)
+            
+            // Convert dictionaries to a more usable format
+            let foodItems: [(id: UUID, name: String)] = foodItemDictionaries.compactMap { dict in
+                if let id = dict["id"] as? UUID, let name = dict["name"] as? String {
+                    return (id: id, name: name)
                 }
+                return nil
+            }
+            
+            // Apply slider value as percentage (0-2.0)
+            let percentageMultiplier = Double(slider.value) / 100.0
+            
             for ingredient in csvData {
-                        guard ingredient.count >= 7 else {
-                            print("DEBUG: Skipping malformed ingredient row: \(ingredient)")
-                            continue
-                        }
-
-                        let matvara = ingredient[2] // Matvara
-                        let portionServed = Double(ingredient[3]) ?? 0.0
-                        let carbs = Int(ingredient[4]) ?? 0
-                        let fat = Int(ingredient[5]) ?? 0
-                        let protein = Int(ingredient[6]) ?? 0
-
-                        // Attempt to match the Matvara to a FoodItem
-                        if let matchedItem = fuzzySearchForCSV(query: matvara, in: foodItems).first {
-                            // Create FoodItemTemporary for matched FoodItem
-                            let temporaryItem = FoodItemTemporary(context: context)
-                            temporaryItem.entryId = matchedItem.id
-                            temporaryItem.entryPortionServed = portionServed
-                            print("DEBUG: Matched \(matvara) to \(matchedItem.name) with ID \(matchedItem.id)")
-
-                            totalMatchedCarbs += carbs
-                            totalMatchedFat += fat
-                            totalMatchedProtein += protein
-                        } else {
-                            print("DEBUG: No match found for \(matvara)")
-                            allMatched = false // Mark as not all matched
-                        }
-                    }
-
+                guard ingredient.count >= 7 else {
+                    // Daniel: Keeping for future debugging // print("DEBUG: Skipping malformed ingredient row: \(ingredient)")
+                    continue
+                }
+                
+                let matvara = ingredient[2] // Matvara
+                let portionServed = Double(ingredient[3]) ?? 0.0
+                let carbs = Int(ingredient[4]) ?? 0
+                let fat = Int(ingredient[5]) ?? 0
+                let protein = Int(ingredient[6]) ?? 0
+                
+                // Attempt to match the Matvara to a FoodItem
+                if let matchedItem = fuzzySearchForCSV(query: matvara, in: foodItems).first {
+                    // Adjust portionServed based on slider value
+                    let adjustedPortionServed = Int(round(portionServed * percentageMultiplier))
+                    
+                    // Create FoodItemTemporary for matched FoodItem
+                    let temporaryItem = FoodItemTemporary(context: context)
+                    temporaryItem.entryId = matchedItem.id
+                    temporaryItem.entryPortionServed = Double(adjustedPortionServed)
+                    // Daniel: Keeping for future debugging // print("DEBUG: Matched \(matvara) to \(matchedItem.name) with ID \(matchedItem.id), adjusted portion: \(adjustedPortionServed)")
+                    
+                    totalMatchedCarbs += carbs
+                    totalMatchedFat += fat
+                    totalMatchedProtein += protein
+                } else {
+                    print("DEBUG: No match found for \(matvara)")
+                    allMatched = false // Mark as not all matched
+                }
+            }
+            
             // Only add fallback entries if not all "Matvaror" are matched
             if !allMatched {
-                // Calculate remaining nutrient values for unmatched entries
                 let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
                 let adjustedFat = max(0, gptFat - totalMatchedFat)
                 let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
 
-                // Fetch the predefined FoodItems for unmatched nutrients
                 let nutrientNames = ["🤖 Kolhydrater", "🤖 Fett", "🤖 Protein"]
                 let nutrientItemsFetch: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
                 nutrientItemsFetch.predicate = NSPredicate(format: "name IN %@", nutrientNames)
@@ -452,15 +494,16 @@ class AnalysisModalViewController: UIViewController {
                 let nutrientItems = try context.fetch(nutrientItemsFetch)
                 let nutrientItemsDict = Dictionary(uniqueKeysWithValues: nutrientItems.compactMap { ($0.name ?? "", $0.id) })
 
-                // Create FoodItemTemporary entries for unmatched nutrients
                 for (name, portionServed) in [("🤖 Kolhydrater", adjustedCarbs),
                                               ("🤖 Fett", adjustedFat),
                                               ("🤖 Protein", adjustedProtein)] {
                     if let nutrientId = nutrientItemsDict[name] {
                         let temporaryItem = FoodItemTemporary(context: context)
                         temporaryItem.entryId = nutrientId
-                        temporaryItem.entryPortionServed = Double(portionServed)
-                        print("DEBUG: Added \(name) with portion \(portionServed) and ID \(nutrientId)")
+                        // Convert portionServed to Double after rounding to integer
+                        let adjustedPortionServed = Int(round(Double(portionServed) * percentageMultiplier))
+                        temporaryItem.entryPortionServed = Double(adjustedPortionServed)
+                        // Daniel: Keeping for future debugging // print("DEBUG: Added \(name) with portion \(portionServed) (adjusted to \(adjustedPortionServed)) and ID \(nutrientId)")
                     } else {
                         print("DEBUG: Nutrient \(name) is missing from FoodItems")
                     }
@@ -479,27 +522,26 @@ class AnalysisModalViewController: UIViewController {
             // Show success view and dismiss
             showSuccessView()
             dismiss(animated: true)
-        } catch {
-            print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
+            } catch {
+                print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
         }
     }
-    
     private func fuzzySearchForCSV(query: String, in items: [(id: UUID, name: String)]) -> [(id: UUID, name: String)] {
-        print("DEBUG: Starting fuzzySearchForCSV with query: \(query)")
+        // Daniel: Keeping for future debugging // print("DEBUG: Starting fuzzySearchForCSV with query: \(query)")
 
         // Log all available FoodItems
         let foodItemNames = items.map { $0.name }
-        print("DEBUG: Available FoodItems: \(foodItemNames)")
+        // Daniel: Keeping for future debugging // print("DEBUG: Available FoodItems: \(foodItemNames)")
 
         // Check for exact case-sensitive match first
         if let exactMatch = items.first(where: { $0.name == query }) {
-            print("DEBUG: Exact case-sensitive match found: \(exactMatch.name)")
+            // Daniel: Keeping for future debugging // print("DEBUG: Exact case-sensitive match found: \(exactMatch.name)")
             return [exactMatch]
         }
 
         // Check for case-insensitive match next
         if let caseInsensitiveMatch = items.first(where: { $0.name.caseInsensitiveCompare(query) == .orderedSame }) {
-            print("DEBUG: Case-insensitive match found: \(caseInsensitiveMatch.name)")
+            // Daniel: Keeping for future debugging // print("DEBUG: Case-insensitive match found: \(caseInsensitiveMatch.name)")
             return [caseInsensitiveMatch]
         }
 
@@ -513,18 +555,18 @@ class AnalysisModalViewController: UIViewController {
             let fuzzyScore = name.fuzzyMatch(query)
 
             // Log individual scores
-            print("DEBUG: Evaluating \(name): startsWithScore = \(startsWithScore), fuzzyScore = \(fuzzyScore)")
+            // Daniel: Keeping for future debugging // print("DEBUG: Evaluating \(name): startsWithScore = \(startsWithScore), fuzzyScore = \(fuzzyScore)")
 
             // Calculate a combined score with higher weight for prefix matches
             let combinedScore = (fuzzyScore * 0.9) + (startsWithScore * 0.1)
-            print("DEBUG: Combined score for \(name): \(combinedScore)")
+            // Daniel: Keeping for future debugging // print("DEBUG: Combined score for \(name): \(combinedScore)")
 
             return combinedScore > threshold
         }
 
         // Log results of fuzzy matching
         let matchedNames = matchedItems.map { $0.name }
-        print("DEBUG: Fuzzy matched items: \(matchedNames)")
+        // Daniel: Keeping for future debugging // print("DEBUG: Fuzzy matched items: \(matchedNames)")
 
         return matchedItems
     }
@@ -534,7 +576,7 @@ class AnalysisModalViewController: UIViewController {
         var ingredients: [[String]] = []
 
         // Debug: Print the raw CSV string
-        print("Raw CSV String:\n\(csvString)")
+        // Daniel: Keeping for future debugging // print("Raw CSV String:\n\(csvString)")
 
         // Locate the start of the CSV block by finding the header
         guard let csvStartIndex = csvString.range(of: "Måltid, MåltidTotalViktGram, Matvara, MatvaraViktGram, MatvaraKolhydraterGram, MatvaraFettGram, MatvaraProteinGram") else {
@@ -577,7 +619,7 @@ class AnalysisModalViewController: UIViewController {
         // Use the key window to display the success view
         if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
             successView.showInView(keyWindow)
-            print("DEBUG: SuccessView displayed")
+            // Daniel: Keeping for future debugging // print("DEBUG: SuccessView displayed")
         } else {
             print("DEBUG: Key window not found for displaying SuccessView")
         }

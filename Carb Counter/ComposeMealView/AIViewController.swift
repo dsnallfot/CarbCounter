@@ -463,7 +463,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         var ingredients: [[String]] = []
 
         // Debug: Print the raw CSV string
-        print("Raw CSV String:\n\(csvString)")
+        // Daniel: Keeping for future debugging // print("Raw CSV String:\n\(csvString)")
 
         // Locate the start of the CSV block by finding the header
         guard let csvStartIndex = csvString.range(of: "Måltid, MåltidTotalViktGram, Matvara, MatvaraViktGram, MatvaraKolhydraterGram, MatvaraFettGram, MatvaraProteinGram") else {
@@ -477,7 +477,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty && !$0.starts(with: "This is a basic estimation") } // Exclude unrelated text
 
-        print("Filtered CSV Lines: \(csvBlock)")
+        // Daniel: Keeping for future debugging // print("Filtered CSV Lines: \(csvBlock)")
 
         // Skip the header (first line)
         for (index, line) in csvBlock.enumerated() {
@@ -489,12 +489,12 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespaces) }
 
-            print("Line \(index): \(components)")
+            // Daniel: Keeping for future debugging // print("Line \(index): \(components)")
 
             if index == 1, components.count >= 2 { // Extract meal name and total weight only
                 mealName = components[0]
                 mealTotalWeight = Int(components[1])
-                print("Extracted Meal Name: \(mealName ?? "nil"), Total Weight: \(mealTotalWeight ?? 0)")
+                // Daniel: Keeping for future debugging // print("Extracted Meal Name: \(mealName ?? "nil"), Total Weight: \(mealTotalWeight ?? 0)")
             }
 
             if components.count >= 7 { // Ingredient rows
@@ -504,7 +504,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 let fat = components[5]
                 let protein = components[6]
                 ingredients.append([ingredientName, weight, carbs, fat, protein])
-                print("Ingredient Added: \(ingredients.last ?? [])")
+                // Daniel: Keeping for future debugging // print("Ingredient Added: \(ingredients.last ?? [])")
             }
         }
 
@@ -516,9 +516,9 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     }
     
     private func updateHeaderView() {
-        print("DEBUG: Updating header view...")
-        print("DEBUG: Meal Name: \(gptName ?? "nil")")
-        print("DEBUG: Total Weight: \(gptTotalWeight ?? "nil")")
+        // Daniel: Keeping for future debugging // print("DEBUG: Updating header view...")
+        // Daniel: Keeping for future debugging // print("DEBUG: Meal Name: \(gptName ?? "nil")")
+        // Daniel: Keeping for future debugging // print("DEBUG: Total Weight: \(gptTotalWeight ?? "nil")")
 
         mealNameLabel.text = gptName ?? "Måltid"
         totalWeightLabel.text = "Total portion: \(gptTotalWeight ?? "0") g"
@@ -706,7 +706,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             print("DEBUG: API key is missing.")
             return
         }
-        print("DEBUG: API key found: \(apiKey)")
+        // Daniel: Keeping for future debugging // print("DEBUG: API key found: \(apiKey)")
         let prompt =
             """
             Analysera bilden av måltiden och ge följande data som en komma-separerad textsträng (CSV):
