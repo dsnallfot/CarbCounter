@@ -480,19 +480,48 @@ class AnalysisModalViewController: UIViewController {
     }
     
     private func fuzzySearchForCSV(query: String, in items: [FoodItem]) -> [FoodItem] {
-        let threshold = 0.8
+        print("DEBUG: Starting fuzzySearchForCSV with query: \(query)")
 
-        return items.filter {
-            let name = $0.name ?? ""
+        // Log all available FoodItems
+        let foodItemNames = items.compactMap { $0.name }
+        print("DEBUG: Available FoodItems: \(foodItemNames)")
+
+        // Check for exact case-sensitive match first
+        if let exactMatch = items.first(where: { $0.name == query }) {
+            print("DEBUG: Exact case-sensitive match found: \(exactMatch.name ?? "Unknown")")
+            return [exactMatch]
+        }
+
+        // Check for case-insensitive match next
+        if let caseInsensitiveMatch = items.first(where: { $0.name?.caseInsensitiveCompare(query) == .orderedSame }) {
+            print("DEBUG: Case-insensitive match found: \(caseInsensitiveMatch.name ?? "Unknown")")
+            return [caseInsensitiveMatch]
+        }
+
+        // Fuzzy matching as fallback
+        let threshold = 0.8
+        let matchedItems = items.filter { item in
+            guard let name = item.name else { return false }
 
             // Boost matches that start with the same letters
             let startsWithScore = name.lowercased().hasPrefix(query.lowercased()) ? 1.0 : 0.0
             let fuzzyScore = name.fuzzyMatch(query)
 
+            // Log individual scores
+            print("DEBUG: Evaluating \(name): startsWithScore = \(startsWithScore), fuzzyScore = \(fuzzyScore)")
+
             // Calculate a combined score with higher weight for prefix matches
             let combinedScore = (fuzzyScore * 0.9) + (startsWithScore * 0.1)
-            return combinedScore > threshold || name.containsIgnoringCase(query) || query.containsIgnoringCase(name)
+            print("DEBUG: Combined score for \(name): \(combinedScore)")
+
+            return combinedScore > threshold
         }
+
+        // Log results of fuzzy matching
+        let matchedNames = matchedItems.compactMap { $0.name }
+        print("DEBUG: Fuzzy matched items: \(matchedNames)")
+
+        return matchedItems
     }
 
     // Parse CSV function
