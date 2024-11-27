@@ -257,13 +257,13 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             activityIndicator.centerYAnchor.constraint(equalTo: analyzeButton.centerYAnchor),
             
             // headerView constraints
-            headerView.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 20),
+            headerView.topAnchor.constraint(equalTo: analyzeButton.bottomAnchor, constant: 15),
             headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             // mealNameLabel constraints
            // mealNameLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
-            mealNameLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            mealNameLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 5),
             mealNameLabel.centerXAnchor.constraint(equalTo: headerView.centerXAnchor) ,
             mealNameLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             mealNameLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
@@ -271,7 +271,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             // totalWeightLabel constraints
             //totalWeightLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             totalWeightLabel.topAnchor.constraint(equalTo: mealNameLabel.bottomAnchor, constant: 4),
-            totalWeightLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
+            totalWeightLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -5),
             totalWeightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // tableView constraints
