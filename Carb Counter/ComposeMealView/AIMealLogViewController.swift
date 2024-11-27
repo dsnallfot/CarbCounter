@@ -220,6 +220,7 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
         modalVC.gptTotalWeight = Int(totalAdjustedWeight)
         modalVC.gptName = selectedMeal.name ?? "Analyserad måltid"
         modalVC.savedResponse = selectedMeal.response ?? ""
+        modalVC.fromAnalysisLog = true // Set the flag to true
 
         // Wrap in UINavigationController
         let navController = UINavigationController(rootViewController: modalVC)

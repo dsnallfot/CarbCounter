@@ -16,7 +16,11 @@ class AnalysisModalViewController: UIViewController {
     var gptTotalWeight: Int = 0
     var gptName: String = "Analyserad måltid"
     var savedResponse: String = ""
-
+    var fromAnalysisLog: Bool = false
+    
+    // Warning label for dynamic text updates
+    private var warningLabel: UILabel!
+    
     // Label for the dynamically updated adjusted weight
     private let weightLabel: UILabel = {
         let label = UILabel()
@@ -57,21 +61,25 @@ class AnalysisModalViewController: UIViewController {
     var dataSharingVC: DataSharingViewController?
     
     override func viewDidLoad() {
-            super.viewDidLoad()
-            view.backgroundColor = .systemBackground
-            view.layer.cornerRadius = 16
-            setupNavigationBar()
-            updateBackgroundForCurrentMode()
-            //setupCloseButton()
-            setupUI()
-            updateAdjustments() // Initialize adjustments
-            dataSharingVC = DataSharingViewController()
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 16
+        setupNavigationBar()
+        updateBackgroundForCurrentMode()
+        setupCloseButton()
+        setupUI()
+        updateAdjustments() // Initialize adjustments
+        dataSharingVC = DataSharingViewController()
+        if fromAnalysisLog {
+            print("DEBUG: Opened from analysis log")
+            adjustForAnalysisLog()
         }
-        
-        private func setupNavigationBar() {
-            title = gptName // Set the title to the meal name
-        }
-
+    }
+    
+    private func setupNavigationBar() {
+        title = gptName // Set the title to the meal name
+    }
+    
     private func setupContainer(_ container: UIView, title: String, valueLabel: UILabel) {
         let titleLabel = createLabel(text: NSLocalizedString(title, comment: title), fontSize: 9, weight: .bold, color: .white)
         
@@ -86,7 +94,7 @@ class AnalysisModalViewController: UIViewController {
             stack.centerYAnchor.constraint(equalTo: container.centerYAnchor)
         ])
     }
-
+    
     private func createContainerView(backgroundColor: UIColor) -> UIView {
         let container = UIView()
         container.backgroundColor = backgroundColor
@@ -94,7 +102,7 @@ class AnalysisModalViewController: UIViewController {
         container.translatesAutoresizingMaskIntoConstraints = false
         return container
     }
-
+    
     private func createLabel(text: String, fontSize: CGFloat = 18, weight: UIFont.Weight = .bold, color: UIColor = .white) -> UILabel {
         let label = UILabel()
         label.text = text
@@ -160,20 +168,20 @@ class AnalysisModalViewController: UIViewController {
         warningContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(warningContainer)
         
-        let warningLabel = UILabel()
-        warningLabel.text = """
-        ⚠️ Obs! Ingredienser, portioner och näringsvärden 
-        är grova uppskattningar gjorda av ChatGPT. 
-        • Träffsäkerheten i bildanalyserna varierar.
-        • Kontrollera innehållet noga innan bolus. 
-        • Använd reglaget nedan för grova justeringar, 
-          eller gör finjusteringar direkt i måltidsvyn.
-        """
+        warningLabel = UILabel()
         warningLabel.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         warningLabel.textColor = .white
         warningLabel.numberOfLines = 0
         warningLabel.textAlignment = .center
         warningLabel.translatesAutoresizingMaskIntoConstraints = false
+        warningLabel.text = """
+                ⚠️  Obs! Ingredienser, portioner och näringsvärden 
+                är grova uppskattningar gjorda av ChatGPT. 
+                • Träffsäkerheten i bildanalyserna varierar.
+                • Kontrollera innehållet noga innan bolus. 
+                • Använd reglaget nedan för grova justeringar, 
+                  eller gör finjusteringar direkt i måltidsvyn.
+                """
         warningContainer.addSubview(warningLabel)
         
         NSLayoutConstraint.activate([
@@ -235,15 +243,15 @@ class AnalysisModalViewController: UIViewController {
         slider.value = 100 // Reset slider to 100
         updateAdjustments() // Update adjusted values
     }
-    /*
+    
     private func setupCloseButton() {
-            let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
-            navigationItem.leftBarButtonItem = closeButton
-        }
-        
-        @objc private func closeButtonTapped() {
-            dismiss(animated: true, completion: nil)
-        }*/
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+        navigationItem.leftBarButtonItem = closeButton
+    }
+    
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
     
     private func updateBackgroundForCurrentMode() {
         // Remove any existing gradient views before updating
@@ -289,29 +297,44 @@ class AnalysisModalViewController: UIViewController {
         // Trigger adjustments and UI updates
         updateAdjustments()
     }
-
+    
     private func updateAdjustments() {
         let percentage = Int(slider.value)
         adjustedWeight = gptTotalWeight * percentage / 100
         adjustedCarbs = gptCarbs * percentage / 100
         adjustedFat = gptFat * percentage / 100
         adjustedProtein = gptProtein * percentage / 100
-
+        
         // Update the weight label with percentage and original portion
         weightLabel.text = "\(percentage) % av ursprunglig portion: \(gptTotalWeight) g"
-
+        
         // Update container labels directly
         portionLabel.text = "\(adjustedWeight) g"
         carbsLabel.text = "\(adjustedCarbs) g"
         fatLabel.text = "\(adjustedFat) g"
         proteinLabel.text = "\(adjustedProtein) g"
-
+        
         // Debugging logs
         // Daniel: Keeping for future debugging // print("Slider Adjustments Updated:")
         // Daniel: Keeping for future debugging // print("Adjusted Weight: \(adjustedWeight) g")
         // Daniel: Keeping for future debugging // print("Adjusted Carbs: \(adjustedCarbs) g")
         // Daniel: Keeping for future debugging // print("Adjusted Fat: \(adjustedFat) g")
         // Daniel: Keeping for future debugging // print("Adjusted Protein: \(adjustedProtein) g")
+    }
+    
+    private func adjustForAnalysisLog() {
+        // Update warning text
+        warningLabel.text = """
+            ⚠️ Obs! Ingredienser, portioner och näringsvärden 
+            är grova uppskattningar gjorda av ChatGPT. 
+            • Träffsäkerheten i bildanalyserna varierar.
+            • Kontrollera innehållet noga innan bolus. 
+            • Gör eventuella justeringar direkt i måltidsvyn.
+            """
+        
+        // Hide the slider and weight label
+        slider.isHidden = true
+        weightLabel.isHidden = true
     }
     
     @objc private func addToMeal() {
@@ -342,10 +365,10 @@ class AnalysisModalViewController: UIViewController {
             print("DEBUG: Error fetching FoodItemTemporary entries: \(error.localizedDescription)")
         }
     }
-
+    
     private func saveNewAIMealEntry() {
         let context = CoreDataStack.shared.context
-
+        
         // Create a new AIMeal entry
         let newMeal = AIMeal(context: context)
         newMeal.response = savedResponse
@@ -359,7 +382,7 @@ class AnalysisModalViewController: UIViewController {
         newMeal.lastEdited = Date()
         newMeal.id = UUID()
         newMeal.mealDate = Date()
-
+        
         do {
             try context.save()
             // Daniel: Keeping for future debugging // print("DEBUG: AIMeal entry saved successfully")
@@ -367,7 +390,7 @@ class AnalysisModalViewController: UIViewController {
             print("DEBUG: Error saving AIMeal entry: \(error.localizedDescription)")
         }
     }
-
+    
     private func exportAIMealLog() async {
         guard let dataSharingVC = dataSharingVC else {
             print("DEBUG: dataSharingVC is not available.")
@@ -377,8 +400,8 @@ class AnalysisModalViewController: UIViewController {
         await dataSharingVC.exportAIMealLogToCSV()
         print("DEBUG: AI Meals export completed.")
     }
-
-
+    
+    
     private func showReplaceOrAddAlert(existingItems: [FoodItemTemporary]) {
         let alert = UIAlertController(
             title: NSLocalizedString("Lägg till eller ersätt?", comment: "Lägg till eller ersätt?"),
@@ -486,14 +509,14 @@ class AnalysisModalViewController: UIViewController {
                 let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
                 let adjustedFat = max(0, gptFat - totalMatchedFat)
                 let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
-
+                
                 let nutrientNames = ["🤖 Kolhydrater", "🤖 Fett", "🤖 Protein"]
                 let nutrientItemsFetch: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
                 nutrientItemsFetch.predicate = NSPredicate(format: "name IN %@", nutrientNames)
-
+                
                 let nutrientItems = try context.fetch(nutrientItemsFetch)
                 let nutrientItemsDict = Dictionary(uniqueKeysWithValues: nutrientItems.compactMap { ($0.name ?? "", $0.id) })
-
+                
                 for (name, portionServed) in [("🤖 Kolhydrater", adjustedCarbs),
                                               ("🤖 Fett", adjustedFat),
                                               ("🤖 Protein", adjustedProtein)] {
@@ -511,105 +534,105 @@ class AnalysisModalViewController: UIViewController {
             } else {
                 print("DEBUG: All Matvaror matched; no fallback entries added")
             }
-
+            
             // Save changes to Core Data
             try context.save()
             print("DEBUG: New FoodItemTemporary entries saved successfully")
-
+            
             // Notify ComposeMealViewController
             NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
-
+            
             // Show success view and dismiss
             showSuccessView()
             dismiss(animated: true)
-            } catch {
-                print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
+        } catch {
+            print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
         }
     }
     private func fuzzySearchForCSV(query: String, in items: [(id: UUID, name: String)]) -> [(id: UUID, name: String)] {
         // Daniel: Keeping for future debugging // print("DEBUG: Starting fuzzySearchForCSV with query: \(query)")
-
+        
         // Log all available FoodItems
         let foodItemNames = items.map { $0.name }
         // Daniel: Keeping for future debugging // print("DEBUG: Available FoodItems: \(foodItemNames)")
-
+        
         // Check for exact case-sensitive match first
         if let exactMatch = items.first(where: { $0.name == query }) {
             // Daniel: Keeping for future debugging // print("DEBUG: Exact case-sensitive match found: \(exactMatch.name)")
             return [exactMatch]
         }
-
+        
         // Check for case-insensitive match next
         if let caseInsensitiveMatch = items.first(where: { $0.name.caseInsensitiveCompare(query) == .orderedSame }) {
             // Daniel: Keeping for future debugging // print("DEBUG: Case-insensitive match found: \(caseInsensitiveMatch.name)")
             return [caseInsensitiveMatch]
         }
-
+        
         // Fuzzy matching as fallback
         let threshold = 0.8
         let matchedItems = items.filter { item in
             let name = item.name
-
+            
             // Boost matches that start with the same letters
             let startsWithScore = name.lowercased().hasPrefix(query.lowercased()) ? 1.0 : 0.0
             let fuzzyScore = name.fuzzyMatch(query)
-
+            
             // Log individual scores
             // Daniel: Keeping for future debugging // print("DEBUG: Evaluating \(name): startsWithScore = \(startsWithScore), fuzzyScore = \(fuzzyScore)")
-
+            
             // Calculate a combined score with higher weight for prefix matches
             let combinedScore = (fuzzyScore * 0.9) + (startsWithScore * 0.1)
             // Daniel: Keeping for future debugging // print("DEBUG: Combined score for \(name): \(combinedScore)")
-
+            
             return combinedScore > threshold
         }
-
+        
         // Log results of fuzzy matching
         let matchedNames = matchedItems.map { $0.name }
         // Daniel: Keeping for future debugging // print("DEBUG: Fuzzy matched items: \(matchedNames)")
-
+        
         return matchedItems
     }
-
+    
     // Parse CSV function
     private func parseCSV(_ csvString: String) -> [[String]] {
         var ingredients: [[String]] = []
-
+        
         // Debug: Print the raw CSV string
         // Daniel: Keeping for future debugging // print("Raw CSV String:\n\(csvString)")
-
+        
         // Locate the start of the CSV block by finding the header
         guard let csvStartIndex = csvString.range(of: "Måltid, MåltidTotalViktGram, Matvara, MatvaraViktGram, MatvaraKolhydraterGram, MatvaraFettGram, MatvaraProteinGram") else {
             print("No valid CSV header found in response.")
             return ingredients
         }
-
+        
         // Extract the CSV portion starting from the header
         let csvBlock = csvString[csvStartIndex.lowerBound...]
             .split(separator: "\n")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty && !$0.starts(with: "This is a basic estimation") } // Exclude unrelated text
-
+        
         print("Filtered CSV Lines: \(csvBlock)")
-
+        
         // Skip the header (first line)
         for (index, line) in csvBlock.enumerated() {
             if index == 0 { continue } // Skip header row
-
+            
             // Remove quotes and split by commas
             let components = line
                 .replacingOccurrences(of: "\"", with: "") // Remove double quotes
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespaces) }
-
+            
             print("Line \(index): \(components)")
-
+            
             if components.count >= 7 {
                 ingredients.append(Array(components))
                 print("Ingredient Added: \(ingredients.last ?? [])")
             }
         }
-
+        
         print("Final Ingredients List: \(ingredients)")
         return ingredients
     }

@@ -128,7 +128,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         mealNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Configure total weight label
-        totalWeightLabel.text = "Total portion: \(gptTotalWeight ?? "--") g"
+        totalWeightLabel.text = "  Total portion: \(gptTotalWeight ?? "--") g"
         totalWeightLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         totalWeightLabel.textColor = .gray
         totalWeightLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -521,7 +521,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         // Daniel: Keeping for future debugging // print("DEBUG: Total Weight: \(gptTotalWeight ?? "nil")")
 
         mealNameLabel.text = gptName ?? "Måltid"
-        totalWeightLabel.text = "Total portion: \(gptTotalWeight ?? "0") g"
+        totalWeightLabel.text = "  Total portion: \(gptTotalWeight ?? "0") g"
     }
     
     
@@ -558,11 +558,11 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         guard ingredient.count >= 5 else { return cell }
 
         // Main text for the ingredient name
-        cell.textLabel?.text = ingredient[0] // Ingredient name
+        cell.textLabel?.text = "• \(ingredient[0])" // Ingredient name
         cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
 
         // Subtitle text for detailed nutritional information
-        cell.detailTextLabel?.text = "Portion: \(ingredient[1]) g | Kh: \(ingredient[2]) g | Fett: \(ingredient[3]) g | Protein: \(ingredient[4]) g"
+        cell.detailTextLabel?.text = "   Portion: \(ingredient[1]) g | Kh: \(ingredient[2]) g | Fett: \(ingredient[3]) g | Protein: \(ingredient[4]) g"
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         cell.detailTextLabel?.textColor = .gray
         
