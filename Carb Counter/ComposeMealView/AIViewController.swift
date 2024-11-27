@@ -155,13 +155,24 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
         // Configure overlayLabel
-        overlayLabel.text = isSwedish ? "Välj en bild" : "Select an Image"
-        overlayLabel.textColor = .secondaryLabel
-        overlayLabel.font = .systemFont(ofSize: 18, weight: .medium)
+        let symbolAttachment = NSTextAttachment()
+        symbolAttachment.image = UIImage(systemName: "photo.badge.plus")?.withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal)
+        symbolAttachment.bounds = CGRect(x: 0, y: -4, width: 26, height: 22) // Adjust bounds for symbol size and alignment
+
+        let symbolString = NSAttributedString(attachment: symbolAttachment)
+        let textString = NSAttributedString(string: " \(isSwedish ? "Välj en bild" : "Select an Image")", attributes: [
+            .foregroundColor: UIColor.secondaryLabel,
+            .font: UIFont.systemFont(ofSize: 20, weight: .medium)
+        ])
+
+        let combinedString = NSMutableAttributedString()
+        combinedString.append(symbolString)
+        combinedString.append(textString)
+
+        overlayLabel.attributedText = combinedString
         overlayLabel.textAlignment = .center
         overlayLabel.translatesAutoresizingMaskIntoConstraints = false
         overlayLabel.isHidden = false
-        
         // Add tap gesture to imageView
         let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(selectImageSource))
         imageView.addGestureRecognizer(imageTapGesture)
@@ -651,8 +662,10 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             resultLabel.text = ""
             debugLabel.text = ""
             
-            // Save the resized image to a specific album
-            saveImageToAlbum(image: resizedImage, albumName: "Carb Counter")
+            // Save the resized image to the specific album only if sourceType is .camera
+            if picker.sourceType == .camera {
+                saveImageToAlbum(image: resizedImage, albumName: "Carb Counter")
+            }
             
             // Clear persisted response
             UserDefaults.standard.removeObject(forKey: savedResponseKey)
