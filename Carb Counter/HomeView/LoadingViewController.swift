@@ -108,9 +108,11 @@ class LoadingViewController: UIViewController {
             if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
                let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
                 
-                // Call fetchFoodItems on composeMealVC
-                composeMealVC.fetchFoodItems()
-                print("fetchFoodItems completed")
+                // Call fetchFoodItems with a completion handler
+                composeMealVC.fetchFoodItems {
+                    print("fetchFoodItems completed for ComposeMealViewController")
+                    // Perform any dependent actions here if necessary
+                }
             }
         }
         

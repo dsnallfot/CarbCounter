@@ -467,7 +467,7 @@ class AnalysisModalViewController: UIViewController {
             
             let percentageMultiplier = Double(slider.value) / 100.0
             
-            // First, check if gptName matches any existing FoodItem
+            // Check for an exact match
             if let gptMatchedItem = foodItems.first(where: { $0.name.caseInsensitiveCompare(gptName) == .orderedSame }) {
                 let temporaryItem = FoodItemTemporary(context: context)
                 temporaryItem.entryId = gptMatchedItem.id
@@ -475,58 +475,58 @@ class AnalysisModalViewController: UIViewController {
                 
                 print("DEBUG: Exact match found for \(gptName). Using \(gptMatchedItem.name) with ID \(gptMatchedItem.id)")
             } else {
-                //Daniel: TODO If no gptName can be exactly matched, maybe present alert and ask if a new FoodItem with that name should be saved (and calculate nutritions and add 🤖 to notes etc before adding to VC)?
-                // Continue with the current ingredient-matching logic
-                for ingredient in csvData {
-                    guard ingredient.count >= 7 else { continue }
+                print("DEBUG: No exact match found, moving on")
+                
+                let alertController = UIAlertController(
+                    title: NSLocalizedString("Skapa helt ny måltid eller matcha livsmedel?", comment: "Create a new meal? or match ingredients"),
+                    message: String(format: NSLocalizedString("\nVälj om du vill: \n\n1. Skapa en helt ny måltid '%@' och lägga till den i måltidslistan (och i databasen). \n\n2. Försöka matcha alla måltidens individuella livsmedel och lägga till dem i måltidslistan med flera rader?", comment: "Create a new meal with name?"), gptName),
+                    preferredStyle: .actionSheet
+                )
+                
+                let createAction = UIAlertAction(title: NSLocalizedString("Skapa ny måltid", comment: "Create meal"), style: .default) { [weak self] _ in
+                    guard let self = self else { return }
                     
-                    let matvara = ingredient[2]
-                    let portionServed = Double(ingredient[3]) ?? 0.0
-                    let carbs = Int(ingredient[4]) ?? 0
-                    let fat = Int(ingredient[5]) ?? 0
-                    let protein = Int(ingredient[6]) ?? 0
+                    // Create the new FoodItem
+                    self.createNewFoodItem(context: context, percentageMultiplier: percentageMultiplier)
                     
-                    if let matchedItem = fuzzySearchForCSV(query: matvara, in: foodItems).first {
-                        let adjustedPortionServed = Int(round(portionServed * percentageMultiplier))
-                        
-                        let temporaryItem = FoodItemTemporary(context: context)
-                        temporaryItem.entryId = matchedItem.id
-                        temporaryItem.entryPortionServed = Double(adjustedPortionServed)
-                        
-                        totalMatchedCarbs += carbs
-                        totalMatchedFat += fat
-                        totalMatchedProtein += protein
-                    } else {
-                        print("DEBUG: No match found for \(matvara)")
-                        allMatched = false
+                    // After saving, show success view and dismiss the modal
+                    DispatchQueue.main.async {
+                        //NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+                        self.showSuccessView()
+                        self.dismiss(animated: true)
                     }
                 }
                 
-                if !allMatched {
-                    let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
-                    let adjustedFat = max(0, gptFat - totalMatchedFat)
-                    let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
+                let matchItemsAction = UIAlertAction(title: NSLocalizedString("Matcha livsmedel", comment: "Match food items"), style: .default) { [weak self] _ in
+                    guard let self = self else { return }
                     
-                    let nutrientNames = ["🤖 Kolhydrater", "🤖 Fett", "🤖 Protein"]
-                    let nutrientItemsFetch: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
-                    nutrientItemsFetch.predicate = NSPredicate(format: "name IN %@", nutrientNames)
+                    // Match ingredients
+                    self.matchIngredients(csvData: csvData, foodItems: foodItems, percentageMultiplier: percentageMultiplier)
                     
-                    let nutrientItems = try context.fetch(nutrientItemsFetch)
-                    let nutrientItemsDict = Dictionary(uniqueKeysWithValues: nutrientItems.compactMap { ($0.name ?? "", $0.id) })
-                    
-                    for (name, portionServed) in [("🤖 Kolhydrater", adjustedCarbs),
-                                                  ("🤖 Fett", adjustedFat),
-                                                  ("🤖 Protein", adjustedProtein)] {
-                        if let nutrientId = nutrientItemsDict[name] {
-                            let temporaryItem = FoodItemTemporary(context: context)
-                            temporaryItem.entryId = nutrientId
-                            let adjustedPortionServed = Int(round(Double(portionServed) * percentageMultiplier))
-                            temporaryItem.entryPortionServed = Double(adjustedPortionServed)
-                        } else {
-                            print("DEBUG: Nutrient \(name) is missing from FoodItems")
-                        }
+                    // After matching, show success view and dismiss the modal
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+                        self.showSuccessView()
+                        self.dismiss(animated: true)
                     }
                 }
+                
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel)
+                
+                alertController.addAction(createAction)
+                alertController.addAction(matchItemsAction)
+                alertController.addAction(cancelAction)
+                
+                DispatchQueue.main.async {
+                    self.present(alertController, animated: true)
+                }
+                
+                return // Prevent further execution after presenting the alert
+            }
+            
+            // Handle unmatched nutrients
+            if !allMatched {
+                handleUnmatchedNutrients(context: context, percentageMultiplier: percentageMultiplier, totalMatchedCarbs: totalMatchedCarbs, totalMatchedFat: totalMatchedFat, totalMatchedProtein: totalMatchedProtein)
             }
             
             try context.save()
@@ -537,6 +537,177 @@ class AnalysisModalViewController: UIViewController {
             print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
         }
     }
+    
+    private func createNewFoodItem(context: NSManagedObjectContext, percentageMultiplier: Double) {
+        // Calculate nutrients
+        let calculatedCarbs = Int(round(Double(adjustedCarbs) / Double(adjustedWeight) * 100))
+        let calculatedFat = Int(round(Double(adjustedFat) / Double(adjustedWeight) * 100))
+        let calculatedProtein = Int(round(Double(adjustedProtein) / Double(adjustedWeight) * 100))
+        
+        // Create a new FoodItem
+        let newFoodItem = FoodItem(context: context)
+        let newFoodItemID = UUID()
+        newFoodItem.id = newFoodItemID
+        newFoodItem.name = gptName
+        newFoodItem.carbohydrates = Double(calculatedCarbs)
+        newFoodItem.carbsPP = 0
+        newFoodItem.fat = Double(calculatedFat)
+        newFoodItem.fatPP = 0
+        newFoodItem.netCarbs = 0
+        newFoodItem.netFat = 0
+        newFoodItem.netProtein = 0
+        newFoodItem.perPiece = false
+        newFoodItem.protein = Double(calculatedProtein)
+        newFoodItem.proteinPP = 0
+        newFoodItem.count = 0
+        newFoodItem.notes = NSLocalizedString("Måltid skapad av ChatGPT", comment: "Meal created by ChatGPT")
+        newFoodItem.lastEdited = Date()
+        newFoodItem.delete = false
+        newFoodItem.emoji = "🤖"
+        
+        do {
+            // Save the new FoodItem first
+            try context.save()
+            print("DEBUG: New FoodItem \(gptName) created successfully")
+            
+            // Add the FoodItemTemporary entry
+            let temporaryItem = FoodItemTemporary(context: context)
+            temporaryItem.entryId = newFoodItemID
+            temporaryItem.entryPortionServed = Double(adjustedWeight)
+            
+            // Save the FoodItemTemporary entry
+            try context.save()
+            print("DEBUG: Temporary FoodItem \(gptName) added successfully")
+            
+            // Delay to ensure data is saved before notifying observers
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+            }
+        } catch {
+            print("DEBUG: Error creating new FoodItem or TemporaryFoodItem \(gptName): \(error.localizedDescription)")
+        }
+    }
+    
+    private func matchIngredients(csvData: [[String]], foodItems: [(id: UUID, name: String)], percentageMultiplier: Double) {
+        var totalMatchedCarbs = 0
+        var totalMatchedFat = 0
+        var totalMatchedProtein = 0
+        var allMatched = true
+        
+        let context = CoreDataStack.shared.context
+        
+        for ingredient in csvData {
+            guard ingredient.count >= 7 else { continue }
+            
+            let matvara = ingredient[2]
+            let portionServed = Double(ingredient[3]) ?? 0.0
+            let carbs = Int(ingredient[4]) ?? 0
+            let fat = Int(ingredient[5]) ?? 0
+            let protein = Int(ingredient[6]) ?? 0
+            
+            if let matchedItem = fuzzySearchForCSV(query: matvara, in: foodItems).first {
+                let adjustedPortionServed = Int(round(portionServed * percentageMultiplier))
+                
+                let temporaryItem = FoodItemTemporary(context: context)
+                temporaryItem.entryId = matchedItem.id
+                temporaryItem.entryPortionServed = Double(adjustedPortionServed)
+                
+                totalMatchedCarbs += carbs
+                totalMatchedFat += fat
+                totalMatchedProtein += protein
+            } else {
+                print("DEBUG: No match found for \(matvara)")
+                allMatched = false
+            }
+        }
+        
+        if !allMatched {
+            handleUnmatchedNutrients(context: context, percentageMultiplier: percentageMultiplier, totalMatchedCarbs: totalMatchedCarbs, totalMatchedFat: totalMatchedFat, totalMatchedProtein: totalMatchedProtein)
+        }
+    }
+    
+    private func handleUnmatchedNutrients(context: NSManagedObjectContext, percentageMultiplier: Double, totalMatchedCarbs: Int, totalMatchedFat: Int, totalMatchedProtein: Int) {
+        let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
+        let adjustedFat = max(0, gptFat - totalMatchedFat)
+        let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
+        
+        let nutrientNames = ["𐓙 Kolhydrater", "𐓙 Fett", "𐓙 Protein"]
+        let nutrientItemsFetch: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
+        nutrientItemsFetch.predicate = NSPredicate(format: "name IN %@ AND (delete == NO OR delete == nil)", nutrientNames)
+        
+        do {
+            // Fetch existing nutrient items
+            let nutrientItems = try context.fetch(nutrientItemsFetch)
+            var nutrientItemsDict = Dictionary(uniqueKeysWithValues: nutrientItems.compactMap { ($0.name ?? "", $0.id) })
+            
+            // Create missing nutrient items if necessary
+            for nutrientName in nutrientNames {
+                if !nutrientItemsDict.keys.contains(nutrientName) {
+                    let newFoodItem = FoodItem(context: context)
+                    let newFoodItemID = UUID()
+                    newFoodItem.id = newFoodItemID
+                    newFoodItem.name = nutrientName
+                    
+                    switch nutrientName {
+                    case "𐓙 Kolhydrater":
+                        newFoodItem.carbohydrates = 100
+                        newFoodItem.fat = 0
+                        newFoodItem.protein = 0
+                    case "𐓙 Fett":
+                        newFoodItem.carbohydrates = 0
+                        newFoodItem.fat = 100
+                        newFoodItem.protein = 0
+                    case "𐓙 Protein":
+                        newFoodItem.carbohydrates = 0
+                        newFoodItem.fat = 0
+                        newFoodItem.protein = 100
+                    default:
+                        continue
+                    }
+                    
+                    newFoodItem.carbsPP = 0
+                    newFoodItem.fatPP = 0
+                    newFoodItem.proteinPP = 0
+                    newFoodItem.netCarbs = 0
+                    newFoodItem.netFat = 0
+                    newFoodItem.netProtein = 0
+                    newFoodItem.perPiece = false
+                    newFoodItem.count = 0
+                    newFoodItem.notes = NSLocalizedString("Används för övriga livsmedel från AI-analyserad bild", comment: "")
+                    newFoodItem.lastEdited = Date()
+                    newFoodItem.delete = false
+                    newFoodItem.emoji = "🤖"
+                    
+                    try context.save()
+                    print("DEBUG: Created missing nutrient item: \(nutrientName)")
+                    
+                    // Add the newly created nutrient item to the dictionary
+                    nutrientItemsDict[nutrientName] = newFoodItem.id
+                }
+            }
+            
+            // Create FoodItemTemporary entries for unmatched nutrients
+            for (name, portionServed) in [("𐓙 Kolhydrater", adjustedCarbs),
+                                          ("𐓙 Fett", adjustedFat),
+                                          ("𐓙 Protein", adjustedProtein)] {
+                if let nutrientId = nutrientItemsDict[name] {
+                    let temporaryItem = FoodItemTemporary(context: context)
+                    temporaryItem.entryId = nutrientId
+                    let adjustedPortionServed = Int(round(Double(portionServed) * percentageMultiplier))
+                    temporaryItem.entryPortionServed = Double(adjustedPortionServed)
+                    print("DEBUG: Created temporary item for \(name) with portion \(adjustedPortionServed)")
+                } else {
+                    print("DEBUG: Failed to find or create nutrient \(name)")
+                }
+            }
+            
+            try context.save()
+            print("DEBUG: Unmatched nutrients handled successfully")
+        } catch {
+            print("DEBUG: Error handling unmatched nutrients: \(error.localizedDescription)")
+        }
+    }
+    
     private func fuzzySearchForCSV(query: String, in items: [(id: UUID, name: String)]) -> [(id: UUID, name: String)] {
         // Daniel: Keeping for future debugging // print("DEBUG: Starting fuzzySearchForCSV with query: \(query)")
         
