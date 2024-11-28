@@ -66,7 +66,6 @@ class AnalysisModalViewController: UIViewController {
         view.layer.cornerRadius = 16
         setupNavigationBar()
         updateBackgroundForCurrentMode()
-        setupCloseButton()
         setupUI()
         updateAdjustments() // Initialize adjustments
         dataSharingVC = DataSharingViewController()
@@ -78,6 +77,21 @@ class AnalysisModalViewController: UIViewController {
     
     private func setupNavigationBar() {
         title = gptName // Set the title to the meal name
+        
+        // Close button
+            let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
+            navigationItem.leftBarButtonItem = closeButton
+        
+        // Info button
+            let infoButton = UIBarButtonItem(
+                image: UIImage(systemName: "info.circle"),
+                style: .plain,
+                target: self,
+                action: #selector(showSavedResponse)
+            )
+            infoButton.tintColor = .label
+            
+            navigationItem.rightBarButtonItem = infoButton
     }
     
     private func setupContainer(_ container: UIView, title: String, valueLabel: UILabel) {
@@ -244,13 +258,25 @@ class AnalysisModalViewController: UIViewController {
         updateAdjustments() // Update adjusted values
     }
     
-    private func setupCloseButton() {
-        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
-        navigationItem.leftBarButtonItem = closeButton
-    }
-    
     @objc private func closeButtonTapped() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func showSavedResponse() {
+        let alert = UIAlertController(
+            title: "ChatGPT detaljerat svar\n",
+            message: savedResponse.isEmpty ? "Inget GPT-svar tillgängligt." : savedResponse,
+            preferredStyle: .actionSheet
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        
+        // Handle iPad popover presentation (if applicable)
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.barButtonItem = navigationItem.rightBarButtonItem
+            popoverController.permittedArrowDirections = .any
+        }
+        
+        present(alert, animated: true)
     }
     
     private func updateBackgroundForCurrentMode() {
