@@ -74,7 +74,7 @@ class DataSharingViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5  // Toggle Sharing, Export, Import, Clear History, NS sync
+        return 6  // Toggle Sharing, Export, Import, Clear History, NS sync
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -102,29 +102,37 @@ class DataSharingViewController: UITableViewController {
             toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(toggleSwitch)
-
+            
         case 1:
+            label.text = NSLocalizedString("Tillåt automatisk import/export csv", comment: "Tillåt automatisk import/export csv")
+            let toggleSwitch = UISwitch()
+            toggleSwitch.isOn = UserDefaultsRepository.allowCSVSync
+            toggleSwitch.addTarget(self, action: #selector(toggleCSVSyncSharing(_:)), for: .valueChanged)
+            stackView.addArrangedSubview(label)
+            stackView.addArrangedSubview(toggleSwitch)
+
+        case 2:
             label.text = NSLocalizedString("Exportera data", comment: "Export data")
             let exportIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
             exportIcon.tintColor = .label
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(exportIcon)
 
-        case 2:
+        case 3:
             label.text = NSLocalizedString("Importera data", comment: "Import data")
             let importIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.down"))
             importIcon.tintColor = .label
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(importIcon)
 
-        case 3:
+        case 4:
             label.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear old meal history")
             let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
             trashIcon.tintColor = .red
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(trashIcon)
 
-        case 4: // New row
+        case 5: // New row
             label.text = NSLocalizedString("Synka Nightscout profildata", comment: "Sync with Nightscout")
             let syncIcon = UIImageView(image: UIImage(systemName: "arrow.triangle.2.circlepath.icloud"))
             syncIcon.tintColor = .label
@@ -153,13 +161,13 @@ class DataSharingViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
 
         switch indexPath.row {
-        case 1:
-            exportData()
         case 2:
-            importData()
+            exportData()
         case 3:
-            clearHistoryTapped()
+            importData()
         case 4:
+            clearHistoryTapped()
+        case 5:
             syncWithNightscout()
         default:
             break
@@ -259,6 +267,11 @@ class DataSharingViewController: UITableViewController {
     @objc private func toggleOngoingMealSharing(_ sender: UISwitch) {
         UserDefaultsRepository.allowSharingOngoingMeals = sender.isOn
         print("allowSharingOngoingMeals set to \(sender.isOn)")
+    }
+    
+    @objc private func toggleCSVSyncSharing(_ sender: UISwitch) {
+        UserDefaultsRepository.allowCSVSync = sender.isOn
+        print("allowCSVSync set to \(sender.isOn)")
     }
     
     @objc private func clearHistoryTapped() {
@@ -1235,6 +1248,7 @@ class DataSharingViewController: UITableViewController {
         userDefaultsData["gptAPIKey"] = UserDefaultsRepository.gptAPIKey
         
         userDefaultsData["allowSharingOngoingMeals"] = UserDefaultsRepository.allowSharingOngoingMeals.description
+        userDefaultsData["allowCSVSync"] = UserDefaultsRepository.allowCSVSync.description
         userDefaultsData["allowViewingOngoingMeals"] = UserDefaultsRepository.allowViewingOngoingMeals.description
         userDefaultsData["schoolFoodURL"] = UserDefaultsRepository.schoolFoodURL ?? ""
         userDefaultsData["excludeWords"] = UserDefaultsRepository.excludeWords ?? ""
@@ -1318,6 +1332,8 @@ class DataSharingViewController: UITableViewController {
                 UserDefaultsRepository.gptAPIKey = value
             case "allowSharingOngoingMeals":
                 UserDefaultsRepository.allowSharingOngoingMeals = Bool(value) ?? false
+            case "allowCSVSync":
+                UserDefaultsRepository.allowCSVSync = Bool(value) ?? false
             case "allowViewingOngoingMeals":
                 UserDefaultsRepository.allowViewingOngoingMeals = Bool(value) ?? true
             case "schoolFoodURL":

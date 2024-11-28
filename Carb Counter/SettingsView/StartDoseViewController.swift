@@ -32,7 +32,11 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
-        addRefreshControl()
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
     }
     
     deinit {
@@ -96,17 +100,22 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         super.viewWillAppear(animated)
         loadStartDoses()
     }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
         // Ensure dataSharingVC is instantiated and only export if there were changes
         guard let dataSharingVC = dataSharingVC, hasChanges else { return }
         
-        // Call the desired function
-        Task {
-            print("Start doses export triggered due to changes")
-            await dataSharingVC.exportStartDoseScheduleToCSV()
-            hasChanges = false  // Reset changes flag after export
+        // Check if CSV sync is allowed before exporting
+        if UserDefaultsRepository.allowCSVSync {
+            Task {
+                print("Carb ratios export triggered due to changes")
+                await dataSharingVC.exportStartDoseScheduleToCSV()
+                hasChanges = false  // Reset changes flag after export
+            }
+        } else {
+            print("CSV export is disabled in settings.")
         }
     }
     

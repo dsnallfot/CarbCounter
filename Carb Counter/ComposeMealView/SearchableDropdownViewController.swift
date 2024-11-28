@@ -79,7 +79,11 @@ class SearchableDropdownViewController: UIViewController, UITableViewDelegate, U
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
-        addRefreshControl()
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {

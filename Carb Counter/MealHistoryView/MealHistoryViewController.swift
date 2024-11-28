@@ -67,8 +67,11 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         setupSearchBarAndDatePicker()
         setupTableView()
-        addRefreshControl()
-        
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
     }
@@ -516,10 +519,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     private func deleteMealHistory(at indexPath: IndexPath) async {
         guard let dataSharingVC = dataSharingVC else { return }
 
-        // Import only the MealHistory CSV file
-        print("Starting data import for Meal History before deletion")
-        await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
-        print("Data import complete for Meal History")
+        // Conditionally import the MealHistory CSV file
+        if UserDefaultsRepository.allowCSVSync {
+            print("Starting data import for Meal History before deletion")
+            await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+            print("Data import complete for Meal History")
+        } else {
+            print("CSV import is disabled in settings.")
+        }
 
         let mealHistory = filteredMealHistories[indexPath.row]
         
@@ -527,9 +534,13 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         mealHistory.delete = true
         mealHistory.lastEdited = Date() // Update lastEdited date to current date
 
-        // Step 2: Export the updated list of meal histories
-        print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
-        await dataSharingVC.exportMealHistoryToCSV()
+        // Step 2: Conditionally export the updated list of meal histories
+        if UserDefaultsRepository.allowCSVSync {
+            print(NSLocalizedString("Meal history export triggered", comment: "Log message for exporting meal history"))
+            await dataSharingVC.exportMealHistoryToCSV()
+        } else {
+            print("CSV export is disabled in settings.")
+        }
 
         // Step 3: Save the context with the updated delete flag
         let context = CoreDataStack.shared.context
@@ -717,11 +728,15 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             guard let self = self, let dataSharingVC = self.dataSharingVC else { return }
             
             Task {
-                // Import only the MealHistory CSV file before saving
-                print("Starting data import for Meal History before updating date")
-                await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
-                print("Data import complete for Meal History")
-                
+                // Conditionally import the MealHistory CSV file before saving
+                if UserDefaultsRepository.allowCSVSync {
+                    print("Starting data import for Meal History before updating date")
+                    await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+                    print("Data import complete for Meal History")
+                } else {
+                    print("CSV import is disabled in settings.")
+                }
+
                 // Update the meal date and lastEdited in the meal history
                 mealHistory.mealDate = newDate
                 mealHistory.lastEdited = Date()  // Update lastEdited to current date and time
@@ -734,9 +749,13 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                     print("Failed to save updated meal date: \(error.localizedDescription)")
                 }
 
-                // Run the export function after saving the updated date
-                await dataSharingVC.exportMealHistoryToCSV()
-                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                // Conditionally export the updated meal history
+                if UserDefaultsRepository.allowCSVSync {
+                    await dataSharingVC.exportMealHistoryToCSV()
+                    print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+                } else {
+                    print("CSV export is disabled in settings.")
+                }
 
                 // Reload table
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
@@ -758,10 +777,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
               let dataSharingVC = dataSharingVC else { return }
 
         Task {
-            // Import only the MealHistory CSV file before updating
-            print("Starting data import for Meal History before saving date picker value")
-            await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
-            print("Data import complete for Meal History")
+            // Conditionally import the MealHistory CSV file
+            if UserDefaultsRepository.allowCSVSync {
+                print("Starting data import for Meal History before saving date picker value")
+                await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+                print("Data import complete for Meal History")
+            } else {
+                print("CSV import is disabled in settings.")
+            }
 
             // Update the meal date in the meal history
             let mealHistory = filteredMealHistories[indexPath.row]
@@ -775,9 +798,13 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 print("Failed to save updated meal date: \(error.localizedDescription)")
             }
             
-            // Run the export function after saving the updated date
-            await dataSharingVC.exportMealHistoryToCSV()
-            print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+            // Conditionally export the updated meal history
+            if UserDefaultsRepository.allowCSVSync {
+                await dataSharingVC.exportMealHistoryToCSV()
+                print(NSLocalizedString("Meal history export triggered after updating date", comment: "Log message for exporting meal history"))
+            } else {
+                print("CSV export is disabled in settings.")
+            }
             
             // Dismiss the popover and reload table
             dismiss(animated: true) {
@@ -797,10 +824,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             guard let self = self, let dataSharingVC = self.dataSharingVC else { return }
             
             Task {
-                // Import only the MealHistory CSV file before clearing
-                print("Starting data import for Meal History before clearing all records")
-                await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
-                print("Data import complete for Meal History")
+                // Conditionally import the MealHistory CSV file before clearing
+                if UserDefaultsRepository.allowCSVSync {
+                    print("Starting data import for Meal History before clearing all records")
+                    await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+                    print("Data import complete for Meal History")
+                } else {
+                    print("CSV import is disabled in settings.")
+                }
 
                 // Clear all meal history
                 CoreDataHelper.shared.clearAllMealHistory()
@@ -810,9 +841,13 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
                 self.filteredMealHistories.removeAll()
                 self.tableView.reloadData()
 
-                // Export meal history to CSV
-                print(NSLocalizedString("Meal history export triggered", comment: "Favorite meals export triggered"))
-                await dataSharingVC.exportMealHistoryToCSV()
+                // Conditionally export meal history to CSV
+                if UserDefaultsRepository.allowCSVSync {
+                    print(NSLocalizedString("Meal history export triggered", comment: "Favorite meals export triggered"))
+                    await dataSharingVC.exportMealHistoryToCSV()
+                } else {
+                    print("CSV export is disabled in settings.")
+                }
             }
         }
 

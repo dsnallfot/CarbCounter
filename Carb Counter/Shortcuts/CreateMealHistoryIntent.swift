@@ -30,10 +30,14 @@ struct CreateMealHistoryIntent: AppIntent {
             return .result()
         }
         
-        // Trigger data import for Meal History only before saving the new MealHistory entry
-        print("Starting data import for Meal History")
-        await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
-        print("Data import complete for Meal History")
+        // Conditionally trigger data import for Meal History
+        if UserDefaultsRepository.allowCSVSync {
+            print("Starting data import for Meal History")
+            await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+            print("Data import complete for Meal History")
+        } else {
+            print("CSV import is disabled in settings.")
+        }
 
         // Perform the save operation
         try await saveMealHistory(
@@ -113,8 +117,12 @@ struct CreateMealHistoryIntent: AppIntent {
             Task { @MainActor in
                 if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
                    let dataSharingVC = appDelegate.dataSharingVC {
-                    await dataSharingVC.exportMealHistoryToCSV()
-                    print("Meal history export triggered from shortcut")
+                    if UserDefaultsRepository.allowCSVSync {
+                        await dataSharingVC.exportMealHistoryToCSV()
+                        print("Meal history export triggered from shortcut")
+                    } else {
+                        print("CSV export is disabled in settings.")
+                    }
                 }
             }
         }

@@ -344,9 +344,15 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         // Import CSV files if needed
         guard let dataSharingVC = dataSharingVC else { return }
-        Task {
-            print("Data import triggered")
-            await dataSharingVC.importCSVFiles()
+
+        if UserDefaultsRepository.allowCSVSync {
+            Task {
+                print("Data import triggered")
+                await dataSharingVC.importCSVFiles()
+                print("Data import completed")
+            }
+        } else {
+            print("CSV import is disabled in settings.")
         }
 
         fetchFoodItems()
@@ -2568,8 +2574,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
     }
 
-
-    
     private func saveMealHistory() async {
         guard !foodItemRows.isEmpty else {
             mealDate = nil // Reset mealDate to nil after exiting without saving
@@ -2577,16 +2581,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             return
         }
         
-        // Trigger data import before saving the new MealHistory entry
-        print("Starting data import for Meal History before saving")
         guard let dataSharingVC = dataSharingVC else {
             print("DataSharingVC could not be instantiated.")
             return
         }
         
-        // Import only the MealHistory CSV file
-        await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
-        print("Data import complete for Meal History")
+        // Conditionally import the MealHistory CSV file
+        if UserDefaultsRepository.allowCSVSync {
+            print("Starting data import for Meal History before saving")
+            await dataSharingVC.importCSVFiles(specificFileName: "MealHistory.csv")
+            print("Data import complete for Meal History")
+        } else {
+            print("CSV import is disabled in settings.")
+        }
 
         let context = CoreDataStack.shared.context
         let mealHistory = MealHistory(context: context)
@@ -2638,10 +2645,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             try context.save()
             print("MealHistory saved successfully!")
             
-            // Trigger the export after saving
-            Task {
-                print("Meal history export triggered")
-                await dataSharingVC.exportMealHistoryToCSV()
+            // Conditionally trigger the export
+            if UserDefaultsRepository.allowCSVSync {
+                Task {
+                    print("Meal history export triggered")
+                    await dataSharingVC.exportMealHistoryToCSV()
+                }
+            } else {
+                print("CSV export is disabled in settings.")
             }
             
         } catch {
@@ -2658,10 +2669,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         guard saveFavoriteButton != nil, let dataSharingVC = dataSharingVC else { return }
         
         Task {
-            // Import only the FavoriteMeals CSV file before saving
-            print("Starting data import for Favorite Meals")
-            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
-            print("Data import complete for Favorite Meals")
+            // Conditionally import the FavoriteMeals CSV file
+            if UserDefaultsRepository.allowCSVSync {
+                print("Starting data import for Favorite Meals")
+                await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+                print("Data import complete for Favorite Meals")
+            } else {
+                print("CSV import is disabled in settings.")
+            }
             
             guard !foodItemRows.isEmpty else {
                 let alert = UIAlertController(
@@ -2719,9 +2734,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 
                 CoreDataStack.shared.saveContext()
                 
-                Task {
-                    print("Favorite meals export triggered")
-                    await dataSharingVC.exportFavoriteMealsToCSV()
+                // Conditionally trigger the export
+                if UserDefaultsRepository.allowCSVSync {
+                    Task {
+                        print("Favorite meals export triggered")
+                        await dataSharingVC.exportFavoriteMealsToCSV()
+                    }
+                } else {
+                    print("CSV export is disabled in settings.")
                 }
                 
                 let confirmAlert = UIAlertController(

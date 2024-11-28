@@ -37,7 +37,11 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         
         setupSearchBar()
         setupTableView()
-        addRefreshControl()
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
         setupNavigationBar()
         fetchFavoriteMeals()
         
@@ -386,10 +390,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
     private func deleteFavoriteMeal(at indexPath: IndexPath) async {
         guard let dataSharingVC = dataSharingVC else { return }
 
-        // Import only the FavoriteMeals CSV file before deletion
-        print("Starting data import for Favorite Meals before deletion")
-        await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
-        print("Data import complete for Favorite Meals")
+        // Conditionally import the FavoriteMeals CSV file before deletion
+        if UserDefaultsRepository.allowCSVSync {
+            print("Starting data import for Favorite Meals before deletion")
+            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+            print("Data import complete for Favorite Meals")
+        } else {
+            print("CSV import is disabled in settings.")
+        }
         
         let favoriteMeal = filteredFavoriteMeals[indexPath.row]
         
@@ -397,9 +405,13 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
         favoriteMeal.delete = true
         favoriteMeal.lastEdited = Date() // Update lastEdited date to current date
 
-        // Step 2: Export the updated list of favorite meals
-        print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
-        await dataSharingVC.exportFavoriteMealsToCSV()
+        // Step 2: Conditionally export the updated list of favorite meals
+        if UserDefaultsRepository.allowCSVSync {
+            print(NSLocalizedString("Favorite meals export triggered", comment: "Message when favorite meals export is triggered"))
+            await dataSharingVC.exportFavoriteMealsToCSV()
+        } else {
+            print("CSV export is disabled in settings.")
+        }
 
         // Step 3: Save the updated context with the delete flag set to true
         CoreDataStack.shared.saveContext()
@@ -439,10 +451,14 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
             guard let self = self, let dataSharingVC = self.dataSharingVC else { return }
             
             Task {
-                // Import only the FavoriteMeals CSV file before clearing
-                print("Starting data import for Favorite Meals before clearing all records")
-                await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
-                print("Data import complete for Favorite Meals")
+                // Conditionally import the FavoriteMeals CSV file before clearing
+                if UserDefaultsRepository.allowCSVSync {
+                    print("Starting data import for Favorite Meals before clearing all records")
+                    await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+                    print("Data import complete for Favorite Meals")
+                } else {
+                    print("CSV import is disabled in settings.")
+                }
 
                 // Clear all favorites
                 CoreDataHelper.shared.clearAllFavorites()
@@ -450,9 +466,13 @@ class FavoriteMealsViewController: UIViewController, UITableViewDelegate, UITabl
                 // Refresh the table view
                 self.fetchFavoriteMeals()
 
-                // Export favorite meals to CSV
-                print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
-                await dataSharingVC.exportFavoriteMealsToCSV()
+                // Conditionally export favorite meals to CSV
+                if UserDefaultsRepository.allowCSVSync {
+                    print(NSLocalizedString("Favorite meals export triggered", comment: "Favorite meals export triggered"))
+                    await dataSharingVC.exportFavoriteMealsToCSV()
+                } else {
+                    print("CSV export is disabled in settings.")
+                }
             }
         }
 

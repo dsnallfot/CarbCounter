@@ -9,10 +9,10 @@ class LoadingViewController: UIViewController {
     
     var dataSharingVC: DataSharingViewController?
     var minimumDisplayTime: TimeInterval = 1.5
-
+    
     override func viewDidLoad() {
-            super.viewDidLoad()
-            
+        super.viewDidLoad()
+        
         // Check if the app is in dark mode
         if traitCollection.userInterfaceStyle == .dark {
             view.backgroundColor = .systemBackground
@@ -24,11 +24,11 @@ class LoadingViewController: UIViewController {
             ]
             let gradientView = GradientView(colors: colors)
             gradientView.translatesAutoresizingMaskIntoConstraints = false
-
+            
             // Add the gradient view to the main view
             view.addSubview(gradientView)
             view.sendSubviewToBack(gradientView)
-
+            
             // Set up constraints for the gradient view
             NSLayoutConstraint.activate([
                 gradientView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -40,31 +40,32 @@ class LoadingViewController: UIViewController {
             // In light mode, set a solid background
             view.backgroundColor = .systemGray6
         }
-            
-            // Ensure dataSharingVC is instantiated
-            dataSharingVC = DataSharingViewController()
-            
-            // Setup UI components
-            setupUI()
-        }
+        
+        // Ensure dataSharingVC is instantiated
+        dataSharingVC = DataSharingViewController()
+        
+        // Setup UI components
+        setupUI()
+    }
     
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            print("LoadingViewController appeared")
-            
-            // Start the minimum display timer
-            let minimumDisplayTime = self.minimumDisplayTime
-            let startTime = Date()
-            
-            // Create a DispatchGroup to synchronize tasks
-            let dispatchGroup = DispatchGroup()
-            
-            // Ensure dataSharingVC is instantiated
-            guard let dataSharingVC = dataSharingVC else {
-                print("dataSharingVC is nil")
-                return
-            }
-            
+        super.viewWillAppear(animated)
+        print("LoadingViewController appeared")
+        
+        // Start the minimum display timer
+        let minimumDisplayTime = self.minimumDisplayTime
+        let startTime = Date()
+        
+        // Create a DispatchGroup to synchronize tasks
+        let dispatchGroup = DispatchGroup()
+        
+        // Ensure dataSharingVC is instantiated
+        guard let dataSharingVC = dataSharingVC else {
+            print("dataSharingVC is nil")
+            return
+        }
+        
+        if UserDefaultsRepository.allowCSVSync {
             dispatchGroup.enter()
             // Perform data import
             print("Data import triggered")
@@ -73,69 +74,72 @@ class LoadingViewController: UIViewController {
                 print("Data import completed")
                 dispatchGroup.leave()
             }
+        } else {
+            print("CSV import is disabled in settings.")
+        }
+        
+        // Wait for tasks to complete
+        dispatchGroup.notify(queue: .main) {
+            let elapsedTime = Date().timeIntervalSince(startTime)
+            let remainingTime = minimumDisplayTime - elapsedTime
             
-            // Wait for both tasks to complete
-            dispatchGroup.notify(queue: .main) {
-                let elapsedTime = Date().timeIntervalSince(startTime)
-                let remainingTime = minimumDisplayTime - elapsedTime
-                
-                if remainingTime > 0 {
-                    // Wait for the remaining time before transitioning
-                    DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) {
-                        self.transitionToMainViewController()
-                    }
-                } else {
-                    // Minimum display time already passed, transition immediately
+            if remainingTime > 0 {
+                // Wait for the remaining time before transitioning
+                DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) {
                     self.transitionToMainViewController()
                 }
+            } else {
+                // Minimum display time already passed, transition immediately
+                self.transitionToMainViewController()
+            }
+        }
+    }
+    
+    private func transitionToMainViewController() {
+        // Instantiate the main view controller
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let mainVC = storyboard.instantiateInitialViewController() else {
+            print("Failed to instantiate main view controller")
+            return
+        }
+        
+        // Access the ComposeMealViewController from the mainVC
+        if let tabBarController = mainVC as? UITabBarController {
+            if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
+               let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
+                
+                // Call fetchFoodItems on composeMealVC
+                composeMealVC.fetchFoodItems()
+                print("fetchFoodItems completed")
             }
         }
         
-        private func transitionToMainViewController() {
-            // Instantiate the main view controller
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            guard let mainVC = storyboard.instantiateInitialViewController() else {
-                print("Failed to instantiate main view controller")
-                return
-            }
-            
-            // Access the ComposeMealViewController from the mainVC
-            if let tabBarController = mainVC as? UITabBarController {
-                if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
-                   let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
-                    
-                    // Call fetchFoodItems on composeMealVC
-                    composeMealVC.fetchFoodItems()
-                    print("fetchFoodItems completed")
-                }
-            }
-            
-            // Transition to the main view controller
-            // Add a transition animation
-            let transition = CATransition()
-            transition.type = .fade
-            transition.duration = 0.5
-            self.view.window?.layer.add(transition, forKey: kCATransition)
-            
-            self.view.window?.rootViewController = mainVC
-        }
-
-
+        // Transition to the main view controller
+        // Add a transition animation
+        let transition = CATransition()
+        transition.type = .fade
+        transition.duration = 0.5
+        self.view.window?.layer.add(transition, forKey: kCATransition)
+        
+        self.view.window?.rootViewController = mainVC
+    }
+    
+    
     private func setupUI() {
         // Create and setup the title label
-           let titleLabel = UILabel()
-           titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
-           titleLabel.textAlignment = .center
-           
-           let systemFont = UIFont.systemFont(ofSize: 36, weight: .semibold)
-           if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
-               titleLabel.font = UIFont(descriptor: roundedDescriptor, size: 36)
-           } else {
-               titleLabel.font = systemFont
-           }
-
-           titleLabel.translatesAutoresizingMaskIntoConstraints = false
-           titleLabel.textColor = UIColor.label.withAlphaComponent(0.4)
+        let titleLabel = UILabel()
+        titleLabel.text = NSLocalizedString("Räkna Kolhydrater", comment: "Title for the home screen")
+        titleLabel.textAlignment = .center
+        
+        let systemFont = UIFont.systemFont(ofSize: 36, weight: .semibold)
+        if let roundedDescriptor = systemFont.fontDescriptor.withDesign(.rounded) {
+            titleLabel.font = UIFont(descriptor: roundedDescriptor, size: 36)
+        } else {
+            titleLabel.font = systemFont
+        }
+        
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.textColor = UIColor.label.withAlphaComponent(0.4)
         
         // Create and setup the container view for the image
         let imageContainerView = UIView()
@@ -158,7 +162,7 @@ class LoadingViewController: UIViewController {
         
         // Add the image view to the container view
         imageContainerView.addSubview(appIconImageView)
-       
+        
         // Add subviews to the main view
         view.addSubview(titleLabel)
         view.addSubview(imageContainerView)

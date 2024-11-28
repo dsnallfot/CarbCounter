@@ -654,11 +654,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                 }
             }
             
-            // Trigger CSV export
+            // Conditionally trigger CSV export
             guard let dataSharingVC = dataSharingVC else { return }
-            Task {
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
+            if UserDefaultsRepository.allowCSVSync {
+                Task {
+                    print("Food items export triggered")
+                    await dataSharingVC.exportFoodItemsToCSV()
+                }
+            } else {
+                print("CSV export is disabled in settings.")
             }
             
         } catch {

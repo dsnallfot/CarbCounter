@@ -244,6 +244,16 @@ class UserDefaultsRepository {
         }
     }
     
+    static var allowCSVSync: Bool {
+        get {
+            return UserDefaults.standard.object(forKey: "allowCSVSync") as? Bool ?? true
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "allowCSVSync")
+            NotificationCenter.default.post(name: .allowCSVSync, object: nil)
+        }
+    }
+    
     static var schoolFoodURL: String? {
         get {
             return UserDefaults.standard.string(forKey: "schoolFoodURL")
@@ -346,6 +356,7 @@ class UserDefaultsRepository {
 
 extension Notification.Name {
     static let allowViewingOngoingMealsChanged = Notification.Name("allowViewingOngoingMealsChanged")
+    static let allowCSVSync = Notification.Name("allowCSVSync")
     static let schoolFoodURLChanged = Notification.Name("schoolFoodURLChanged")
     static let methodChanged = Notification.Name("methodChanged")
 }

@@ -81,8 +81,11 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
         
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
-        
-        addRefreshControl()
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
     }
 
     deinit {
@@ -103,18 +106,22 @@ class CarbRatioViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            
-            // Ensure dataSharingVC is instantiated and only export if there were changes
-            guard let dataSharingVC = dataSharingVC, hasChanges else { return }
-            
-            // Trigger export if there are changes, then reset hasChanges
+        super.viewWillDisappear(animated)
+        
+        // Ensure dataSharingVC is instantiated and only export if there were changes
+        guard let dataSharingVC = dataSharingVC, hasChanges else { return }
+        
+        // Check if CSV sync is allowed before exporting
+        if UserDefaultsRepository.allowCSVSync {
             Task {
                 print("Carb ratios export triggered due to changes")
                 await dataSharingVC.exportCarbRatioScheduleToCSV()
                 hasChanges = false  // Reset changes flag after export
             }
+        } else {
+            print("CSV export is disabled in settings.")
         }
+    }
 
     private func loadCarbRatios() {
         carbRatios = CoreDataHelper.shared.fetchCarbRatios()

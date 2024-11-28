@@ -26,7 +26,11 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
         setupTableView()
         setupNavigationBar()
         fetchMeals()
-        addRefreshControl()
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
         dataSharingVC = DataSharingViewController()
     }
 
@@ -286,9 +290,13 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
         meal.delete = true
         meal.lastEdited = Date() // Update the last edited timestamp
 
-        // Step 3: Export the updated list of AI meals
-        print(NSLocalizedString("AI meals export triggered", comment: "Message when AI meals export is triggered"))
-        await dataSharingVC.exportAIMealLogToCSV()
+        // Step 3: Conditionally export the updated list of AI meals
+        if UserDefaultsRepository.allowCSVSync {
+            print(NSLocalizedString("AI meals export triggered", comment: "Message when AI meals export is triggered"))
+            await dataSharingVC.exportAIMealLogToCSV()
+        } else {
+            print("CSV export is disabled in settings.")
+        }
 
         // Step 4: Save the updated context
         CoreDataStack.shared.saveContext()

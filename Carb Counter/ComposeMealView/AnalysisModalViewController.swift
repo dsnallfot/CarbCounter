@@ -338,7 +338,6 @@ class AnalysisModalViewController: UIViewController {
     }
     
     @objc private func addToMeal() {
-        
         let context = CoreDataStack.shared.context
         let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
         
@@ -356,9 +355,13 @@ class AnalysisModalViewController: UIViewController {
             // Add the new AIMeal after processing temporary items
             saveNewAIMealEntry()
             
-            // Trigger the export after saving the new meal
-            Task {
-                await exportAIMealLog()
+            // Conditionally trigger the export after saving the new meal
+            if UserDefaultsRepository.allowCSVSync {
+                Task {
+                    await exportAIMealLog()
+                }
+            } else {
+                print("CSV export is disabled in settings.")
             }
             
         } catch {

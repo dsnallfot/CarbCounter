@@ -127,17 +127,26 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         }
         
         Task {
-            // Import only the FavoriteMeals CSV file before saving changes
-            print("Starting data import for Favorite Meals before saving changes")
-            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
-            print("Data import complete for Favorite Meals")
-            
+            // Conditionally import the FavoriteMeals CSV file before saving changes
+            if UserDefaultsRepository.allowCSVSync {
+                print("Starting data import for Favorite Meals before saving changes")
+                await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+                print("Data import complete for Favorite Meals")
+            } else {
+                print("CSV import is disabled in settings.")
+            }
+
             favoriteMeal.name = nameTextField.text
             favoriteMeal.lastEdited = Date()
             CoreDataStack.shared.saveContext()
 
-            print("Favorite meals export triggered")
-            await dataSharingVC.exportFavoriteMealsToCSV()
+            // Conditionally export the updated Favorite Meals
+            if UserDefaultsRepository.allowCSVSync {
+                print("Favorite meals export triggered")
+                await dataSharingVC.exportFavoriteMealsToCSV()
+            } else {
+                print("CSV export is disabled in settings.")
+            }
 
             delegate?.favoriteMealDetailViewControllerDidSave(self)
             dismiss(animated: true, completion: nil)
@@ -213,10 +222,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
         Task {
             guard let dataSharingVC = dataSharingVC else { return }
             
-            // Import only the FavoriteMeals CSV file before editing
-            print("Starting data import for Favorite Meals before editing portion")
-            await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
-            print("Data import complete for Favorite Meals")
+            // Conditionally import the FavoriteMeals CSV file before editing
+            if UserDefaultsRepository.allowCSVSync {
+                print("Starting data import for Favorite Meals before editing portion")
+                await dataSharingVC.importCSVFiles(specificFileName: "FavoriteMeals.csv")
+                print("Data import complete for Favorite Meals")
+            } else {
+                print("CSV import is disabled in settings.")
+            }
 
             guard let itemsSet = favoriteMeal.favoriteEntries as? Set<FoodItemFavorite> else { return }
             let items = Array(itemsSet).sorted { $0.name ?? "" < $1.name ?? "" }
@@ -245,9 +258,14 @@ class FavoriteMealDetailViewController: UIViewController, UITableViewDelegate, U
                 self.favoriteMeal.lastEdited = Date()
                 CoreDataStack.shared.saveContext()
                 
-                print("Favorite meals export triggered")
-                Task {
-                    await dataSharingVC.exportFavoriteMealsToCSV()
+                // Conditionally export the updated Favorite Meals
+                if UserDefaultsRepository.allowCSVSync {
+                    print("Favorite meals export triggered")
+                    Task {
+                        await dataSharingVC.exportFavoriteMealsToCSV()
+                    }
+                } else {
+                    print("CSV export is disabled in settings.")
                 }
                 
                 self.tableView.reloadData()

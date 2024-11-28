@@ -110,8 +110,11 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         // Instantiate DataSharingViewController programmatically
         dataSharingVC = DataSharingViewController()
         
-        addRefreshControl()
-        
+        if UserDefaultsRepository.allowCSVSync {
+            addRefreshControl()
+        } else {
+            print("CSV import is disabled in settings.")
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -1095,10 +1098,14 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 return
             }
 
-            // Call the export function
-            Task {
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
+            // Conditionally call the export function
+            if UserDefaultsRepository.allowCSVSync {
+                Task {
+                    print("Food items export triggered")
+                    await dataSharingVC.exportFoodItemsToCSV()
+                }
+            } else {
+                print("CSV export is disabled in settings.")
             }
         } catch {
             print("Failed to save food item: \(error)")
@@ -1177,32 +1184,34 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             // Step 2: Save the context with the updated delete flag
             try context.save()
             
-            // Step 3: Export the updated list to CSV before marking the item as deleted
+            // Step 3: Conditionally export the updated list to CSV
             guard let dataSharingVC = dataSharingVC else { return }
-            Task {
-                print("Food items export triggered")
-                await dataSharingVC.exportFoodItemsToCSV()
-                
-                // Step 4: Update the table view without deleting the Core Data entry
-                filteredFoodItems.remove(at: indexPath.row)
-                tableView.deleteRows(at: [indexPath], with: .automatic)
-                
-                // Step 5: Refresh the table view
-                fetchFoodItems()
-                if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
-                    searchBar.text = savedSearchText
-                    applySearchFilter(with: savedSearchText)
-                } else {
-                    // If no search text is saved, show the full list
-                    filteredFoodItems = foodItems
-                    
+            if UserDefaultsRepository.allowCSVSync {
+                Task {
+                    print("Food items export triggered")
+                    await dataSharingVC.exportFoodItemsToCSV()
                 }
-                updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
+            } else {
+                print("CSV export is disabled in settings.")
             }
+            
+            // Step 4: Update the table view without deleting the Core Data entry
+            filteredFoodItems.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            
+            // Step 5: Refresh the table view
+            fetchFoodItems()
+            if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+                searchBar.text = savedSearchText
+                applySearchFilter(with: savedSearchText)
+            } else {
+                // If no search text is saved, show the full list
+                filteredFoodItems = foodItems
+            }
+            updateSearchBarPlaceholder() // Update the search bar placeholder after deleting an item
         } catch {
             print("Failed to update delete flag: \(error)")
         }
-        
     }
     
     private func editFoodItem(at indexPath: IndexPath) {
