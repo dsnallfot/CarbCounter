@@ -168,6 +168,12 @@ class SettingsViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
                 cell.accessoryType = .disclosureIndicator
                 cell.backgroundColor = .clear
+            
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
+            
                 switch indexPath.row {
                 case 0:
                     cell.textLabel?.text = NSLocalizedString("Anslutningar", comment: "Connections label")
@@ -213,6 +219,11 @@ class SettingsViewController: UITableViewController {
                 let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dataClearingLabelTapped))
                 cell.textLabel?.isUserInteractionEnabled = true
                 cell.textLabel?.addGestureRecognizer(tapGesture)
+                
+                // Custom selection color
+                let customSelectionColor = UIView()
+                customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+                cell.selectedBackgroundView = customSelectionColor
                 
             case 2:
                 let segmentedControl = UISegmentedControl(items: [NSLocalizedString("mg/dl", comment: "mg/dl"), NSLocalizedString("mmol", comment: "mmol")])

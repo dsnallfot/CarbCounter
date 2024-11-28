@@ -169,6 +169,11 @@ class RemoteSettingsViewController: UITableViewController {
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
             
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
+            
             // Remove separator lines for this cell
             cell.separatorInset = UIEdgeInsets(top: 0, left: UIScreen.main.bounds.width, bottom: 0, right: 0)
             

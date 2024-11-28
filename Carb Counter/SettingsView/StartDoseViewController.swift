@@ -156,6 +156,11 @@ class StartDoseViewController: UITableViewController, UITextFieldDelegate {
         
         cell.configure(hour: hour, dose: formattedDose, delegate: self)
         cell.backgroundColor = .clear
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
         return cell
     }
     

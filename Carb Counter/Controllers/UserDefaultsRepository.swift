@@ -246,7 +246,7 @@ class UserDefaultsRepository {
     
     static var allowCSVSync: Bool {
         get {
-            return UserDefaults.standard.object(forKey: "allowCSVSync") as? Bool ?? true
+            return UserDefaults.standard.object(forKey: "allowCSVSync") as? Bool ?? false
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "allowCSVSync")

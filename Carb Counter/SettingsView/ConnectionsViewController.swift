@@ -84,6 +84,11 @@ class ConnectionsViewController: UITableViewController {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "valueCell")
         cell.backgroundColor = .clear
         cell.accessoryType = .none
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
 
         switch indexPath.row {
         case 0:
@@ -137,25 +142,25 @@ class ConnectionsViewController: UITableViewController {
             
         case 2:
             title = NSLocalizedString("Dabas API Secret", comment: "Dabas API Secret title")
-            message = NSLocalizedString("Ange din Dabas API Secret:", comment: "Dabas API Secret message")
+            message = NSLocalizedString("Ange din Dabas API Secret för att få åtkomst till den svenska livsmedelsdatabasen Dabas.\n\nOm ingen Dabas API Secret anges här kommer appen att använda Openfoodfacts för att söka upp livsmedel:", comment: "Dabas API Secret message")
             currentValue = UserDefaultsRepository.dabasAPISecret
             saveAction = { newValue in UserDefaultsRepository.dabasAPISecret = newValue }
             
         case 3:
             title = NSLocalizedString("Skolmaten URL", comment: "School food URL title")
-            message = NSLocalizedString("Ange URL till Skolmaten.se RSS-flöde:", comment: "School food URL message")
+            message = NSLocalizedString("Ange URL till Skolmaten.se RSS-flöde för din skola ( https://skolmaten.se/[namnet_på_din_skola]/rss/weeks):", comment: "School food URL message")
             currentValue = UserDefaultsRepository.schoolFoodURL ?? ""
             saveAction = { newValue in UserDefaultsRepository.schoolFoodURL = newValue }
             
         case 4:
             title = NSLocalizedString("Exkludera sökord", comment: "Exclude keywords title")
-            message = NSLocalizedString("Ange sökord att exkludera, separerade med komma:", comment: "Exclude keywords message")
+            message = NSLocalizedString("Ange sökord att exkludera från sökningarna i lunchmenyerna från skolmatens.se för att förbättra matchningen med dina livsmedel i databasen. Separera orden med komma (exempel-ord: och, med, kalla, het):", comment: "Exclude keywords message")
             currentValue = UserDefaultsRepository.excludeWords ?? ""
             saveAction = { newValue in UserDefaultsRepository.excludeWords = newValue }
             
         case 5:
             title = NSLocalizedString("Lägg till top-ups", comment: "Add top-ups title")
-            message = NSLocalizedString("Ange top-ups, separerade med komma:", comment: "Add top-ups message")
+            message = NSLocalizedString("Ange namn på livsmedel som används för att toppa upp ett lågt socker i samband med måltid, eller för att kmplettera en måltid när insulin doserats för mer än vad som åts. Separera orden med komma (exempel: dextrosol, mariekex, mangoboll):", comment: "Add top-ups message")
             currentValue = UserDefaultsRepository.topUps ?? ""
             saveAction = { newValue in UserDefaultsRepository.topUps = newValue }
             

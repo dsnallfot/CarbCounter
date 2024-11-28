@@ -90,6 +90,11 @@ class NotificationViewController: UITableViewController {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "switchCell")
         cell.backgroundColor = .clear
         
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
+        
         let setting = settings[indexPath.row]
         
         // Configure label

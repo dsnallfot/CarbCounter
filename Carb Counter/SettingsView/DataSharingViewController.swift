@@ -80,81 +80,119 @@ class DataSharingViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "dataCell")
         cell.backgroundColor = .clear
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
 
-        // Create a horizontal stack view for aligning label and icon/switch
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-
-        // Label for row text
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 17)
-        label.textColor = .label
-
-        // Configure cell content based on row
         switch indexPath.row {
         case 0:
-            label.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Allow ongoing meal sharing")
             let toggleSwitch = UISwitch()
+            cell.textLabel?.text = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Allow ongoing meal sharing")
             toggleSwitch.isOn = UserDefaultsRepository.allowSharingOngoingMeals
             toggleSwitch.addTarget(self, action: #selector(toggleOngoingMealSharing(_:)), for: .valueChanged)
-            stackView.addArrangedSubview(label)
-            stackView.addArrangedSubview(toggleSwitch)
-            
+            cell.accessoryView = toggleSwitch
+
+            // Add gesture recognizer for the label
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ongoingMealLabelTapped))
+            cell.textLabel?.isUserInteractionEnabled = true
+            cell.textLabel?.addGestureRecognizer(tapGesture)
+
         case 1:
-            label.text = NSLocalizedString("Tillåt automatisk import/export csv", comment: "Tillåt automatisk import/export csv")
             let toggleSwitch = UISwitch()
+            cell.textLabel?.text = NSLocalizedString("Tillåt auto import/export databas", comment: "Allow automatic CSV sync")
             toggleSwitch.isOn = UserDefaultsRepository.allowCSVSync
             toggleSwitch.addTarget(self, action: #selector(toggleCSVSyncSharing(_:)), for: .valueChanged)
-            stackView.addArrangedSubview(label)
-            stackView.addArrangedSubview(toggleSwitch)
+            cell.accessoryView = toggleSwitch
+
+            // Add gesture recognizer for the label
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(csvSyncLabelTapped))
+            cell.textLabel?.isUserInteractionEnabled = true
+            cell.textLabel?.addGestureRecognizer(tapGesture)
 
         case 2:
-            label.text = NSLocalizedString("Exportera data", comment: "Export data")
+            let label = UILabel()
+            label.text = NSLocalizedString("Manuell export databas", comment: "Export data")
             let exportIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
             exportIcon.tintColor = .label
-            stackView.addArrangedSubview(label)
-            stackView.addArrangedSubview(exportIcon)
+            let stackView = createStackView(with: label, and: exportIcon)
+            cell.contentView.addSubview(stackView)
+            addConstraintsToStackView(stackView, in: cell)
 
         case 3:
-            label.text = NSLocalizedString("Importera data", comment: "Import data")
+            let label = UILabel()
+            label.text = NSLocalizedString("Manuell import databas", comment: "Import data")
             let importIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.down"))
             importIcon.tintColor = .label
-            stackView.addArrangedSubview(label)
-            stackView.addArrangedSubview(importIcon)
+            let stackView = createStackView(with: label, and: importIcon)
+            cell.contentView.addSubview(stackView)
+            addConstraintsToStackView(stackView, in: cell)
 
         case 4:
+            let label = UILabel()
             label.text = NSLocalizedString("Rensa gammal måltidshistorik", comment: "Clear old meal history")
             let trashIcon = UIImageView(image: UIImage(systemName: "trash"))
             trashIcon.tintColor = .red
-            stackView.addArrangedSubview(label)
-            stackView.addArrangedSubview(trashIcon)
+            let stackView = createStackView(with: label, and: trashIcon)
+            cell.contentView.addSubview(stackView)
+            addConstraintsToStackView(stackView, in: cell)
 
-        case 5: // New row
-            label.text = NSLocalizedString("Synka Nightscout profildata", comment: "Sync with Nightscout")
+        case 5:
+            let label = UILabel()
+            label.text = NSLocalizedString("Synka Nightscout profildata", comment: "Sync Nightscout profile data")
             let syncIcon = UIImageView(image: UIImage(systemName: "arrow.triangle.2.circlepath.icloud"))
             syncIcon.tintColor = .label
-            stackView.addArrangedSubview(label)
-            stackView.addArrangedSubview(syncIcon)
+            let stackView = createStackView(with: label, and: syncIcon)
+            cell.contentView.addSubview(stackView)
+            addConstraintsToStackView(stackView, in: cell)
 
         default:
             break
         }
 
-        // Add stack view to cell content
-        cell.contentView.addSubview(stackView)
+        return cell
+    }
+    
+    private func createStackView(with label: UILabel, and icon: UIImageView) -> UIStackView {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(label)
+        stackView.addArrangedSubview(icon)
+        return stackView
+    }
 
-        // Set up constraints for stack view to fit within cell
+    private func addConstraintsToStackView(_ stackView: UIStackView, in cell: UITableViewCell) {
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
             stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 10),
             stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -10)
         ])
+    }
+    
+    @objc private func ongoingMealLabelTapped() {
+        let title = NSLocalizedString("Tillåt delning av pågående måltid", comment: "Allow ongoing meal sharing title")
+        let message = NSLocalizedString("Aktivera denna inställning för att dela pågående måltidsdata med andra användare genom export och import av en csv-fil. (genom att spara filen i en delad iCloud-mapp \"Carb Counter\" inuti den lokala \"Carb Counter\"-mappen som skapas automatiskt av appen)", comment: "Ongoing meal sharing tooltip message")
 
-        return cell
+        showTooltipAlert(title: title, message: message)
+    }
+
+    @objc private func csvSyncLabelTapped() {
+        let title = NSLocalizedString("Tillåt auto import/export databas", comment: "Allow automatic CSV sync title")
+        let message = NSLocalizedString("Aktivera denna inställning om du vill tillåta automatisk export och import av csv-filer med livsmedel, favoriter, måltidshistorik, carb ratio-scheman, startdoser och AI analyslogg. Detta är särskilt användningsbart om man vill synkronisera csv-filer mellan flera användare (genom att spara filerna i en delad iCloud-mapp \"Carb Counter\" inuti den lokala \"Carb Counter\"-mappen som skapas automatiskt av appen)", comment: "CSV sync tooltip message")
+
+        showTooltipAlert(title: title, message: message)
+    }
+    
+    private func showTooltipAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK button title"), style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

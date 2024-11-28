@@ -241,6 +241,12 @@ extension RSSFeedViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.numberOfLines = 0
         cell.backgroundColor = .clear
+        
+        // Custom selection color
+        let customSelectionColor = UIView()
+        customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        cell.selectedBackgroundView = customSelectionColor
+        
         let weekdayItems = rssItems.filter {
             let calendar = Calendar(identifier: .iso8601)
             return calendar.component(.weekday, from: $0.date) == indexPath.section + 2 // Måndag is 2, Tisdag is 3, ..., Fredag is 6
