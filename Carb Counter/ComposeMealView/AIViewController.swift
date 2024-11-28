@@ -13,6 +13,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
     private let savedImageKey = "savedImageKey"
     private let savedResponseKey = "savedResponseKey"
     
+    private var fullGPTResponse: String?
+    
     private let imageView = UIImageView()
     private var analyzeButton = UIButton()
     private let selectImageButton = UIButton(type: .system)
@@ -203,15 +205,18 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         debugLabel.textAlignment = .center
 
         // Create an italic font
-        let baseFont = UIFont.systemFont(ofSize: 10)
+        let baseFont = UIFont.systemFont(ofSize: 11)
         if let italicDescriptor = baseFont.fontDescriptor.withSymbolicTraits(.traitItalic) {
-            debugLabel.font = UIFont(descriptor: italicDescriptor, size: 10)
+            debugLabel.font = UIFont(descriptor: italicDescriptor, size: 11)
         } else {
             debugLabel.font = baseFont // Fallback to base font if italic descriptor is unavailable
         }
 
         debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
         debugLabel.translatesAutoresizingMaskIntoConstraints = false
+        let debugLabelTapGesture = UITapGestureRecognizer(target: self, action: #selector(debugLabelTapped))
+        debugLabel.isUserInteractionEnabled = true
+        debugLabel.addGestureRecognizer(debugLabelTapGesture)
         
         // Configure tableView
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -455,6 +460,23 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         dismiss(animated: true, completion: nil)
     }
     
+    @objc private func debugLabelTapped() {
+        // Try fetching the response from memory first
+        let response = fullGPTResponse ?? UserDefaults.standard.string(forKey: "savedResponseKey")
+        
+        // If neither is available, show the default message
+        let message = response ?? "Inget svar tillgängligt."
+        
+        // Create and present the alert
+        let alert = UIAlertController(
+            title: "ChatGPT detaljerat svar\n",
+            message: message,
+            preferredStyle: .actionSheet
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        present(alert, animated: true)
+    }
+    
     @objc private func analyzeMeal() {
         guard let image = imageView.image else {
             resultLabel.text = isSwedish ? "Välj en bild först." : "Please select an image first."
@@ -487,6 +509,9 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
             }
 
             print("Received content:\n\(content)")
+            
+            // Save the full response for later use
+            self.fullGPTResponse = content
 
             // Parse the CSV string into a structured format
             let parsedData = parseCSV(content)
