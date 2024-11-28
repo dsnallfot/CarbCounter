@@ -99,16 +99,6 @@ extension UUID: AnyConvertible {
     }
 }
 
-//extension Array: AnyConvertible {
-//    func toAny() -> Any {
-//        return self
-//    }
-//
-//    static func fromAny(_ anyValue: Any) -> Array? {
-//        return anyValue as? Array
-//    }
-//}
-
 extension Array: AnyConvertible where Element: AnyConvertible {
     func toAny() -> Any {
         return self.map { $0.toAny() }

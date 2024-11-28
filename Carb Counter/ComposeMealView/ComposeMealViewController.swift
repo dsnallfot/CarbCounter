@@ -2963,17 +2963,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 alertController.addAction(okAction)
                 present(alertController, animated: true, completion: nil)
             } else {
-                /*
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
-                    mealVC.delegate = self
-                    let navigationController = UINavigationController(rootViewController: mealVC)
-                    navigationController.modalPresentationStyle = .pageSheet
-                    
-                    present(navigationController, animated: true, completion: {
-                        mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: true)
-                    })
-                }*/
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                     if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
                         mealVC.delegate = self
@@ -3078,16 +3067,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             alertController.addAction(okAction)
             present(alertController, animated: true, completion: nil)
         } else {
-            /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
-                mealVC.delegate = self
-                let navigationController = UINavigationController(rootViewController: mealVC)
-                navigationController.modalPresentationStyle = .pageSheet
-                
-                present(navigationController, animated: true, completion: {
-                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: false)
-                })
-            }*/
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
                     mealVC.delegate = self
@@ -3298,16 +3277,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             present(alertController, animated: true, completion: nil)
 
         } else {
-            /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
-                mealVC.delegate = self
-                let navigationController = UINavigationController(rootViewController: mealVC)
-                navigationController.modalPresentationStyle = .pageSheet
-
-                present(navigationController, animated: true, completion: {
-                    mealVC.populateMealViewController(khValue: khValue, fatValue: fatValue, proteinValue: proteinValue, bolusValue: bolusValue, emojis: emojis, bolusSoFar: bolusSoFar, bolusTotal: bolusTotal, carbsSoFar: carbsSoFar, carbsTotal: carbsTotal, fatSoFar: fatSoFar, fatTotal: fatTotal, proteinSoFar: proteinSoFar, proteinTotal: proteinTotal, method: method, startDose: startDose, remainDose: remainDose, cr: cr, retry: false)
-                })
-            }*/
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 if let mealVC = storyboard.instantiateViewController(withIdentifier: "MealViewController") as? MealViewController {
                     mealVC.delegate = self
@@ -3619,12 +3588,7 @@ struct InfoPopoverView: View {
 
 extension ComposeMealViewController: OverrideViewDelegate {
     func didActivateOverride(percentage: Double) {
-        /*// Check if temporaryOverride is true and the factor matches the new percentage
-        if temporaryOverride && (temporaryOverrideFactor * 100 == percentage) {
-            print("Temporary override is already active with the same percentage (\(percentage)). No action taken.")
-            return
-        }*/
-
+ 
         // Reset relevant variables and UI if temporaryOverride is true to avoid looping calculations
         if temporaryOverride {
             print("Temporary override is active. Resetting before applying new override.")

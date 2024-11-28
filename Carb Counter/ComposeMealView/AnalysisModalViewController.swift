@@ -71,7 +71,7 @@ class AnalysisModalViewController: UIViewController {
         updateAdjustments() // Initialize adjustments
         dataSharingVC = DataSharingViewController()
         if fromAnalysisLog {
-            print("DEBUG: Opened from analysis log")
+            //print("DEBUG: Opened from analysis log")
             adjustForAnalysisLog()
         }
     }
@@ -409,7 +409,7 @@ class AnalysisModalViewController: UIViewController {
         let alert = UIAlertController(
             title: NSLocalizedString("Lägg till eller ersätt?", comment: "Lägg till eller ersätt?"),
             message: NSLocalizedString("\nObs! Det finns redan temporära måltidsdata i Core Data.\n\nVill du addera de nya matvarorna till de befintliga, eller vill du ersätta de befintliga med de nya?", comment: "\nObs! Det finns redan temporära måltidsdata i Core Data.\n\nVill du addera de nya matvarorna till de befintliga, eller vill du ersätta de befintliga med de nya?"),
-            preferredStyle: .alert
+            preferredStyle: .actionSheet
         )
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Ersätt", comment: "Ersätt"), style: .destructive, handler: { [weak self] _ in
@@ -475,6 +475,7 @@ class AnalysisModalViewController: UIViewController {
                 
                 print("DEBUG: Exact match found for \(gptName). Using \(gptMatchedItem.name) with ID \(gptMatchedItem.id)")
             } else {
+                //Daniel: If no gptName can be exactly matched, maybe present alert and ask if a new FoodItem with that name should be saved (and calculate nutritions and add 🤖 to notes etc before adding to VC)?
                 // Continue with the current ingredient-matching logic
                 for ingredient in csvData {
                     guard ingredient.count >= 7 else { continue }

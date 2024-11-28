@@ -27,11 +27,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleProductFoundNotification(_:)), name: NSNotification.Name("ProductFound"), object: nil)
-        
-        // Simulate some delay to show the loading screen
-        // DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-        //    self?.showMainViewController()
-        //}
     }
 
     func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {

@@ -11,7 +11,6 @@ import HealthKit
 
 class Storage {
     private static let sharedSecretKey = "sharedSecret"
-    //Daniel: Not needed: var remoteType = StorageValue<RemoteType>(key: "remoteType", defaultValue: .nightscout)
     var deviceToken = StorageValue<String>(key: "deviceToken", defaultValue: "")
     var sharedSecret: StorageValue<String> = {
             //print("Creating sharedSecret StorageValue")

@@ -731,7 +731,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         }
 
         foodItem.lastEdited = Date()
-        
+        /*
         // Print all properties for debugging
         print("Saving FoodItem:")
         print("ID: \(foodItem.id?.uuidString ?? "nil")")
@@ -746,7 +746,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
         print("Count: \(foodItem.count)")
         print("Notes: \(foodItem.notes ?? "nil")")
         print("Emoji: \(foodItem.emoji ?? "nil")")
-
+*/
         if let lastEdited = foodItem.lastEdited {
             let isoFormatter = ISO8601DateFormatter()
             isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

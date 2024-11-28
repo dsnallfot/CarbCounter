@@ -10,7 +10,6 @@ import Combine
 import HealthKit
 
 class RemoteSettingsViewModel: ObservableObject {
-    //Daniel: Not needed: @Published var remoteType: RemoteType
     @Published var user: String
     @Published var sharedSecret: String
     @Published var apnsKey: String
@@ -27,7 +26,6 @@ class RemoteSettingsViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        //Daniel: Not needed: self.remoteType = storage.remoteType.value
         self.user = storage.user.value
         self.sharedSecret = storage.sharedSecret.value
         self.apnsKey = storage.apnsKey.value
@@ -43,10 +41,6 @@ class RemoteSettingsViewModel: ObservableObject {
     }
 
     private func setupBindings() {
-        //Daniel: Not needed: $remoteType
-            //.sink { [weak self] in self?.storage.remoteType.value = $0 }
-            //.store(in: &cancellables)
-
         $user
             .sink { [weak self] in self?.storage.user.value = $0 }
             .store(in: &cancellables)

@@ -714,71 +714,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
         
         return formattedString
     }
-
-    
-    /*public func populateMealViewController(khValue: String, fatValue: String, proteinValue: String, bolusValue: String, emojis: String, bolusSoFar: String, bolusTotal: String, carbsSoFar: String, carbsTotal: String, fatSoFar: String, fatTotal: String, proteinSoFar: String, proteinTotal: String, method: String, startDose: Bool, remainDose: Bool, cr: String, retry: Bool) {
-        
-        // Convert values to Double and replace negative values with 0
-        let khValueSafe = max(Double(khValue) ?? 0, 0)
-        let fatValueSafe = max(Double(fatValue) ?? 0, 0)
-        let proteinValueSafe = max(Double(proteinValue) ?? 0, 0)
-        let bolusValueSafe = max(Double(bolusValue) ?? 0, 0)
-        
-        // Format carbs, fat and protein values to remove .0 if present
-        let khValueString = formatNumber(khValueSafe)
-        let fatValueString = formatNumber(fatValueSafe)
-        let proteinValueString = formatNumber(proteinValueSafe)
-        let bolusValueString = String(bolusValueSafe)
-
-        // Populate the UI elements with the formatted values
-        self.carbsEntryField.text = khValueString
-        self.fatEntryField.text = fatValueString
-        self.proteinEntryField.text = proteinValueString
-        self.bolusCalculated.text = bolusValueString
-
-        // Optionally populate the notes entry field with the emojis or any default text
-        self.notesEntryField.text = emojis
-        
-        // Set the startDose property
-        self.startDose = startDose
-        
-        // Set the retry property
-        self.retry = retry
-        
-        self.bolusSoFar = bolusSoFar
-        self.bolusTotal = bolusTotal
-        self.carbsSoFar = carbsSoFar
-        self.carbsTotal = carbsTotal
-        self.fatSoFar = fatSoFar
-        self.fatTotal = fatTotal
-        self.proteinSoFar = proteinSoFar
-        self.proteinTotal = proteinTotal
-        
-        // Convert the cr string to a Decimal and set the CR property
-        if let crDecimal = Decimal(string: cr) {
-            self.CR = crDecimal
-        } else {
-            print("Failed to convert CR to Decimal")
-            // Handle the error as needed, e.g., show an alert to the user or set a default value
-        }
-
-        // Set the title based on the remainDose or retry value and always populate bolus field for startdose and retry
-        if remainDose {
-            self.title = NSLocalizedString("Registrera hela måltiden", comment: "Registrera hela måltiden")
-
-        } else if retry {
-            self.title = NSLocalizedString("🔂 Upprepa registrering", comment: "Nytt försök att registrera")
-            bolusStackTapped()
-
-        } else {
-            self.title = NSLocalizedString("Registrera startdos", comment: "Registrera startdos")
-            if NightscoutManager.shared.evBGWarning || NightscoutManager.shared.minBGWarning {
-                print("BG warning - bolus not pre-populated")
-            } else {
-                bolusStackTapped()
-            }
-        }
-    }*/
     
     public func populateMealViewController() {
         // Safely convert values to Double and replace negative values with 0
@@ -1249,11 +1184,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let confirmationAlert = UIAlertController(title: NSLocalizedString("Bekräfta måltid och bolus", comment: "Bekräfta måltid och bolus"), message: String(format: NSLocalizedString("Vill du registrera denna måltid och ge %.2f E bolus?", comment: "Vill du registrera denna måltid och ge %.2f E bolus?"), bolusValue), preferredStyle: .alert)
             
             let confirmAction: UIAlertAction
-            /*
-            let carbs = carbs
-            let fats = fats
-            let proteins = proteins
-            let bolus = bolus*/
             
             // Authenticate with biometrics
                 confirmAction = UIAlertAction(title: NSLocalizedString("Ja", comment: "Ja"), style: .default) { _ in

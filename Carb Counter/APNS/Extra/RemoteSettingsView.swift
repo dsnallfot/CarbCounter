@@ -35,26 +35,8 @@ struct RemoteSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                // Remote Type Section
-                // Instructions for Remote Type options
-                //Daniel: Not needed: Section {
-                 /*   Picker("Remote Type", selection: $viewModel.remoteType) {
-                        Text("None").tag(RemoteType.none)
-                        Text("Nightscout").tag(RemoteType.nightscout)
-                        Text("Trio Remote Control").tag(RemoteType.trc)
-                    }
-                    .pickerStyle(MenuPickerStyle())
-
-                    Text("Nightscout is the only option available for the released version of Trio.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                    Text("Trio Remote Control requires a special version of Trio, which is under development in a private repository until sufficient testing is completed.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }*/
 
                 // User Information Section
-                //Daniel: Not needed: if viewModel.remoteType != .none {
                     Section(header: Text("User Information")) {
                         HStack {
                             Text("User")
@@ -65,10 +47,8 @@ struct RemoteSettingsView: View {
                                 .multilineTextAlignment(.trailing)
                         }
                     }
-                //}
 
                 // Trio Remote Control Settings Section
-                //Daniel: Not needed: if viewModel.remoteType == .trc {
                     Section(header: Text("Trio Remote Control Settings")) {
                         HStack {
                             Text("Shared Secret")
@@ -190,7 +170,6 @@ struct RemoteSettingsView: View {
                         Toggle("Meal with Fat/Protein", isOn: $viewModel.mealWithFatProtein)
                             .toggleStyle(SwitchToggleStyle())
                     }
-                //}
             }
             .navigationBarTitle("Remote Settings", displayMode: .inline)
             .toolbar {

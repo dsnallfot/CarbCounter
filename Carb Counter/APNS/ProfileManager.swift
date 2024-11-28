@@ -60,53 +60,6 @@ final class ProfileManager {
     }
 
     // MARK: - Methods
-    /*func loadProfile(from profileData: NSProfile) {
-        guard let store = profileData.store[profileData.defaultProfile] else {
-            return
-        }
-
-        self.units = store.units.lowercased() == "mg/dl" ? .milligramsPerDeciliter : .millimolesPerLiter
-        self.defaultProfile = profileData.defaultProfile
-
-        self.timezone = getTimeZone(from: store.timezone)
-
-        self.isfSchedule = store.sens.map { TimeValue(timeAsSeconds: Int($0.timeAsSeconds), value: HKQuantity(unit: self.units, doubleValue: $0.value)) }
-        self.basalSchedule = store.basal.map { TimeValue(timeAsSeconds: Int($0.timeAsSeconds), value: $0.value) }
-        self.carbRatioSchedule = store.carbratio.map { TimeValue(timeAsSeconds: Int($0.timeAsSeconds), value: $0.value) }
-        self.targetLowSchedule = store.target_low?.map { TimeValue(timeAsSeconds: Int($0.timeAsSeconds), value: HKQuantity(unit: self.units, doubleValue: $0.value)) } ?? []
-        self.targetHighSchedule = store.target_high?.map { TimeValue(timeAsSeconds: Int($0.timeAsSeconds), value: HKQuantity(unit: self.units, doubleValue: $0.value)) } ?? []
-
-        if let overrides = store.overrides {
-            self.overrides = overrides.map { Override(
-                name: $0.name ?? "",
-                targetRange: $0.targetRange?.map { HKQuantity(unit: self.units, doubleValue: $0) } ?? [],
-                duration: $0.duration ?? 0,
-                insulinNeedsScaleFactor: $0.insulinNeedsScaleFactor ?? 1.0,
-                symbol: $0.symbol ?? ""
-            )}
-        } else {
-            self.overrides = []
-        }
-
-        if let trioOverrides = profileData.trioOverrides {
-            self.trioOverrides = trioOverrides.map { entry in
-                let targetQuantity = entry.target != nil ? HKQuantity(unit: .milligramsPerDeciliter, doubleValue: entry.target!) : nil
-                return TrioOverride(
-                    name: entry.name,
-                    duration: entry.duration,
-                    percentage: entry.percentage,
-                    target: targetQuantity
-                )
-            }
-        } else {
-            self.trioOverrides = []
-        }
-
-        Storage.shared.deviceToken.value = profileData.deviceToken ?? ""
-        Storage.shared.bundleId.value = profileData.bundleIdentifier ?? ""
-        Storage.shared.productionEnvironment.value = profileData.isAPNSProduction ?? false
-        Storage.shared.teamId.value = profileData.teamID ?? Storage.shared.teamId.value ?? ""
-    }*/
     
     func loadProfile(from profileData: NSProfile) {
         guard let store = profileData.store[profileData.defaultProfile] else {

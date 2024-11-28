@@ -341,7 +341,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         let alert = UIAlertController(
             title: NSLocalizedString("Rensa analys?", comment: "Rensa analys?"),
             message: NSLocalizedString("Är du säker på att du vill rensa bild och text för den senast analyserade måltiden?", comment: "Är du säker på att du vill rensa bild och text för den senast analyserade måltiden?"),
-            preferredStyle: .alert
+            preferredStyle: .actionSheet
         )
         
         alert.addAction(UIAlertAction(title: NSLocalizedString("Rensa", comment: "Rensa"), style: .destructive, handler: { [weak self] _ in
