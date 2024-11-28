@@ -85,6 +85,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleCSVSyncToggleChanged), name: .allowCSVSync, object: nil)
         
         // Add the tableView as a subview and set up constraints
         view.addSubview(tableView)
@@ -177,6 +178,23 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
         } else {
             // In light mode, set a solid background
             view.backgroundColor = .systemGray6
+        }
+    }
+    
+    @objc private func handleCSVSyncToggleChanged() {
+        if UserDefaultsRepository.allowCSVSync {
+            print("allowCSVSync enabled - Adding refresh control.")
+            addRefreshControl()
+        } else {
+            print("allowCSVSync disabled - Removing refresh control.")
+            removeRefreshControl()
+        }
+    }
+    
+    private func removeRefreshControl() {
+        if let refreshControl = tableView.refreshControl {
+            tableView.refreshControl = nil
+            refreshControl.removeFromSuperview()
         }
     }
 
