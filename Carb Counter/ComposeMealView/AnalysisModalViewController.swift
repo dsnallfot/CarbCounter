@@ -475,7 +475,7 @@ class AnalysisModalViewController: UIViewController {
                 
                 print("DEBUG: Exact match found for \(gptName). Using \(gptMatchedItem.name) with ID \(gptMatchedItem.id)")
             } else {
-                //Daniel: If no gptName can be exactly matched, maybe present alert and ask if a new FoodItem with that name should be saved (and calculate nutritions and add 🤖 to notes etc before adding to VC)?
+                //Daniel: TODO If no gptName can be exactly matched, maybe present alert and ask if a new FoodItem with that name should be saved (and calculate nutritions and add 🤖 to notes etc before adding to VC)?
                 // Continue with the current ingredient-matching logic
                 for ingredient in csvData {
                     guard ingredient.count >= 7 else { continue }

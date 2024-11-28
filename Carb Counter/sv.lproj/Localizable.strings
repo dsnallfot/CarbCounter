@@ -638,6 +638,9 @@
 /* Quick actions */
 "SCAN_BARCODE_KEY" = "Scanna streckkod";
 "ADD_FOOD_KEY" = "Lägg till livsmedel";
+"ADD_AI_KEY" = "AI måltidsanalys";
+"ADD_ONGOING_KEY" = "Visa pågående måltid";
+
 
 /*Other*/
 "Uppdaterar data..." = "Uppdaterar data...";

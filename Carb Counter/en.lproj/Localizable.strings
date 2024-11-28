@@ -635,6 +635,8 @@
 /* Quick actions */
 "SCAN_BARCODE_KEY" = "Scan barcode";
 "ADD_FOOD_KEY" = "Add food item";
+"ADD_AI_KEY" = "AI meal analyzis";
+"ADD_ONGOING_KEY" = "Show ongoing meal";
 
 /*Other*/
 "Uppdaterar data..." = "Refreshing data...";

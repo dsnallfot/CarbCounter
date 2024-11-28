@@ -7,6 +7,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     //private var backgroundEnterTime: Date?
     private var shouldOpenScanner = false
     private var shouldOpenAddFood = false
+    private var shouldOpenAI = false
+    private var shouldOpenOngoingMeal = false
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -50,6 +52,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         if shortcutItem.type == "com.dsnallfot.CarbsCounter.addFood" {
             shouldOpenAddFood = true
+        }
+        if shortcutItem.type == "com.dsnallfot.CarbsCounter.addAI" {
+            shouldOpenAI = true
+        }
+        if shortcutItem.type == "com.dsnallfot.CarbsCounter.ongoing" {
+            shouldOpenOngoingMeal = true
         }
     }
     
@@ -158,6 +166,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             openAddFoodItemViewController()
             shouldOpenScanner = false
         }
+        if shouldOpenAI {
+            openAIViewController()
+            shouldOpenAI = false
+        }
+        if shouldOpenOngoingMeal {
+            openAIViewController()
+            shouldOpenOngoingMeal = false
+        }
     }
     
     private func setupLocalizedShortcuts() {
@@ -177,7 +193,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             userInfo: nil
         )
         
-        UIApplication.shared.shortcutItems = [scanBarcodeShortcut, addFoodShortcut]
+        let addAIShortcut = UIApplicationShortcutItem(
+            type: "com.dsnallfot.CarbsCounter.addAI",
+            localizedTitle: NSLocalizedString("ADD_AI_KEY", comment: "Add AI shortcut"),
+            localizedSubtitle: nil,
+            icon: UIApplicationShortcutIcon(templateImageName: "ai44"),
+            userInfo: nil
+        )
+        
+        let addOngoingMealShortcut = UIApplicationShortcutItem(
+            type: "com.dsnallfot.CarbsCounter.ongoing",
+            localizedTitle: NSLocalizedString("ADD_ONGOING_KEY", comment: "Add Ongoing meal shortcut"),
+            localizedSubtitle: nil,
+            icon: UIApplicationShortcutIcon(systemImageName: "eye"),
+            userInfo: nil
+        )
+        
+        UIApplication.shared.shortcutItems = [addAIShortcut, addOngoingMealShortcut, scanBarcodeShortcut, addFoodShortcut]
     }
 
     private func openScannerViewController() {
@@ -196,6 +228,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let addFoodVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as! AddFoodItemViewController
         let navigationController = UINavigationController(rootViewController: addFoodVC)
+        navigationController.modalPresentationStyle = .pageSheet
+
+        if let tabBarController = window?.rootViewController as? UITabBarController,
+           let selectedVC = tabBarController.selectedViewController {
+            selectedVC.present(navigationController, animated: true, completion: nil)
+        }
+    }
+    
+    private func openAIViewController() {
+        let aiVC = AIViewController()
+        let navigationController = UINavigationController(rootViewController: aiVC)
+        navigationController.modalPresentationStyle = .pageSheet
+
+        if let tabBarController = window?.rootViewController as? UITabBarController,
+           let selectedVC = tabBarController.selectedViewController {
+            selectedVC.present(navigationController, animated: true, completion: nil)
+        }
+    }
+    
+    private func openOngoingMealViewController() {
+        let ongoingMealVC = OngoingMealViewController()
+        let navigationController = UINavigationController(rootViewController: ongoingMealVC)
         navigationController.modalPresentationStyle = .pageSheet
 
         if let tabBarController = window?.rootViewController as? UITabBarController,
@@ -228,6 +282,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if shouldOpenAddFood {
             openAddFoodItemViewController()
             shouldOpenAddFood = false
+        }
+        if shouldOpenAI {
+            openAIViewController()
+            shouldOpenAI = false
+        }
+        if shouldOpenOngoingMeal {
+            openOngoingMealViewController()
+            shouldOpenOngoingMeal = false
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // Add slight delay to ensure resources are ready
                 guard let window = self.window,
