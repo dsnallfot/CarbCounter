@@ -195,6 +195,11 @@ class SettingsViewController: UITableViewController {
             let cell = UITableViewCell(style: .value1, reuseIdentifier: "valueCell")
             cell.backgroundColor = .clear
             
+            // Custom selection color
+            let customSelectionColor = UIView()
+            customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+            cell.selectedBackgroundView = customSelectionColor
+            
             switch indexPath.row {
             case 0:
                 let toggleSwitch = UISwitch()
@@ -219,11 +224,6 @@ class SettingsViewController: UITableViewController {
                 let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dataClearingLabelTapped))
                 cell.textLabel?.isUserInteractionEnabled = true
                 cell.textLabel?.addGestureRecognizer(tapGesture)
-                
-                // Custom selection color
-                let customSelectionColor = UIView()
-                customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
-                cell.selectedBackgroundView = customSelectionColor
                 
             case 2:
                 let segmentedControl = UISegmentedControl(items: [NSLocalizedString("mg/dl", comment: "mg/dl"), NSLocalizedString("mmol", comment: "mmol")])
