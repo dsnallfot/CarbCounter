@@ -478,8 +478,8 @@ class AnalysisModalViewController: UIViewController {
                 print("DEBUG: No exact match found, moving on")
                 
                 let alertController = UIAlertController(
-                    title: NSLocalizedString("Skapa helt ny måltid eller matcha livsmedel?", comment: "Create a new meal? or match ingredients"),
-                    message: String(format: NSLocalizedString("\nVälj om du vill: \n\n1. Skapa en helt ny måltid '%@' och lägga till den i måltidslistan (och i databasen). \n\n2. Försöka matcha alla måltidens individuella livsmedel och lägga till dem i måltidslistan med flera rader?", comment: "Create a new meal with name?"), gptName),
+                    title: NSLocalizedString("Välj om du vill:", comment: "Create a new meal? or match ingredients"),
+                    message: String(format: NSLocalizedString("\n1. Skapa en helt ny måltid '%@' och lägga till den i måltidslistan (och i databasen). \n\n2. Försöka matcha alla måltidens individuella livsmedel och lägga till dem i måltidslistan med flera rader?", comment: "Create a new meal with name?"), gptName),
                     preferredStyle: .actionSheet
                 )
                 

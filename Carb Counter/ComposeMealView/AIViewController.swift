@@ -293,6 +293,32 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         ])
     }
     
+    private func updateAnalyzeButtonTitle(to newTitle: String) {
+        DispatchQueue.main.async {
+            self.updateStyledButtonTitle(self.analyzeButton, with: newTitle)
+        }
+    }
+    
+    private func updateStyledButtonTitle(_ button: UIButton, with title: String) {
+        if #available(iOS 15.0, *) {
+            guard var config = button.configuration else { return }
+            
+            // Update the title with the correct styling
+            let systemFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+            let font = systemFont.fontDescriptor.withDesign(.rounded).flatMap { UIFont(descriptor: $0, size: 19) } ?? systemFont
+            
+            var attributedTitle = AttributedString(title)
+            attributedTitle.font = font
+            attributedTitle.foregroundColor = UIColor.white
+            
+            config.attributedTitle = attributedTitle
+            button.configuration = config
+        } else {
+            // Fallback for earlier iOS versions
+            button.setTitle(title, for: .normal)
+        }
+    }
+    
     private func createStyledButton(title: String) -> UIButton {
         let button = UIButton(type: .system)
         
@@ -379,6 +405,8 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         tableData.removeAll()
         tableView.reloadData()
         tableView.isHidden = true
+        
+        updateAnalyzeButtonTitle(to: isSwedish ? "Analysera bild" : "Analyze Picture")
         
         //print("DEBUG: Cleared all saved data and reset views")
     }
@@ -474,6 +502,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
                 tableView.isHidden = false
                 debugLabel.text = "ⓘ Förfrågan lyckades!"
                 debugLabel.textColor = .systemCyan.withAlphaComponent(0.8)
+                updateAnalyzeButtonTitle(to: isSwedish ? "Analysera igen" : "Analyze Again")
 
                 // Save only the CSV block to UserDefaults
                 savePersistedData(image: imageView.image, csvBlock: parsedData.csvBlock)
@@ -568,6 +597,7 @@ class AIViewController: UIViewController, UIImagePickerControllerDelegate, UINav
         resultLabel.text = "Fel: \(message)"
         debugLabel.text = "⚠ Feldetaljer: \(message)"
         debugLabel.textColor = .systemRed.withAlphaComponent(0.8)
+        updateAnalyzeButtonTitle(to: isSwedish ? "Försök igen" : "Try Again")
     }
     
     private func parseTable(_ markdown: String) -> [[String]] {
