@@ -98,23 +98,58 @@ class LoadingViewController: UIViewController {
     private func transitionToMainViewController() {
         // Instantiate the main view controller
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        guard let mainVC = storyboard.instantiateInitialViewController() else {
-            print("Failed to instantiate main view controller")
+        guard let mainVC = storyboard.instantiateInitialViewController() as? UITabBarController else {
+            print("❌ Failed to instantiate main view controller")
             return
         }
         
-        // Access the ComposeMealViewController from the mainVC
-        if let tabBarController = mainVC as? UITabBarController {
-            if let composeNavVC = tabBarController.viewControllers?.first(where: { ($0 as? UINavigationController)?.topViewController is ComposeMealViewController }) as? UINavigationController,
-               let composeMealVC = composeNavVC.topViewController as? ComposeMealViewController {
+        print("✅ Main view controller instantiated successfully")
+        print("📊 Total view controllers: \(mainVC.viewControllers?.count ?? 0)")
+        
+        // Explicitly access and initialize each main view controller
+        for (index, navigationController) in (mainVC.viewControllers ?? []).enumerated() {
+            guard let navigationController = navigationController as? UINavigationController else {
+                print("❌ Not a navigation controller at index \(index)")
+                continue
+            }
+            
+            print("🔍 Processing navigation controller at index \(index)")
+            
+            // Access the root view controller of the navigation controller
+            guard let rootViewController = navigationController.viewControllers.first else {
+                print("❌ No root view controller found in navigation controller")
+                continue
+            }
+            
+            print("🚀 Accessing view for \(type(of: rootViewController))")
+            _ = rootViewController.view
+            /*
+            // Initialize specific view controllers
+            if let homeVC = rootViewController as? HomeViewController {
+                print("🏠 Found HomeViewController")
+                homeVC.initializeHomeViewController()
+            }
+            if let composeMealVC = rootViewController as? ComposeMealViewController {
+                print("🍽 Found ComposeMealViewController")
+                composeMealVC.initializeComposeMealViewController()
                 
-                // Call fetchFoodItems with a completion handler
+                // Ensure the shared instance is set
+                ComposeMealViewController.shared = composeMealVC
+                
+                // Existing fetch logic
                 composeMealVC.fetchFoodItems {
-                    print("fetchFoodItems completed for ComposeMealViewController")
-                    // Perform any dependent actions here if necessary
+                    print("✅ fetchFoodItems completed for ComposeMealViewController")
                 }
             }
+            if let foodItemsListVC = rootViewController as? FoodItemsListViewController {
+                print("📋 Found FoodItemsListViewController")
+                foodItemsListVC.initializeFoodItemsListViewController()
+            }
+            */
+            print("✨ Finished processing \(type(of: rootViewController))")
         }
+        
+        print("🌟 About to transition to main view controller")
         
         // Transition to the main view controller
         // Add a transition animation
@@ -124,6 +159,8 @@ class LoadingViewController: UIViewController {
         self.view.window?.layer.add(transition, forKey: kCATransition)
         
         self.view.window?.rootViewController = mainVC
+        
+        print("🎉 Transition to main view controller complete")
     }
     
     

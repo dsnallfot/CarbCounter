@@ -52,6 +52,32 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        initializeFoodItemsListViewController()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Fetch the food items and meal history from Core Data
+        self.fetchFoodItems()
+        mealHistories = fetchMealHistories()
+        favoriteMeals = fetchFavoriteMeals()
+        
+        // Update the clear button visibility
+        updateClearButtonVisibility()
+        
+        // Load saved search text and apply filter
+        if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
+            searchBar.text = savedSearchText
+            applySearchFilter(with: savedSearchText)
+        } else {
+            // If no search text is saved, show the full list
+            filteredFoodItems = foodItems
+        }
+    }
+    
+    internal func initializeFoodItemsListViewController() {
+        print("📋 initializeFoodItemsListViewController called")
         
         self.fetchFoodItems()
         
@@ -115,27 +141,6 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             addRefreshControl()
         } else {
             print("CSV import is disabled in settings.")
-        }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        // Fetch the food items and meal history from Core Data
-        self.fetchFoodItems()
-        mealHistories = fetchMealHistories()
-        favoriteMeals = fetchFavoriteMeals()
-        
-        // Update the clear button visibility
-        updateClearButtonVisibility()
-        
-        // Load saved search text and apply filter
-        if let savedSearchText = UserDefaultsRepository.savedSearchText, !savedSearchText.isEmpty {
-            searchBar.text = savedSearchText
-            applySearchFilter(with: savedSearchText)
-        } else {
-            // If no search text is saved, show the full list
-            filteredFoodItems = foodItems
         }
     }
     

@@ -12,7 +12,17 @@ class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        initializeHomeViewController()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
+        updateNavigationBarButtons()
+    }
+    
+    internal func initializeHomeViewController() {
+        print("🏠 initializeHomeViewController called")
         view.backgroundColor = .systemBackground
         
         // Check if the app is in dark mode and set the background accordingly
@@ -22,12 +32,6 @@ class HomeViewController: UIViewController {
         
         // Observe changes to allowViewingOngoingMeals
         NotificationCenter.default.addObserver(self, selector: #selector(updateNavigationBarButtons), name: .allowViewingOngoingMealsChanged, object: nil)
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        updateNavigationBarButtons()
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

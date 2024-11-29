@@ -148,7 +148,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 ComposeMealViewController.shared = composeMealVC
             }
         }
-        
+/*
         // Add a transition animation
         let transition = CATransition()
         transition.type = .fade
@@ -156,7 +156,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.layer.add(transition, forKey: kCATransition)
         
         window?.rootViewController = mainVC
-
+*/
         // If the quick action was triggered, open the ScannerViewController
         if shouldOpenScanner {
             openScannerViewController()

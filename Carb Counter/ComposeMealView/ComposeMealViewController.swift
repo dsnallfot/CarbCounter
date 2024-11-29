@@ -131,13 +131,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         super.viewDidLoad()
         initializeComposeMealViewController()
         
-        if UserDefaultsRepository.method == "Trio APNS" {
-            webLoadNSProfile()
-        }
-        
     }
     
-    private func initializeComposeMealViewController() {
+    internal func initializeComposeMealViewController() {
+        print("🍽 initializeComposeMealViewController called")
         loadValuesFromUserDefaults()
         initializeUIElements()
         ComposeMealViewController.current = self
@@ -295,6 +292,10 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             totalRegisteredCarbsLabel?.text = "--"
         } else {
             totalRegisteredCarbsLabel?.text = String(format: "%.0f g", registeredCarbsSoFar)
+        }
+        
+        if UserDefaultsRepository.method == "Trio APNS" {
+            webLoadNSProfile()
         }
         
     }
