@@ -18,6 +18,8 @@ class AnalysisModalViewController: UIViewController {
     var savedResponse: String = ""
     var fromAnalysisLog: Bool = false
     
+    var enableSuccessView: Bool = true
+    
     // Warning label for dynamic text updates
     private var warningLabel: UILabel!
     
@@ -73,6 +75,7 @@ class AnalysisModalViewController: UIViewController {
             //print("DEBUG: Opened from analysis log")
             adjustForAnalysisLog()
         }
+        enableSuccessView = true
     }
     
     private func setupNavigationBar() {
@@ -517,6 +520,7 @@ class AnalysisModalViewController: UIViewController {
 
                     // After saving, show success view and dismiss the modal
                     DispatchQueue.main.async {
+                        
                         self.showSuccessView()
                         self.dismiss(animated: true)
                     }
@@ -750,6 +754,7 @@ class AnalysisModalViewController: UIViewController {
             // Clear all FoodItemTemporary entries from Core Data
             let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
             do {
+                self.enableSuccessView = false
                 let savedTemporaryFoodItems = try context.fetch(fetchRequest)
                 for item in savedTemporaryFoodItems {
                     context.delete(item)
@@ -955,14 +960,16 @@ class AnalysisModalViewController: UIViewController {
         return ingredients
     }
     private func showSuccessView() {
-        let successView = SuccessView()
-        
-        // Use the key window to display the success view
-        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-            successView.showInView(keyWindow)
-            // Daniel: Keeping for future debugging // print("DEBUG: SuccessView displayed")
-        } else {
-            print("DEBUG: Key window not found for displaying SuccessView")
+        if self.enableSuccessView {
+            let successView = SuccessView()
+            
+            // Use the key window to display the success view
+            if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                successView.showInView(keyWindow)
+                // Daniel: Keeping for future debugging // print("DEBUG: SuccessView displayed")
+            } else {
+                print("DEBUG: Key window not found for displaying SuccessView")
+            }
         }
     }
 }
