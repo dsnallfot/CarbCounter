@@ -504,8 +504,8 @@ class AnalysisModalViewController: UIViewController {
                 print("DEBUG: No exact match found, moving on")
 
                 let alertController = UIAlertController(
-                    title: NSLocalizedString("Ny måltid", comment: "Create a new meal? or match ingredients"),
-                    message: String(format: NSLocalizedString("Namnet på måltiden hittades inte bland dina sparade livsmedel. Välj om du vill:\n\nⒶ Skapa en ny måltid med namnet '%@' och lägga till den i måltidslistan. \n\nⒷ Lägga till måltidens alla livsmedel på separata rader i måltidslistan?", comment: "Create a new meal with name?"), gptName),
+                    title: NSLocalizedString("Skapa ny måltid?\n", comment: "Create a new meal? or match ingredients"),
+                    message: String(format: NSLocalizedString("Namnet på måltiden '%@' hittades inte i databasen. Välj om du vill:\n\nⒶ Skapa och lägga till en ny måltid med detta namn? \n\nⒷ Lägga till måltidens alla livsmedel på separata rader?", comment: "Create a new meal with name?"), gptName),
                     preferredStyle: .actionSheet
                 )
 
@@ -522,7 +522,7 @@ class AnalysisModalViewController: UIViewController {
                     }
                 }
 
-                let matchItemsAction = UIAlertAction(title: NSLocalizedString("Ⓑ Lägg till livsmedel", comment: "Match food items"), style: .default) { [weak self] _ in
+                let matchItemsAction = UIAlertAction(title: NSLocalizedString("Ⓑ Lägg till separata livsmedel", comment: "Match food items"), style: .default) { [weak self] _ in
                     guard let self = self else { return }
 
                     // Match ingredients and handle unmatched nutrients
@@ -705,10 +705,26 @@ class AnalysisModalViewController: UIViewController {
         let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
         let adjustedFat = max(0, gptFat - totalMatchedFat)
         let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
+        
+        // Generate bullet list of unmatched ingredients
+        let unmatchedList = csvData.map { ingredient in
+            "• \(ingredient[2])"
+        }.joined(separator: "\n")
+        
+        let alertMessage = """
+        Ett eller flera livsmedel saknas i databasen:
+        \(unmatchedList)
+        
+        Välj om du vill:
+        
+        Ⓐ Skapa och lägga till nya livsmedel i måltiden?
 
+        Ⓑ Använda befintliga livsmedel och komplettera med summeringsrader för kolhydrater, fett och protein motsvarande det som inte kunde matchas?
+        """
+        
         let alertController = UIAlertController(
-            title: "Livsmedel kunde inte matchas\n",
-            message: "Ett eller flera livsmedel i måltiden hittades inte bland dina sparade livsmedel. Hur vill du hantera de som saknas?\n\nⒶ Skapa nya livsmedel och lägga till dem i måltiden.\n\nⒷ Använd endast befintliga livsmedel och lägg till summeringsrader för kolhydrater/fett/protein för de livsmedel som inte kunde matchas",
+            title: "Lägga till livsmedel?\n",
+            message: alertMessage,
             preferredStyle: .actionSheet
         )
 
@@ -731,6 +747,18 @@ class AnalysisModalViewController: UIViewController {
         }
 
         let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
+            // Clear all FoodItemTemporary entries from Core Data
+            let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
+            do {
+                let savedTemporaryFoodItems = try context.fetch(fetchRequest)
+                for item in savedTemporaryFoodItems {
+                    context.delete(item)
+                }
+                try context.save()
+                print("DEBUG: Cleared all FoodItemTemporary entries on cancel.")
+            } catch {
+                print("DEBUG: Error clearing FoodItemTemporary entries on cancel: \(error.localizedDescription)")
+            }
             completion()
         }
 
