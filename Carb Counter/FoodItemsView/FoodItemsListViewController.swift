@@ -578,31 +578,31 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 preferredStyle: .actionSheet
             )
             
-            let historyAction = UIAlertAction(title: NSLocalizedString("finns i historiken", comment: "In history"), style: .default) { _ in
+            let historyAction = UIAlertAction(title: NSLocalizedString("finns i historiken 📅", comment: "In history"), style: .default) { _ in
                 self.applySecretSearch("filter:historik")
             }
             
-            let favoritesAction = UIAlertAction(title: NSLocalizedString("finns i favoriter", comment: "In favorites"), style: .default) { _ in
+            let favoritesAction = UIAlertAction(title: NSLocalizedString("finns i favoriter ⭐️", comment: "In favorites"), style: .default) { _ in
                 self.applySecretSearch("filter:favoriter")
             }
             
-            let notesAction = UIAlertAction(title: NSLocalizedString("har en notering", comment: "With notes"), style: .default) { _ in
+            let notesAction = UIAlertAction(title: NSLocalizedString("har en notering 📝", comment: "With notes"), style: .default) { _ in
                 self.applySecretSearch("filter:noteringar")
             }
             
-            let aiAction = UIAlertAction(title: NSLocalizedString("är skapade av ChatGPT", comment: "är skapade av ChatGPT"), style: .default) { _ in
+            let aiAction = UIAlertAction(title: NSLocalizedString("är skapade av ChatGPT 🤖", comment: "är skapade av ChatGPT"), style: .default) { _ in
                 self.applySecretSearch("filter:chatgpt")
             }
             
-            let emojiAction = UIAlertAction(title: NSLocalizedString("saknar emoji", comment: "Missing emoji"), style: .default) { _ in
+            let emojiAction = UIAlertAction(title: NSLocalizedString("saknar emoji 🫥", comment: "Missing emoji"), style: .default) { _ in
                 self.applySecretSearch("filter:emojis")
             }
             
-            let schoolAction = UIAlertAction(title: NSLocalizedString("är skolmat", comment: "School food"), style: .default) { _ in
+            let schoolAction = UIAlertAction(title: NSLocalizedString("är skolmat Ⓢ", comment: "School food"), style: .default) { _ in
                 self.applySecretSearch("filter:skolmat")
             }
             
-            let perPieceAction = UIAlertAction(title: NSLocalizedString("är angivna per styck", comment: "Per piece"), style: .default) { _ in
+            let perPieceAction = UIAlertAction(title: NSLocalizedString("är angivna per styck ①", comment: "Per piece"), style: .default) { _ in
                 self.applySecretSearch("filter:perstyck")
             }
             
