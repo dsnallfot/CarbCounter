@@ -456,7 +456,7 @@ class AnalysisModalViewController: UIViewController {
     }
     private func saveNewTemporaryFoodItems(replacing: Bool) {
         let context = CoreDataStack.shared.context
-        
+
         if replacing {
             let fetchRequest: NSFetchRequest<FoodItemTemporary> = FoodItemTemporary.fetchRequest()
             do {
@@ -468,20 +468,20 @@ class AnalysisModalViewController: UIViewController {
                 print("DEBUG: Error clearing existing FoodItemTemporary entries: \(error.localizedDescription)")
             }
         }
-        
+
         guard !savedResponse.isEmpty else { return }
         let csvData = parseCSV(savedResponse)
-        
+
         var totalMatchedCarbs = 0
         var totalMatchedFat = 0
         var totalMatchedProtein = 0
         var allMatched = true
-        
+
         let fetchRequest: NSFetchRequest<NSDictionary> = NSFetchRequest(entityName: "FoodItem")
         fetchRequest.predicate = NSPredicate(format: "(delete == NO OR delete == nil) AND (perPiece == NO OR perPiece == nil)")
         fetchRequest.resultType = .dictionaryResultType
         fetchRequest.propertiesToFetch = ["id", "name"]
-        
+
         do {
             let foodItemDictionaries = try context.fetch(fetchRequest)
             let foodItems: [(id: UUID, name: String)] = foodItemDictionaries.compactMap { dict in
@@ -490,75 +490,93 @@ class AnalysisModalViewController: UIViewController {
                 }
                 return nil
             }
-            
+
             let percentageMultiplier = Double(slider.value) / 100.0
-            
+
             // Check for an exact match
             if let gptMatchedItem = foodItems.first(where: { $0.name.caseInsensitiveCompare(gptName) == .orderedSame }) {
                 let temporaryItem = FoodItemTemporary(context: context)
                 temporaryItem.entryId = gptMatchedItem.id
                 temporaryItem.entryPortionServed = Double(adjustedWeight)
-                
+
                 print("DEBUG: Exact match found for \(gptName). Using \(gptMatchedItem.name) with ID \(gptMatchedItem.id)")
             } else {
                 print("DEBUG: No exact match found, moving on")
-                
+
                 let alertController = UIAlertController(
-                    title: NSLocalizedString("Välj om du vill:", comment: "Create a new meal? or match ingredients"),
-                    message: String(format: NSLocalizedString("\n1. Skapa en helt ny måltid '%@' och lägga till den i måltidslistan (och i databasen). \n\n2. Försöka matcha alla måltidens individuella livsmedel och lägga till dem i måltidslistan med flera rader?", comment: "Create a new meal with name?"), gptName),
+                    title: NSLocalizedString("Ny måltid", comment: "Create a new meal? or match ingredients"),
+                    message: String(format: NSLocalizedString("Namnet på måltiden hittades inte bland dina sparade livsmedel. Välj om du vill:\n\nⒶ Skapa en ny måltid med namnet '%@' och lägga till den i måltidslistan. \n\nⒷ Lägga till måltidens alla livsmedel på separata rader i måltidslistan?", comment: "Create a new meal with name?"), gptName),
                     preferredStyle: .actionSheet
                 )
-                
-                let createAction = UIAlertAction(title: NSLocalizedString("Skapa ny måltid", comment: "Create meal"), style: .default) { [weak self] _ in
+
+                let createAction = UIAlertAction(title: NSLocalizedString("Ⓐ Skapa ny måltid", comment: "Create meal"), style: .default) { [weak self] _ in
                     guard let self = self else { return }
-                    
+
                     // Create the new FoodItem
                     self.createNewFoodItem(context: context, percentageMultiplier: percentageMultiplier)
-                    
+
                     // After saving, show success view and dismiss the modal
                     DispatchQueue.main.async {
-                        //NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
                         self.showSuccessView()
                         self.dismiss(animated: true)
                     }
                 }
-                
-                let matchItemsAction = UIAlertAction(title: NSLocalizedString("Matcha livsmedel", comment: "Match food items"), style: .default) { [weak self] _ in
+
+                let matchItemsAction = UIAlertAction(title: NSLocalizedString("Ⓑ Lägg till livsmedel", comment: "Match food items"), style: .default) { [weak self] _ in
                     guard let self = self else { return }
-                    
-                    // Match ingredients
-                    self.matchIngredients(csvData: csvData, foodItems: foodItems, percentageMultiplier: percentageMultiplier)
-                    
-                    // After matching, show success view and dismiss the modal
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
-                        self.showSuccessView()
-                        self.dismiss(animated: true)
+
+                    // Match ingredients and handle unmatched nutrients
+                    self.matchIngredients(
+                        csvData: csvData,
+                        foodItems: foodItems,
+                        percentageMultiplier: percentageMultiplier
+                    ) {
+                        // After all handling, show success view and dismiss
+                        DispatchQueue.main.async {
+                            self.showSuccessView()
+                            self.dismiss(animated: true)
+                        }
                     }
                 }
-                
+
                 let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel)
-                
+
                 alertController.addAction(createAction)
                 alertController.addAction(matchItemsAction)
                 alertController.addAction(cancelAction)
-                
+
                 DispatchQueue.main.async {
                     self.present(alertController, animated: true)
                 }
-                
+
                 return // Prevent further execution after presenting the alert
             }
-            
-            // Handle unmatched nutrients
+
+            // Handle unmatched nutrients if not all ingredients were matched
             if !allMatched {
-                handleUnmatchedNutrients(context: context, percentageMultiplier: percentageMultiplier, totalMatchedCarbs: totalMatchedCarbs, totalMatchedFat: totalMatchedFat, totalMatchedProtein: totalMatchedProtein)
+                handleUnmatchedNutrients(
+                    context: context,
+                    csvData: csvData,
+                    percentageMultiplier: percentageMultiplier,
+                    totalMatchedCarbs: totalMatchedCarbs,
+                    totalMatchedFat: totalMatchedFat,
+                    totalMatchedProtein: totalMatchedProtein
+                ) {
+                    // After handling unmatched nutrients, complete the process
+                    try? context.save()
+                    NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+                    DispatchQueue.main.async {
+                        self.showSuccessView()
+                        self.dismiss(animated: true)
+                    }
+                }
+            } else {
+                // Save matched data and finish
+                try context.save()
+                NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+                showSuccessView()
+                dismiss(animated: true)
             }
-            
-            try context.save()
-            NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
-            showSuccessView()
-            dismiss(animated: true)
         } catch {
             print("DEBUG: Error saving new FoodItemTemporary entries: \(error.localizedDescription)")
         }
@@ -614,105 +632,187 @@ class AnalysisModalViewController: UIViewController {
         }
     }
     
-    private func matchIngredients(csvData: [[String]], foodItems: [(id: UUID, name: String)], percentageMultiplier: Double) {
+    private func matchIngredients(
+        csvData: [[String]],
+        foodItems: [(id: UUID, name: String)],
+        percentageMultiplier: Double,
+        completion: @escaping () -> Void
+    ) {
         var totalMatchedCarbs = 0
         var totalMatchedFat = 0
         var totalMatchedProtein = 0
         var allMatched = true
-        
+
         let context = CoreDataStack.shared.context
-        
+        var unmatchedIngredients: [[String]] = []
+
         for ingredient in csvData {
             guard ingredient.count >= 7 else { continue }
-            
+
             let matvara = ingredient[2]
             let portionServed = Double(ingredient[3]) ?? 0.0
             let carbs = Int(ingredient[4]) ?? 0
             let fat = Int(ingredient[5]) ?? 0
             let protein = Int(ingredient[6]) ?? 0
-            
+
             if let matchedItem = fuzzySearchForCSV(query: matvara, in: foodItems).first {
                 let adjustedPortionServed = Int(round(portionServed * percentageMultiplier))
-                
+
                 let temporaryItem = FoodItemTemporary(context: context)
                 temporaryItem.entryId = matchedItem.id
                 temporaryItem.entryPortionServed = Double(adjustedPortionServed)
-                
+
                 totalMatchedCarbs += carbs
                 totalMatchedFat += fat
                 totalMatchedProtein += protein
             } else {
                 print("DEBUG: No match found for \(matvara)")
+                unmatchedIngredients.append(ingredient) // Collect unmatched ingredients
                 allMatched = false
             }
         }
-        
+
         if !allMatched {
-            handleUnmatchedNutrients(context: context, percentageMultiplier: percentageMultiplier, totalMatchedCarbs: totalMatchedCarbs, totalMatchedFat: totalMatchedFat, totalMatchedProtein: totalMatchedProtein)
+            handleUnmatchedNutrients(
+                context: context,
+                csvData: unmatchedIngredients, // Pass only unmatched ingredients
+                percentageMultiplier: percentageMultiplier,
+                totalMatchedCarbs: totalMatchedCarbs,
+                totalMatchedFat: totalMatchedFat,
+                totalMatchedProtein: totalMatchedProtein,
+                completion: completion
+            )
+        } else {
+            // Notify observers when all items are successfully matched
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+            }
+
+            // Call the completion handler
+            completion()
         }
     }
     
-    private func handleUnmatchedNutrients(context: NSManagedObjectContext, percentageMultiplier: Double, totalMatchedCarbs: Int, totalMatchedFat: Int, totalMatchedProtein: Int) {
+    private func handleUnmatchedNutrients(
+        context: NSManagedObjectContext,
+        csvData: [[String]],
+        percentageMultiplier: Double,
+        totalMatchedCarbs: Int,
+        totalMatchedFat: Int,
+        totalMatchedProtein: Int,
+        completion: @escaping () -> Void
+    ) {
         let adjustedCarbs = max(0, gptCarbs - totalMatchedCarbs)
         let adjustedFat = max(0, gptFat - totalMatchedFat)
         let adjustedProtein = max(0, gptProtein - totalMatchedProtein)
-        
+
+        let alertController = UIAlertController(
+            title: "Livsmedel kunde inte matchas\n",
+            message: "Ett eller flera livsmedel i måltiden hittades inte bland dina sparade livsmedel. Hur vill du hantera de som saknas?\n\nⒶ Skapa nya livsmedel och lägga till dem i måltiden.\n\nⒷ Använd endast befintliga livsmedel och lägg till summeringsrader för kolhydrater/fett/protein för de livsmedel som inte kunde matchas",
+            preferredStyle: .actionSheet
+        )
+
+        let createAndAddNewAction = UIAlertAction(title: "Ⓐ Skapa nya", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.createUnmatchedFoodItems(context: context, csvData: csvData, percentageMultiplier: percentageMultiplier)
+            completion()
+        }
+
+        let useOnlyExistingAction = UIAlertAction(title: "Ⓑ Använd endast befintliga", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.createTemporaryEntriesForUnmatchedNutrients(
+                context: context,
+                percentageMultiplier: percentageMultiplier,
+                adjustedCarbs: adjustedCarbs,
+                adjustedFat: adjustedFat,
+                adjustedProtein: adjustedProtein
+            )
+            completion()
+        }
+
+        let cancelAction = UIAlertAction(title: "Avbryt", style: .cancel) { _ in
+            completion()
+        }
+
+        alertController.addAction(createAndAddNewAction)
+        alertController.addAction(useOnlyExistingAction)
+        alertController.addAction(cancelAction)
+
+        DispatchQueue.main.async {
+            self.present(alertController, animated: true)
+        }
+    }
+    
+    private func createUnmatchedFoodItems(context: NSManagedObjectContext, csvData: [[String]], percentageMultiplier: Double) {
+        for ingredient in csvData {
+            guard ingredient.count >= 7 else { continue }
+
+            let matvara = ingredient[2]
+            let portionServed = Double(ingredient[3]) ?? 0.0
+            let carbs = Int(ingredient[4]) ?? 0
+            let fat = Int(ingredient[5]) ?? 0
+            let protein = Int(ingredient[6]) ?? 0
+
+            let newUnmatchedFoodItem = FoodItem(context: context)
+            let newFoodItemID = UUID()
+            newUnmatchedFoodItem.id = newFoodItemID
+            newUnmatchedFoodItem.name = matvara
+            newUnmatchedFoodItem.carbohydrates = Double(carbs) / portionServed * 100
+            newUnmatchedFoodItem.fat = Double(fat) / portionServed * 100
+            newUnmatchedFoodItem.protein = Double(protein) / portionServed * 100
+            newUnmatchedFoodItem.carbsPP = 0
+            newUnmatchedFoodItem.fatPP = 0
+            newUnmatchedFoodItem.proteinPP = 0
+            newUnmatchedFoodItem.netCarbs = 0
+            newUnmatchedFoodItem.netFat = 0
+            newUnmatchedFoodItem.netProtein = 0
+            newUnmatchedFoodItem.perPiece = false
+            newUnmatchedFoodItem.count = 0
+            newUnmatchedFoodItem.notes = NSLocalizedString("Livsmedel skapat av ChatGPT", comment: "")
+            newUnmatchedFoodItem.lastEdited = Date()
+            newUnmatchedFoodItem.delete = false
+            newUnmatchedFoodItem.emoji = "🤖"
+
+            do {
+                // Save the new FoodItem
+                try context.save()
+                print("DEBUG: Created new unmatched food item: \(matvara)")
+
+                // Add the FoodItemTemporary entry
+                let temporaryItem = FoodItemTemporary(context: context)
+                temporaryItem.entryId = newFoodItemID
+                temporaryItem.entryPortionServed = portionServed * percentageMultiplier
+
+                // Save the FoodItemTemporary entry
+                try context.save()
+                print("DEBUG: Temporary entry added for \(matvara) with portion \(portionServed * percentageMultiplier)")
+
+            } catch {
+                print("DEBUG: Error saving new unmatched food item or temporary entry: \(error.localizedDescription)")
+            }
+        }
+
+        // Delay to ensure data is saved before notifying observers
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+        }
+    }
+    
+    private func createTemporaryEntriesForUnmatchedNutrients(
+        context: NSManagedObjectContext,
+        percentageMultiplier: Double,
+        adjustedCarbs: Int,
+        adjustedFat: Int,
+        adjustedProtein: Int
+    ) {
         let nutrientNames = ["𐓙 Kolhydrater", "𐓙 Fett", "𐓙 Protein"]
         let nutrientItemsFetch: NSFetchRequest<FoodItem> = FoodItem.fetchRequest()
         nutrientItemsFetch.predicate = NSPredicate(format: "name IN %@ AND (delete == NO OR delete == nil)", nutrientNames)
-        
+
         do {
-            // Fetch existing nutrient items
             let nutrientItems = try context.fetch(nutrientItemsFetch)
             var nutrientItemsDict = Dictionary(uniqueKeysWithValues: nutrientItems.compactMap { ($0.name ?? "", $0.id) })
-            
-            // Create missing nutrient items if necessary
-            for nutrientName in nutrientNames {
-                if !nutrientItemsDict.keys.contains(nutrientName) {
-                    let newFoodItem = FoodItem(context: context)
-                    let newFoodItemID = UUID()
-                    newFoodItem.id = newFoodItemID
-                    newFoodItem.name = nutrientName
-                    
-                    switch nutrientName {
-                    case "𐓙 Kolhydrater":
-                        newFoodItem.carbohydrates = 100
-                        newFoodItem.fat = 0
-                        newFoodItem.protein = 0
-                    case "𐓙 Fett":
-                        newFoodItem.carbohydrates = 0
-                        newFoodItem.fat = 100
-                        newFoodItem.protein = 0
-                    case "𐓙 Protein":
-                        newFoodItem.carbohydrates = 0
-                        newFoodItem.fat = 0
-                        newFoodItem.protein = 100
-                    default:
-                        continue
-                    }
-                    
-                    newFoodItem.carbsPP = 0
-                    newFoodItem.fatPP = 0
-                    newFoodItem.proteinPP = 0
-                    newFoodItem.netCarbs = 0
-                    newFoodItem.netFat = 0
-                    newFoodItem.netProtein = 0
-                    newFoodItem.perPiece = false
-                    newFoodItem.count = 0
-                    newFoodItem.notes = NSLocalizedString("Används för övriga livsmedel från AI-analyserad bild", comment: "")
-                    newFoodItem.lastEdited = Date()
-                    newFoodItem.delete = false
-                    newFoodItem.emoji = "🤖"
-                    
-                    try context.save()
-                    print("DEBUG: Created missing nutrient item: \(nutrientName)")
-                    
-                    // Add the newly created nutrient item to the dictionary
-                    nutrientItemsDict[nutrientName] = newFoodItem.id
-                }
-            }
-            
-            // Create FoodItemTemporary entries for unmatched nutrients
+
             for (name, portionServed) in [("𐓙 Kolhydrater", adjustedCarbs),
                                           ("𐓙 Fett", adjustedFat),
                                           ("𐓙 Protein", adjustedProtein)] {
@@ -722,13 +822,18 @@ class AnalysisModalViewController: UIViewController {
                     let adjustedPortionServed = Int(round(Double(portionServed) * percentageMultiplier))
                     temporaryItem.entryPortionServed = Double(adjustedPortionServed)
                     print("DEBUG: Created temporary item for \(name) with portion \(adjustedPortionServed)")
-                } else {
-                    print("DEBUG: Failed to find or create nutrient \(name)")
                 }
             }
-            
+
+            // Save changes to Core Data
             try context.save()
-            print("DEBUG: Unmatched nutrients handled successfully")
+            print("DEBUG: Successfully saved temporary entries for unmatched nutrients.")
+
+            // Delay to ensure data is saved before notifying observers
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                NotificationCenter.default.post(name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+            }
+
         } catch {
             print("DEBUG: Error handling unmatched nutrients: \(error.localizedDescription)")
         }

@@ -2471,7 +2471,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             
             print("DEBUG: Fetched \(savedTemporaryFoodItems.count) Temporary Food Items")
             
-            for temporaryFoodItem in savedTemporaryFoodItems {
+            // Sort the savedTemporaryFoodItems by FoodItem name
+            let sortedTemporaryFoodItems = savedTemporaryFoodItems.sorted { item1, item2 in
+                let name1 = foodItems.first(where: { $0.id == item1.entryId })?.name ?? ""
+                let name2 = foodItems.first(where: { $0.id == item2.entryId })?.name ?? ""
+                return name1.localizedCaseInsensitiveCompare(name2) == .orderedAscending
+            }
+            
+            for temporaryFoodItem in sortedTemporaryFoodItems {
                 if let foodItemID = temporaryFoodItem.entryId {
                     print("DEBUG: Checking TemporaryFoodItem ID: \(foodItemID)")
                     if let foodItem = foodItems.first(where: { $0.id == foodItemID }) {
