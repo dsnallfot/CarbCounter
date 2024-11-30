@@ -472,7 +472,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             "filter:historik": NSLocalizedString("filter:history", comment: "Filter items in history"),
             "filter:perstyck": NSLocalizedString("filter:perpiece", comment: "Filter items per piece"),
             "filter:skolmat": NSLocalizedString("filter:schoolfood", comment: "Filter school food items"),
-            "filter:favoriter": NSLocalizedString("filter:favorites", comment: "Filter favorite items")
+            "filter:favoriter": NSLocalizedString("filter:favorites", comment: "Filter favorite items"),
+            "filter:chatgpt": NSLocalizedString("filter:chatgpt", comment: "Filter items created by ChatGPT")
         ]
         
         // Map localized term to Swedish term used in the code
@@ -486,6 +487,8 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 filteredFoodItems = foodItems
             } else if swedishSearchText == "filter:emojis" {
                 filteredFoodItems = foodItems.filter { $0.emoji == nil || $0.emoji!.isEmpty }
+            } else if swedishSearchText == "filter:chatgpt" {
+                filteredFoodItems = foodItems.filter { $0.emoji == "🤖" }
             } else if swedishSearchText == "filter:noteringar" {
                 filteredFoodItems = foodItems.filter { $0.notes != nil && !$0.notes!.isEmpty }
             } else if swedishSearchText == "filter:historik" {
@@ -587,6 +590,10 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
                 self.applySecretSearch("filter:noteringar")
             }
             
+            let aiAction = UIAlertAction(title: NSLocalizedString("är skapade av ChatGPT", comment: "är skapade av ChatGPT"), style: .default) { _ in
+                self.applySecretSearch("filter:chatgpt")
+            }
+            
             let emojiAction = UIAlertAction(title: NSLocalizedString("saknar emoji", comment: "Missing emoji"), style: .default) { _ in
                 self.applySecretSearch("filter:emojis")
             }
@@ -607,6 +614,7 @@ class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITa
             alertController.addAction(emojiAction)
             alertController.addAction(schoolAction)
             alertController.addAction(perPieceAction)
+            alertController.addAction(aiAction)
             alertController.addAction(cancelAction)
             
             present(alertController, animated: true, completion: nil)
