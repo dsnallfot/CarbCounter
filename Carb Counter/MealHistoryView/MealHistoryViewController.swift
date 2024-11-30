@@ -444,6 +444,14 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let foodItemNames = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.compactMap { $0.entryName } ?? []
         let foodItemNamesStr = foodItemNames.joined(separator: " | ")
 
+        // Check if any food entry contains the 🤖 emoji
+        let containsRobotEmoji = (mealHistory.foodEntries?.allObjects as? [FoodItemEntry])?.contains {
+            $0.entryEmoji?.contains("🤖") == true
+        } ?? false
+
+        // Update the cell text
+        cell.textLabel?.text = containsRobotEmoji ? "🤖 \(foodItemNamesStr)" : foodItemNamesStr
+
         // Define a character set containing both comma and period as separators
         let separators = CharacterSet(charactersIn: ",.")
 
@@ -457,19 +465,18 @@ class MealHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             }
         }
 
-        // Update the cell text and add the emoji if the condition is met
+        // Update the detail text label
         if containsSpecialItem {
             cell.detailTextLabel?.text = "\(mealDateStr) |🔝\(detailText)"
         } else {
             cell.detailTextLabel?.text = "\(mealDateStr) | \(detailText)"
         }
-        cell.textLabel?.text = foodItemNamesStr
-        
+
         // Apply custom formatting
         cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 12, weight: .regular)
         cell.detailTextLabel?.textColor = .gray
-        
+
         // Custom selection color
         let customSelectionColor = UIView()
         customSelectionColor.backgroundColor = UIColor.white.withAlphaComponent(0.3)
