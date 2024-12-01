@@ -315,12 +315,26 @@ private func updateMethodText() {
                 completion(.failure(NetworkError.invalidURL))
                 return
             }
-            let urlString = "shortcuts://run-shortcut?name=CC%20Override&input=text&text=\(encodedString)"
+
+            // Define x-callback URLs
+            let successCallback = "carbcounter://success"
+            let errorCallback = "carbcounter://error"
+            let cancelCallback = "carbcounter://cancel"
+
+            guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+
+            let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)"
+            
             if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:]) { success in
                     if success {
-                        print("Shortcut succesfully triggered")
-                        completion(.success(())) // Daniel ToDO: Change to X callback url shortcut for correct handling success/errors
+                        print("Shortcut successfully triggered")
+                        completion(.success(()))
                     } else {
                         completion(.failure(NetworkError.invalidURL))
                     }
@@ -391,13 +405,11 @@ private func updateMethodText() {
     private func cancelOverride() {
         isLoading = true
 
-        // Create the combined string using the hardcoded override name
         let caregiverName = UserDefaultsRepository.caregiverName
         let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
         let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
 
         if UserDefaultsRepository.method == "iOS Shortcuts" {
-            // Encode the combined string for use in the URL
             guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
                 DispatchQueue.main.async {
                     self.isLoading = false
@@ -407,7 +419,26 @@ private func updateMethodText() {
                 }
                 return
             }
-            let urlString = "shortcuts://run-shortcut?name=CC%20Override&input=text&text=\(encodedString)"
+
+            // Define x-callback URLs
+            let successCallback = "carbcounter://success"
+            let errorCallback = "carbcounter://error"
+            let cancelCallback = "carbcounter://cancel"
+
+            guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.statusMessage = "Fel: Kan inte koda URL-strängen."
+                    self.alertType = .statusFailure
+                    self.showAlert = true
+                }
+                return
+            }
+
+            let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)"
+            
             if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:]) { success in
                     DispatchQueue.main.async {
@@ -432,7 +463,6 @@ private func updateMethodText() {
                 }
             }
         } else if UserDefaultsRepository.method == "Trio APNS" {
-            // Use existing Trio APNS logic
             pushNotificationManager.sendCancelOverridePushNotification { success, errorMessage in
                 DispatchQueue.main.async {
                     self.isLoading = false
@@ -448,8 +478,7 @@ private func updateMethodText() {
                 }
             }
         } else {
-            // Twilio SMS logic
-            self.authenticateUser { authenticated in
+            authenticateUser { authenticated in
                 DispatchQueue.main.async {
                     if authenticated {
                         self.twilioRequest(combinedString: combinedString) { result in
