@@ -8,6 +8,7 @@
 import SwiftUI
 import HealthKit
 import LocalAuthentication
+import ObjectiveC
 
 struct CustomBackgroundContainer: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
@@ -55,6 +56,7 @@ protocol OverrideViewDelegate: AnyObject {
 }
 
 struct OverrideView: View, TwilioRequestable {
+    @State private var coordinator: OverrideViewCoordinator
     @Environment(\.presentationMode) private var presentationMode
     private let pushNotificationManager = PushNotificationManager()
     
@@ -63,13 +65,13 @@ struct OverrideView: View, TwilioRequestable {
     
     weak var delegate: OverrideViewDelegate?
     
-    @State private var showAlert: Bool = false
-    @State private var alertType: AlertType? = nil
-    @State private var alertMessage: String? = nil
-    @State private var isLoading: Bool = false
-    @State private var statusMessage: String? = nil
+    @State internal var showAlert: Bool = false
+    @State internal var alertType: AlertType? = nil
+    @State internal var alertMessage: String? = nil
+    @State internal var isLoading: Bool = false
+    @State internal var statusMessage: String? = nil
     
-    @State private var selectedOverride: ProfileManager.TrioOverride? = nil
+    @State internal var selectedOverride: ProfileManager.TrioOverride? = nil
     @State private var showConfirmation: Bool = false
     @State private var methodText: String = ""
     
@@ -97,8 +99,8 @@ struct OverrideView: View, TwilioRequestable {
                                         .foregroundColor(.white)
                                     Spacer()
                                     Button {
-                                        alertType = .confirmCancellation
-                                        showAlert = true
+                                        self.alertType = .confirmCancellation
+                                        self.showAlert = true
                                     } label: {
                                         Image(systemName: "xmark.square.fill")
                                             .font(.title2)
@@ -107,13 +109,13 @@ struct OverrideView: View, TwilioRequestable {
                                 }
                                 //.modifier(CustomListRowStyle())
                                 .onAppear {
-                                    if let matchedOverride = profileManager.trioOverrides.first(where: { $0.name == activeNote }) {
+                                    if let matchedOverride = self.profileManager.trioOverrides.first(where: { $0.name == activeNote }) {
                                         if let percentage = matchedOverride.percentage {
                                             print("Matched override percentage: \(percentage)")
-                                            delegate?.didActivateOverride(percentage: percentage)
+                                            self.delegate?.didActivateOverride(percentage: percentage)
                                         } else {
                                             print("Matched override has no percentage, activating override in composemealVC but setting override % to 100")
-                                            delegate?.didActivateOverride(percentage: 100)
+                                            self.delegate?.didActivateOverride(percentage: 100)
                                         }
                                     } else {
                                         print("No matching override found for activeNote: \(activeNote)")
@@ -129,14 +131,14 @@ struct OverrideView: View, TwilioRequestable {
                                     .foregroundColor(.secondary)
                                     .onAppear {
                                         print("No available overrides found, cancelling.")
-                                        delegate?.didCancelOverride()
+                                        self.delegate?.didCancelOverride()
                                     }
                             } else {
                                 ForEach(profileManager.trioOverrides, id: \.name) { override in
                                     Button(action: {
-                                        selectedOverride = override
-                                        alertType = .confirmActivation
-                                        showAlert = true
+                                        self.selectedOverride = override
+                                        self.alertType = .confirmActivation
+                                        self.showAlert = true
                                     }) {
                                         HStack {
                                             VStack(alignment: .leading) {
@@ -201,9 +203,9 @@ struct OverrideView: View, TwilioRequestable {
                 .foregroundColor(.gray)
             )
         .onAppear {
-            updateMethodText()
-            if overrideNote.value == nil {
-                delegate?.didCancelOverride()
+            self.updateMethodText()
+            if self.overrideNote.value == nil {
+                self.delegate?.didCancelOverride()
             }
         }
         .alert(isPresented: $showAlert) {
@@ -213,8 +215,8 @@ struct OverrideView: View, TwilioRequestable {
                         title: Text("Aktivera Override"),
                         message: Text("Vill du aktivera overriden '\(selectedOverride?.name ?? "")'?"),
                         primaryButton: .default(Text("Bekräfta"), action: {
-                            if let override = selectedOverride {
-                                activateOverride(override)
+                            if let override = self.selectedOverride {
+                                self.activateOverride(override)
                             }
                         }),
                         secondaryButton: .cancel()
@@ -224,7 +226,7 @@ struct OverrideView: View, TwilioRequestable {
                         title: Text("Avsluta Override"),
                         message: Text("Är du säker på att du vill avsluta den aktiva overriden?"),
                         primaryButton: .default(Text("Bekräfta"), action: {
-                            cancelOverride()
+                            self.cancelOverride()
                         }),
                         secondaryButton: .cancel()
                     )
@@ -233,7 +235,7 @@ struct OverrideView: View, TwilioRequestable {
                         title: Text("Lyckades"),
                         message: Text(statusMessage ?? ""),
                         dismissButton: .default(Text("OK"), action: {
-                            presentationMode.wrappedValue.dismiss()
+                            self.presentationMode.wrappedValue.dismiss()
                         })
                     )
                 case .statusFailure:
@@ -253,15 +255,31 @@ struct OverrideView: View, TwilioRequestable {
                 }
             }
             .onAppear {
-                        if overrideNote.value == nil {
+                if self.overrideNote.value == nil {
                             print("No active override found, cancelling.")
-                            delegate?.didCancelOverride()
+                    self.delegate?.didCancelOverride()
                         }
                     }
+            .onAppear {
+                self.updateMethodText()
+                if self.overrideNote.value == nil {
+                    self.delegate?.didCancelOverride()
+                }
+                coordinator.setupShortcutObservers(for: self)
+            }
+            .onDisappear {
+                coordinator.removeShortcutObservers()
+            }
         }
     }
 
     // MARK: - Functions
+    
+    init(delegate: OverrideViewDelegate? = nil) {
+            let coord = OverrideViewCoordinator()
+            coord.delegate = delegate
+            _coordinator = State(initialValue: coord)
+        }
 
     private func closeButtonTapped() {
         presentationMode.wrappedValue.dismiss()
@@ -299,7 +317,7 @@ private func updateMethodText() {
                 case .success:
                     self.statusMessage = "Override skickades"
                     self.alertType = .statusSuccess
-                    delegate?.didActivateOverride(percentage: override.percentage ?? 100)
+                    self.delegate?.didActivateOverride(percentage: override.percentage ?? 100)
                 case .failure(let error):
                     self.statusMessage = error.localizedDescription
                     self.alertType = .statusFailure
@@ -310,37 +328,38 @@ private func updateMethodText() {
     }
 
     private func sendOverrideRequest(override: ProfileManager.TrioOverride, combinedString: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        if UserDefaultsRepository.method == "iOS Shortcuts" {
-            guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                completion(.failure(NetworkError.invalidURL))
-                return
-            }
-
-            // Define x-callback URLs
-            let successCallback = "carbcounter://success"
-            let errorCallback = "carbcounter://error"
-            let cancelCallback = "carbcounter://cancel"
-
-            guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                  let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                  let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                completion(.failure(NetworkError.invalidURL))
-                return
-            }
-
-            let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)"
-            
-            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:]) { success in
-                    if success {
-                        print("Shortcut successfully triggered")
-                        completion(.success(()))
-                    } else {
-                        completion(.failure(NetworkError.invalidURL))
-                    }
+            if UserDefaultsRepository.method == "iOS Shortcuts" {
+                guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                    completion(.failure(NetworkError.invalidURL))
+                    return
                 }
-            } else {
-                completion(.failure(NetworkError.invalidURL))
+
+                // Define x-callback URLs
+                let successCallback = "carbcounter://completed"
+                let errorCallback = "carbcounter://error"
+                let cancelCallback = "carbcounter://cancel"
+                let passcodeCallback = "carbcounter://passcode"
+
+                guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let passcodeEncoded = passcodeCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                    completion(.failure(NetworkError.invalidURL))
+                    return
+                }
+
+                let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)&x-passcode=\(passcodeEncoded)"
+                            
+                            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+                                UIApplication.shared.open(url, options: [:]) { success in
+                                    if success {
+                                        print("Shortcut successfully triggered")
+                                    } else {
+                                        completion(.failure(NetworkError.invalidURL))
+                                    }
+                                }
+                            } else {
+                                completion(.failure(NetworkError.invalidURL))
             }
         } else if UserDefaultsRepository.method == "Trio APNS" {
             pushNotificationManager.sendOverridePushNotification(override: override) { success, errorMessage in
@@ -403,63 +422,61 @@ private func updateMethodText() {
     }
 
     private func cancelOverride() {
-        isLoading = true
+            isLoading = true
 
-        let caregiverName = UserDefaultsRepository.caregiverName
-        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+            let caregiverName = UserDefaultsRepository.caregiverName
+            let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+            let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
 
-        if UserDefaultsRepository.method == "iOS Shortcuts" {
-            guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.statusMessage = "Fel: Kan inte koda URL-strängen."
-                    self.alertType = .statusFailure
-                    self.showAlert = true
-                }
-                return
-            }
-
-            // Define x-callback URLs
-            let successCallback = "carbcounter://success"
-            let errorCallback = "carbcounter://error"
-            let cancelCallback = "carbcounter://cancel"
-
-            guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                  let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                  let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.statusMessage = "Fel: Kan inte koda URL-strängen."
-                    self.alertType = .statusFailure
-                    self.showAlert = true
-                }
-                return
-            }
-
-            let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)"
-            
-            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:]) { success in
+            if UserDefaultsRepository.method == "iOS Shortcuts" {
+                guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
                     DispatchQueue.main.async {
                         self.isLoading = false
-                        if success {
-                            self.statusMessage = "Avbryt override lyckades."
-                            self.alertType = .statusSuccess
-                            self.delegate?.didCancelOverride()
-                        } else {
-                            self.statusMessage = "Fel: Kan inte öppna genväg."
-                            self.alertType = .statusFailure
-                        }
+                        self.statusMessage = "Kan inte koda URL-strängen."
+                        self.alertType = .statusFailure
                         self.showAlert = true
                     }
+                    return
                 }
-            } else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.statusMessage = "Fel: Kan inte öppna genväg."
-                    self.alertType = .statusFailure
-                    self.showAlert = true
+
+                // Define x-callback URLs
+                let successCallback = "carbcounter://completed"
+                let errorCallback = "carbcounter://error"
+                let cancelCallback = "carbcounter://cancel"
+                let passcodeCallback = "carbcounter://passcode"
+
+                guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let passcodeEncoded = passcodeCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.statusMessage = "Kan inte koda URL-strängen."
+                        self.alertType = .statusFailure
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)&x-passcode=\(passcodeEncoded)"
+                            
+                            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+                                UIApplication.shared.open(url, options: [:]) { success in
+                                    if !success {
+                                        DispatchQueue.main.async {
+                                            self.isLoading = false
+                                            self.statusMessage = "Kan inte öppna genväg."
+                                            self.alertType = .statusFailure
+                                            self.showAlert = true
+                                        }
+                                    }
+                                }
+                            } else {
+                                DispatchQueue.main.async {
+                                    self.isLoading = false
+                                    self.statusMessage = "Kan inte öppna genväg."
+                                    self.alertType = .statusFailure
+                                    self.showAlert = true
                 }
             }
         } else if UserDefaultsRepository.method == "Trio APNS" {
@@ -505,3 +522,102 @@ private func updateMethodText() {
         }
     }
 }
+
+class OverrideViewNotificationHandler: NSObject {
+    var view: OverrideView?
+    
+    @objc func handleShortcutSuccess() {
+        guard let view = view else { return }
+        DispatchQueue.main.async {
+            view.isLoading = false
+            view.statusMessage = "Override skickades"
+            view.alertType = .statusSuccess
+            view.showAlert = true
+            
+            // If an override was selected, activate it
+            if let selectedOverride = view.selectedOverride {
+                view.delegate?.didActivateOverride(percentage: selectedOverride.percentage ?? 100)
+            }
+        }
+    }
+    
+    @objc func handleShortcutError() {
+        guard let view = view else { return }
+        DispatchQueue.main.async {
+            view.isLoading = false
+            view.statusMessage = "Kunde inte skicka override"
+            view.alertType = .statusFailure
+            view.showAlert = true
+        }
+    }
+    
+    @objc func handleShortcutCancel() {
+        guard let view = view else { return }
+        DispatchQueue.main.async {
+            view.isLoading = false
+            view.statusMessage = "Genvägen avbröts"
+            view.alertType = .statusFailure
+            view.showAlert = true
+            
+            // Ensure delegate is notified of cancellation
+            view.delegate?.didCancelOverride()
+        }
+    }
+    
+    @objc func handleShortcutPasscode() {
+        guard let view = view else { return }
+        DispatchQueue.main.async {
+            view.isLoading = false
+            view.statusMessage = "Felaktig lösenord"
+            view.alertType = .statusFailure
+            view.showAlert = true
+        }
+    }
+}
+
+class OverrideViewCoordinator {
+    weak var delegate: OverrideViewDelegate?
+    var notificationHandler: OverrideViewNotificationHandler?
+    
+    func setupShortcutObservers(for view: OverrideView) {
+        // Create a notification handler if it doesn't exist
+        if notificationHandler == nil {
+            notificationHandler = OverrideViewNotificationHandler()
+            notificationHandler?.view = view
+        }
+        
+        NotificationCenter.default.addObserver(
+            notificationHandler!,
+            selector: #selector(OverrideViewNotificationHandler.handleShortcutSuccess),
+            name: NSNotification.Name("ShortcutSuccess"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            notificationHandler!,
+            selector: #selector(OverrideViewNotificationHandler.handleShortcutError),
+            name: NSNotification.Name("ShortcutError"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            notificationHandler!,
+            selector: #selector(OverrideViewNotificationHandler.handleShortcutCancel),
+            name: NSNotification.Name("ShortcutCancel"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            notificationHandler!,
+            selector: #selector(OverrideViewNotificationHandler.handleShortcutPasscode),
+            name: NSNotification.Name("ShortcutPasscode"),
+            object: nil
+        )
+    }
+    
+    func removeShortcutObservers() {
+            guard let notificationHandler = notificationHandler else { return }
+            
+            NotificationCenter.default.removeObserver(notificationHandler)
+        }
+}
+
+// Create a private key for associated object
+private var notificationHandlerKey: UInt8 = 0

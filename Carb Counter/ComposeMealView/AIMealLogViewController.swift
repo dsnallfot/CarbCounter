@@ -19,7 +19,7 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "AI Analysslogg"
+        title = "AI Analyslogg"
         updateBackgroundForCurrentMode()
 
         setupSearchBar()
@@ -40,7 +40,7 @@ class AIMealLogViewController: UIViewController, UITableViewDelegate, UITableVie
         searchBar.barTintColor = .clear
         searchBar.backgroundColor = .clear
         searchBar.backgroundImage = UIImage()
-        searchBar.placeholder = "Sök måltid i loggen" // "Search meal"
+        searchBar.placeholder = "Sök måltid i loggen"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(searchBar)
