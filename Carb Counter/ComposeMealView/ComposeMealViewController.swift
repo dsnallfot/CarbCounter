@@ -284,6 +284,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 object: nil
             )
         NotificationCenter.default.addObserver(self, selector: #selector(handleTemporaryFoodItemsAdded), name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(downloadNSProfile), name: .allowShortcutsChanged, object: nil)
         
         addButtonRowView.overrideSwitch.addTarget(self, action: #selector(overrideSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
@@ -294,7 +295,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             totalRegisteredCarbsLabel?.text = String(format: "%.0f g", registeredCarbsSoFar)
         }
         
-        if UserDefaultsRepository.method == "Trio APNS" {
+        //if UserDefaultsRepository.method == "Trio APNS" {
+            if UserDefaultsRepository.allowShortcuts == true {
             webLoadNSProfile()
         }
         
@@ -367,7 +369,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         checkIfEditing()
 
         // Handle Trio APNS method
-        if UserDefaultsRepository.method == "Trio APNS" {
+        //if UserDefaultsRepository.method == "Trio APNS" {
+            if UserDefaultsRepository.allowShortcuts == true {
             WebLoadNSTreatments {
                 self.handleActiveOverride()
             }
@@ -2252,9 +2255,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     private func showTemporaryOverrideAlert() {
         let overrideName = UserDefaultsRepository.overrideName ?? "förinställd"
-        let alertController = UIAlertController(
+        /*let alertController = UIAlertController(
             title: NSLocalizedString("Tillfällig eller förinställd override?", comment: "Tillfällig eller förinställd override?"),
             message: String(format: NSLocalizedString("\nVälj om du vill aktivera den förinställda overriden (%@), eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan", comment: "\nVälj om du vill aktivera den förinställda overriden %@, eller om du vill ställa in en tillfällig override.\n\nOm du vill använda en tillfällig override kan du ange värdet i procent nedan"), overrideName),
+            preferredStyle: .alert
+        )*/
+        let alertController = UIAlertController(
+            title: NSLocalizedString("Tillfällig override?", comment: "Tillfällig override?"),
+            message: NSLocalizedString("\nOm du vill använda en tillfällig override för att beräkna insulinkvoten kan du ange värdet i procent nedan", comment: "\nOm du vill använda en tillfällig override för att beräkna insulinkvoten kan du ange värdet i procent nedan"),
             preferredStyle: .alert
         )
         alertController.addTextField { textField in
@@ -2266,6 +2274,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let inputText = alertController.textFields?.first?.text
             self.applyTemporaryOverride(from: inputText)
         }
+        /*
         let presetAction = UIAlertAction(title: String(format: NSLocalizedString("Använd %@", comment: "Använd %@"), overrideName), style: .default) { [weak self] _ in
             guard let self = self else { return }
             self.temporaryOverride = false
@@ -2287,13 +2296,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 addButtonRowView.overrideLabel.textAlignment = .left
                 addButtonRowView.overrideLabel.text = ("\(formattedOverride) %   ")
             }
-        }
+        }*/
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Avbryt"), style: .cancel) { [weak self] _ in
             guard let self = self else { return }
             self.turnOffOverrideSwitch()
         }
         alertController.addAction(confirmAction)
-        alertController.addAction(presetAction)
+        //alertController.addAction(presetAction)
         alertController.addAction(cancelAction)
         present(alertController, animated: true, completion: nil)
     }
@@ -2519,6 +2528,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             updateUI()
         } catch {
             print("DEBUG: Failed to fetch or delete FoodItemTemporary entries: \(error)")
+        }
+    }
+    
+    @objc private func downloadNSProfile() {
+        if UserDefaultsRepository.allowShortcuts == true {
+            webLoadNSProfile()
         }
     }
 
@@ -3041,7 +3056,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if registeredCarbsSoFar == 0 && registeredFatSoFar == 0 && registeredProteinSoFar == 0 {
             mealDate = Date()
         }
-        if UserDefaultsRepository.method == "Trio APNS" {
+        //if UserDefaultsRepository.method == "Trio APNS" {
+            if UserDefaultsRepository.allowShortcuts == true {
             WebLoadNSTreatments {
                 self.handleActiveOverride()
             }
@@ -3146,7 +3162,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             mealDate = Date()
         }
         
-        if UserDefaultsRepository.method == "Trio APNS" {
+        if UserDefaultsRepository.allowShortcuts == true {
+            //if UserDefaultsRepository.method == "Trio APNS" {
             WebLoadNSTreatments {
                 self.handleActiveOverride()
             }
@@ -3396,7 +3413,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     
     // MARK: Class (AddButtonRow)
     class AddButtonRowView: UIView {
-        private var trioAPNSConstraints: [NSLayoutConstraint] = []
+        private var remoteConstraints: [NSLayoutConstraint] = []
         private var defaultConstraints: [NSLayoutConstraint] = []
         let addButton: UIButton = {
             let button = UIButton(type: .system)
@@ -3480,7 +3497,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         override init(frame: CGRect) {
             super.init(frame: frame)
             setupView()
-            observeMethodChanges()
+            observeRemoteChanges()
         }
         
         required init?(coder: NSCoder) {
@@ -3488,8 +3505,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         private func setupView() {
-            let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
-            overrideSwitch.isHidden = isTrioAPNS
+            let isRemote = (UserDefaultsRepository.allowShortcuts == true)
+            //let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
+            overrideSwitch.isHidden = isRemote
 
             overrideContainer.addSubview(overrideLabel)
             overrideContainer.addSubview(overrideSwitch)
@@ -3519,8 +3537,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 overrideSwitch.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor),
             ])
 
-            // Define constraints for Trio APNS
-            trioAPNSConstraints = [
+            // Define constraints when remote allowed
+            remoteConstraints = [
                 overrideLabel.centerXAnchor.constraint(equalTo: overrideContainer.centerXAnchor),
                 overrideLabel.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor)
             ]
@@ -3532,23 +3550,24 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             ]
 
             // Activate the initial set of constraints
-            NSLayoutConstraint.activate(isTrioAPNS ? trioAPNSConstraints : defaultConstraints)
+            NSLayoutConstraint.activate(isRemote ? remoteConstraints : defaultConstraints)
         }
         
-        private func observeMethodChanges() {
-            NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .methodChanged, object: nil)
+        private func observeRemoteChanges() {
+            //NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .methodChanged, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .allowShortcutsChanged, object: nil)
         }
         
         @objc private func updateOverrideSwitch() {
-            let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
-            overrideSwitch.isHidden = isTrioAPNS
+            let isRemote = (UserDefaultsRepository.allowShortcuts == true)
+            overrideSwitch.isHidden = isRemote
 
             // Deactivate all constraints for the label
-            NSLayoutConstraint.deactivate(trioAPNSConstraints + defaultConstraints)
+            NSLayoutConstraint.deactivate(remoteConstraints + defaultConstraints)
 
             // Activate the appropriate set of constraints
-            if isTrioAPNS {
-                NSLayoutConstraint.activate(trioAPNSConstraints)
+            if isRemote {
+                NSLayoutConstraint.activate(remoteConstraints)
             } else {
                 NSLayoutConstraint.activate(defaultConstraints)
             }

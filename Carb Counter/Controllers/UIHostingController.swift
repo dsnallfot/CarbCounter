@@ -313,7 +313,8 @@ extension ComposeMealViewController {
     }
     
     @objc public func overrideLabelTapped() {
-        if UserDefaultsRepository.method == "Trio APNS" {
+        if UserDefaultsRepository.allowShortcuts == true {
+        //if UserDefaultsRepository.method == "Trio APNS" {
             WebLoadNSTreatments {
                 var overrideView = OverrideView()
                 overrideView.delegate = self // Pass the current instance of ComposeMealViewController as the delegate

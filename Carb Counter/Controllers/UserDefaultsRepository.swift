@@ -71,6 +71,7 @@ class UserDefaultsRepository {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "allowShortcuts")
+            NotificationCenter.default.post(name: .allowShortcutsChanged, object: nil)
         }
     }
 
@@ -359,4 +360,5 @@ extension Notification.Name {
     static let allowCSVSync = Notification.Name("allowCSVSync")
     static let schoolFoodURLChanged = Notification.Name("schoolFoodURLChanged")
     static let methodChanged = Notification.Name("methodChanged")
+    static let allowShortcutsChanged = Notification.Name("allowShortcutsChanged")
 }
