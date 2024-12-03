@@ -104,7 +104,7 @@ class RemoteSettingsViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SegmentedControlCell")
         tableView.tableFooterView = UIView()
 
-        if !UserDefaultsRepository.allowShortcuts {
+        if !UserDefaultsRepository.allowRemoteControl {
             method = "iOS Shortcuts"
         } else if method.isEmpty {
             method = "iOS Shortcuts"
@@ -182,7 +182,7 @@ class RemoteSettingsViewController: UITableViewController {
                 NSLocalizedString("Välj Twilio", comment: "Använd Twilio SMS API"),
                 NSLocalizedString("Välj APNS", comment: "Använd Trio APNS")
             ])
-            segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowShortcuts && method == "SMS API") ? 1 : (method == "Trio APNS") ? 2 : 0
+            segmentedControl.selectedSegmentIndex = (UserDefaultsRepository.allowRemoteControl && method == "SMS API") ? 1 : (method == "Trio APNS") ? 2 : 0
             segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
             segmentedControl.translatesAutoresizingMaskIntoConstraints = false
             

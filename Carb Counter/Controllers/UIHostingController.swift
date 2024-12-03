@@ -313,7 +313,7 @@ extension ComposeMealViewController {
     }
     
     @objc public func overrideLabelTapped() {
-        if UserDefaultsRepository.allowShortcuts == true {
+        if UserDefaultsRepository.allowRemoteControl == true {
         //if UserDefaultsRepository.method == "Trio APNS" {
             WebLoadNSTreatments {
                 var overrideView = OverrideView()

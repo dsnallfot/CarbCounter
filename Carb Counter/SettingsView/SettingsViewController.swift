@@ -204,7 +204,7 @@ class SettingsViewController: UITableViewController {
             case 0:
                 let toggleSwitch = UISwitch()
                 cell.textLabel?.text = NSLocalizedString("Tillåt fjärrstyrning", comment: "Allow remote control label")
-                toggleSwitch.isOn = UserDefaultsRepository.allowShortcuts
+                toggleSwitch.isOn = UserDefaultsRepository.allowRemoteControl
                 toggleSwitch.addTarget(self, action: #selector(shortcutsSwitchChanged(_:)), for: .valueChanged)
                 cell.accessoryView = toggleSwitch
                 
@@ -401,8 +401,8 @@ class SettingsViewController: UITableViewController {
     }
     
     @objc private func shortcutsSwitchChanged(_ sender: UISwitch) {
-        UserDefaultsRepository.allowShortcuts = sender.isOn
-        NotificationCenter.default.post(name: Notification.Name("AllowShortcutsChanged"), object: nil)
+        UserDefaultsRepository.allowRemoteControl = sender.isOn
+        NotificationCenter.default.post(name: Notification.Name("allowRemoteControlChanged"), object: nil)
     }
     
     @objc private func dataClearingSwitchChanged(_ sender: UISwitch) {

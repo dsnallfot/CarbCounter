@@ -65,13 +65,13 @@ class UserDefaultsRepository {
         }
     }
 
-    static var allowShortcuts: Bool {
+    static var allowRemoteControl: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: "allowShortcuts")
+            return UserDefaults.standard.bool(forKey: "allowRemoteControl")
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "allowShortcuts")
-            NotificationCenter.default.post(name: .allowShortcutsChanged, object: nil)
+            UserDefaults.standard.set(newValue, forKey: "allowRemoteControl")
+            NotificationCenter.default.post(name: .allowRemoteControlChanged, object: nil)
         }
     }
 
@@ -360,5 +360,5 @@ extension Notification.Name {
     static let allowCSVSync = Notification.Name("allowCSVSync")
     static let schoolFoodURLChanged = Notification.Name("schoolFoodURLChanged")
     static let methodChanged = Notification.Name("methodChanged")
-    static let allowShortcutsChanged = Notification.Name("allowShortcutsChanged")
+    static let allowRemoteControlChanged = Notification.Name("allowRemoteControlChanged")
 }

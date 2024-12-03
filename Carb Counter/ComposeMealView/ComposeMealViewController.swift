@@ -75,7 +75,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     var matchedFoodItems: [FoodItem] = []
     var scheduledStartDose = Double(20)
     var scheduledCarbRatio = Double(25)
-    var allowShortcuts: Bool = false
+    var allowRemoteControl: Bool = false
     var saveMealToHistory: Bool = false
     var zeroBolus: Bool = false
     var override: Bool = false
@@ -209,7 +209,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 // Perform any additional setup dependent on fetched food items here
             }
         loadFoodItemsFromCoreData()
-        allowShortcuts = UserDefaultsRepository.allowShortcuts
+        allowRemoteControl = UserDefaultsRepository.allowRemoteControl
         
         /// Create buttons
         clearAllButton = UIBarButtonItem(
@@ -276,7 +276,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         NotificationCenter.default.addObserver(self, selector: #selector(didTakeoverRegistration(_:)), name: .didTakeoverRegistration, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateRSSButtonVisibility), name: .schoolFoodURLChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(webLoadNSProfile), name: Notification.Name("SyncWithNightscout"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(allowShortcutsChanged), name: Notification.Name("AllowShortcutsChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(allowRemoteControlChanged), name: Notification.Name("allowRemoteControlChanged"), object: nil)
         NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(handleTrioAPNSSelected),
@@ -284,7 +284,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 object: nil
             )
         NotificationCenter.default.addObserver(self, selector: #selector(handleTemporaryFoodItemsAdded), name: NSNotification.Name("TemporaryFoodItemsAdded"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(downloadNSProfile), name: .allowShortcutsChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(downloadNSProfile), name: .allowRemoteControlChanged, object: nil)
         
         addButtonRowView.overrideSwitch.addTarget(self, action: #selector(overrideSwitchChanged(_:)), for: .valueChanged)
         dataSharingVC = DataSharingViewController()
@@ -296,7 +296,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         //if UserDefaultsRepository.method == "Trio APNS" {
-            if UserDefaultsRepository.allowShortcuts == true {
+            if UserDefaultsRepository.allowRemoteControl == true {
             webLoadNSProfile()
         }
         
@@ -329,20 +329,22 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         updateScheduledValuesUI()
 
         // Handle override switch timing
-        if let startTime = UserDefaultsRepository.overrideStartTime {
-            print("Override CR was activated: \(startTime)")
-            let timeInterval = Date().timeIntervalSince(startTime)
-            if timeInterval >= overrideDuration {
-                addButtonRowView.overrideSwitch.isOn = false
-                overrideSwitchChanged(addButtonRowView.overrideSwitch)
-            } else {
-                overrideTimer = Timer.scheduledTimer(
-                    timeInterval: overrideDuration - timeInterval,
-                    target: self,
-                    selector: #selector(turnOffOverrideSwitch),
-                    userInfo: nil,
-                    repeats: false
-                )
+        if !allowRemoteControl {
+            if let startTime = UserDefaultsRepository.overrideStartTime {
+                print("Override CR was activated: \(startTime)")
+                let timeInterval = Date().timeIntervalSince(startTime)
+                if timeInterval >= overrideDuration {
+                    addButtonRowView.overrideSwitch.isOn = false
+                    overrideSwitchChanged(addButtonRowView.overrideSwitch)
+                } else {
+                    overrideTimer = Timer.scheduledTimer(
+                        timeInterval: overrideDuration - timeInterval,
+                        target: self,
+                        selector: #selector(turnOffOverrideSwitch),
+                        userInfo: nil,
+                        repeats: false
+                    )
+                }
             }
         }
 
@@ -370,7 +372,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
         // Handle Trio APNS method
         //if UserDefaultsRepository.method == "Trio APNS" {
-            if UserDefaultsRepository.allowShortcuts == true {
+            if UserDefaultsRepository.allowRemoteControl == true {
             WebLoadNSTreatments {
                 self.handleActiveOverride() {}
             }
@@ -1831,7 +1833,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Show alert to set temporary override factor
         if override {
             showTemporaryOverrideAlert()
-            self.startOverrideTimer()
+            if !allowRemoteControl {
+                self.startOverrideTimer()
+            }
         } else {
             crContainerBackgroundColor = .systemGray3
             
@@ -1928,8 +1932,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         return CGFloat(clamp(percentage, to: 0...1)) // Ensure percentage stays between 0 and 1
     }
     
-    @objc private func allowShortcutsChanged() {
-        allowShortcuts = UserDefaultsRepository.allowShortcuts
+    @objc private func allowRemoteControlChanged() {
+        allowRemoteControl = UserDefaultsRepository.allowRemoteControl
     }
     
     private func hideAllDeleteButtons() {
@@ -2536,7 +2540,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     @objc private func downloadNSProfile() {
-        if UserDefaultsRepository.allowShortcuts == true {
+        if UserDefaultsRepository.allowRemoteControl == true {
             webLoadNSProfile()
         }
     }
@@ -2899,7 +2903,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             print("No override name available")
             return
         }
-        if UserDefaultsRepository.allowShortcuts {
+        if UserDefaultsRepository.allowRemoteControl {
             let caregiverName = UserDefaultsRepository.caregiverName
             let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
             let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
@@ -3004,7 +3008,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             let startDose = false
             let remainDose = false
             
-            if !allowShortcuts {
+            if !allowRemoteControl {
                 // Use alert when manually registering
                 let alertController = UIAlertController(
                     title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
@@ -3061,7 +3065,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             mealDate = Date()
         }
 
-        if UserDefaultsRepository.allowShortcuts == true {
+        if UserDefaultsRepository.allowRemoteControl == true {
             WebLoadNSTreatments {
                 self.handleActiveOverride {
                     self.continueStartAmountContainerTapped()
@@ -3115,7 +3119,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startDose = true
         let remainDose = false
         
-        if !allowShortcuts {
+        if !allowRemoteControl {
             // Use alert when manually registering
             let alertController = UIAlertController(
                 title: NSLocalizedString("Manuell registrering", comment: "Manual registration"),
@@ -3173,7 +3177,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             mealDate = Date()
         }
 
-        if UserDefaultsRepository.allowShortcuts == true {
+        if UserDefaultsRepository.allowRemoteControl == true {
             WebLoadNSTreatments {
                 self.handleActiveOverride {
                     self.processRemainContainer()
@@ -3319,7 +3323,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         let startDose = true
         let remainDose = true
 
-        if !allowShortcuts {
+        if !allowRemoteControl {
             var alertMessage = String(format: NSLocalizedString("\nRegistrera nu de kolhydrater som ännu inte registrerats i Trio, och ge en bolus enligt summeringen nedan:\n\n• %@ g kolhydrater", comment: "\nRegister the unregistered carbs in Trio and give a bolus as summarized:\n\n• %@ g carbs"), khValue)
             
             if let fat = Double(fatValue), fat > 0 {
@@ -3520,7 +3524,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         }
         
         private func setupView() {
-            let isRemote = (UserDefaultsRepository.allowShortcuts == true)
+            let isRemote = (UserDefaultsRepository.allowRemoteControl == true)
             //let isTrioAPNS = (UserDefaultsRepository.method == "Trio APNS")
             overrideSwitch.isHidden = isRemote
 
@@ -3570,11 +3574,11 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         
         private func observeRemoteChanges() {
             //NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .methodChanged, object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .allowShortcutsChanged, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(updateOverrideSwitch), name: .allowRemoteControlChanged, object: nil)
         }
         
         @objc private func updateOverrideSwitch() {
-            let isRemote = (UserDefaultsRepository.allowShortcuts == true)
+            let isRemote = (UserDefaultsRepository.allowRemoteControl == true)
             overrideSwitch.isHidden = isRemote
 
             // Deactivate all constraints for the label
