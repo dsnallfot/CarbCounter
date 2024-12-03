@@ -6,34 +6,54 @@
 //
 
 import Foundation
+import Network
+
 extension ComposeMealViewController {
     // NS Treatments Web Call
     // Downloads Basal, Bolus, Carbs, BG Check, Notes, Overrides
+
     func WebLoadNSTreatments(completion: @escaping () -> Void) {
+        // Check for network connectivity
+        let monitor = NWPathMonitor()
+        let queue = DispatchQueue(label: "NetworkMonitor")
+        monitor.start(queue: queue)
         
-        let startTimeString = dateTimeUtils.getDateTimeString(addingDays: -1)
-        let currentTimeString = dateTimeUtils.getDateTimeString(addingHours: 6)
-        let parameters: [String: String] = [
-            "find[created_at][$gte]": startTimeString,
-            "find[created_at][$lte]": currentTimeString
-        ]
-        NightscoutUtils.executeDynamicRequest(eventType: .treatments, parameters: parameters) { (result: Result<Any, Error>) in
-            switch result {
-            case .success(let data):
-                if let entries = data as? [[String: AnyObject]] {
-                    DispatchQueue.main.async {
-                        self.updateTreatments(entries: entries)
-                    }
-                } else {
-                    print("Error: Unexpected data structure")
+        monitor.pathUpdateHandler = { path in
+            monitor.cancel() // Stop monitoring once we have the result
+
+            guard path.status == .satisfied else {
+                print("No network connection available.")
+                DispatchQueue.main.async {
+                    completion()
                 }
-            case .failure(let error):
-                print("Error: \(error.localizedDescription)")
+                return
             }
-        }
-        DispatchQueue.main.async {
+
+            // Proceed with the request if network is available
+            let startTimeString = dateTimeUtils.getDateTimeString(addingDays: -1)
+            let currentTimeString = dateTimeUtils.getDateTimeString(addingHours: 6)
+            let parameters: [String: String] = [
+                "find[created_at][$gte]": startTimeString,
+                "find[created_at][$lte]": currentTimeString
+            ]
+            NightscoutUtils.executeDynamicRequest(eventType: .treatments, parameters: parameters) { (result: Result<Any, Error>) in
+                switch result {
+                case .success(let data):
+                    if let entries = data as? [[String: AnyObject]] {
+                        DispatchQueue.main.async {
+                            self.updateTreatments(entries: entries)
+                        }
+                    } else {
+                        print("Error: Unexpected data structure")
+                    }
+                case .failure(let error):
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            DispatchQueue.main.async {
                 completion()
             }
+        }
     }
     
     // Process and split out treatments to individual tasks

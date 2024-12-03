@@ -372,7 +372,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         //if UserDefaultsRepository.method == "Trio APNS" {
             if UserDefaultsRepository.allowShortcuts == true {
             WebLoadNSTreatments {
-                self.handleActiveOverride()
+                self.handleActiveOverride() {}
             }
         }
     }
@@ -1050,25 +1050,27 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         present(navController, animated: true, completion: nil)
     }
     
-    func handleActiveOverride() {
+    func handleActiveOverride(completion: @escaping () -> Void) {
         DispatchQueue.main.async {
             guard let activeNote = Observable.shared.override.value else {
                 print("No active override found.")
                 self.didCancelOverride()
+                completion()
                 return
             }
 
             if let matchedOverride = ProfileManager.shared.trioOverrides.first(where: { $0.name == activeNote }) {
-                        if let percentage = matchedOverride.percentage {
-                            print("Matched override percentage: \(percentage)")
-                            self.didActivateOverride(percentage: percentage)
-                        } else {
-                            print("Matched override has no percentage, activating override but setting override % to 100")
-                            self.didActivateOverride(percentage: 100)
-                        }
-                    } else {
-                        print("No matching override found for activeNote: \(activeNote)")
-                    }
+                if let percentage = matchedOverride.percentage {
+                    print("Matched override percentage: \(percentage)")
+                    self.didActivateOverride(percentage: percentage)
+                } else {
+                    print("Matched override has no percentage, activating override but setting override % to 100")
+                    self.didActivateOverride(percentage: 100)
+                }
+            } else {
+                print("No matching override found for activeNote: \(activeNote)")
+            }
+            completion()
         }
     }
 
@@ -1093,7 +1095,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 // Perform clearing operations after save is complete
                 self.clearAllFoodItems()
                 self.updateRemainsBolus()
-                self.updateTotalNutrients()
+                //self.updateTotalNutrients()
                 self.clearAllButton.isEnabled = false
                 self.clearAllFoodItemRowsFromCoreData()
                 self.startDoseGiven = false
@@ -1107,11 +1109,12 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self.exportBlankCSV()
                 }
                 
-                self.overrideTimer?.invalidate()
-                self.turnOffOverrideSwitch()
+                //self.overrideTimer?.invalidate()
+                //self.turnOffOverrideSwitch()
                 self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
                 self.startAmountContainer.backgroundColor = .systemBlue
                 UserDefaultsRepository.savedHistorySearchText = ""
+                self.updateScheduledValuesUI()
             }
         }
         
@@ -1446,6 +1449,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     public func updateTotalNutrients() {
+        
         let totalNetCarbs = foodItemRows.reduce(0.0) { $0 + $1.netCarbs }
         let remainsValue = Double(totalRemainsLabel.text?.replacingOccurrences(of: "g", with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
         let remainsBolus = Double(totalRemainsBolusLabel.text?.replacingOccurrences(of: NSLocalizedString("E", comment: "E"), with: "").replacingOccurrences(of: ",", with: ".") ?? "0") ?? 0.0
@@ -3056,12 +3060,19 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if registeredCarbsSoFar == 0 && registeredFatSoFar == 0 && registeredProteinSoFar == 0 {
             mealDate = Date()
         }
-        //if UserDefaultsRepository.method == "Trio APNS" {
-            if UserDefaultsRepository.allowShortcuts == true {
+
+        if UserDefaultsRepository.allowShortcuts == true {
             WebLoadNSTreatments {
-                self.handleActiveOverride()
+                self.handleActiveOverride {
+                    self.continueStartAmountContainerTapped()
+                }
             }
+        } else {
+            self.continueStartAmountContainerTapped()
         }
+    }
+    
+    private func continueStartAmountContainerTapped() {
         hideAllDeleteButtons()
         createEmojiString()
         
@@ -3161,14 +3172,18 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if mealDate == nil {
             mealDate = Date()
         }
-        
+
         if UserDefaultsRepository.allowShortcuts == true {
-            //if UserDefaultsRepository.method == "Trio APNS" {
             WebLoadNSTreatments {
-                self.handleActiveOverride()
+                self.handleActiveOverride {
+                    self.processRemainContainer()
+                }
             }
+        } else {
+            processRemainContainer()
         }
-        
+    }
+    private func processRemainContainer() {
         hideAllDeleteButtons()
         createEmojiString()
         
