@@ -7,6 +7,7 @@
 
 import SwiftUI
 import HealthKit
+import AudioToolbox
 import LocalAuthentication
 import ObjectiveC
 
@@ -57,7 +58,7 @@ protocol OverrideViewDelegate: AnyObject {
 
 struct OverrideView: View, TwilioRequestable {
     @State private var coordinator: OverrideViewCoordinator
-    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.presentationMode) internal var presentationMode
     private let pushNotificationManager = PushNotificationManager()
     
     @ObservedObject var device = ObservableUserDefaults.shared.device
@@ -68,7 +69,7 @@ struct OverrideView: View, TwilioRequestable {
     @State internal var showAlert: Bool = false
     @State internal var alertType: AlertType? = nil
     @State internal var alertMessage: String? = nil
-    @State internal var isLoading: Bool = false
+    //@State internal var isLoading: Bool = false
     @State internal var statusMessage: String? = nil
     
     @State internal var selectedOverride: ProfileManager.TrioOverride? = nil
@@ -174,10 +175,10 @@ struct OverrideView: View, TwilioRequestable {
                     }
                     .modifier(CustomBackgroundContainer())
 
-                    if isLoading {
+                    /*if isLoading {
                         ProgressView("Vänta...")
                             .padding()
-                    }
+                    }*/
                 }
             .navigationTitle("Overrides")
             .navigationBarTitleDisplayMode(.inline)
@@ -304,25 +305,38 @@ private func updateMethodText() {
     }
 
     private func activateOverride(_ override: ProfileManager.TrioOverride) {
-        isLoading = true
+        //isLoading = true
 
-        // Combine the override details into a string
         let combinedString = createCombinedString(for: override)
 
-        // Send the override request based on the selected method
         sendOverrideRequest(override: override, combinedString: combinedString) { result in
             DispatchQueue.main.async {
-                self.isLoading = false
+                //self.isLoading = false
                 switch result {
                 case .success:
-                    self.statusMessage = "Override skickades"
-                    self.alertType = .statusSuccess
+                    // Play a success sound
+                    AudioServicesPlaySystemSound(SystemSoundID(1322))
+                    
+                    // Show the success view
+                    let successView = SuccessView()
+                    if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                        successView.showInView(keyWindow)
+                    }
+                    
+                    // Dismiss the modal after showing the success view
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }
+                    
                     self.delegate?.didActivateOverride(percentage: override.percentage ?? 100)
                 case .failure(let error):
+                    // Play failure sound
+                    AudioServicesPlaySystemSound(SystemSoundID(1053))
+                    
                     self.statusMessage = error.localizedDescription
                     self.alertType = .statusFailure
+                    self.showAlert = true
                 }
-                self.showAlert = true
             }
         }
     }
@@ -422,76 +436,107 @@ private func updateMethodText() {
     }
 
     private func cancelOverride() {
-            isLoading = true
+        //isLoading = true
 
-            let caregiverName = UserDefaultsRepository.caregiverName
-            let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-            let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        let caregiverName = UserDefaultsRepository.caregiverName
+        let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+        let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
 
-            if UserDefaultsRepository.method == "iOS Shortcuts" {
-                guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.statusMessage = "Kan inte koda URL-strängen."
-                        self.alertType = .statusFailure
-                        self.showAlert = true
-                    }
-                    return
+        if UserDefaultsRepository.method == "iOS Shortcuts" {
+            guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                DispatchQueue.main.async {
+                    //self.isLoading = false
+
+                    // Play failure sound
+                    AudioServicesPlaySystemSound(SystemSoundID(1053))
+
+                    self.statusMessage = "Kan inte koda URL-strängen."
+                    self.alertType = .statusFailure
+                    self.showAlert = true
                 }
+                return
+            }
 
-                // Define x-callback URLs
-                let successCallback = "carbcounter://completed"
-                let errorCallback = "carbcounter://error"
-                let cancelCallback = "carbcounter://cancel"
-                let passcodeCallback = "carbcounter://passcode"
+            // Define x-callback URLs
+            let successCallback = "carbcounter://completed"
+            let errorCallback = "carbcounter://error"
+            let cancelCallback = "carbcounter://cancel"
+            let passcodeCallback = "carbcounter://passcode"
 
-                guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                      let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                      let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                      let passcodeEncoded = passcodeCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.statusMessage = "Kan inte koda URL-strängen."
-                        self.alertType = .statusFailure
-                        self.showAlert = true
-                    }
-                    return
+            guard let successEncoded = successCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let errorEncoded = errorCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let cancelEncoded = cancelCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let passcodeEncoded = passcodeCallback.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                DispatchQueue.main.async {
+                    //self.isLoading = false
+
+                    // Play failure sound
+                    AudioServicesPlaySystemSound(SystemSoundID(1053))
+
+                    self.statusMessage = "Kan inte koda URL-strängen."
+                    self.alertType = .statusFailure
+                    self.showAlert = true
                 }
+                return
+            }
 
-                let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)&x-passcode=\(passcodeEncoded)"
+            let urlString = "shortcuts://x-callback-url/run-shortcut?name=CC%20Override&input=text&text=\(encodedString)&x-success=\(successEncoded)&x-error=\(errorEncoded)&x-cancel=\(cancelEncoded)&x-passcode=\(passcodeEncoded)"
                             
-                            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
-                                UIApplication.shared.open(url, options: [:]) { success in
-                                    if !success {
-                                        DispatchQueue.main.async {
-                                            self.isLoading = false
-                                            self.statusMessage = "Kan inte öppna genväg."
-                                            self.alertType = .statusFailure
-                                            self.showAlert = true
-                                        }
-                                    }
-                                }
-                            } else {
-                                DispatchQueue.main.async {
-                                    self.isLoading = false
-                                    self.statusMessage = "Kan inte öppna genväg."
-                                    self.alertType = .statusFailure
-                                    self.showAlert = true
+            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:]) { success in
+                    if !success {
+                        DispatchQueue.main.async {
+                            //self.isLoading = false
+
+                            // Play failure sound
+                            AudioServicesPlaySystemSound(SystemSoundID(1053))
+
+                            self.statusMessage = "Kan inte öppna genväg."
+                            self.alertType = .statusFailure
+                            self.showAlert = true
+                        }
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    //self.isLoading = false
+
+                    // Play failure sound
+                    AudioServicesPlaySystemSound(SystemSoundID(1053))
+
+                    self.statusMessage = "Kan inte öppna genväg."
+                    self.alertType = .statusFailure
+                    self.showAlert = true
                 }
             }
         } else if UserDefaultsRepository.method == "Trio APNS" {
             pushNotificationManager.sendCancelOverridePushNotification { success, errorMessage in
                 DispatchQueue.main.async {
-                    self.isLoading = false
+                    //self.isLoading = false
                     if success {
-                        self.statusMessage = "Avbryt override lyckades."
-                        self.alertType = .statusSuccess
+                        // Play a success sound
+                        AudioServicesPlaySystemSound(SystemSoundID(1322))
+
+                        // Show the success view
+                        let successView = SuccessView()
+                        if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                            successView.showInView(keyWindow)
+                        }
+
+                        // Dismiss the modal after showing the success view
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }
+
                         self.delegate?.didCancelOverride()
                     } else {
+                        // Play failure sound
+                        AudioServicesPlaySystemSound(SystemSoundID(1053))
+
                         self.statusMessage = errorMessage ?? "Avbryt override misslyckades."
                         self.alertType = .statusFailure
+                        self.showAlert = true
                     }
-                    self.showAlert = true
                 }
             }
         } else {
@@ -499,20 +544,39 @@ private func updateMethodText() {
                 DispatchQueue.main.async {
                     if authenticated {
                         self.twilioRequest(combinedString: combinedString) { result in
-                            self.isLoading = false
+                            //self.isLoading = false
                             switch result {
                             case .success:
-                                self.statusMessage = "Avbryt override lyckades."
-                                self.alertType = .statusSuccess
+                                // Play a success sound
+                                AudioServicesPlaySystemSound(SystemSoundID(1322))
+
+                                // Show the success view
+                                let successView = SuccessView()
+                                if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                                    successView.showInView(keyWindow)
+                                }
+
+                                // Dismiss the modal after showing the success view
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    self.presentationMode.wrappedValue.dismiss()
+                                }
+
                                 self.delegate?.didCancelOverride()
                             case .failure(let error):
+                                // Play failure sound
+                                AudioServicesPlaySystemSound(SystemSoundID(1053))
+
                                 self.statusMessage = error.localizedDescription
                                 self.alertType = .statusFailure
+                                self.showAlert = true
                             }
-                            self.showAlert = true
                         }
                     } else {
-                        self.isLoading = false
+                        //self.isLoading = false
+
+                        // Play failure sound
+                        AudioServicesPlaySystemSound(SystemSoundID(1053))
+
                         self.statusMessage = "Autentisering misslyckades."
                         self.alertType = .statusFailure
                         self.showAlert = true
@@ -529,11 +593,23 @@ class OverrideViewNotificationHandler: NSObject {
     @objc func handleShortcutSuccess() {
         guard let view = view else { return }
         DispatchQueue.main.async {
-            view.isLoading = false
-            view.statusMessage = "Override skickades"
-            view.alertType = .statusSuccess
-            view.showAlert = true
+            // Stop loading state
+            //view.isLoading = false
             
+            // Play a success sound
+            AudioServicesPlaySystemSound(SystemSoundID(1322))
+            
+            // Show the success view
+            let successView = SuccessView()
+            if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                successView.showInView(keyWindow)
+            }
+            
+            // Dismiss the modal after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                view.presentationMode.wrappedValue.dismiss()
+            }
+
             // If an override was selected, activate it
             if let selectedOverride = view.selectedOverride {
                 view.delegate?.didActivateOverride(percentage: selectedOverride.percentage ?? 100)
@@ -544,7 +620,11 @@ class OverrideViewNotificationHandler: NSObject {
     @objc func handleShortcutError() {
         guard let view = view else { return }
         DispatchQueue.main.async {
-            view.isLoading = false
+            //view.isLoading = false
+            
+            // Play failure sound
+            AudioServicesPlaySystemSound(SystemSoundID(1053))
+            
             view.statusMessage = "Kunde inte skicka override"
             view.alertType = .statusFailure
             view.showAlert = true
@@ -554,7 +634,11 @@ class OverrideViewNotificationHandler: NSObject {
     @objc func handleShortcutCancel() {
         guard let view = view else { return }
         DispatchQueue.main.async {
-            view.isLoading = false
+            //view.isLoading = false
+            
+            // Play failure sound
+            AudioServicesPlaySystemSound(SystemSoundID(1053))
+            
             view.statusMessage = "Genvägen avbröts"
             view.alertType = .statusFailure
             view.showAlert = true
@@ -567,7 +651,11 @@ class OverrideViewNotificationHandler: NSObject {
     @objc func handleShortcutPasscode() {
         guard let view = view else { return }
         DispatchQueue.main.async {
-            view.isLoading = false
+            //view.isLoading = false
+            
+            // Play failure sound
+            AudioServicesPlaySystemSound(SystemSoundID(1053))
+            
             view.statusMessage = "Felaktig lösenord"
             view.alertType = .statusFailure
             view.showAlert = true
