@@ -206,9 +206,9 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         // Initial fetch with a completion handler
             self.fetchFoodItems {
                 print("fetchFoodItems completed in viewDidLoad")
-                // Perform any additional setup dependent on fetched food items here
+                self.loadFoodItemsFromCoreData()
             }
-        loadFoodItemsFromCoreData()
+        
         allowRemoteControl = UserDefaultsRepository.allowRemoteControl
         
         /// Create buttons
