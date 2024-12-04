@@ -128,14 +128,14 @@ class LoadingViewController: UIViewController {
             if let homeVC = rootViewController as? HomeViewController {
                 print("🏠 Found HomeViewController")
                 homeVC.initializeHomeViewController()
-            }
+            }*/
             if let composeMealVC = rootViewController as? ComposeMealViewController {
                 print("🍽 Found ComposeMealViewController")
-                composeMealVC.initializeComposeMealViewController()
+                composeMealVC.initializeView()
                 
                 // Ensure the shared instance is set
                 ComposeMealViewController.shared = composeMealVC
-                
+            } /*
                 // Existing fetch logic
                 composeMealVC.fetchFoodItems {
                     print("✅ fetchFoodItems completed for ComposeMealViewController")

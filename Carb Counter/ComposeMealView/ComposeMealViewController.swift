@@ -171,8 +171,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         ])
         
         /// Reset override to false
-        UserDefaultsRepository.override = false
-        override = false
+        //UserDefaultsRepository.override = false
+        //override = false
         
         /// Ensure addButtonRowView is initialized
         addButtonRowView = AddButtonRowView()
