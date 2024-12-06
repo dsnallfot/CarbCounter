@@ -153,6 +153,7 @@
 "PORTION" = "SERVED";
 "LÄMNAT" = "LEFT";
 "KOLH." = "CARBS";
+"KOLH" = "CARBS";
 
 /* Food Item Row View */
 "Klar" = "Done";
@@ -187,6 +188,7 @@
 /* Meal View Controller */
 //Construct the combined string
 "Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@" = "Remote Meal\nCarbohydrates: %@g\nFat: %@g\nProtein: %@g\nNote: %@\nDate: %@\nInsulin: %@U\nEntered by: %@\nSecret code: %@";
+"Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nSecret: %@" = "Remote Meal\nCarbohydrates: %@g\nFat: %@g\nProtein: %@g\nNote: %@\nDate: %@\nInsulin: %@U\nEntered by: %@\nSecret: %@";
 
 //For parsing the combinedstring
 "Kolhydrater: " = "Carbohydrates: ";

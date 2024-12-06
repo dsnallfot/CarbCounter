@@ -296,12 +296,24 @@ private func updateMethodText() {
     }
 }
     
+    // Function to format date to ISO 8601 without seconds and milliseconds
+        func formatDateToISO8601(_ date: Date) -> String {
+            let dateFormatter = ISO8601DateFormatter()
+            dateFormatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+            return dateFormatter.string(from: date)
+        }
+    
     private func createCombinedString(for override: ProfileManager.TrioOverride) -> String {
         let caregiverName = UserDefaultsRepository.caregiverName
         let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
+        
+        // Get the current timestamp and format to ISO 8601
+        let currentTimestamp = Date()
+        let formattedTimestamp = formatDateToISO8601(currentTimestamp)
 
         // Use only the required format for iOS Shortcuts and Twilio
-        return "Remote Override\n\(override.name)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        //return "Remote Override\n\(override.name)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        return "Remote Override\n\(override.name)\nInlagt av: \(caregiverName)\nSecret: \(remoteSecretCode)\nSkickades: \(formattedTimestamp)"
     }
 
     private func activateOverride(_ override: ProfileManager.TrioOverride) {
@@ -440,7 +452,13 @@ private func updateMethodText() {
 
         let caregiverName = UserDefaultsRepository.caregiverName
         let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-        let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        
+        // Get the current timestamp and format to ISO 8601
+        let currentTimestamp = Date()
+        let formattedTimestamp = formatDateToISO8601(currentTimestamp)
+        
+        //let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+        let combinedString = "Remote Override\n🚫 Avbryt Override\nInlagt av: \(caregiverName)\nSecret: \(remoteSecretCode)\nSkickades: \(formattedTimestamp)"
 
         if UserDefaultsRepository.method == "iOS Shortcuts" {
             guard let encodedString = combinedString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {

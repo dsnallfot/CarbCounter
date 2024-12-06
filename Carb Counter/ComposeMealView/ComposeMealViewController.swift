@@ -2898,6 +2898,14 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
     }
     
     // MARK: Methods (Overrides)
+    
+    // Function to format date to ISO 8601 without seconds and milliseconds
+        func formatDateToISO8601(_ date: Date) -> String {
+            let dateFormatter = ISO8601DateFormatter()
+            dateFormatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+            return dateFormatter.string(from: date)
+        }
+    
     private func handleOverrideSwitchOn() {
         guard let overrideName = UserDefaultsRepository.overrideName else {
             print("No override name available")
@@ -2906,7 +2914,13 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
         if UserDefaultsRepository.allowRemoteControl {
             let caregiverName = UserDefaultsRepository.caregiverName
             let remoteSecretCode = UserDefaultsRepository.remoteSecretCode
-            let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+            
+            // Get the current timestamp and format to ISO 8601
+            let currentTimestamp = Date()
+            let formattedTimestamp = formatDateToISO8601(currentTimestamp)
+            
+            //let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nHemlig kod: \(remoteSecretCode)"
+            let combinedString = "Remote Override\n\(overrideName)\nInlagt av: \(caregiverName)\nSecret: \(remoteSecretCode)\nSkickades: \(formattedTimestamp)"
             
             let alertTitle = NSLocalizedString("Aktivera override", comment: "Aktivera override")
             let alertMessage = String(format: NSLocalizedString("\nVill du även aktivera overriden \n%@ i Trio?", comment: "Message asking if the user wants to activate the override in Trio"), overrideName)

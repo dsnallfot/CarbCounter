@@ -188,6 +188,7 @@
 /* Meal View Controller */
 //Construct the combined string
 "Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@" = "Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@";
+"Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nSecret: %@" = "Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nSecret: %@";
 
 //For parsing the combinedstring
 "Kolhydrater: " = "Kolhydrater: ";

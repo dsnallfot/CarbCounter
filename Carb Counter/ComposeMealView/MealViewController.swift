@@ -1089,6 +1089,38 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             let cleanedMealNotes = mealNotesValue
             let name = UserDefaultsRepository.caregiverName
             let secret = UserDefaultsRepository.remoteSecretCode
+
+            // Determine the appropriate format for bolusValue based on the fractional part
+            let bolusDecimalPart = bolusValue.truncatingRemainder(dividingBy: 1)
+            let bolusFormat = bolusDecimalPart == 0 ? "%.1f" : "%.2f"
+            let trimmedBolusValue = String(format: bolusFormat, bolusValue).trimmingCharacters(in: .whitespacesAndNewlines)
+
+            // Ensure that carbs, fats, and proteins are non-negative and format them
+            let adjustedCarbs = String(format: "%.1f", max(carbs, 0))
+            let adjustedFats = String(format: "%.1f", max(fats, 0))
+            let adjustedProteins = String(format: "%.1f", max(proteins, 0))
+
+            // Get selected date from mealDateTime and format to ISO 8601
+            let selectedDate = mealDateTime.date
+            let formattedDate = formatDateToISO8601(selectedDate)
+
+            // Get the current timestamp and format to ISO 8601
+            let currentTimestamp = Date()
+            let formattedTimestamp = formatDateToISO8601(currentTimestamp)
+            
+            // Construct and return the combined string with localized formatting
+            return String(
+                format: NSLocalizedString("Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nSecret: %@\nSkickades: %@",
+                                          comment: "Remote meal details with carbs, fat, protein, note, date, insulin, entered by, secret code, and sent timestamp"),
+                adjustedCarbs, adjustedFats, adjustedProteins, cleanedMealNotes, formattedDate, trimmedBolusValue, name, secret, formattedTimestamp
+            )
+        }
+        
+        /*func createCombinedString(carbs: Double, fats: Double, proteins: Double) -> String {
+         let mealNotesValue = mealNotes.text ?? ""
+            let cleanedMealNotes = mealNotesValue
+            let name = UserDefaultsRepository.caregiverName
+            let secret = UserDefaultsRepository.remoteSecretCode
             
             // Determine the appropriate format for bolusValue based on the fractional part
             let bolusDecimalPart = bolusValue.truncatingRemainder(dividingBy: 1)
@@ -1107,6 +1139,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, TwilioRequestab
             // Construct and return the combined string with localized formatting
             return String(format: NSLocalizedString("Remote Måltid\nKolhydrater: %@g\nFett: %@g\nProtein: %@g\nNotering: %@\nDatum: %@\nInsulin: %@E\nInlagt av: %@\nHemlig kod: %@", comment: "Remote meal details with carbs, fat, protein, note, date, insulin, entered by, and secret code"), adjustedCarbs, adjustedFats, adjustedProteins, cleanedMealNotes, formattedDate, trimmedBolusValue, name, secret)
         }
+        */
         //Alert for meal without bolus
         func showMealConfirmationAlert(combinedString: String) {
             // Set isAlertShowing to true before showing the alert
