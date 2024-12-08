@@ -1849,7 +1849,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             if let addButtonRowView = self.addButtonRowView {
                 addButtonRowView.overrideContainer.backgroundColor = .systemGray3
-                addButtonRowView.overrideLabel.textAlignment = .left
+                addButtonRowView.overrideLabel.textAlignment = .center
                 addButtonRowView.overrideLabel.text = NSLocalizedString("OVERRIDE", comment: "OVERRIDE")
             }
         }
@@ -2343,8 +2343,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             addButtonRowView.overrideContainer.backgroundColor = .systemPurple
             addButtonRowView.overrideLabel.textAlignment = .center
             addButtonRowView.overrideLabel.text = ("\(formattedOverride)")
-            addButtonRowView.overrideLabel.sizeToFit()
-            addButtonRowView.overrideContainer.layoutIfNeeded()
+            //addButtonRowView.overrideLabel.sizeToFit()
+            //addButtonRowView.overrideContainer.layoutIfNeeded()
         }
     }
     
@@ -3584,8 +3584,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             // Define constraints for default configuration
             defaultConstraints = [
-                overrideLabel.leadingAnchor.constraint(equalTo: overrideContainer.leadingAnchor, constant: 1), // Add padding
-                overrideLabel.trailingAnchor.constraint(equalTo: overrideContainer.trailingAnchor, constant: -1), // Add padding
+                overrideLabel.leadingAnchor.constraint(equalTo: overrideContainer.leadingAnchor, constant: 4), // Add padding
+                overrideLabel.trailingAnchor.constraint(equalTo: overrideContainer.trailingAnchor, constant: -4), // Add padding
                 overrideLabel.topAnchor.constraint(equalTo: overrideContainer.topAnchor, constant: 1), // Add padding
                 overrideLabel.bottomAnchor.constraint(equalTo: overrideContainer.bottomAnchor, constant: -1), // Add padding
                 overrideLabel.trailingAnchor.constraint(equalTo: overrideSwitch.leadingAnchor, constant: 6),
