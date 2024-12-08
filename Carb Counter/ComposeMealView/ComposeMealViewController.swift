@@ -2343,6 +2343,8 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             addButtonRowView.overrideContainer.backgroundColor = .systemPurple
             addButtonRowView.overrideLabel.textAlignment = .center
             addButtonRowView.overrideLabel.text = ("\(formattedOverride)")
+            addButtonRowView.overrideLabel.sizeToFit()
+            addButtonRowView.overrideContainer.layoutIfNeeded()
         }
     }
     
@@ -3511,7 +3513,7 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             label.lineBreakMode = .byWordWrapping
             
             label.adjustsFontSizeToFitWidth = true
-            label.minimumScaleFactor = 0.5
+            label.minimumScaleFactor = 0.4
             
             return label
         }()
@@ -3572,12 +3574,20 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
 
             // Define constraints when remote allowed
             remoteConstraints = [
+                overrideLabel.leadingAnchor.constraint(equalTo: overrideContainer.leadingAnchor, constant: 1), // Add padding
+                overrideLabel.trailingAnchor.constraint(equalTo: overrideContainer.trailingAnchor, constant: -1), // Add padding
+                overrideLabel.topAnchor.constraint(equalTo: overrideContainer.topAnchor, constant: 1), // Add padding
+                overrideLabel.bottomAnchor.constraint(equalTo: overrideContainer.bottomAnchor, constant: -1), // Add padding
                 overrideLabel.centerXAnchor.constraint(equalTo: overrideContainer.centerXAnchor),
                 overrideLabel.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor)
             ]
 
             // Define constraints for default configuration
             defaultConstraints = [
+                overrideLabel.leadingAnchor.constraint(equalTo: overrideContainer.leadingAnchor, constant: 1), // Add padding
+                overrideLabel.trailingAnchor.constraint(equalTo: overrideContainer.trailingAnchor, constant: -1), // Add padding
+                overrideLabel.topAnchor.constraint(equalTo: overrideContainer.topAnchor, constant: 1), // Add padding
+                overrideLabel.bottomAnchor.constraint(equalTo: overrideContainer.bottomAnchor, constant: -1), // Add padding
                 overrideLabel.trailingAnchor.constraint(equalTo: overrideSwitch.leadingAnchor, constant: 6),
                 overrideLabel.centerYAnchor.constraint(equalTo: overrideContainer.centerYAnchor)
             ]

@@ -329,6 +329,9 @@ private func updateMethodText() {
                     // Play a success sound
                     AudioServicesPlaySystemSound(SystemSoundID(1322))
                     
+                    // Update the Observable override valuev immediately to avoid it getting blank in composemealVC until ns is updated and treatments re-fetched
+                    Observable.shared.override.value = override.name
+                    
                     // Show the success view
                     let successView = SuccessView()
                     if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
