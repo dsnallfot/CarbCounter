@@ -383,6 +383,7 @@ private func updateMethodText() {
                                 UIApplication.shared.open(url, options: [:]) { success in
                                     if success {
                                         print("Shortcut successfully triggered")
+                                        Observable.shared.override.value = override.name
                                     } else {
                                         completion(.failure(NetworkError.invalidURL))
                                     }
@@ -394,6 +395,7 @@ private func updateMethodText() {
             pushNotificationManager.sendOverridePushNotification(override: override) { success, errorMessage in
                 if success {
                     completion(.success(()))
+                    Observable.shared.override.value = override.name
                 } else {
                     let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: errorMessage ?? "Unknown error"])
                     completion(.failure(error))
@@ -403,6 +405,7 @@ private func updateMethodText() {
             authenticateUser { authenticated in
                 if authenticated {
                     self.twilioRequest(combinedString: combinedString, completion: completion)
+                    Observable.shared.override.value = override.name
                 } else {
                     completion(.failure(NetworkError.invalidURL))
                 }

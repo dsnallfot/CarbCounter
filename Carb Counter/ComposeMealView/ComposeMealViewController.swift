@@ -1097,7 +1097,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                 // Perform clearing operations after save is complete
                 self.clearAllFoodItems()
                 self.updateRemainsBolus()
-                //self.updateTotalNutrients()
                 self.clearAllButton.isEnabled = false
                 self.clearAllFoodItemRowsFromCoreData()
                 self.startDoseGiven = false
@@ -1111,8 +1110,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
                     self.exportBlankCSV()
                 }
                 
-                //self.overrideTimer?.invalidate()
-                //self.turnOffOverrideSwitch()
                 self.startAmountLabel.text = NSLocalizedString("+ PRE-BOLUS", comment: "+ PRE-BOLUS")
                 self.startAmountContainer.backgroundColor = .systemBlue
                 UserDefaultsRepository.savedHistorySearchText = ""
@@ -2343,8 +2340,6 @@ class ComposeMealViewController: UIViewController, FoodItemRowViewDelegate, UITe
             addButtonRowView.overrideContainer.backgroundColor = .systemPurple
             addButtonRowView.overrideLabel.textAlignment = .center
             addButtonRowView.overrideLabel.text = ("\(formattedOverride)")
-            //addButtonRowView.overrideLabel.sizeToFit()
-            //addButtonRowView.overrideContainer.layoutIfNeeded()
         }
     }
     
