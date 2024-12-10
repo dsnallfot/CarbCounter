@@ -15,12 +15,28 @@ protocol FoodItemRowViewDelegate: AnyObject {
     func stopEditing()
 }
 
-class FoodItemRowView: UIView, UITextFieldDelegate {
+class FoodItemRowView: UIView, UITextFieldDelegate, AddFoodItemDelegate {
     var onDelete: (() -> Void)?
     var onValueChange: (() -> Void)?
     private var exportTimer: Timer?
     
     weak var delegate: FoodItemRowViewDelegate? // Ensure this is declared at the top level
+    
+    func didAddFoodItem(_ foodItem: FoodItem) {
+            // Handle the updated food item (e.g., refresh UI or update data)
+            setSelectedFoodItem(foodItem)
+            print("Food item updated: \(foodItem.name ?? "")")
+        }
+    
+    func didSaveAndClose(foodItem: FoodItem) {
+        // Update the selectedFoodItem with the edited foodItem
+        selectedFoodItem = foodItem
+
+        // Recalculate nutrients
+        print("Modal saved and closed. Recalculating nutrients.")
+        calculateNutrients()
+    }
+    
     var foodItems: [FoodItem] = []
     
     
@@ -237,12 +253,10 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
     @objc private func foodItemLabelTapped() {
         guard let selectedFoodItem = selectedFoodItem else { return }
 
-        // Clean up the emoji string by trimming unnecessary whitespace or newlines
         var emoji = selectedFoodItem.emoji ?? ""
         emoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
         emoji = emoji.precomposedStringWithCanonicalMapping  // Normalize emoji
 
-        // Format the title string with the cleaned emoji
         let title = "\(emoji) \(selectedFoodItem.name ?? "")"
         var message = ""
 
@@ -283,16 +297,17 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         if message.isEmpty {
             message = NSLocalizedString("Ingen näringsinformation tillgänglig.", comment: "Ingen näringsinformation tillgänglig.")
         } else {
-            // Remove the last newline character
             message = String(message.dropLast())
             
-            // Regex replacement for ".0"
             let regex = try! NSRegularExpression(pattern: "\\.0", options: [])
             message = regex.stringByReplacingMatches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count), withTemplate: "")
         }
 
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: NSLocalizedString("Avbryt", comment: "Cancel"), style: .cancel, handler: nil)
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Redigera näringsvärden", comment: "Edit food item"), style: .default, handler: { _ in
+            self.editSelectedFoodItem(selectedFoodItem)
+        }))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Visa portionsförslag", comment: "Serving size button"), style: .default, handler: { _ in
             self.presentMealInsightsViewController(with: selectedFoodItem)
         }))
@@ -372,6 +387,20 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
         
         // Push the MealHistoryViewController to the navigation stack
         viewController.navigationController?.pushViewController(mealHistoryVC, animated: true)
+    }
+    
+    private func editSelectedFoodItem(_ foodItem: FoodItem) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let addFoodItemVC = storyboard.instantiateViewController(withIdentifier: "AddFoodItemViewController") as? AddFoodItemViewController {
+            addFoodItemVC.delegate = self // Set the delegate
+            addFoodItemVC.foodItem = foodItem
+            let navController = UINavigationController(rootViewController: addFoodItemVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            if let viewController = self.getViewController() {
+                viewController.present(navController, animated: true, completion: nil)
+            }
+        }
     }
     
     func getTopViewController() -> UIViewController? {
@@ -476,4 +505,5 @@ class FoodItemRowView: UIView, UITextFieldDelegate {
             delegate?.stopEditing()
         }
     }
+
 

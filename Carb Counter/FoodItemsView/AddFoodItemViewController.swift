@@ -5,6 +5,7 @@ import ISEmojiView
 
 protocol AddFoodItemDelegate: AnyObject {
     func didAddFoodItem(foodItem: FoodItem)
+    func didSaveAndClose(foodItem: FoodItem)
 }
 
 class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
@@ -596,7 +597,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
     
     private func saveFoodItem(addToMeal: Bool = false) {
         let context = CoreDataStack.shared.context
-        
+
         // Check if we are updating an existing food item or creating a new one
         if let foodItem = foodItem {
             // Update existing food item
@@ -606,39 +607,36 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             // Create new food item
             let newFoodItem = FoodItem(context: context)
             newFoodItem.id = UUID()
-            
-            // Set the delete flag to false by default for new food items
-            newFoodItem.delete = false
-            
+            newFoodItem.delete = false // Set the delete flag to false by default
             updateFoodItem(newFoodItem)
-            foodItem = newFoodItem // Assign the new food item to the foodItem variable for later use
+            foodItem = newFoodItem
             print("Created new food item: \(newFoodItem.name ?? "ospecifierat")")
         }
-        
+
         // Save the context and handle errors
         do {
             try context.save()
             print("Saved food item successfully.")
             
-            // Notify delegate using the default protocol implementation
+            // Notify delegate
             if let savedFoodItem = foodItem {
-                delegate?.didAddFoodItem(foodItem: savedFoodItem)
+                delegate?.didSaveAndClose(foodItem: savedFoodItem) // Notify about save and close
             }
-            
+
+            // Notify other listeners via NotificationCenter
             NotificationCenter.default.post(name: .foodItemsDidChange, object: nil, userInfo: ["foodItems": fetchAllFoodItems()])
-            
+
             if addToMeal {
                 addToComposeMealViewController()
-                
+
                 // Show SuccessView when adding to meal
                 let successView = SuccessView()
                 if let window = self.view.window {
                     successView.showInView(window)
                 }
-                
+
                 // Wait for the success view animation to finish before dismissing or popping
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    // Dismiss or pop view controller based on the presentation style
                     if let navigationController = self.navigationController, navigationController.viewControllers.count > 1 {
                         navigationController.popViewController(animated: true)
                     } else {
@@ -646,15 +644,15 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
                     }
                 }
             } else {
-                // If not adding to meal, just dismiss or pop immediately
+                // Just dismiss or pop immediately
                 if let navigationController = self.navigationController, navigationController.viewControllers.count > 1 {
                     navigationController.popViewController(animated: true)
                 } else {
                     self.dismiss(animated: true, completion: nil)
                 }
             }
-            
-            // Conditionally trigger CSV export
+
+            // Trigger CSV export if enabled
             guard let dataSharingVC = dataSharingVC else { return }
             if UserDefaultsRepository.allowCSVSync {
                 Task {
@@ -664,7 +662,7 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
             } else {
                 print("CSV export is disabled in settings.")
             }
-            
+
         } catch {
             print("Failed to save food item: \(error)")
         }
@@ -852,13 +850,13 @@ class AddFoodItemViewController: UIViewController, UITextFieldDelegate {
 
 // MARK: Extension (AddFoodItemDelegate)
 extension ComposeMealViewController: AddFoodItemDelegate {
+    func didSaveAndClose(foodItem: FoodItem) {}
+    
     func didAddFoodItem(foodItem: FoodItem) {
         fetchFoodItems()
         updateClearAllButtonState()
         updateSaveFavoriteButtonState()
         updateHeadlineVisibility()
-        
-        // Optionally do something with foodItem if needed
     }
 }
 

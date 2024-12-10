@@ -2,6 +2,7 @@ import UIKit
 import CoreData
 
 class SearchableDropdownViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, AddFoodItemDelegate {
+    func didSaveAndClose(foodItem: FoodItem) {}
     
     var onSelectItems: (([FoodItem]) -> Void)?
     var onDoneButtonTapped: (([FoodItem]) -> Void)?

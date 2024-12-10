@@ -4,6 +4,8 @@ import CoreData
 import UniformTypeIdentifiers
 
 class FoodItemsListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UISearchBarDelegate, AddFoodItemDelegate, ScannerViewControllerDelegate {
+    func didSaveAndClose(foodItem: FoodItem) {}
+    
     private var lastSearchTime: Date?
     private var isUsingDabas: Bool = true
     private var filterButton: UIBarButtonItem!
